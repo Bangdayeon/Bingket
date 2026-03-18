@@ -3,6 +3,10 @@ module.exports = {
   content: ['./app/**/*.{js,jsx,ts,tsx}', './components/**/*.{js,jsx,ts,tsx}'],
   presets: [require('nativewind/preset')],
   theme: {
+    textColor: ({ theme }) => ({
+      ...theme('colors'),
+      DEFAULT: '#181C1C',
+    }),
     extend: {
       colors: {
         gray: {

@@ -11,6 +11,7 @@ interface IconButtonProps extends Omit<TouchableOpacityProps, 'onPress'> {
   active?: boolean;
   className?: string;
   disabled?: boolean;
+  size?: number;
 }
 
 const variantStyles: Record<Variant, { default: string; active: string }> = {
@@ -35,6 +36,7 @@ export default function IconButton({
   active = false,
   className = '',
   disabled = false,
+  size = 48,
   ...rest
 }: IconButtonProps) {
   const { default: defaultStyle, active: activeStyle } = variantStyles[variant];
@@ -58,8 +60,8 @@ export default function IconButton({
       onPress={onClick}
       disabled={disabled}
       activeOpacity={0.7}
-      className={`w-12 h-12 rounded-full items-center justify-center ${active ? activeStyle : defaultStyle} ${disabled ? 'opacity-40' : ''} ${className}`}
-      style={{ overflow: 'hidden' }}
+      className={`rounded-full items-center justify-center ${active ? activeStyle : defaultStyle} ${disabled ? 'opacity-40' : ''} ${className}`}
+      style={{ width: size, height: size, overflow: 'hidden' }}
       {...rest}
     >
       {variant === 'ghost' && (
@@ -67,9 +69,9 @@ export default function IconButton({
           style={[
             {
               position: 'absolute',
-              width: 48,
-              height: 48,
-              borderRadius: 24,
+              width: size,
+              height: size,
+              borderRadius: size / 2,
               backgroundColor: '#dcfce7',
             },
             animatedBgStyle,
