@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Animated, Pressable, View } from 'react-native';
+import { Animated, Pressable, View, useColorScheme } from 'react-native';
 import { Text } from './Text';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -11,6 +11,7 @@ interface HeaderTabBarProps {
 
 export function HeaderTabBar({ menus, defaultIndex = 0, onTabChange }: HeaderTabBarProps) {
   const insets = useSafeAreaInsets();
+  const isDark = useColorScheme() === 'dark';
   const [selectedIndex, setSelectedIndex] = useState(defaultIndex);
   const [tabWidths, setTabWidths] = useState<number[]>([]);
   const [tabOffsets, setTabOffsets] = useState<number[]>([]);
@@ -59,7 +60,9 @@ export function HeaderTabBar({ menus, defaultIndex = 0, onTabChange }: HeaderTab
           >
             <Text
               className="text-title-lg"
-              style={{ color: selectedIndex === index ? '#181C1C' : '#929898' }} // text-gray-900 : text-gray-500
+              style={{
+                color: selectedIndex === index ? (isDark ? '#F6F7F7' : '#181C1C') : '#929898',
+              }} // active: gray-100/gray-900, inactive: gray-500
             >
               {menu}
             </Text>

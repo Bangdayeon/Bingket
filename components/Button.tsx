@@ -52,7 +52,12 @@ export function Button({
           color={variant === 'secondary' ? '#181C1C' : '#ffffff'} /* gray-900 : white */
         />
       ) : (
-        <Text className={`text-label-sm ${text}`}>{label}</Text>
+        <Text
+          className={`text-label-sm ${text}`}
+          style={variant === 'primary' ? { color: '#181C1C' /* gray-900 */ } : undefined}
+        >
+          {label}
+        </Text>
       )}
     </TouchableOpacity>
   );

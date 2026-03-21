@@ -113,8 +113,8 @@ export function BingoAll() {
           onPress={() => router.push('/bingo/add')}
           className="items-center justify-center gap-3 bg-green-100 w-full h-[230px] rounded-[20px] mt-2"
         >
-          <AddIcon width={40} height={40} />
-          <Text className="text-title-md text-gray-700">
+          <AddIcon width={40} height={40} color="#4C5252" /* gray-700 */ />
+          <Text className="text-title-md" style={{ color: '#4C5252' /* gray-700 */ }}>
             ({bingos.length}/{MAX_BINGOS})
           </Text>
         </Pressable>

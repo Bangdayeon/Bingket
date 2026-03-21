@@ -100,7 +100,9 @@ export default function BingoModifyScreen() {
           </View>
 
           <Pressable onPress={() => setShowDeleteModal(true)} className="mt-6">
-            <Text className="text-body-lg text-red-500">빙고 삭제하기</Text>
+            <Text className="text-body-lg" style={{ color: '#E02828' /* red-500 */ }}>
+              빙고 삭제하기
+            </Text>
           </Pressable>
         </View>
       </ScrollView>

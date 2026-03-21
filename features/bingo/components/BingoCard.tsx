@@ -1,4 +1,4 @@
-import { Dimensions, Pressable, TouchableOpacity, View } from 'react-native';
+import { Dimensions, Pressable, TouchableOpacity, View, useColorScheme } from 'react-native';
 import { Text } from '@/components/Text';
 import EditIcon from '@/assets/icons/ic_edit.svg';
 import { BingoData } from '@/types/bingo';
@@ -16,6 +16,8 @@ export function BingoCard({
   onCellPress,
   onEditPress,
 }: BingoCardProps) {
+  const isDark = useColorScheme() === 'dark';
+  const editIconColor = isDark ? '#F6F7F7' /* gray-100 */ : '#4C5252'; /* gray-700 */
   const [cols, rows] = bingo.grid.split('x').map(Number);
   const gap = 6;
   const availableWidth = Dimensions.get('window').width - 40;
@@ -29,7 +31,7 @@ export function BingoCard({
         <Text className="text-title-md">{bingo.title}</Text>
         {onEditPress && (
           <TouchableOpacity onPress={onEditPress} hitSlop={8}>
-            <EditIcon width={18} height={18} />
+            <EditIcon width={18} height={18} color={editIconColor} />
           </TouchableOpacity>
         )}
       </View>
@@ -52,7 +54,11 @@ export function BingoCard({
               padding: 4,
             }}
           >
-            <Text className={`${textStyle} text-center`} numberOfLines={3}>
+            <Text
+              className={`${textStyle} text-center`}
+              style={{ color: '#181C1C' /* gray-900 */ }}
+              numberOfLines={3}
+            >
               {bingo.cells[i] ?? ''}
             </Text>
           </Pressable>

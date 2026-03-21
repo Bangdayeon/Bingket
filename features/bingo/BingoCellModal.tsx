@@ -11,6 +11,7 @@ import {
   Pressable,
   TextInput as RNTextInput,
   View,
+  useColorScheme,
 } from 'react-native';
 import { Text } from '@/components/Text';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -47,6 +48,7 @@ export function BingoCellModal({
   onUpdate,
 }: BingoCellModalProps) {
   const insets = useSafeAreaInsets();
+  const isDark = useColorScheme() === 'dark';
   const flatListRef = useRef<FlatList<BingoCellDetail>>(null);
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [datePickerCellId, setDatePickerCellId] = useState<string | null>(null);
@@ -132,7 +134,12 @@ export function BingoCellModal({
             >
               {/* Title + check button */}
               <View className="flex-row items-start mb-5 ">
-                <Text className="flex-1 text-title-lg mr-3 py-2.5">{item.title}</Text>
+                <Text
+                  className="flex-1 text-title-lg mr-3 py-2.5"
+                  style={{ color: '#181C1C' /* gray-900 */ }}
+                >
+                  {item.title}
+                </Text>
                 <IconButton
                   variant="ghost"
                   onClick={() => handleToggleComplete(item)}
@@ -140,14 +147,16 @@ export function BingoCellModal({
                     item.completed || !!item.completedAt ? (
                       <DoneIcon width={24} height={24} color="#48BE30" /* green-600 */ />
                     ) : (
-                      <CheckIcon width={24} height={24} />
+                      <CheckIcon width={24} height={24} color="#4C5252" /* gray-700 */ />
                     )
                   }
                 />
               </View>
 
               {/* 완료일 */}
-              <Text className="text-title-sm mb-2">완료일</Text>
+              <Text className="text-title-sm mb-2" style={{ color: '#181C1C' /* gray-900 */ }}>
+                완료일
+              </Text>
               <Pressable
                 onPress={() => handleOpenDatePicker(item)}
                 style={{
@@ -162,16 +171,21 @@ export function BingoCellModal({
                   marginBottom: 20,
                 }}
               >
-                <CalendarIcon width={16} height={16} />
+                <CalendarIcon width={16} height={16} color="#4C5252" /* gray-700 */ />
                 <Text
-                  className={`text-body-sm ${item.completedAt ? 'text-gray-900' : 'text-gray-500'}`}
+                  className="text-body-sm"
+                  style={{
+                    color: item.completedAt ? '#181C1C' : '#929898' /* gray-900 : gray-500 */,
+                  }}
                 >
                   {formatDate(item.completedAt) || '날짜 선택'}
                 </Text>
               </Pressable>
 
               {/* 메모 */}
-              <Text className="text-title-sm mb-2">메모</Text>
+              <Text className="text-title-sm mb-2" style={{ color: '#181C1C' /* gray-900 */ }}>
+                메모
+              </Text>
               <RNTextInput
                 value={item.memo}
                 onChangeText={(v) => onUpdate(item.id, { memo: v })}
@@ -222,7 +236,7 @@ export function BingoCellModal({
               bottom: 0,
               left: 0,
               right: 0,
-              backgroundColor: '#FDFDFD' /* white */,
+              backgroundColor: isDark ? '#181C1C' : '#FDFDFD' /* gray-900 : white */,
               borderTopLeftRadius: 16,
               borderTopRightRadius: 16,
               paddingHorizontal: 20,
@@ -232,9 +246,16 @@ export function BingoCellModal({
             }}
           >
             <View className="flex-row justify-between items-center mb-2">
-              <Text className="text-body-sm text-gray-500">완료일 선택</Text>
+              <Text className="text-body-sm" style={{ color: '#929898' /* gray-500 */ }}>
+                완료일 선택
+              </Text>
               <Pressable onPress={handleDateConfirm}>
-                <Text className="text-body-sm text-green-500 font-semibold">확인</Text>
+                <Text
+                  className="text-body-sm font-semibold"
+                  style={{ color: '#6ADE50' /* green-500 */ }}
+                >
+                  확인
+                </Text>
               </Pressable>
             </View>
             <View style={{ height: 216 }}>
@@ -242,10 +263,12 @@ export function BingoCellModal({
                 value={tempDate}
                 mode="date"
                 display="spinner"
+                maximumDate={new Date()}
                 onChange={(_, date) => {
                   if (date) setTempDate(date);
                 }}
                 locale="ko-KR"
+                textColor={isDark ? '#F6F7F7' : '#181C1C'} /* gray-100 : gray-900 */
                 style={{ flex: 1 }}
               />
             </View>
