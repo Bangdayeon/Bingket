@@ -3,6 +3,7 @@ import { CommunityPost } from '@/types/community';
 export const MOCK_COMMUNITY_POSTS: CommunityPost[] = [
   {
     id: '1',
+    title: '내 빙고 자랑하기',
     author: 'user1234',
     timeAgo: '5분 전',
     body: '오늘 드디어 첫 빙고 달성했어요!',
@@ -17,6 +18,7 @@ export const MOCK_COMMUNITY_POSTS: CommunityPost[] = [
   },
   {
     id: '2',
+    title: '오늘의 소감',
     author: 'wellness_lee',
     timeAgo: '12분 전',
     body: '오늘 하루도 목표 하나 클리어!',
@@ -26,6 +28,7 @@ export const MOCK_COMMUNITY_POSTS: CommunityPost[] = [
   },
   {
     id: '3',
+    title: '빙고 달성 후기',
     author: 'happy_kim',
     timeAgo: '30분 전',
     body: '빙고 달성하고 나니 뿌듯하네요 😊',
@@ -35,6 +38,7 @@ export const MOCK_COMMUNITY_POSTS: CommunityPost[] = [
   },
   {
     id: '4',
+    title: '아침 루틴 빙고판 공유',
     author: 'morning_park',
     timeAgo: '1시간 전',
     body: '아침 루틴 빙고판 공유합니다!',
@@ -49,6 +53,7 @@ export const MOCK_COMMUNITY_POSTS: CommunityPost[] = [
   },
   {
     id: '5',
+    title: '이번 달 목표 세 개 달성!',
     author: 'goal_choi',
     timeAgo: '2시간 전',
     body: '이번 달 목표 세 개나 달성했습니다!',
@@ -58,6 +63,7 @@ export const MOCK_COMMUNITY_POSTS: CommunityPost[] = [
   },
   {
     id: '6',
+    title: '자유게시판 첫 글',
     author: 'daily_jung',
     timeAgo: '3시간 전',
     body: '자유게시판 첫 글입니다. 함께 목표 달성해요!',
@@ -67,6 +73,7 @@ export const MOCK_COMMUNITY_POSTS: CommunityPost[] = [
   },
   {
     id: '7',
+    title: '건강 빙고판 공유해요',
     author: 'health_oh',
     timeAgo: '4시간 전',
     body: '건강 빙고 판 만들어봤어요 참고하세요!',
@@ -81,6 +88,7 @@ export const MOCK_COMMUNITY_POSTS: CommunityPost[] = [
   },
   {
     id: '8',
+    title: '공부 빙고 3줄 완성',
     author: 'study_shin',
     timeAgo: '5시간 전',
     body: '공부 빙고 3줄 완성! 오늘 뿌듯합니다.',
@@ -90,6 +98,7 @@ export const MOCK_COMMUNITY_POSTS: CommunityPost[] = [
   },
   {
     id: '9',
+    title: '명상 30일 완주 후기',
     author: 'calm_yoon',
     timeAgo: '6시간 전',
     body: '명상 30일 완주했어요. 다들 화이팅!',
@@ -99,6 +108,7 @@ export const MOCK_COMMUNITY_POSTS: CommunityPost[] = [
   },
   {
     id: '10',
+    title: '운동 빙고 거의 다 왔어요!',
     author: 'fit_han',
     timeAgo: '7시간 전',
     body: '운동 빙고 완성까지 딱 2칸 남았어요!',
@@ -113,6 +123,7 @@ export const MOCK_COMMUNITY_POSTS: CommunityPost[] = [
   },
   {
     id: '11',
+    title: '빙고 처음 시작하는 분들께',
     author: 'grow_baek',
     timeAgo: '어제',
     body: '처음 빙고 시작하는 분들 응원합니다 🎉',
@@ -122,6 +133,7 @@ export const MOCK_COMMUNITY_POSTS: CommunityPost[] = [
   },
   {
     id: '12',
+    title: '집중력 키우기 빙고 도전 중',
     author: 'focus_kwon',
     timeAgo: '어제',
     body: '집중력 키우기 빙고 도전 중!',
@@ -136,6 +148,7 @@ export const MOCK_COMMUNITY_POSTS: CommunityPost[] = [
   },
   {
     id: '13',
+    title: '워라밸 빙고 2주차',
     author: 'balance_song',
     timeAgo: '어제',
     body: '워라밸 빙고 2주차 진행 중입니다.',
@@ -145,6 +158,7 @@ export const MOCK_COMMUNITY_POSTS: CommunityPost[] = [
   },
   {
     id: '14',
+    title: '긍정 에너지 빙고 완성!',
     author: 'positive_lim',
     timeAgo: '2일 전',
     body: '긍정 에너지 빙고 완성했어요!',
@@ -154,6 +168,7 @@ export const MOCK_COMMUNITY_POSTS: CommunityPost[] = [
   },
   {
     id: '15',
+    title: '창의력 빙고판 같이 도전해요',
     author: 'creative_nam',
     timeAgo: '2일 전',
     body: '창의력 빙고판 함께 도전해요!',

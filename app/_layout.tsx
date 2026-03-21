@@ -32,6 +32,7 @@ export default function RootLayout() {
         <Stack.Screen name="mypage/app-theme" options={{ headerShown: false }} />
         <Stack.Screen name="community/search" options={{ headerShown: false }} />
         <Stack.Screen name="community/write" options={{ headerShown: false }} />
+        <Stack.Screen name="community/[id]" options={{ headerShown: false }} />
       </Stack>
     </SafeAreaProvider>
   );

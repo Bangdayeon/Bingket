@@ -3,9 +3,11 @@ import {
   ActivityIndicator,
   NativeScrollEvent,
   NativeSyntheticEvent,
+  Pressable,
   ScrollView,
   View,
 } from 'react-native';
+import { useRouter } from 'expo-router';
 import { CommunityPost } from '@/types/community';
 import { PostCard } from './PostCard';
 
@@ -18,6 +20,7 @@ interface PostListProps {
 
 export function PostList({ posts, onLoadMore, isLoading, filterIndex }: PostListProps) {
   const scrollRef = useRef<ScrollView>(null);
+  const router = useRouter();
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ y: 0, animated: false });
@@ -41,7 +44,9 @@ export function PostList({ posts, onLoadMore, isLoading, filterIndex }: PostList
       {posts.map((post, index) => (
         <View key={post.id}>
           {index > 0 && <View className="h-px bg-gray-300 dark:bg-gray-700" />}
-          <PostCard post={post} />
+          <Pressable onPress={() => router.push(`/community/${post.id}`)}>
+            <PostCard post={post} />
+          </Pressable>
         </View>
       ))}
       {isLoading && <ActivityIndicator className="py-4" color="#929898" />}
