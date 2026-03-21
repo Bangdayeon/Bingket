@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { Platform, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import { CommunityHeader } from '@/features/community/components/Header';
 import { CommunityFilter } from '@/features/community/components/Filter';
 import { PostList } from '@/features/community/components/PostList';
@@ -13,6 +14,7 @@ const PAGE_SIZE = 10;
 const FILTER_TYPES: (CommunityPost['type'] | null)[] = [null, 'bingo', 'achievement', 'free'];
 
 export default function CommunityScreen() {
+  const router = useRouter();
   const [filterIndex, setFilterIndex] = useState(0);
   const [page, setPage] = useState(PAGE_SIZE);
   const [isLoading, setIsLoading] = useState(false);
@@ -52,6 +54,7 @@ export default function CommunityScreen() {
       />
 
       <Pressable
+        onPress={() => router.push('/community/write')}
         className="absolute bottom-[104px] right-5 w-10 h-10 rounded-full bg-sky-300 items-center justify-center"
         style={Platform.select({
           ios: {
