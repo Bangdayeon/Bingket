@@ -23,8 +23,14 @@ export default function BingoModifyScreen() {
   const [cellEdits, setCellEdits] = useState<number[]>(Array(bingo.cells.length).fill(0));
   const maxEdits = bingo.maxEdits;
 
-  const THEMES = ['기본', '그린', '토끼풀', '2026', '고먐미'];
-  const [selectedTheme, setSelectedTheme] = useState(THEMES[0]);
+  const THEMES = ['기본', '토끼', '붉은말', '고먐미'];
+  const THEME_TO_DISPLAY: Record<string, string> = {
+    default: '기본',
+    rabbit: '토끼',
+    red_horse: '붉은말',
+    square_cat: '고먐미',
+  };
+  const [selectedTheme, setSelectedTheme] = useState(THEME_TO_DISPLAY[bingo.theme] ?? '기본');
 
   const isDirty = useRef(false);
   const markDirty = () => {
@@ -88,6 +94,7 @@ export default function BingoModifyScreen() {
 
           <AddEachBingo
             selectedGrid={bingo.grid}
+            theme={selectedTheme}
             cells={cells}
             onCellsChange={(newCells) => {
               markDirty();

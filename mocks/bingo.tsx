@@ -11,17 +11,19 @@ export const MOCK_BINGOS: BingoData[] = [
     bingoCount: 0,
     dday: 365,
     state: 'draft',
+    theme: 'rabbit',
   },
   {
     id: '2',
     title: '버킷리스트',
-    grid: '3x3',
-    cells: Array(9).fill('어쩌구 저쩌구'),
+    grid: '4x4',
+    cells: Array(16).fill('교수님한테 키갈하기'),
     maxEdits: 3,
     achievedCount: 2,
     bingoCount: 1,
     dday: 180,
     state: 'progress',
+    theme: 'square_cat',
   },
   {
     id: '3',
@@ -33,6 +35,7 @@ export const MOCK_BINGOS: BingoData[] = [
     bingoCount: 2,
     dday: 0,
     state: 'progress',
+    theme: 'rabbit',
   },
   {
     id: '4',
@@ -44,6 +47,7 @@ export const MOCK_BINGOS: BingoData[] = [
     bingoCount: 4,
     dday: 0,
     state: 'done',
+    theme: 'rabbit',
   },
   {
     id: '5',
@@ -55,5 +59,6 @@ export const MOCK_BINGOS: BingoData[] = [
     bingoCount: 3,
     dday: 0,
     state: 'done',
+    theme: 'rabbit',
   },
 ];

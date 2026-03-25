@@ -5,7 +5,7 @@ import { Text } from '@/components/Text';
 
 const GRID_OPTIONS = ['3x3', '4x3', '4x4'];
 const EDIT_COUNT_OPTIONS = ['0', '1', '2', '3', '무제한'];
-const THEME_OPTIONS = ['기본', '그린', '토끼풀', '2026', '고먐미'];
+const THEME_OPTIONS = ['기본', '토끼', '붉은말', '고먐미'];
 
 interface WriteBingoProps {
   selectedGrid: string;
@@ -31,19 +31,6 @@ export function WriteBingo({
   return (
     <View className="px-5 pt-6 pb-5">
       <Text className="text-title-md mb-4">빙고 작성</Text>
-
-      {/* 테마 */}
-      <Text className="text-body-lg mb-3">테마</Text>
-      <View className="flex-row flex-wrap gap-2 mb-5">
-        {THEME_OPTIONS.map((opt) => (
-          <Chip
-            key={opt}
-            label={opt}
-            selected={selectedTheme === opt}
-            onPress={() => onThemeSelect(opt)}
-          />
-        ))}
-      </View>
 
       {/* 칸 개수 */}
       <View className="flex-row items-center gap-2 mb-3">
@@ -80,8 +67,26 @@ export function WriteBingo({
         ))}
       </View>
 
+      {/* 테마 */}
+      <Text className="text-body-lg mb-3">테마</Text>
+      <View className="flex-row flex-wrap gap-2 mb-5">
+        {THEME_OPTIONS.map((opt) => (
+          <Chip
+            key={opt}
+            label={opt}
+            selected={selectedTheme === opt}
+            onPress={() => onThemeSelect(opt)}
+          />
+        ))}
+      </View>
+
       {/* 빙고 그리드 */}
-      <AddEachBingo selectedGrid={selectedGrid} cells={cells} onCellsChange={onCellsChange} />
+      <AddEachBingo
+        selectedGrid={selectedGrid}
+        theme={selectedTheme}
+        cells={cells}
+        onCellsChange={onCellsChange}
+      />
     </View>
   );
 }

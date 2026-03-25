@@ -59,6 +59,7 @@ export function BingoAll() {
         bingoCount: 0,
         dday: calcDday(data.endDate),
         state: data.state,
+        theme: 'rabbit',
       });
     });
   }, []);
@@ -92,7 +93,7 @@ export function BingoAll() {
   const modalCells = modalTarget ? (cellDetails[modalTarget.bingoId] ?? []) : [];
 
   return (
-    <ScrollView className="flex-1 mt-[80px] bg-white px-5 dark:bg-gray-900 mb-20">
+    <ScrollView className="flex-1 mt-[50px] bg-white dark:bg-gray-900 mb-20">
       {bingos.map((bingo) => (
         <BingoCard
           key={bingo.id}

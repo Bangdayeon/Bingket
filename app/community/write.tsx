@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import {
+  Dimensions,
+  Image,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -17,6 +19,7 @@ import CameraIcon from '@/assets/icons/ic_camera.svg';
 import { CommunityPost } from '@/types/community';
 import { BingoData } from '@/types/bingo';
 import { MOCK_BINGOS } from '@/mocks/bingo';
+import { getThemeImage, FIGMA_W, FIGMA_H, GRID_CONFIGS } from '@/features/bingo/lib/theme-config';
 
 const HEADER_H = 60;
 const TITLE_H = 60;
@@ -42,7 +45,60 @@ function GridIcon({ color }: { color: string }) {
 }
 
 function BingoPreview({ bingo }: { bingo: BingoData }) {
-  const [cols] = bingo.grid.split('x').map(Number);
+  const [cols, rows] = bingo.grid.split('x').map(Number);
+  const availableWidth = Dimensions.get('window').width - 40;
+  const image = getThemeImage(bingo.theme, bingo.grid);
+  const textStyle = bingo.grid === '3x3' ? 'text-caption-sm' : 'text-caption-sm';
+
+  if (image !== null) {
+    const scale = availableWidth / FIGMA_W;
+    const cardHeight = FIGMA_H * scale;
+    const cfg = GRID_CONFIGS[bingo.grid];
+    const gridTop = cfg.top * scale;
+    const gridLeft = cfg.left * scale;
+    const cellW = cfg.cellW * scale;
+    const cellH = cfg.cellH * scale;
+    const gapX = cfg.gapX * scale;
+    const gapY = cfg.gapY * scale;
+
+    return (
+      <View style={{ width: availableWidth, height: cardHeight }}>
+        <Image
+          source={image}
+          style={{ position: 'absolute', width: '100%', height: '100%' }}
+          resizeMode="cover"
+        />
+        {Array.from({ length: cols * rows }).map((_, i) => {
+          const col = i % cols;
+          const row = Math.floor(i / cols);
+          return (
+            <View
+              key={i}
+              style={{
+                position: 'absolute',
+                left: gridLeft + col * (cellW + gapX),
+                top: gridTop + row * (cellH + gapY),
+                width: cellW,
+                height: cellH,
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: 4,
+              }}
+            >
+              <Text
+                className={`${textStyle} text-center`}
+                style={{ color: '#181C1C' /* gray-900 */ }}
+                numberOfLines={2}
+              >
+                {bingo.cells[i] ?? ''}
+              </Text>
+            </View>
+          );
+        })}
+      </View>
+    );
+  }
+
   return (
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
       {bingo.cells.map((text, i) => (
