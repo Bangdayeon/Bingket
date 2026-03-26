@@ -21,7 +21,9 @@ export default function BingoAddScreen() {
   const [title, setTitle] = useState('');
   const [selectedDuration, setSelectedDuration] = useState<string | null>(null);
   const [selectedGrid, setSelectedGrid] = useState<string>('3x3');
-  const [cells, setCells] = useState<string[]>([]);
+  const cellsRef = useRef<string[]>([]);
+  const [initialCells, setInitialCells] = useState<string[]>([]);
+  const [writeBingoKey, setWriteBingoKey] = useState(0);
   const [selectedEditCount, setSelectedEditCount] = useState<string>('0');
   const [selectedTheme, setSelectedTheme] = useState<string>('기본');
   const [startDate, setStartDate] = useState<Date | null>(null);
@@ -51,7 +53,11 @@ export default function BingoAddScreen() {
       if (d.selectedTheme) setSelectedTheme(d.selectedTheme);
       if (d.startDate) setStartDate(new Date(d.startDate));
       if (d.endDate) setEndDate(new Date(d.endDate));
-      if (d.cells) setCells(d.cells);
+      if (d.cells) {
+        cellsRef.current = d.cells;
+        setInitialCells(d.cells);
+        setWriteBingoKey((k) => k + 1);
+      }
     });
   }, [loadDraft]);
 
@@ -108,7 +114,7 @@ export default function BingoAddScreen() {
     if (!selectedDuration) return showAlert('목표 기간을 선택해주세요.');
     if (!startDate) return showAlert('시작일을 선택해주세요.');
     if (!endDate) return showAlert('종료일을 선택해주세요.');
-    if (cells.filter((c) => c?.trim()).length < totalCells)
+    if (cellsRef.current.filter((c) => c?.trim()).length < totalCells)
       return showAlert('빙고 칸을 모두 채워주세요.');
     try {
       await createBingo({
@@ -119,11 +125,12 @@ export default function BingoAddScreen() {
         grid: selectedGrid,
         editCount: selectedEditCount,
         theme: selectedTheme,
-        cells,
+        cells: cellsRef.current,
       });
       await AsyncStorage.removeItem('@bingket/draft-bingo');
       router.replace('/(tabs)');
-    } catch {
+    } catch (e) {
+      console.error('[createBingo] 오류:', e);
       showAlert('저장에 실패했어요. 잠시 후 다시 시도해주세요.');
     }
   };
@@ -138,7 +145,7 @@ export default function BingoAddScreen() {
       selectedTheme,
       startDate: startDate?.toISOString() ?? null,
       endDate: endDate?.toISOString() ?? null,
-      cells,
+      cells: cellsRef.current,
     };
     await AsyncStorage.setItem('@bingket/draft-bingo', JSON.stringify(data));
     showAlert('임시 저장되었습니다.\n홈 화면의 기록 탭에서 확인할 수 있어요.', () =>
@@ -195,10 +202,11 @@ export default function BingoAddScreen() {
             markDirty();
             setSelectedTheme(v);
           }}
-          cells={cells}
+          cells={initialCells}
+          key={writeBingoKey}
           onCellsChange={(v) => {
             markDirty();
-            setCells(v);
+            cellsRef.current = v;
           }}
         />
       </ScrollView>

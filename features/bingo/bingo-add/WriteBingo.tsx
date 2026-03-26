@@ -50,7 +50,7 @@ export function WriteBingo({
 
       {/* 수정 가능 횟수 */}
       <View className="flex-row items-center gap-2 mb-1">
-        <Text className="text-body-sm">수정 가능 횟수</Text>
+        <Text className="text-body-lg">수정 가능 횟수</Text>
         <Text className="text-caption-sm text-red-500">*처음 지정 후 수정이 불가능해요</Text>
       </View>
       <Text className="text-body-sm text-gray-500 dark:text-gray-400 mb-3">
@@ -81,6 +81,10 @@ export function WriteBingo({
       </View>
 
       {/* 빙고 그리드 */}
+      <Text className="text-body-lg mb-3">빙고 내용 작성하기</Text>
+      <Text className="text-body-sm text-gray-500 dark:text-gray-400 mb-3">
+        아래에서 각 칸을 선택해서 빙고 내용을 채워주세요.
+      </Text>
       <AddEachBingo
         selectedGrid={selectedGrid}
         theme={selectedTheme}

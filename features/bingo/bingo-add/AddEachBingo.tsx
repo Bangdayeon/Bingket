@@ -1,17 +1,26 @@
 import { Modal } from '@/components/Modal';
 import { useState } from 'react';
-import { Dimensions, Image, TextInput, TouchableOpacity, View } from 'react-native';
+import { Dimensions, Image, TouchableOpacity, View } from 'react-native';
 import { Text } from '@/components/Text';
 import { getThemeImage, FIGMA_W, FIGMA_H, GRID_CONFIGS } from '../lib/theme-config';
+import { TextInput } from '@/components/TextInput';
 
 interface AddBingoProps {
   selectedGrid: string;
   theme: string;
   cells: string[];
   onCellsChange: (cells: string[]) => void;
+  disabledCells?: boolean[];
 }
 
-export function AddEachBingo({ selectedGrid, theme, cells, onCellsChange }: AddBingoProps) {
+export function AddEachBingo({
+  selectedGrid,
+  theme,
+  cells,
+  onCellsChange,
+  disabledCells,
+}: AddBingoProps) {
+  const [localCells, setLocalCells] = useState<string[]>(cells);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [inputText, setInputText] = useState('');
 
@@ -22,14 +31,16 @@ export function AddEachBingo({ selectedGrid, theme, cells, onCellsChange }: AddB
   const image = getThemeImage(theme, selectedGrid);
 
   const handleCellPress = (index: number) => {
-    setInputText(cells[index] ?? '');
+    if (disabledCells?.[index]) return;
+    setInputText(localCells[index] ?? '');
     setSelectedIndex(index);
   };
 
   const handleSave = () => {
     if (selectedIndex === null) return;
-    const updated = [...cells];
+    const updated = [...localCells];
     updated[selectedIndex] = inputText;
+    setLocalCells(updated);
     onCellsChange(updated);
     setSelectedIndex(null);
   };
@@ -47,9 +58,8 @@ export function AddEachBingo({ selectedGrid, theme, cells, onCellsChange }: AddB
           value={inputText}
           onChangeText={setInputText}
           placeholder="내용을 입력하세요."
-          placeholderTextColor="#929898" /* gray-500 */
-          multiline
-          className="text-body-sm text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-800 rounded-2xl p-3 min-h-[80px]"
+          maxHeight={120}
+          className="min-h-[72px]"
           style={{ textAlignVertical: 'top' }}
         />
       }
@@ -102,7 +112,7 @@ export function AddEachBingo({ selectedGrid, theme, cells, onCellsChange }: AddB
                 }}
               >
                 <Text className={`${textStyle} text-center`} numberOfLines={3}>
-                  {cells[i] ?? ''}
+                  {localCells[i] ?? ''}
                 </Text>
               </TouchableOpacity>
             );
@@ -138,7 +148,7 @@ export function AddEachBingo({ selectedGrid, theme, cells, onCellsChange }: AddB
             }}
           >
             <Text className={`${textStyle} text-center`} numberOfLines={3}>
-              {cells[i] ?? ''}
+              {localCells[i] ?? ''}
             </Text>
           </TouchableOpacity>
         ))}

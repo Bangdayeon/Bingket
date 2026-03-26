@@ -1,22 +1,45 @@
 import { BingoCard } from '@/features/bingo/components/BingoCard';
-import { MOCK_BINGOS } from '@/mocks/bingo';
+import { fetchBingoForView } from '@/features/bingo/lib/bingo';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { ScrollView, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { IconButton } from '@/components/IconButton';
-import BackArrowIcon from '@/assets/icons/ic_arrow_back.svg';
 import { Text } from '@/components/Text';
+import BackArrowIcon from '@/assets/icons/ic_arrow_back.svg';
+import ProgressIcon from '@/assets/icons/ic_progress.svg';
+import DoneIcon from '@/assets/icons/ic_done.svg';
+import type { FetchedBingo } from '@/features/bingo/lib/bingo';
 
 export default function BingoViewScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { bingoId } = useLocalSearchParams<{ bingoId: string }>();
 
-  const bingo = MOCK_BINGOS.find((b) => b.id === bingoId);
+  const [data, setData] = useState<FetchedBingo | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  if (!bingo) return null;
+  useEffect(() => {
+    if (!bingoId) return;
+    fetchBingoForView(bingoId).then((result) => {
+      setData(result);
+      setLoading(false);
+    });
+  }, [bingoId]);
 
-  const completedCells = Array(bingo.cells.length).fill(true);
+  if (loading) {
+    return (
+      <View className="flex-1 items-center justify-center bg-white dark:bg-gray-900">
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  if (!data) return null;
+
+  const { bingo, cellDetails } = data;
+  const isDone = bingo.state === 'done';
+  const completedCells = cellDetails.map((c) => c.completed);
 
   return (
     <View className="flex-1 bg-white dark:bg-gray-900" style={{ paddingTop: insets.top }}>
@@ -27,7 +50,14 @@ export default function BingoViewScreen() {
           icon={<BackArrowIcon width={20} height={20} />}
           onClick={() => router.back()}
         />
-        <Text className="flex-1 text-center text-title-sm">완료된 빙고</Text>
+        <View className="flex-1 flex-row items-center justify-center gap-2">
+          {isDone ? (
+            <DoneIcon width={20} height={20} color="#48BE30" /* green-600 */ />
+          ) : (
+            <ProgressIcon width={20} height={20} />
+          )}
+          <Text className="text-title-sm">{bingo.title}</Text>
+        </View>
         <View style={{ width: 32 }} />
       </View>
 
@@ -35,7 +65,16 @@ export default function BingoViewScreen() {
         className="flex-1 px-5"
         contentContainerStyle={{ paddingTop: 20, paddingBottom: insets.bottom + 40 }}
       >
-        <BingoCard bingo={bingo} completedCells={completedCells} onCellPress={() => {}} />
+        <BingoCard
+          bingo={bingo}
+          completedCells={completedCells}
+          onCellPress={() => {}}
+          onEditPress={
+            isDone
+              ? undefined
+              : () => router.push({ pathname: '/bingo/modify', params: { bingoId: bingo.id } })
+          }
+        />
       </ScrollView>
     </View>
   );

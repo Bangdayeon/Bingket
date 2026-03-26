@@ -1,33 +1,26 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Pressable, ScrollView, View, useColorScheme } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, View, useColorScheme } from 'react-native';
 import { Text } from '@/components/Text';
 import DoneIcon from '@/assets/icons/ic_done.svg';
 import DraftIcon from '@/assets/icons/ic_draft.svg';
 import ProgressIcon from '@/assets/icons/ic_progress.svg';
 import ForwardArrowIcon from '@/assets/icons/ic_arrow_forward.svg';
-import { BingoState } from '@/types/bingo';
-import { MOCK_BINGOS } from '@/mocks/bingo';
+import { fetchMyBingos, fetchMyCompletedBingos } from '@/features/bingo/lib/bingo';
 
 interface BingoItem {
   id: string;
   title: string;
 }
 
-const SECTION_ICONS = {
-  draft: <DraftIcon />,
-  progress: <ProgressIcon />,
-  done: <DoneIcon color="#48BE30" /* green-600 */ />,
-};
-
 function Section({
-  type,
+  icon,
   label,
   items,
   onItemPress,
 }: {
-  type: BingoState;
+  icon: React.ReactNode;
   label: string;
   items: BingoItem[];
   onItemPress: (item: BingoItem) => void;
@@ -38,9 +31,12 @@ function Section({
   return (
     <View className="mb-4">
       <View className="flex-row items-center gap-2 py-3">
-        {SECTION_ICONS[type]}
+        {icon}
         <Text className="text-title-md">{label}</Text>
       </View>
+      {items.length === 0 && (
+        <Text className="text-body-sm text-gray-400 dark:text-gray-500 py-2">없음</Text>
+      )}
       {items.map((item) => (
         <Pressable
           key={item.id}
@@ -55,50 +51,58 @@ function Section({
   );
 }
 
-const MOCK_IN_PROGRESS: BingoItem[] = MOCK_BINGOS.filter((b) => b.state === 'progress').map(
-  ({ id, title }) => ({ id, title }),
-);
-
-const MOCK_COMPLETED: BingoItem[] = MOCK_BINGOS.filter((b) => b.state === 'done').map(
-  ({ id, title }) => ({ id, title }),
-);
-
 export function BingoHistory() {
   const router = useRouter();
   const [drafts, setDrafts] = useState<BingoItem[]>([]);
+  const [inProgress, setInProgress] = useState<BingoItem[]>([]);
+  const [done, setDone] = useState<BingoItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const loadDraft = useCallback(() => {
-    AsyncStorage.getItem('@bingket/draft-bingo').then((raw) => {
-      if (!raw) {
-        setDrafts([]);
-        return;
-      }
-      const data = JSON.parse(raw);
-      if (data?.title) setDrafts([{ id: 'draft_0', title: data.title }]);
-      else setDrafts([]);
+  const loadData = useCallback(() => {
+    setLoading(true);
+    Promise.all([
+      AsyncStorage.getItem('@bingket/draft-bingo'),
+      fetchMyBingos(),
+      fetchMyCompletedBingos(),
+    ]).then(([raw, progress, completed]) => {
+      const draft = raw ? JSON.parse(raw) : null;
+      setDrafts(draft?.title ? [{ id: 'draft_0', title: draft.title }] : []);
+      setInProgress(progress.map(({ bingo }) => ({ id: bingo.id, title: bingo.title })));
+      setDone(completed.map(({ bingo }) => ({ id: bingo.id, title: bingo.title })));
+      setLoading(false);
     });
   }, []);
 
-  useFocusEffect(loadDraft);
+  useFocusEffect(loadData);
+
+  if (loading) {
+    return (
+      <View className="flex-1 mt-[80px] items-center justify-center bg-white dark:bg-gray-900">
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
 
   return (
     <ScrollView className="flex-1 mt-[80px] bg-white px-5 dark:bg-gray-900 mb-20">
       <Section
-        type="draft"
+        icon={<DraftIcon />}
         label="제작 중"
         items={drafts}
         onItemPress={() => router.push({ pathname: '/bingo/add', params: { loadDraft: 'true' } })}
       />
       <Section
-        type="progress"
+        icon={<ProgressIcon />}
         label="진행 중"
-        items={MOCK_IN_PROGRESS}
-        onItemPress={() => router.push('/bingo/modify')}
+        items={inProgress}
+        onItemPress={(item) =>
+          router.push({ pathname: '/bingo/view', params: { bingoId: item.id } })
+        }
       />
       <Section
-        type="done"
+        icon={<DoneIcon color="#48BE30" /* green-600 */ />}
         label="완료"
-        items={MOCK_COMPLETED}
+        items={done}
         onItemPress={(item) =>
           router.push({ pathname: '/bingo/view', params: { bingoId: item.id } })
         }

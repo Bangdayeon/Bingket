@@ -3,34 +3,55 @@ import { Modal } from '@/components/Modal';
 import { TextInput } from '@/components/TextInput';
 import { AddEachBingo } from '@/features/bingo/bingo-add/AddEachBingo';
 import { BingoModifyHeader } from '@/features/bingo/bingo-modify/Header';
+import { fetchBingoForEdit, updateBingo, deleteBingo } from '@/features/bingo/lib/bingo';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useRef, useState } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, Pressable, ScrollView, View } from 'react-native';
 import { Text } from '@/components/Text';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { MOCK_BINGOS } from '@/mocks/bingo';
 import { Chip } from '@/components/Chip';
+
+const THEMES = ['기본', '토끼', '붉은말', '고먐미'];
+const THEME_TO_DISPLAY: Record<string, string> = {
+  default: '기본',
+  rabbit: '토끼',
+  red_horse: '붉은말',
+  square_cat: '고먐미',
+};
 
 export default function BingoModifyScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { bingoId } = useLocalSearchParams<{ bingoId: string }>();
 
-  const bingo = MOCK_BINGOS.find((b) => b.id === bingoId) ?? MOCK_BINGOS[0];
+  const [loading, setLoading] = useState(true);
+  const [grid, setGrid] = useState('3x3');
+  const [maxEdits, setMaxEdits] = useState(0);
+  const [title, setTitle] = useState('');
+  const [cells, setCells] = useState<string[]>([]);
+  const [cellIds, setCellIds] = useState<string[]>([]);
+  const [cellOriginalEditCounts, setCellOriginalEditCounts] = useState<number[]>([]);
+  const [cellEdits, setCellEdits] = useState<number[]>([]);
+  const [selectedTheme, setSelectedTheme] = useState('기본');
 
-  const [title, setTitle] = useState(bingo.title);
-  const [cells, setCells] = useState<string[]>(bingo.cells);
-  const [cellEdits, setCellEdits] = useState<number[]>(Array(bingo.cells.length).fill(0));
-  const maxEdits = bingo.maxEdits;
-
-  const THEMES = ['기본', '토끼', '붉은말', '고먐미'];
-  const THEME_TO_DISPLAY: Record<string, string> = {
-    default: '기본',
-    rabbit: '토끼',
-    red_horse: '붉은말',
-    square_cat: '고먐미',
-  };
-  const [selectedTheme, setSelectedTheme] = useState(THEME_TO_DISPLAY[bingo.theme] ?? '기본');
+  useEffect(() => {
+    if (!bingoId) return;
+    fetchBingoForEdit(bingoId).then((data) => {
+      if (!data) {
+        router.back();
+        return;
+      }
+      setGrid(data.grid);
+      setMaxEdits(data.maxEdits);
+      setTitle(data.title);
+      setCells(data.cells);
+      setCellIds(data.cellIds);
+      setCellOriginalEditCounts(data.cellEditCounts);
+      setCellEdits(Array(data.cells.length).fill(0));
+      setSelectedTheme(THEME_TO_DISPLAY[data.theme] ?? '기본');
+      setLoading(false);
+    });
+  }, [bingoId]);
 
   const isDirty = useRef(false);
   const markDirty = () => {
@@ -46,16 +67,53 @@ export default function BingoModifyScreen() {
     else router.back();
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!title.trim()) return setAlertMessage('제목을 입력해주세요.');
-    // TODO: API 호출
-    router.replace('/(tabs)');
+    try {
+      const changedCells = cellIds
+        .map((id, i) => ({
+          id,
+          content: cells[i] ?? '',
+          newEditCount: cellOriginalEditCounts[i] + (cellEdits[i] ?? 0),
+        }))
+        .filter((_, i) => (cellEdits[i] ?? 0) > 0);
+
+      await updateBingo(bingoId, title, selectedTheme, changedCells);
+      router.replace('/(tabs)');
+    } catch (e) {
+      console.error('[updateBingo] 오류:', e);
+      setAlertMessage('저장에 실패했어요. 잠시 후 다시 시도해주세요.');
+    }
   };
 
-  const handleDelete = () => {
-    // TODO: API 호출 후 홈으로 이동
-    router.replace('/(tabs)');
+  const handleDelete = async () => {
+    try {
+      await deleteBingo(bingoId);
+      router.replace('/(tabs)');
+    } catch (e) {
+      console.error('[deleteBingo] 오류:', e);
+      setShowDeleteModal(false);
+      setAlertMessage('삭제에 실패했어요. 잠시 후 다시 시도해주세요.');
+    }
   };
+
+  const disabledCells = cells.map((_, i) => {
+    if (maxEdits === -1) return false;
+    if (maxEdits === 0) return true;
+    return (cellOriginalEditCounts[i] ?? 0) + (cellEdits[i] ?? 0) >= maxEdits;
+  });
+
+  const totalUsedEdits =
+    cellEdits.reduce((a, b) => a + b, 0) + cellOriginalEditCounts.reduce((a, b) => a + b, 0);
+  const totalMaxEdits = maxEdits === -1 ? -1 : maxEdits * cells.length;
+
+  if (loading) {
+    return (
+      <View className="flex-1 items-center justify-center bg-white dark:bg-gray-900">
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
 
   return (
     <View className="flex-1 bg-white dark:bg-gray-900" style={{ paddingTop: insets.top }}>
@@ -87,19 +145,22 @@ export default function BingoModifyScreen() {
                 key={theme}
                 label={theme}
                 selected={selectedTheme === theme}
-                onPress={() => setSelectedTheme(theme)}
+                onPress={() => {
+                  markDirty();
+                  setSelectedTheme(theme);
+                }}
               />
             ))}
           </View>
 
           <AddEachBingo
-            selectedGrid={bingo.grid}
+            selectedGrid={grid}
             theme={selectedTheme}
             cells={cells}
+            disabledCells={disabledCells}
             onCellsChange={(newCells) => {
               markDirty();
-              const prev = cells;
-              const changedIdx = newCells.findIndex((c, i) => c !== prev[i]);
+              const changedIdx = newCells.findIndex((c, i) => c !== cells[i]);
               if (changedIdx >= 0) {
                 const updated = [...cellEdits];
                 updated[changedIdx] = (updated[changedIdx] ?? 0) + 1;
@@ -112,8 +173,7 @@ export default function BingoModifyScreen() {
           <View className="flex-row justify-end mt-3">
             <Text className="text-body-sm text-gray-500 dark:text-gray-400">수정 가능 횟수 </Text>
             <Text className="text-label-sm">
-              {cellEdits.reduce((a, b) => a + b, 0)}/
-              {maxEdits === -1 ? '무제한' : maxEdits * cells.length}
+              {totalUsedEdits}/{totalMaxEdits === -1 ? '무제한' : totalMaxEdits}
             </Text>
           </View>
 
