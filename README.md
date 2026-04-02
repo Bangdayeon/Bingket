@@ -34,5 +34,10 @@
 - **플랫폼** — iOS / Android 단일 코드베이스로 동시 대응
 
 ## 스크린샷
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/ef8dde29-4fab-4032-9cc0-aa5cf559d849" width="20%" />
+  <img src="https://github.com/user-attachments/assets/326452c6-1535-45fe-b570-13810ea51063" width="20%" />
+  <img src="https://github.com/user-attachments/assets/f5867937-6741-401f-ba0f-8baabbdf0005" width= "20%" />
+  <img src="https://github.com/user-attachments/assets/184fce99-15f9-46b9-b707-2ae136178fbd" width= "20%" />
+</p>
 
-> 추가 예정
