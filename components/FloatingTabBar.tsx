@@ -12,7 +12,7 @@ import AlertOff from '@/assets/icons/alert_off.svg';
 import AlertOn from '@/assets/icons/alert_on.svg';
 import MypageOff from '@/assets/icons/mypage_off.svg';
 import MypageOn from '@/assets/icons/mypage_on.svg';
-import { IconButton } from './IconButton';
+import IconButton from './IconButton';
 
 const TAB_ICONS: Record<string, { on: React.FC<SvgProps>; off: React.FC<SvgProps> }> = {
   index: { on: HomeOn, off: HomeOff },

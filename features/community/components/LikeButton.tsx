@@ -6,7 +6,7 @@ import LikeOnIcon from '@/assets/icons/ic_favorite_on.svg';
 import { togglePostLike, toggleCommentLike } from '@/features/community/lib/community';
 import { checkAndAwardBadges } from '@/lib/badge-checker';
 
-const SIZES = { sm: 18, md: 20 } as const;
+const SIZES = { sm: 20, md: 24 } as const;
 
 // 파티클 설정
 const PARTICLE_COLORS = ['#E02828', '#FF6B00', '#FFB800', '#FF4444', '#FF8C00'];

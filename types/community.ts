@@ -1,6 +1,19 @@
-import type { BingoTheme } from './bingo';
+import type { BingoData, BingoTheme } from './bingo';
 
 export type PostCategory = 'bingo_board' | 'bingo_achieve' | 'free';
+
+/** 게시글 작성/수정 에디터 블록 타입 */
+export type EditorBlock =
+  | { id: string; type: 'text'; value: string }
+  | { id: string; type: 'image'; uri: string; mimeType: string }
+  | { id: string; type: 'existing-image'; url: string }
+  | { id: string; type: 'bingo'; bingo: BingoData };
+
+/** DB에 저장되는 content JSON 블록 타입 */
+export type StoredBlock =
+  | { type: 'text'; value: string }
+  | { type: 'image'; index: number }
+  | { type: 'bingo' };
 
 export interface CommentReply {
   id: string;
@@ -31,18 +44,15 @@ export interface Comment {
 export interface CommunityUser {
   id: string;
   username: string;
-  is_deleted: boolean; // 새 필드
+  is_deleted: boolean;
 }
 
 export interface CommunityPost {
   id: string;
   title: string;
-  /** 실제 supabase user_id (소유자 판별용) */
   userId: string;
-  /** 표시용 이름: 익명이면 '익명', 아니면 username */
   author: string;
   isAnonymous: boolean;
-  /** 비익명 시 실제 프로필 이미지 URL */
   avatarUrl?: string | null;
   timeAgo: string;
   body: string;
@@ -50,12 +60,14 @@ export interface CommunityPost {
   likedByMe: boolean;
   commentCount: number;
   category: PostCategory;
-  /** 첨부 빙고판 데이터 (테마 포함) */
   bingo?: {
+    /** bingo_board row id (snapshot 빙고엔 없음) */
+    id?: string;
+    title?: string;
     cells: string[];
     grid: string;
     theme: BingoTheme;
   };
   imageUrls?: string[];
-  user?: CommunityUser; // 팝업에서 탈퇴 여부 확인
+  user?: CommunityUser;
 }

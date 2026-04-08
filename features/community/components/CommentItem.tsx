@@ -3,7 +3,7 @@ import { Text } from '@/components/Text';
 import MoreVertIcon from '@/assets/icons/ic_more_vert.svg';
 import SMSIcon from '@/assets/icons/ic_sms.svg';
 import { LikeButton } from './LikeButton';
-import { AnonymousProfile } from '@/components/AnonymousProfile';
+import AnonymousProfile from '@/components/AnonymousProfile';
 import { ProfileAvatar } from '@/components/ProfileAvatar';
 import { ReplyItem } from './ReplyItem';
 import { Comment } from '@/types/community';

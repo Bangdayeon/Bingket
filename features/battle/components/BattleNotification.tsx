@@ -1,6 +1,6 @@
 import { View } from 'react-native';
 import { Text } from '@/components/Text';
-import { Button } from '@/components/Button';
+import Button from '@/components/Button';
 import CloseIcon from '@/assets/icons/ic_close.svg';
 import { ProfileAvatar } from '@/components/ProfileAvatar';
 

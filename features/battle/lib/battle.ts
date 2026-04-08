@@ -169,14 +169,32 @@ export const sendBattleRequest = async (params: {
   } = await supabase.auth.getUser();
   if (!user) throw new Error('로그인이 필요합니다.');
 
-  const { error } = await supabase.from('battle_requests').insert({
-    sender_id: user.id,
-    receiver_id: params.receiverId,
-    sender_board_id: params.senderBoardId,
-    bet_text: params.betText.trim() || null,
-  });
+  const { data: requestData, error } = await supabase
+    .from('battle_requests')
+    .insert({
+      sender_id: user.id,
+      receiver_id: params.receiverId,
+      sender_board_id: params.senderBoardId,
+      bet_text: params.betText.trim() || null,
+    })
+    .select('id')
+    .single();
 
-  if (error) throw error;
+  if (error || !requestData) throw error;
+
+  const { data: sender } = await supabase
+    .from('users')
+    .select('display_name')
+    .eq('id', user.id)
+    .single();
+
+  await supabase.from('notifications').insert({
+    user_id: params.receiverId,
+    type: 'battle_request',
+    message: `${sender?.display_name ?? '누군가'}님이 대결을 신청했어요`,
+    target_id: requestData.id,
+    target_type: null,
+  });
 };
 
 export const fetchBattleRequestDetail = async (
@@ -248,15 +266,33 @@ export const acceptBattleRequest = async (params: {
   if (acceptError) throw acceptError;
 
   // Step 4: create battle
-  const { error: battleError } = await supabase.from('battles').insert({
-    user1_id: req.sender_id,
-    user2_id: req.receiver_id,
-    board1_id: req.sender_board_id,
-    board2_id: params.receiverBoardId,
-    bet_text: req.bet_text,
-  });
+  const { data: battleData, error: battleError } = await supabase
+    .from('battles')
+    .insert({
+      user1_id: req.sender_id,
+      user2_id: req.receiver_id,
+      board1_id: req.sender_board_id,
+      board2_id: params.receiverBoardId,
+      bet_text: req.bet_text,
+    })
+    .select('id')
+    .single();
 
-  if (battleError) throw battleError;
+  if (battleError || !battleData) throw battleError;
+
+  const { data: receiver } = await supabase
+    .from('users')
+    .select('display_name')
+    .eq('id', req.receiver_id)
+    .single();
+
+  await supabase.from('notifications').insert({
+    user_id: req.sender_id,
+    type: 'battle_accepted',
+    message: `${receiver?.display_name ?? '상대방'}님이 대결을 수락했어요`,
+    target_id: battleData.id,
+    target_type: null,
+  });
 };
 
 export const cancelBattleRequest = async (requestId: string): Promise<void> => {

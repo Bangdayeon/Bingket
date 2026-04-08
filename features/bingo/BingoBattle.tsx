@@ -95,7 +95,7 @@ export function BingoBattle() {
 
   return (
     <>
-      <ScrollView className="flex-1 mt-[60px] bg-white dark:bg-gray-900 mb-20">
+      <ScrollView className="flex-1 mt-[70px] bg-white dark:bg-gray-900 mb-20">
         {loading ? (
           <View className="py-10 items-center">
             <ActivityIndicator size="large" />

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { IconButton } from '@/components/IconButton';
+import IconButton from '@/components/IconButton';
 import { Toggle } from '@/components/Toggle';
 import BackArrowIcon from '@/assets/icons/ic_arrow_back.svg';
 import { Text } from '@/components/Text';

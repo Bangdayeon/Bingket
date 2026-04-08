@@ -19,7 +19,8 @@ import { Text } from '@/components/Text';
 import ArrowBackIcon from '@/assets/icons/ic_arrow_back.svg';
 import CameraIcon from '@/assets/icons/ic_camera.svg';
 import CheckIcon from '@/assets/icons/ic_check.svg';
-import type { PostCategory } from '@/types/community';
+import CloseIcon from '@/assets/icons/ic_close.svg';
+import type { PostCategory, EditorBlock } from '@/types/community';
 import type { BingoData, BingoState } from '@/types/bingo';
 import { fetchMyBingosForPost, createPost, updatePost } from '@/features/community/lib/community';
 import { checkAndAwardBadges } from '@/lib/badge-checker';
@@ -61,6 +62,42 @@ function GridIcon({ color }: { color: string }) {
   );
 }
 
+function newId() {
+  return `block-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+}
+
+/** 수정 모드 진입 시 DB content(JSON)에서 초기 상태 복원 */
+function parseInitialState(
+  initContent?: string,
+  initImageUrls?: string,
+): { mediaBlocks: EditorBlock[]; textValue: string } {
+  const mediaBlocks: EditorBlock[] = [];
+  let textValue = '';
+
+  if (!initContent) return { mediaBlocks, textValue };
+
+  try {
+    const parsed = JSON.parse(initContent);
+    if (Array.isArray(parsed) && parsed.length > 0 && typeof parsed[0].type === 'string') {
+      const existingUrls: string[] = initImageUrls ? (JSON.parse(initImageUrls) as string[]) : [];
+      for (const b of parsed) {
+        if (b.type === 'text') textValue += (textValue ? '\n' : '') + b.value;
+        else if (b.type === 'image') {
+          const url = existingUrls[b.index];
+          if (url) mediaBlocks.push({ id: newId(), type: 'existing-image', url });
+        }
+        // bingo 블록은 수정 모드에서 재첨부 불필요 (bingo_board_id 기반이므로 로컬에 없음)
+      }
+    } else {
+      textValue = initContent;
+    }
+  } catch {
+    textValue = initContent;
+  }
+
+  return { mediaBlocks, textValue };
+}
+
 export default function CommunityWriteScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{
@@ -81,17 +118,11 @@ export default function CommunityWriteScreen() {
     (params.initCategory as PostCategory | undefined) ?? null,
   );
   const [title, setTitle] = useState(params.initTitle ?? '');
-  const [content, setContent] = useState(params.initContent ?? '');
-  const [existingImageUrls, setExistingImageUrls] = useState<string[]>(() => {
-    try {
-      return params.initImageUrls ? (JSON.parse(params.initImageUrls) as string[]) : [];
-    } catch {
-      return [];
-    }
-  });
-  const [images, setImages] = useState<ImagePicker.ImagePickerAsset[]>([]);
-  const [attachedBingo, setAttachedBingo] = useState<BingoData | null>(null);
-  const [isAnonymous, setIsAnonymous] = useState(true);
+  const [isAnonymous, setIsAnonymous] = useState(params.initIsAnonymous !== '0');
+
+  const initState = parseInitialState(params.initContent, params.initImageUrls);
+  const [mediaBlocks, setMediaBlocks] = useState<EditorBlock[]>(initState.mediaBlocks);
+  const [textValue, setTextValue] = useState(initState.textValue);
 
   const [showTypeDropdown, setShowTypeDropdown] = useState(false);
   const [showCameraMenu, setShowCameraMenu] = useState(false);
@@ -103,9 +134,16 @@ export default function CommunityWriteScreen() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const canSubmit =
-    type !== null && title.trim().length > 0 && content.trim().length > 0 && !isSubmitting;
+  const imageBlocks = mediaBlocks.filter((b) => b.type === 'image' || b.type === 'existing-image');
+  const bingoBlock = mediaBlocks.find((b) => b.type === 'bingo') as
+    | (EditorBlock & { type: 'bingo' })
+    | undefined;
+  const imageBlockCount = imageBlocks.length;
 
+  const canSubmit =
+    type !== null && title.trim().length > 0 && textValue.trim().length > 0 && !isSubmitting;
+
+  // ── 빙고 ─────────────────────────────────────────────────
   const handleOpenBingoModal = async () => {
     setShowBingoModal(true);
     if (bingosLoadedRef.current) return;
@@ -119,30 +157,42 @@ export default function CommunityWriteScreen() {
     }
   };
 
-  const totalImageCount = existingImageUrls.length + images.length;
+  const handleSelectBingo = (bingo: BingoData) => {
+    setMediaBlocks((prev) => {
+      // 이미 빙고가 있으면 교체
+      if (prev.some((b) => b.type === 'bingo')) {
+        return prev.map((b) => (b.type === 'bingo' ? { id: b.id, type: 'bingo', bingo } : b));
+      }
+      // 빙고는 맨 앞에 추가
+      return [{ id: newId(), type: 'bingo', bingo }, ...prev];
+    });
+    setShowBingoModal(false);
+  };
 
+  const removeMedia = (id: string) => setMediaBlocks((prev) => prev.filter((b) => b.id !== id));
+
+  // ── 카메라 / 갤러리 ───────────────────────────────────────
   const handleCameraCapture = async () => {
     setShowCameraMenu(false);
-    if (totalImageCount >= MAX_IMAGES) return;
+    if (imageBlockCount >= MAX_IMAGES) return;
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== 'granted') {
       Alert.alert('카메라 권한 필요', '설정에서 카메라 접근을 허용해주세요.');
       return;
     }
-    const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ['images'],
-      quality: 0.8,
-    });
+    const result = await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.8 });
     if (!result.canceled && result.assets[0]) {
-      setImages((prev) =>
-        [...prev, result.assets[0]].slice(0, MAX_IMAGES - existingImageUrls.length),
-      );
+      const asset = result.assets[0];
+      setMediaBlocks((prev) => [
+        ...prev,
+        { id: newId(), type: 'image', uri: asset.uri, mimeType: asset.mimeType ?? 'image/jpeg' },
+      ]);
     }
   };
 
   const handleGalleryPick = async () => {
     setShowCameraMenu(false);
-    if (totalImageCount >= MAX_IMAGES) return;
+    if (imageBlockCount >= MAX_IMAGES) return;
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
       Alert.alert('앨범 권한 필요', '설정에서 사진 접근을 허용해주세요.');
@@ -151,54 +201,31 @@ export default function CommunityWriteScreen() {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       allowsMultipleSelection: true,
-      selectionLimit: MAX_IMAGES - totalImageCount,
+      selectionLimit: MAX_IMAGES - imageBlockCount,
       quality: 0.8,
     });
     if (!result.canceled) {
-      setImages((prev) =>
-        [...prev, ...result.assets].slice(0, MAX_IMAGES - existingImageUrls.length),
-      );
+      const newBlocks: EditorBlock[] = result.assets.map((asset) => ({
+        id: newId(),
+        type: 'image' as const,
+        uri: asset.uri,
+        mimeType: asset.mimeType ?? 'image/jpeg',
+      }));
+      setMediaBlocks((prev) => [...prev, ...newBlocks]);
     }
   };
 
-  const removeExistingImage = (index: number) => {
-    setExistingImageUrls((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  const removeImage = (index: number) => {
-    setImages((prev) => prev.filter((_, i) => i !== index));
-  };
-
+  // ── 제출 ──────────────────────────────────────────────────
   const handleSubmit = async () => {
     if (!canSubmit) return;
     setIsSubmitting(true);
+    // blocks = [빙고?, ...이미지들, text]
+    const blocks: EditorBlock[] = [...mediaBlocks, { id: newId(), type: 'text', value: textValue }];
     try {
       if (isEditMode) {
-        await updatePost({
-          postId: params.postId!,
-          category: type!,
-          title,
-          content,
-          isAnonymous,
-          existingImageUrls,
-          newImageUris: images.map((img) => ({
-            uri: img.uri,
-            mimeType: img.mimeType ?? 'image/jpeg',
-          })),
-          bingo: attachedBingo,
-        });
+        await updatePost({ postId: params.postId!, category: type!, title, isAnonymous, blocks });
       } else {
-        await createPost({
-          category: type!,
-          title,
-          content,
-          isAnonymous,
-          imageUris: images.map((img) => ({
-            uri: img.uri,
-            mimeType: img.mimeType ?? 'image/jpeg',
-          })),
-          bingo: attachedBingo,
-        });
+        await createPost({ category: type!, title, isAnonymous, blocks });
         checkAndAwardBadges('post');
       }
       router.back();
@@ -234,12 +261,9 @@ export default function CommunityWriteScreen() {
         <View style={{ width: 56 }} className="pr-4 items-end">
           <Pressable onPress={handleSubmit} disabled={!canSubmit} hitSlop={8}>
             {isSubmitting ? (
-              <ActivityIndicator size="small" color="#28C8DE" /* sky-500 */ />
+              <ActivityIndicator size="small" color="#28C8DE" />
             ) : (
-              <Text
-                className="text-label-sm"
-                style={{ color: canSubmit ? '#28C8DE' /* sky-500 */ : '#B4BBBB' /* gray-400 */ }}
-              >
+              <Text className="text-label-sm" style={{ color: canSubmit ? '#28C8DE' : '#B4BBBB' }}>
                 등록
               </Text>
             )}
@@ -257,14 +281,14 @@ export default function CommunityWriteScreen() {
             value={title}
             onChangeText={setTitle}
             placeholder="제목을 입력해주세요."
-            placeholderTextColor="#929898" /* gray-500 */
+            placeholderTextColor="#929898"
             style={{
               flex: 1,
               paddingHorizontal: 20,
               fontSize: 18,
               fontWeight: '500',
               lineHeight: 24,
-              color: isDark ? '#F6F7F7' : '#181C1C' /* gray-100 : gray-900 */,
+              color: isDark ? '#F6F7F7' : '#181C1C',
             }}
           />
         </View>
@@ -274,14 +298,13 @@ export default function CommunityWriteScreen() {
           className="flex-row items-center px-5 gap-4 border-b border-gray-300 dark:border-gray-700"
           style={{ height: TOOLBAR_H }}
         >
-          {/* 게시판 선택 드롭다운 */}
           <Pressable
             onPress={() => setShowTypeDropdown((v) => !v)}
             className="flex-row items-center gap-1"
             hitSlop={8}
           >
-            <Text style={{ color: '#EF4444' /* red-500 */, fontSize: 18, lineHeight: 20 }}>*</Text>
-            <Text className="text-body-sm" style={{ color: '#181C1C' /* gray-900 */ }}>
+            <Text style={{ color: '#EF4444', fontSize: 18, lineHeight: 20 }}>*</Text>
+            <Text className="text-body-sm" style={{ color: '#181C1C' }}>
               {type ? TYPE_OPTIONS.find((o) => o.value === type)?.label : '게시판 선택'}
             </Text>
             <Text style={{ color: '#929898', fontSize: 9, lineHeight: 14 }}>▼</Text>
@@ -289,17 +312,19 @@ export default function CommunityWriteScreen() {
 
           <View style={{ flex: 1 }} />
 
-          {/* 카메라 (최대 이미지 수 미달 시만 활성) */}
+          {/* 카메라 */}
           <Pressable
-            onPress={() => totalImageCount < MAX_IMAGES && setShowCameraMenu(true)}
+            onPress={() => {
+              if (imageBlockCount < MAX_IMAGES) setShowCameraMenu(true);
+            }}
             hitSlop={8}
           >
             <CameraIcon
               width={24}
               height={24}
-              color={totalImageCount >= MAX_IMAGES ? '#B4BBBB' : iconColor}
+              color={imageBlockCount >= MAX_IMAGES ? '#B4BBBB' : iconColor}
             />
-            {totalImageCount > 0 && (
+            {imageBlockCount > 0 && (
               <View
                 style={{
                   position: 'absolute',
@@ -315,163 +340,107 @@ export default function CommunityWriteScreen() {
                 }}
               >
                 <Text style={{ color: '#fff', fontSize: 9, lineHeight: 12 }}>
-                  {totalImageCount}
+                  {imageBlockCount}
                 </Text>
               </View>
             )}
           </Pressable>
 
-          {/* 빙고 첨부 */}
+          {/* 빙고 */}
           <Pressable onPress={handleOpenBingoModal} hitSlop={8}>
-            <GridIcon color={attachedBingo ? '#28C8DE' /* sky-500 */ : iconColor} />
+            <GridIcon color={bingoBlock ? '#28C8DE' : iconColor} />
           </Pressable>
-        </View>
 
-        {/* 익명 토글 */}
-        <View
-          className="flex-row justify-end items-center px-5 border-b border-gray-300 dark:border-gray-700"
-          style={{ height: 40 }}
-        >
+          {/* 익명 */}
           <Pressable
             onPress={() => setIsAnonymous((v) => !v)}
             className="flex-row items-center gap-1"
             hitSlop={8}
           >
-            <Text
-              className="text-body-sm"
-              style={{ color: isAnonymous ? '#28C8DE' /* sky-500 */ : '#B4BBBB' /* gray-400 */ }}
-            >
+            <Text className="text-body-sm" style={{ color: isAnonymous ? '#28C8DE' : '#B4BBBB' }}>
               익명
             </Text>
-            <CheckIcon
-              width={18}
-              height={18}
-              color={isAnonymous ? '#28C8DE' /* sky-500 */ : '#B4BBBB' /* gray-400 */}
-            />
+            <CheckIcon width={18} height={18} color={isAnonymous ? '#28C8DE' : '#B4BBBB'} />
           </Pressable>
         </View>
 
         {/* 본문 */}
         <ScrollView style={{ flex: 1 }} keyboardShouldPersistTaps="handled">
-          {/* 이미지 썸네일 */}
-          {totalImageCount > 0 && (
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              style={{ paddingHorizontal: 20, paddingTop: 12, paddingBottom: 4 }}
-              contentContainerStyle={{ gap: 8 }}
-            >
-              {existingImageUrls.map((url, i) => (
-                <View key={`existing-${i}`} style={{ position: 'relative' }}>
-                  <Image source={{ uri: url }} style={{ width: 80, height: 80, borderRadius: 8 }} />
-                  <Pressable
-                    onPress={() => removeExistingImage(i)}
-                    style={{
-                      position: 'absolute',
-                      top: -6,
-                      right: -6,
-                      width: 20,
-                      height: 20,
-                      borderRadius: 10,
-                      backgroundColor: '#4C5252' /* gray-700 */,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <Text style={{ color: '#fff', fontSize: 12, lineHeight: 14 }}>×</Text>
-                  </Pressable>
-                </View>
-              ))}
-              {images.map((img, i) => (
-                <View key={`new-${i}`} style={{ position: 'relative' }}>
-                  <Image
-                    source={{ uri: img.uri }}
-                    style={{ width: 80, height: 80, borderRadius: 8 }}
-                  />
-                  <Pressable
-                    onPress={() => removeImage(i)}
-                    style={{
-                      position: 'absolute',
-                      top: -6,
-                      right: -6,
-                      width: 20,
-                      height: 20,
-                      borderRadius: 10,
-                      backgroundColor: '#4C5252' /* gray-700 */,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <Text style={{ color: '#fff', fontSize: 12, lineHeight: 14 }}>×</Text>
-                  </Pressable>
-                </View>
-              ))}
-              {totalImageCount < MAX_IMAGES && (
-                <Pressable
-                  onPress={() => setShowCameraMenu(true)}
-                  style={{
-                    width: 80,
-                    height: 80,
-                    borderRadius: 8,
-                    borderWidth: 1,
-                    borderColor: '#D2D6D6' /* gray-300 */,
-                    borderStyle: 'dashed',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <Text style={{ color: '#929898', fontSize: 22, lineHeight: 24 }}>+</Text>
-                  <Text style={{ color: '#929898', fontSize: 10, lineHeight: 14 }}>
-                    {totalImageCount}/{MAX_IMAGES}
-                  </Text>
-                </Pressable>
-              )}
-            </ScrollView>
-          )}
-
-          {/* 첨부 빙고 미리보기 */}
-          {attachedBingo && (
-            <View className="px-5 pt-4">
+          {/* 빙고 (맨 위) */}
+          {bingoBlock && (
+            <View style={{ marginHorizontal: 20, marginTop: 16, marginBottom: 8 }}>
               <View className="flex-row items-center justify-between mb-2">
                 <View className="flex-row items-center gap-2">
                   <Text
                     className="text-caption-sm"
-                    style={{ color: STATE_COLORS[attachedBingo.state] }}
+                    style={{ color: STATE_COLORS[bingoBlock.bingo.state] }}
                   >
-                    {STATE_LABELS[attachedBingo.state]}
+                    {STATE_LABELS[bingoBlock.bingo.state]}
                   </Text>
-                  <Text className="text-label-sm" style={{ color: '#929898' /* gray-500 */ }}>
-                    {attachedBingo.title}
+                  <Text className="text-label-sm" style={{ color: '#929898' }}>
+                    {bingoBlock.bingo.title}
                   </Text>
                 </View>
-                <Pressable onPress={() => setAttachedBingo(null)} hitSlop={8}>
+                <Pressable onPress={() => removeMedia(bingoBlock.id)} hitSlop={8}>
                   <Text style={{ color: '#929898', fontSize: 18, lineHeight: 20 }}>×</Text>
                 </Pressable>
               </View>
-              <BingoPreview bingo={attachedBingo} />
+              <BingoPreview bingo={bingoBlock.bingo} size="md" />
             </View>
           )}
 
+          {/* 이미지들 */}
+          {imageBlocks.map((block) => {
+            const uri =
+              block.type === 'image'
+                ? block.uri
+                : (block as EditorBlock & { type: 'existing-image' }).url;
+            return (
+              <View key={block.id} style={{ marginHorizontal: 20, marginVertical: 8 }}>
+                <Image
+                  source={{ uri }}
+                  style={{ width: '100%', height: 220, borderRadius: 12 }}
+                  resizeMode="cover"
+                />
+                <Pressable
+                  onPress={() => removeMedia(block.id)}
+                  style={{
+                    position: 'absolute',
+                    top: 8,
+                    right: 8,
+                    backgroundColor: 'rgba(0,0,0,0.45)',
+                    borderRadius: 16,
+                    padding: 6,
+                  }}
+                >
+                  <CloseIcon width={16} height={16} color="#fff" />
+                </Pressable>
+              </View>
+            );
+          })}
+
+          {/* 본문 텍스트 (항상 하단) */}
           <RNTextInput
-            value={content}
-            onChangeText={setContent}
+            value={textValue}
+            onChangeText={setTextValue}
             placeholder="내용을 입력해주세요."
-            placeholderTextColor="#929898" /* gray-500 */
+            placeholderTextColor="#929898"
             multiline
             textAlignVertical="top"
             style={{
-              minHeight: 200,
+              minHeight: 160,
               paddingHorizontal: 20,
               paddingTop: 16,
               fontSize: 16,
               lineHeight: 22,
-              color: isDark ? '#F6F7F7' : '#181C1C' /* gray-100 : gray-900 */,
+              color: isDark ? '#F6F7F7' : '#181C1C',
             }}
           />
+          <View style={{ height: 80 }} />
         </ScrollView>
       </KeyboardAvoidingView>
 
-      {/* 게시판 선택 드롭다운 메뉴 */}
+      {/* 게시판 선택 드롭다운 */}
       {showTypeDropdown && (
         <>
           <Pressable
@@ -504,12 +473,7 @@ export default function CommunityWriteScreen() {
                 <Text
                   className="text-body-sm"
                   style={{
-                    color:
-                      type === option.value
-                        ? '#28C8DE' /* sky-500 */
-                        : isDark
-                          ? '#F6F7F7'
-                          : '#181C1C',
+                    color: type === option.value ? '#28C8DE' : isDark ? '#F6F7F7' : '#181C1C',
                     fontWeight: type === option.value ? '600' : '400',
                   }}
                 >
@@ -521,7 +485,7 @@ export default function CommunityWriteScreen() {
         </>
       )}
 
-      {/* 카메라 메뉴 바텀시트 */}
+      {/* 카메라 메뉴 */}
       <Modal
         visible={showCameraMenu}
         transparent
@@ -578,45 +542,43 @@ export default function CommunityWriteScreen() {
 
           {loadingBingos ? (
             <View className="flex-1 items-center justify-center py-8">
-              <ActivityIndicator color="#28C8DE" /* sky-500 */ />
+              <ActivityIndicator color="#28C8DE" />
             </View>
           ) : myBingos.length === 0 ? (
             <View className="flex-1 items-center justify-center py-8">
-              <Text className="text-body-sm" style={{ color: '#929898' /* gray-500 */ }}>
+              <Text className="text-body-sm" style={{ color: '#929898' }}>
                 빙고가 없습니다.
               </Text>
             </View>
           ) : (
             <ScrollView>
-              {myBingos.map((bingo) => (
-                <Pressable
-                  key={bingo.id}
-                  onPress={() => {
-                    setAttachedBingo(bingo);
-                    setShowBingoModal(false);
-                  }}
-                  className={`px-5 py-4 border-b border-gray-100 dark:border-gray-800 flex-row items-center justify-between${attachedBingo?.id === bingo.id ? ' bg-green-50 dark:bg-gray-800' : ''}`}
-                >
-                  <View>
-                    <Text className="text-label-sm">{bingo.title}</Text>
-                    <View className="flex-row items-center gap-2 mt-1">
-                      <Text
-                        className="text-caption-sm"
-                        style={{ color: STATE_COLORS[bingo.state] }}
-                      >
-                        {STATE_LABELS[bingo.state]}
-                      </Text>
-                      <Text className="text-body-sm" style={{ color: '#929898' /* gray-500 */ }}>
-                        {bingo.grid}
-                        {bingo.state !== 'draft' ? ` · ${bingo.achievedCount}칸 달성` : ''}
-                      </Text>
+              {myBingos.map((bingo) => {
+                const selected = bingoBlock?.bingo.id === bingo.id;
+                return (
+                  <Pressable
+                    key={bingo.id}
+                    onPress={() => handleSelectBingo(bingo)}
+                    className={`px-5 py-4 border-b border-gray-100 dark:border-gray-800 flex-row items-center justify-between${selected ? ' bg-green-50 dark:bg-gray-800' : ''}`}
+                  >
+                    <View>
+                      <Text className="text-label-sm">{bingo.title}</Text>
+                      <View className="flex-row items-center gap-2 mt-1">
+                        <Text
+                          className="text-caption-sm"
+                          style={{ color: STATE_COLORS[bingo.state] }}
+                        >
+                          {STATE_LABELS[bingo.state]}
+                        </Text>
+                        <Text className="text-body-sm" style={{ color: '#929898' }}>
+                          {bingo.grid}
+                          {bingo.state !== 'draft' ? ` · ${bingo.achievedCount}칸 달성` : ''}
+                        </Text>
+                      </View>
                     </View>
-                  </View>
-                  {attachedBingo?.id === bingo.id && (
-                    <Text style={{ color: '#48BE30' /* green-600 */, fontSize: 18 }}>✓</Text>
-                  )}
-                </Pressable>
-              ))}
+                    {selected && <Text style={{ color: '#48BE30', fontSize: 18 }}>✓</Text>}
+                  </Pressable>
+                );
+              })}
             </ScrollView>
           )}
         </View>

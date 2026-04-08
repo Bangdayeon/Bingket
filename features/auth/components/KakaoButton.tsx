@@ -1,17 +1,16 @@
 import * as Sentry from '@sentry/react-native';
 import * as WebBrowser from 'expo-web-browser';
-import * as Linking from 'expo-linking';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { ActivityIndicator, Image, TouchableOpacity } from 'react-native';
 import { Text } from '@/components/Text';
 import { supabase } from '@/lib/supabase';
 import { router } from 'expo-router';
-import { getStringParam } from '../util/getStringParam';
 
 WebBrowser.maybeCompleteAuthSession();
 
 const KAKAO_REST_API_KEY = process.env.EXPO_PUBLIC_KAKAO_REST_API_KEY ?? '';
 const KAKAO_REDIRECT_URI = 'https://ypwrjasfpjhtghiarxvg.supabase.co/functions/v1/kakao-callback';
+const APP_REDIRECT_URI = 'bingket://auth/kakao-callback';
 
 async function signInWithKakao(): Promise<void> {
   const kakaoAuthUrl =
@@ -20,72 +19,40 @@ async function signInWithKakao(): Promise<void> {
     `&redirect_uri=${encodeURIComponent(KAKAO_REDIRECT_URI)}` +
     `&response_type=code`;
 
-  await WebBrowser.openBrowserAsync(kakaoAuthUrl);
-}
+  const result = await WebBrowser.openAuthSessionAsync(kakaoAuthUrl, APP_REDIRECT_URI);
 
-async function handleDeepLink(url: string) {
-  try {
-    const parsed = Linking.parse(url);
+  if (result.type !== 'success' || !result.url) return;
 
-    // 🔥 타입 안전 처리
-    const access_token =
-      getStringParam(parsed.queryParams?.access_token) ?? extractFromFragment(url, 'access_token');
+  // 토큰은 fragment(#)에 포함됨: bingket://auth/kakao-callback#access_token=...
+  const fragment = result.url.split('#')[1] ?? '';
+  const params = Object.fromEntries(fragment.split('&').map((p) => p.split('=')));
+  const accessToken = params['access_token'];
+  const refreshToken = params['refresh_token'];
 
-    const refresh_token =
-      getStringParam(parsed.queryParams?.refresh_token) ??
-      extractFromFragment(url, 'refresh_token');
-
-    if (!access_token || !refresh_token) return;
-
-    // 1. 세션 설정
-    const { error } = await supabase.auth.setSession({
-      access_token,
-      refresh_token,
-    });
-
-    if (error) throw error;
-
-    // 2. 유저 조회
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) return;
-
-    router.replace('/(tabs)');
-  } catch (e) {
-    Sentry.captureException(e);
+  if (!accessToken || !refreshToken) {
+    Sentry.captureException(new Error('[Kakao] 토큰 파싱 실패'));
+    return;
   }
-}
 
-// fragment 파싱 (#access_token=...)
-function extractFromFragment(url: string, key: string) {
-  const fragment = url.split('#')[1];
-  if (!fragment) return undefined;
+  const { error } = await supabase.auth.setSession({
+    access_token: accessToken,
+    refresh_token: refreshToken,
+  });
 
-  const params = new URLSearchParams(fragment);
-  return params.get(key) ?? undefined;
+  if (error) throw error;
+
+  router.replace('/(tabs)');
 }
 
 export function KakaoButton() {
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const sub = Linking.addEventListener('url', ({ url }) => {
-      handleDeepLink(url);
-    });
-
-    Linking.getInitialURL().then((url) => {
-      if (url) handleDeepLink(url);
-    });
-
-    return () => sub.remove();
-  }, []);
-
   const handlePress = async () => {
     setLoading(true);
     try {
       await signInWithKakao();
+    } catch (e) {
+      Sentry.captureException(e);
     } finally {
       setLoading(false);
     }

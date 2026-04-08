@@ -20,7 +20,7 @@ interface AnonymousProfileProps {
   size: 'md' | 'sm';
 }
 
-export function AnonymousProfile({ seed, size }: AnonymousProfileProps) {
+export default function AnonymousProfile({ seed, size }: AnonymousProfileProps) {
   const color = seed === null ? '#9CA3AF' /* gray-400 */ : getColor(seed);
 
   return size === 'md' ? <ProfileMd color={color} /> : <ProfileSm color={color} />;

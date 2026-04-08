@@ -106,7 +106,7 @@ export function BingoCard({
           resizeMode="cover"
         />
 
-        <View className="pt-5 px-5 items-center justify-between flex-row absolute w-full">
+        <View className="pt-7 px-5 items-center justify-between flex-row absolute w-full">
           <Text className="text-title-md" style={{ color: fgColor }}>
             {bingo.title}
           </Text>
@@ -155,7 +155,7 @@ export function BingoCard({
         })}
       </View>
 
-      <View className="mt-4">
+      <View className="mt-10">
         <View className="flex-row">
           <View className="flex-1 items-center">
             <DonutStat label="달성" current={bingo.achievedCount} total={cols * rows} />
@@ -173,7 +173,7 @@ export function BingoCard({
           </View>
         </View>
 
-        <View className="flex-row items-center justify-between px-5 mt-4 gap-3">
+        <View className="flex-row items-center justify-between px-5 mt-10 gap-3">
           {formattedEndDate ? (
             <Text className="text-caption-sm text-gray-600">{formattedEndDate}</Text>
           ) : null}
@@ -182,11 +182,11 @@ export function BingoCard({
             <TouchableOpacity onPress={onBattlePress} hitSlop={8}>
               {hasBattle ? (
                 <View className="flex-row items-center gap-2">
-                  <BattleIcon width={22} height={22} color="4C5252" />
+                  <BattleIcon width={22} height={22} color="#4C5252" />
                   <ProfileAvatar size={22} avatarUrl={friendAvatarUrl} />
                 </View>
               ) : (
-                <AddBattleIcon width={22} height={22} color="4C5252" />
+                <AddBattleIcon width={22} height={22} color="#4C5252" />
               )}
             </TouchableOpacity>
           )}

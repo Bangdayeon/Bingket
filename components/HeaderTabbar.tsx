@@ -45,17 +45,21 @@ export function HeaderTabBar({
     onTabChange?.(index);
   };
 
+  const TAB_BUTTON_HEIGHT = 60; // 버튼 영역 높이 60px
+  const TOTAL_HEIGHT = TAB_BUTTON_HEIGHT + insets.top; // safe area 포함 전체 높이
+
   return (
     <View
       className="bg-white dark:bg-gray-900 border-b border-gray-300 dark:border-gray-700 w-full absolute top-0"
-      style={{ paddingTop: insets.top, zIndex: 50 }}
+      style={{ height: TOTAL_HEIGHT, paddingTop: insets.top, zIndex: 50 }}
     >
-      <View className="flex-row">
+      <View className="flex-row h-[60px] items-center">
         {menus.map((menu, index) => (
           <Pressable
             key={menu}
             onPress={() => handleSelect(index)}
-            className="px-4 py-3"
+            className="px-4"
+            style={{ height: TAB_BUTTON_HEIGHT, justifyContent: 'center' }}
             onLayout={(e) => {
               const { x, width } = e.nativeEvent.layout;
               setTabWidths((prev) => {
@@ -74,7 +78,7 @@ export function HeaderTabBar({
               className="text-title-lg"
               style={{
                 color: selectedIndex === index ? (isDark ? '#F6F7F7' : '#181C1C') : '#929898',
-              }} // active: gray-100/gray-900, inactive: gray-500
+              }}
             >
               {menu}
             </Text>

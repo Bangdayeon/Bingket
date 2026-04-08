@@ -14,15 +14,19 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.day.bingket"
+      "bundleIdentifier": "com.day.bingket.app",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
-      "package": "com.day.bingket",
+      "package": "com.day.bingket.app",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": ["android.permission.RECORD_AUDIO"]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -54,7 +58,13 @@
           "iosDisplayInForeground": true
         }
       ],
-      "@sentry/react-native"
+      [
+        "@sentry/react-native",
+        {
+          "organization": "bangs-projects",
+          "project": "bingket"
+        }
+      ]
     ],
     "extra": {
       "router": {},

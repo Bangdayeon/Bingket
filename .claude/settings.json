@@ -1,0 +1,38 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e ':*)",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(d.get\\('version'\\)\\); print\\(json.dumps\\(d.get\\('peerDependencies', {}\\), indent=2\\)\\)\")",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(d.get\\('version'\\)\\); print\\(json.dumps\\(d.get\\('peerDependencies', {}\\), indent=2\\)\\)\" npm info react-native-reanimated@4.2.1 peerDependencies)",
+      "Bash(grep -r \"sentry\" /Users/bangdayeon/Desktop/Projects/Bingket/ios/Podfile*)",
+      "Bash(eas secret:list)",
+      "Bash(node -e \"const p = require\\('/Users/bangdayeon/Desktop/Projects/Bingket/node_modules/react-native-css-interop/dist/babel-plugin.js'\\); console.log\\(typeof p, typeof p.default\\)\")",
+      "Bash(eas env:create --scope project --environment production --name EXPO_PUBLIC_SUPABASE_URL --value \"https://ypwrjasfpjhtghiarxvg.supabase.co\" --type string --visibility plaintext)",
+      "Bash(eas env:create --scope project --environment production --name EXPO_PUBLIC_SENTRY_DSN --value \"https://4c71237d8432fc3ccad166e3b0fa39a8@o4510933659287552.ingest.us.sentry.io/4511114376445952\" --type string --visibility plaintext)",
+      "Bash(eas env:list --environment production)",
+      "Bash(node -e \"const config = require\\('./metro.config.js'\\); console.log\\('transformer:', config.transformer?.babelTransformerPath\\); console.log\\('assetExts has svg:', config.resolver?.assetExts?.includes\\('svg'\\)\\); console.log\\('sourceExts has svg:', config.resolver?.sourceExts?.includes\\('svg'\\)\\);\")",
+      "Bash(ls node_modules/nativewind/metro*)",
+      "Read(//usr/local/bin/**)",
+      "Bash(/opt/homebrew/bin/node -e \"process.chdir\\('/Users/bangdayeon/Desktop/Projects/Bingket'\\); const config = require\\('./metro.config.js'\\); console.log\\('transformerPath:', config.transformerPath\\); console.log\\('babelTransformerPath:', config.transformer?.babelTransformerPath\\); console.log\\('assetExts has svg:', config.resolver?.assetExts?.includes\\('svg'\\)\\); console.log\\('sourceExts has svg:', config.resolver?.sourceExts?.includes\\('svg'\\)\\);\")",
+      "Bash(/opt/homebrew/bin/node -e \"process.chdir\\('/Users/bangdayeon/Desktop/Projects/Bingket'\\); const config = require\\('./metro.config.js'\\); console.log\\(JSON.stringify\\(Object.keys\\(config\\), null, 2\\)\\);\")",
+      "Bash(/opt/homebrew/bin/node -e \"process.chdir\\('/Users/bangdayeon/Desktop/Projects/Bingket'\\); const config = require\\('./metro.config.js'\\); console.log\\(typeof config, config\\);\")",
+      "Bash(/opt/homebrew/bin/node -e \"process.chdir\\('/Users/bangdayeon/Desktop/Projects/Bingket'\\); const pkg = require\\('./package.json'\\); console.log\\('type:', pkg.type\\);\")",
+      "Bash(/opt/homebrew/bin/node --input-type=commonjs -e \"process.chdir\\('/Users/bangdayeon/Desktop/Projects/Bingket'\\); const config = require\\('./metro.config.js'\\); console.log\\('babelTransformerPath:', config.transformer?.babelTransformerPath\\); console.log\\('assetExts has svg:', config.resolver?.assetExts?.includes\\('svg'\\)\\); console.log\\('sourceExts has svg:', config.resolver?.sourceExts?.includes\\('svg'\\)\\);\")",
+      "Bash(/opt/homebrew/bin/node -e \"process.chdir\\('/Users/bangdayeon/Desktop/Projects/Bingket'\\); const { getDefaultConfig } = require\\('@expo/metro-config'\\); const config = getDefaultConfig\\('/Users/bangdayeon/Desktop/Projects/Bingket'\\); console.log\\('keys:', Object.keys\\(config\\).join\\(', '\\)\\); console.log\\('transformerPath:', config.transformerPath\\); console.log\\('babelTransformerPath:', config.transformer?.babelTransformerPath\\);\")",
+      "Bash(ls node_modules/react-native-css-interop/dist/babel-plugin*)",
+      "Bash(/opt/homebrew/bin/node --input-type=module -e ':*)",
+      "Bash(/opt/homebrew/bin/node -e ':*)",
+      "Bash(ls -la /Users/bangdayeon/Desktop/Projects/Bingket/metro.config*)",
+      "Bash(node_modules/.bin/tailwindcss --version)",
+      "Bash(/opt/homebrew/bin/node node_modules/.bin/tailwindcss --version)",
+      "Bash(/opt/homebrew/bin/node -e \"const plugin = require\\('node_modules/react-native-css-interop/dist/babel-plugin.js'\\); console.log\\('exports keys:', Object.keys\\(plugin\\)\\); console.log\\('default type:', typeof plugin.default\\);\")",
+      "Bash(/opt/homebrew/bin/node -e \"const p = require\\('/Users/bangdayeon/Desktop/Projects/Bingket/node_modules/react-native-css-interop/dist/babel-plugin.js'\\); console.log\\(typeof p.default, typeof p\\);\")",
+      "Bash(ls /Users/bangdayeon/Desktop/Projects/Bingket/metro.config*)",
+      "Bash(grep -l \"notifications\" /Users/bangdayeon/Desktop/Projects/Bingket/supabase/migrations/*.sql)",
+      "Bash(find /Users/bangdayeon/Desktop/Projects/Bingket/supabase/migrations -name \"*.sql\" -exec grep -l \"friend_request\\\\|battle\" {} \\\\;)",
+      "Bash(grep -A 20 \"battle_request\\\\|friend_request\" /Users/bangdayeon/Desktop/Projects/Bingket/supabase/migrations/*.sql)",
+      "Bash(ls -la /Users/bangdayeon/Desktop/Projects/Bingket/supabase/functions/*/index.ts)",
+      "Bash(npx tsc:*)"
+    ]
+  }
+}

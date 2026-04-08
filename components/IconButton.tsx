@@ -30,7 +30,7 @@ const variantStyles: Record<Variant, { default: string; active: string }> = {
   },
 };
 
-export function IconButton({
+export default function IconButton({
   icon,
   onClick,
   variant = 'primary',
@@ -49,7 +49,7 @@ export function IconButton({
       })
     : icon;
 
-  const scale = useSharedValue(active ? 1 : 0);
+  const scale = useSharedValue(0);
 
   useEffect(() => {
     scale.value = withSpring(active ? 1 : 0, {

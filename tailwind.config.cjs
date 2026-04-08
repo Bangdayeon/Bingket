@@ -110,6 +110,7 @@ module.exports = {
         'caption-sm': ['10px', { lineHeight: '18px', fontWeight: '400' }],
         // label
         'label-sm': ['14px', { lineHeight: '18px', fontWeight: '600' }],
+        'label-md': ['16px', { lineHeight: '20px', fontWeight: '600' }],
       },
     },
   },

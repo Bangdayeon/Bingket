@@ -37,14 +37,14 @@ export function BattleListItem({
 
   const renderCard = (player: Player, boardTitle: string, bg: string) => (
     <View className={`gap-2 flex items-start p-3 h-24 ${bg} rounded-lg`}>
-      <View className="flex-row items-center gap-1">
+      <View className="flex-row items-center gap-2">
         <ProfileAvatar size={16} avatarUrl={player.avatarUrl} />
-        <Text className="text-caption-sm" numberOfLines={1}>
+        <Text className="text-body-md" numberOfLines={1}>
           {player.name}
         </Text>
         {isFinished && player.isWinner && <Text>👑</Text>}
       </View>
-      <Text className="text-body-md" numberOfLines={2}>
+      <Text className="text-body-sm" numberOfLines={2}>
         {boardTitle}
       </Text>
     </View>

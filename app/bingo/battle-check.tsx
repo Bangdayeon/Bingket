@@ -3,8 +3,8 @@ import { useCallback, useState } from 'react';
 import { ActivityIndicator, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/Text';
-import { Button } from '@/components/Button';
-import { IconButton } from '@/components/IconButton';
+import Button from '@/components/Button';
+import IconButton from '@/components/IconButton';
 import { Modal } from '@/components/Modal';
 import BackArrowIcon from '@/assets/icons/ic_arrow_back.svg';
 import {

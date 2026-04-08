@@ -1,4 +1,4 @@
-import { IconButton } from '@/components/IconButton';
+import IconButton from '@/components/IconButton';
 import BackArrowIcon from '@/assets/icons/ic_arrow_back.svg';
 import SMSIcon from '@/assets/icons/ic_sms.svg';
 import { useFocusEffect, useRouter } from 'expo-router';

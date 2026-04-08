@@ -17,19 +17,26 @@ export const TextInput = forwardRef<RNTextInput, Props>(function TextInput(
   { variant = 'default', maxHeight, className = '', style, ...rest },
   ref,
 ) {
-  const hasMaxHeight = maxHeight !== undefined;
+  const isMultiline = rest.multiline || maxHeight !== undefined;
+  const borderRadiusClass = isMultiline ? 'rounded-2xl' : 'rounded-full';
+
   return (
     <View
-      className={`rounded-2xl px-4 ${hasMaxHeight ? 'justify-start py-2' : rest.multiline ? 'justify-start py-3' : 'justify-center h-9'} ${variantStyles[variant]} ${className}`}
-      style={hasMaxHeight ? { maxHeight } : undefined}
+      className={`
+        ${borderRadiusClass} px-4
+        ${isMultiline ? 'py-3 justify-start' : 'h-11 justify-center'} 
+        ${variantStyles[variant]} 
+        ${className}
+      `}
+      style={maxHeight ? { maxHeight } : undefined}
     >
       <RNTextInput
         ref={ref}
-        placeholderTextColor="#929898" /* gray-500 */
+        placeholderTextColor="#929898"
         className="text-body-sm text-gray-900 dark:text-gray-100"
         style={style}
-        multiline={hasMaxHeight || rest.multiline}
-        scrollEnabled={hasMaxHeight}
+        multiline={isMultiline}
+        scrollEnabled={maxHeight !== undefined}
         {...rest}
       />
     </View>

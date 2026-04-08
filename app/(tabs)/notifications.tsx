@@ -2,7 +2,7 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, ScrollView, View } from 'react-native';
 import { Text } from '@/components/Text';
-import { Button } from '@/components/Button';
+import Button from '@/components/Button';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   fetchNotifications,

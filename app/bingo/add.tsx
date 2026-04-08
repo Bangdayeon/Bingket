@@ -1,18 +1,17 @@
 import * as Sentry from '@sentry/react-native';
-import { Button } from '@/components/Button';
+import Button from '@/components/Button';
 import { Modal } from '@/components/Modal';
-import { TextInput } from '@/components/TextInput';
-import { BingoAddHeader } from '@/features/bingo/bingo-add/Header';
-import { BingoGoal } from '@/features/bingo/bingo-add/BingoGoal';
-import { WriteBingo } from '@/features/bingo/bingo-add/WriteBingo';
-import { DatePicker } from '@/features/bingo/bingo-add/DatePicker';
+import { BingoEditHeader } from '@/features/bingo/bingo-edit/Header';
+import { BingoTitle } from '@/features/bingo/bingo-edit/BingoTitle';
+import { BingoGoal } from '@/features/bingo/bingo-edit/BingoGoal';
+import { WriteBingo } from '@/features/bingo/bingo-edit/WriteBingo';
+import { DatePicker } from '@/features/bingo/bingo-edit/DatePicker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createBingo } from '@/features/bingo/lib/bingo';
 import { setSelectedBoardId, setSelectedBoardTitle } from '@/features/battle/lib/battle-selection';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { ScrollView, View } from 'react-native';
-import { Text } from '@/components/Text';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function BingoAddScreen() {
@@ -172,7 +171,7 @@ export default function BingoAddScreen() {
 
   return (
     <View className="flex-1 bg-white dark:bg-gray-900" style={{ paddingTop: insets.top }}>
-      <BingoAddHeader onBack={handleBack} />
+      <BingoEditHeader title="빙고 추가하기" onBack={handleBack} />
 
       <ScrollView
         className="flex-1"
@@ -180,17 +179,13 @@ export default function BingoAddScreen() {
         keyboardShouldPersistTaps="handled"
         automaticallyAdjustKeyboardInsets={false}
       >
-        <View className="px-5 pt-5 pb-8">
-          <Text className="text-title-md mb-2">제목</Text>
-          <TextInput
-            value={title}
-            onChangeText={(v) => {
-              markDirty();
-              setTitle(v);
-            }}
-            placeholder="제목을 입력해주세요."
-          />
-        </View>
+        <BingoTitle
+          value={title}
+          onChange={(v) => {
+            markDirty();
+            setTitle(v);
+          }}
+        />
 
         <BingoGoal
           selectedDuration={selectedDuration}
@@ -209,6 +204,7 @@ export default function BingoAddScreen() {
         />
 
         <WriteBingo
+          title={title}
           selectedGrid={selectedGrid}
           onGridSelect={(v) => {
             markDirty();

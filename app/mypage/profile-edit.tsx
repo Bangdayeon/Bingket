@@ -1,4 +1,4 @@
-import { IconButton } from '@/components/IconButton';
+import IconButton from '@/components/IconButton';
 import { Modal } from '@/components/Modal';
 import { TextInput } from '@/components/TextInput';
 import { Toast } from '@/components/Toast';

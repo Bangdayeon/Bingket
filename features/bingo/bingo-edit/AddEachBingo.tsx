@@ -1,15 +1,20 @@
-// AddEachBingo.tsx (수정)
-
 import { Modal } from '@/components/Modal';
 import { useEffect, useState } from 'react';
 import { Dimensions, Image, TouchableOpacity, View } from 'react-native';
 import { Text } from '@/components/Text';
 import { TextInput } from '@/components/TextInput';
-import { FIGMA_W, FIGMA_H, GRID_CONFIGS, getThemeImageUrl } from '@/features/bingo/lib/theme';
+import {
+  FIGMA_W,
+  FIGMA_H,
+  GRID_CONFIGS,
+  getThemeImageUrl,
+  getThemeForegroundColor,
+} from '@/features/bingo/lib/theme';
 
-interface AddBingoProps {
+interface AddEachBingoProps {
   selectedGrid: string;
   theme: string;
+  title?: string;
   cells: string[];
   onCellsChange: (cells: string[]) => void;
   disabledCells?: boolean[];
@@ -18,14 +23,16 @@ interface AddBingoProps {
 export function AddEachBingo({
   selectedGrid,
   theme,
+  title,
   cells,
   onCellsChange,
   disabledCells,
-}: AddBingoProps) {
+}: AddEachBingoProps) {
   const [localCells, setLocalCells] = useState<string[]>(cells);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [inputText, setInputText] = useState('');
   const [image, setImage] = useState<string | null>(null);
+  const [fgColor, setFgColor] = useState<string>('#181C1C');
 
   useEffect(() => {
     setLocalCells(cells);
@@ -33,8 +40,12 @@ export function AddEachBingo({
 
   useEffect(() => {
     const load = async () => {
-      const bg = await getThemeImageUrl(theme, selectedGrid as '3x3' | '4x3' | '4x4');
+      const [bg, color] = await Promise.all([
+        getThemeImageUrl(theme, selectedGrid as '3x3' | '4x3' | '4x4'),
+        getThemeForegroundColor(theme),
+      ]);
       setImage(bg);
+      setFgColor(color);
     };
     load();
   }, [theme, selectedGrid]);
@@ -105,10 +116,29 @@ export function AddEachBingo({
             resizeMode="cover"
           />
 
+          {title ? (
+            <View
+              style={{
+                position: 'absolute',
+                top: 16,
+                left: 16,
+                right: 16,
+              }}
+            >
+              <Text
+                className="text-title-md"
+                style={{ color: fgColor }}
+                numberOfLines={2}
+                ellipsizeMode="tail"
+              >
+                {title}
+              </Text>
+            </View>
+          ) : null}
+
           {Array.from({ length: cols * rows }).map((_, i) => {
             const col = i % cols;
             const row = Math.floor(i / cols);
-
             return (
               <TouchableOpacity
                 key={i}
@@ -153,8 +183,8 @@ export function AddEachBingo({
               height: cellSize,
               borderRadius: 8,
               borderWidth: 1,
-              borderColor: '#D2D6D6',
-              backgroundColor: '#FDFDFD',
+              borderColor: '#D2D6D6' /* gray-300 */,
+              backgroundColor: '#FDFDFD' /* white */,
               alignItems: 'center',
               justifyContent: 'center',
               padding: 4,

@@ -2,7 +2,7 @@ import { Pressable, View } from 'react-native';
 import { Text } from '@/components/Text';
 import MoreVertIcon from '@/assets/icons/ic_more_vert.svg';
 import { LikeButton } from './LikeButton';
-import { AnonymousProfile } from '@/components/AnonymousProfile';
+import AnonymousProfile from '@/components/AnonymousProfile';
 import { ProfileAvatar } from '@/components/ProfileAvatar';
 import { CommentReply } from '@/types/community';
 import SubIcon from '@/assets/icons/ic_subdirectory.svg';

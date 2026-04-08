@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/Text';
-import { IconButton } from '@/components/IconButton';
+import IconButton from '@/components/IconButton';
 import { Modal } from '@/components/Modal';
 import BackArrowIcon from '@/assets/icons/ic_arrow_back.svg';
 import CheckIcon from '@/assets/icons/ic_check.svg';
@@ -16,7 +16,7 @@ import {
 } from '@/features/battle/lib/battle-selection';
 import { acceptBattleRequest, fetchMyBattles } from '@/features/battle/lib/battle';
 import BingoPreview from '@/components/BingoPreview';
-import { Button } from '@/components/Button';
+import Button from '@/components/Button';
 import MascotSad from '@/assets/mascots/mascot_sad.svg';
 
 export default function BattleSelectBoardScreen() {

@@ -11,7 +11,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, ScrollView, TextInput, View, useColorScheme } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { IconButton } from '@/components/IconButton';
+import IconButton from '@/components/IconButton';
 import { Text } from '@/components/Text';
 import BackArrowIcon from '@/assets/icons/ic_arrow_back.svg';
 import ProgressIcon from '@/assets/icons/ic_progress.svg';
@@ -139,7 +139,7 @@ export default function BingoViewScreen() {
 
         {isDone && (
           <View className="px-5 mt-2">
-            <Text className="text-title-sm mb-2">회고</Text>
+            <Text className="text-title-md mb-2">회고</Text>
             <TextInput
               value={retrospective}
               onChangeText={handleRetrospectiveChange}
@@ -153,7 +153,6 @@ export default function BingoViewScreen() {
                 backgroundColor: isDark ? '#1F2323' /* gray-800 */ : '#F6F7F7' /* gray-100 */,
                 borderRadius: 20,
                 padding: 16,
-                fontSize: 14,
                 lineHeight: 20,
                 color: isDark ? '#F6F7F7' /* gray-100 */ : '#181C1C' /* gray-900 */,
               }}

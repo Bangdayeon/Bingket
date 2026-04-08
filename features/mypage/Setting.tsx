@@ -91,12 +91,12 @@ export function SettingPage() {
           <View className="flex-row gap-8">
             <View className="flex-row gap-3 mb-2">
               <Pressable onPress={() => router.push('/mypage/my-posts')}>
-                <Text className="text-caption-md">게시글 {profile?.feedCount ?? 0}</Text>
+                <Text className="text-body-sm">게시글 {profile?.feedCount ?? 0}</Text>
               </Pressable>
             </View>
             <View className="flex-row gap-3 mb-2">
               <Pressable onPress={() => router.push('/mypage/friend-list')}>
-                <Text className="text-caption-md">친구 {profile?.friendCount ?? 0}</Text>
+                <Text className="text-body-sm">친구 {profile?.friendCount ?? 0}</Text>
               </Pressable>
             </View>
           </View>

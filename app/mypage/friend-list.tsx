@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Text } from '@/components/Text';
 import { TextInput } from '@/components/TextInput';
-import { IconButton } from '@/components/IconButton';
+import IconButton from '@/components/IconButton';
 import BackArrowIcon from '@/assets/icons/ic_arrow_back.svg';
 import { deleteFriend, fetchFriends, type Friend } from '@/features/battle/lib/battle';
 import { setSelectedFriend } from '@/features/battle/lib/battle-selection';

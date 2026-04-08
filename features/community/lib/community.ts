@@ -1,6 +1,13 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '@/lib/supabase';
-import type { CommunityPost, PostCategory, Comment, CommentReply } from '@/types/community';
+import type {
+  CommunityPost,
+  PostCategory,
+  Comment,
+  CommentReply,
+  EditorBlock,
+  StoredBlock,
+} from '@/types/community';
 import type { BingoData, BingoState, BingoTheme } from '@/types/bingo';
 import { calcBingoCount } from '@/features/bingo/lib/bingo';
 
@@ -41,6 +48,8 @@ function sortedCells(cells: Array<{ position: number; content: string }>): strin
 }
 
 type RawBoard = {
+  id: string;
+  title: string;
   grid: string;
   theme: string;
   bingo_cells: Array<{ position: number; content: string }>;
@@ -48,7 +57,7 @@ type RawBoard = {
 
 type RawUser = { display_name: string; avatar_url: string | null } | null;
 
-type RawSnapshot = { cells: string[]; grid: string; theme: string } | null;
+type RawSnapshot = { title?: string; cells: string[]; grid: string; theme: string } | null;
 
 async function fetchLikedSet(postIds: string[]): Promise<Set<string>> {
   if (postIds.length === 0) return new Set();
@@ -103,12 +112,19 @@ function mapPost(
     imageUrls: (p.image_urls as string[] | null) ?? [],
     bingo: board
       ? {
+          id: board.id,
+          title: board.title,
           cells: sortedCells(board.bingo_cells),
           grid: board.grid,
           theme: board.theme as BingoTheme,
         }
       : snapshot
-        ? { cells: snapshot.cells, grid: snapshot.grid, theme: snapshot.theme as BingoTheme }
+        ? {
+            title: snapshot.title,
+            cells: snapshot.cells,
+            grid: snapshot.grid,
+            theme: snapshot.theme as BingoTheme,
+          }
         : undefined,
   };
 }
@@ -116,7 +132,7 @@ function mapPost(
 const POST_SELECT = `
   id, title, content, category, like_count, comment_count, created_at, user_id, image_urls, is_anonymous, bingo_snapshot,
   users ( display_name, avatar_url ),
-  bingo_boards ( grid, theme, bingo_cells ( position, content ) )
+  bingo_boards ( id, title, grid, theme, bingo_cells ( position, content ) )
 `;
 
 // ── 게시글 목록 조회 (페이지네이션) ──────────────────────────
@@ -194,6 +210,7 @@ export const fetchMyBingosForPost = async (): Promise<BingoData[]> => {
       targetDate: board.target_date ?? null,
       state: board.status as BingoState,
       theme: board.theme as BingoTheme,
+      retrospective: null,
     };
   });
 
@@ -218,6 +235,7 @@ export const fetchMyBingosForPost = async (): Promise<BingoData[]> => {
         targetDate: null,
         state: 'draft',
         theme: THEME_DISPLAY_TO_KEY[d.selectedTheme as string] ?? 'default',
+        retrospective: null,
       };
       return [draftBingo, ...dbBingos];
     }
@@ -270,47 +288,72 @@ export const uploadPostImage = async (uri: string, mimeType: string): Promise<st
   return `${R2_PUBLIC_URL}/${data.key as string}`;
 };
 
+// ── blocks → DB 저장용 변환 + 이미지 업로드 ─────────────────────
+async function processBlocks(blocks: EditorBlock[]): Promise<{
+  storedBlocks: StoredBlock[];
+  imageUrls: string[];
+  bingoBoardId: string | null;
+  bingoSnapshot: { title: string; cells: string[]; grid: string; theme: string } | null;
+}> {
+  const storedBlocks: StoredBlock[] = [];
+  const imageUrls: string[] = [];
+  let bingoBoardId: string | null = null;
+  let bingoSnapshot: { title: string; cells: string[]; grid: string; theme: string } | null = null;
+
+  for (const block of blocks) {
+    if (block.type === 'text') {
+      storedBlocks.push({ type: 'text', value: block.value });
+    } else if (block.type === 'image') {
+      const url = await uploadPostImage(block.uri, block.mimeType ?? 'image/jpeg');
+      storedBlocks.push({ type: 'image', index: imageUrls.length });
+      imageUrls.push(url);
+    } else if (block.type === 'existing-image') {
+      storedBlocks.push({ type: 'image', index: imageUrls.length });
+      imageUrls.push(block.url);
+    } else if (block.type === 'bingo') {
+      const isDraft = block.bingo.id === 'draft';
+      if (isDraft) {
+        bingoSnapshot = {
+          title: block.bingo.title,
+          cells: block.bingo.cells,
+          grid: block.bingo.grid,
+          theme: block.bingo.theme,
+        };
+      } else {
+        bingoBoardId = block.bingo.id;
+      }
+      storedBlocks.push({ type: 'bingo' });
+    }
+  }
+
+  return { storedBlocks, imageUrls, bingoBoardId, bingoSnapshot };
+}
+
 // ── 게시글 작성 ──────────────────────────────────────────────────
 export interface CreatePostRequest {
   category: PostCategory;
   title: string;
-  content: string;
   isAnonymous: boolean;
-  imageUris: Array<{ uri: string; mimeType: string }>;
-  bingo: BingoData | null;
+  blocks: EditorBlock[];
 }
 
 export const createPost = async (req: CreatePostRequest): Promise<string> => {
-  // 현재 로그인한 유저 가져오기
   const { data: userData, error: authError } = await supabase.auth.getUser();
   if (authError || !userData?.user) throw new Error('로그인이 필요합니다.');
 
-  const userId = userData.user.id; // 글 작성자 ID
+  const { storedBlocks, imageUrls, bingoBoardId, bingoSnapshot } = await processBlocks(req.blocks);
 
-  // 이미지 업로드
-  const imageUrls: string[] = [];
-  for (const img of req.imageUris) {
-    const url = await uploadPostImage(img.uri, img.mimeType ?? 'image/jpeg');
-    imageUrls.push(url);
-  }
-
-  const isDraftBingo = req.bingo?.id === 'draft';
-
-  // posts 테이블에 insert
   const { data, error } = await supabase
     .from('posts')
     .insert({
       category: req.category,
       title: req.title.trim(),
-      content: req.content.trim(),
+      content: JSON.stringify(storedBlocks),
       is_anonymous: req.isAnonymous,
-      user_id: userId, // ← 반드시 포함
+      user_id: userData.user.id,
       image_urls: imageUrls,
-      bingo_board_id: req.bingo && !isDraftBingo ? req.bingo.id : null,
-      bingo_snapshot:
-        isDraftBingo && req.bingo
-          ? { cells: req.bingo.cells, grid: req.bingo.grid, theme: req.bingo.theme }
-          : null,
+      bingo_board_id: bingoBoardId,
+      bingo_snapshot: bingoSnapshot,
     })
     .select('id')
     .single();
@@ -324,11 +367,8 @@ export interface UpdatePostRequest {
   postId: string;
   category: PostCategory;
   title: string;
-  content: string;
   isAnonymous: boolean;
-  existingImageUrls: string[];
-  newImageUris: Array<{ uri: string; mimeType: string }>;
-  bingo: BingoData | null;
+  blocks: EditorBlock[];
 }
 
 export const updatePost = async (req: UpdatePostRequest): Promise<void> => {
@@ -338,25 +378,18 @@ export const updatePost = async (req: UpdatePostRequest): Promise<void> => {
   } = await supabase.auth.getUser();
   if (authError || !user) throw new Error('로그인이 필요합니다.');
 
-  const newUrls: string[] = [];
-  for (const img of req.newImageUris) {
-    const url = await uploadPostImage(img.uri, img.mimeType);
-    newUrls.push(url);
-  }
+  const { storedBlocks, imageUrls, bingoBoardId, bingoSnapshot } = await processBlocks(req.blocks);
 
   const { error } = await supabase
     .from('posts')
     .update({
       category: req.category,
       title: req.title.trim(),
-      content: req.content.trim(),
+      content: JSON.stringify(storedBlocks),
       is_anonymous: req.isAnonymous,
-      image_urls: [...req.existingImageUrls, ...newUrls],
-      bingo_board_id: req.bingo && req.bingo.id !== 'draft' ? req.bingo.id : null,
-      bingo_snapshot:
-        req.bingo?.id === 'draft'
-          ? { cells: req.bingo.cells, grid: req.bingo.grid, theme: req.bingo.theme }
-          : null,
+      image_urls: imageUrls,
+      bingo_board_id: bingoBoardId,
+      bingo_snapshot: bingoSnapshot,
     })
     .eq('id', req.postId)
     .eq('user_id', user.id);

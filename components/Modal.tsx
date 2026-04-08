@@ -1,6 +1,6 @@
 import { Modal as RNModal, Pressable, View } from 'react-native';
 import { Text } from './Text';
-import { Button } from './Button';
+import Button from './Button';
 import { ReactNode } from 'react';
 
 type ModalVariant = 'default' | 'warning' | 'error' | 'success' | 'single';

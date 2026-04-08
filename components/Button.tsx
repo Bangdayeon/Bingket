@@ -2,11 +2,13 @@ import { ActivityIndicator, TouchableOpacity, TouchableOpacityProps } from 'reac
 import { Text } from './Text';
 
 type Variant = 'primary' | 'secondary' | 'dangerous';
+type Size = 'sm' | 'md';
 
 interface ButtonProps extends Omit<TouchableOpacityProps, 'onPress'> {
   label: string;
   onClick: () => void;
   variant?: Variant;
+  size?: Size;
   className?: string;
   loading?: boolean;
   disabled?: boolean;
@@ -27,9 +29,15 @@ const variantStyles: Record<Variant, { container: string; text: string }> = {
   },
 };
 
-export function Button({
+const sizeStyles: Record<Size, string> = {
+  sm: 'h-10', // 약 40px
+  md: 'h-14', // 약 56px
+};
+
+export default function Button({
   label,
   variant = 'primary',
+  size = 'md',
   className = '',
   loading = false,
   disabled = false,
@@ -38,23 +46,24 @@ export function Button({
 }: ButtonProps) {
   const { container, text } = variantStyles[variant];
   const isDisabled = disabled || loading;
+  const heightClass = sizeStyles[size];
 
   return (
     <TouchableOpacity
       onPress={onClick}
       disabled={isDisabled}
       activeOpacity={0.8}
-      className={`h-14 rounded-full items-center justify-center ${container} ${isDisabled ? 'opacity-40' : ''} ${className}`}
+      className={`rounded-full items-center justify-center ${heightClass} ${container} ${
+        isDisabled ? 'opacity-40' : ''
+      } ${className}`}
       {...rest}
     >
       {loading ? (
-        <ActivityIndicator
-          color={variant === 'secondary' ? '#181C1C' : '#ffffff'} /* gray-900 : white */
-        />
+        <ActivityIndicator color={variant === 'secondary' ? '#181C1C' : '#ffffff'} />
       ) : (
         <Text
           className={`text-label-sm ${text}`}
-          style={variant === 'primary' ? { color: '#181C1C' /* gray-900 */ } : undefined}
+          style={variant === 'primary' ? { color: '#181C1C' } : undefined}
         >
           {label}
         </Text>

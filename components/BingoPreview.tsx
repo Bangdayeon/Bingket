@@ -1,46 +1,74 @@
-// BingoPreview.tsx (수정)
-
 import { View, Text, Image, Pressable } from 'react-native';
 import { useEffect, useState } from 'react';
 import { BingoData } from '@/types/bingo';
-import { FIGMA_W, FIGMA_H, GRID_CONFIGS, getThemeImageUrl } from '@/features/bingo/lib/theme';
+import {
+  FIGMA_W,
+  FIGMA_H,
+  GRID_CONFIGS,
+  getThemeImageUrl,
+  getThemeForegroundColor,
+} from '@/features/bingo/lib/theme';
+
+type PreviewSize = 'sm' | 'md';
+
+const TITLE_STYLE: Record<
+  PreviewSize,
+  {
+    top: number;
+    left: number;
+    right: number;
+    fontSize: number;
+    fontWeight: '600' | '700';
+  }
+> = {
+  sm: { top: 30, left: 30, right: 30, fontSize: 12, fontWeight: '600' },
+  md: { top: 48, left: 48, right: 48, fontSize: 18, fontWeight: '700' },
+};
 
 interface BingoPreviewProps {
   bingo: BingoData;
   completedCells?: boolean[];
-  size?: string;
+  /** 제목 텍스트 크기 */
+  size?: PreviewSize;
+  /** 래퍼 너비 Tailwind 클래스 (e.g. 'w-full', 'w-48') */
+  className?: string;
   onPress?: () => void;
 }
 
 export default function BingoPreview({
   bingo,
   completedCells = [],
-  size = 'w-full',
+  size = 'sm',
+  className = 'w-full',
   onPress,
 }: BingoPreviewProps) {
   const [image, setImage] = useState<string | null>(null);
   const [checkImage, setCheckImage] = useState<string | null>(null);
+  const [fgColor, setFgColor] = useState<string>('#181C1C');
 
   useEffect(() => {
     const load = async () => {
-      const [bg, check] = await Promise.all([
+      const [bg, check, color] = await Promise.all([
         getThemeImageUrl(bingo.theme, bingo.grid as '3x3' | '4x3' | '4x4'),
         getThemeImageUrl(bingo.theme, 'check'),
+        getThemeForegroundColor(bingo.theme),
       ]);
       setImage(bg);
       setCheckImage(check);
+      setFgColor(color);
     };
     load();
   }, [bingo.theme, bingo.grid]);
 
   const [cols, rows] = bingo.grid.split('x').map(Number);
   const Wrapper = onPress ? Pressable : View;
+  const titleStyle = TITLE_STYLE[size];
 
   if (image) {
     const cfg = GRID_CONFIGS[bingo.grid];
 
     return (
-      <Wrapper className={size} {...(onPress ? { onPress } : {})}>
+      <Wrapper className={className} {...(onPress ? { onPress } : {})}>
         <View style={{ width: '100%', aspectRatio: FIGMA_W / FIGMA_H }}>
           <Image
             source={{ uri: image }}
@@ -49,10 +77,16 @@ export default function BingoPreview({
           />
 
           <Text
+            numberOfLines={2}
+            ellipsizeMode="tail"
             style={{
               position: 'absolute',
-              top: `${(20 / FIGMA_H) * 100}%`,
-              left: `${(20 / FIGMA_W) * 100}%`,
+              top: `${(titleStyle.top / FIGMA_H) * 100}%`,
+              left: `${(titleStyle.left / FIGMA_W) * 100}%`,
+              right: `${(titleStyle.right / FIGMA_W) * 100}%`,
+              color: fgColor,
+              fontSize: titleStyle.fontSize,
+              fontWeight: titleStyle.fontWeight,
             }}
           >
             {bingo.title}
@@ -104,7 +138,7 @@ export default function BingoPreview({
   }
 
   return (
-    <Wrapper className={`${size} flex-row flex-wrap gap-1`} {...(onPress ? { onPress } : {})}>
+    <Wrapper className={`${className} flex-row flex-wrap gap-1`} {...(onPress ? { onPress } : {})}>
       {bingo.cells.map((text: string, i: number) => (
         <View
           key={i}
@@ -113,8 +147,8 @@ export default function BingoPreview({
             aspectRatio: 1,
             borderRadius: 4,
             borderWidth: 1,
-            borderColor: '#D2D6D6',
-            backgroundColor: '#FDFDFD',
+            borderColor: '#D2D6D6' /* gray-300 */,
+            backgroundColor: '#FDFDFD' /* white */,
             alignItems: 'center',
             justifyContent: 'center',
             padding: 4,

@@ -1,12 +1,11 @@
-// app/bingo/modify.tsx (수정)
-
 import * as Sentry from '@sentry/react-native';
-import { Button } from '@/components/Button';
+import Button from '@/components/Button';
 import { Modal } from '@/components/Modal';
-import { TextInput } from '@/components/TextInput';
-import { AddEachBingo } from '@/features/bingo/bingo-add/AddEachBingo';
-import { BingoModifyHeader } from '@/features/bingo/bingo-modify/Header';
+import { BingoEditHeader } from '@/features/bingo/bingo-edit/Header';
+import { BingoTitle } from '@/features/bingo/bingo-edit/BingoTitle';
+import { AddEachBingo } from '@/features/bingo/bingo-edit/AddEachBingo';
 import { fetchBingoForEdit, updateBingo, deleteBingo } from '@/features/bingo/lib/bingo';
+import { fetchBattleByBoardId, quitBattle } from '@/features/battle/lib/battle';
 import { fetchThemes } from '@/features/bingo/lib/theme';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
@@ -29,22 +28,18 @@ export default function BingoModifyScreen() {
   const [cellOriginalEditCounts, setCellOriginalEditCounts] = useState<number[]>([]);
   const [cellEdits, setCellEdits] = useState<number[]>([]);
   const [selectedTheme, setSelectedTheme] = useState<string>('');
-
   const [themes, setThemes] = useState<{ id: string; displayName: string }[]>([]);
 
   useEffect(() => {
     const init = async () => {
       try {
         const themeMap = await fetchThemes();
-
         const uniqueThemes = Object.values(themeMap).filter(
           (v, i, arr) => arr.findIndex((t) => t.id === v.id) === i,
         );
-
         setThemes(uniqueThemes.map((t) => ({ id: t.id, displayName: t.displayName })));
 
         if (!bingoId) return;
-
         const data = await fetchBingoForEdit(bingoId);
         if (!data) {
           router.back();
@@ -58,16 +53,13 @@ export default function BingoModifyScreen() {
         setCellIds(data.cellIds);
         setCellOriginalEditCounts(data.cellEditCounts);
         setCellEdits(Array(data.cells.length).fill(0));
-
-        setSelectedTheme(data.theme); // DB 값 그대로 사용
-
+        setSelectedTheme(data.theme);
         setLoading(false);
       } catch (e) {
         Sentry.captureException(e);
         router.back();
       }
     };
-
     init();
   }, [bingoId]);
 
@@ -95,7 +87,6 @@ export default function BingoModifyScreen() {
           newEditCount: cellOriginalEditCounts[i] + (cellEdits[i] ?? 0),
         }))
         .filter((_, i) => (cellEdits[i] ?? 0) > 0);
-
       await updateBingo(bingoId, title, selectedTheme, changedCells);
       router.replace('/(tabs)');
     } catch (e) {
@@ -106,6 +97,8 @@ export default function BingoModifyScreen() {
 
   const handleDelete = async () => {
     try {
+      const battle = await fetchBattleByBoardId(bingoId);
+      if (battle) await quitBattle(battle.battleId);
       await deleteBingo(bingoId);
       router.replace('/(tabs)');
     } catch (e) {
@@ -135,30 +128,26 @@ export default function BingoModifyScreen() {
 
   return (
     <View className="flex-1 bg-white dark:bg-gray-900" style={{ paddingTop: insets.top }}>
-      <BingoModifyHeader onBack={handleBack} />
+      <BingoEditHeader title="빙고 수정하기" onBack={handleBack} />
 
       <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: insets.bottom + 100 }}>
-        <View className="px-5 pt-5 pb-8">
-          <Text className="text-title-md mb-2">제목</Text>
-          <TextInput
-            value={title}
-            onChangeText={(v) => {
-              markDirty();
-              setTitle(v);
-            }}
-            placeholder="제목을 입력해주세요."
-          />
-        </View>
+        <BingoTitle
+          value={title}
+          onChange={(v) => {
+            markDirty();
+            setTitle(v);
+          }}
+        />
 
-        <View className="px-5 pt-2 pb-5">
-          <Text className="text-title-md mb-3">빙고</Text>
+        <View className="px-5 py-6">
+          <Text className="text-title-md mb-4">빙고 수정</Text>
 
-          <View className="flex-row items-center mb-1">
-            <Text className="text-body-lg">테마</Text>
-            <View className="flex-1" />
-          </View>
-
-          <View className="flex-row flex-wrap gap-2 mb-4">
+          <Text className="text-title-sm mb-3">테마</Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ gap: 8, paddingBottom: 20 }}
+          >
             {themes.map((theme) => (
               <Chip
                 key={theme.id}
@@ -170,11 +159,13 @@ export default function BingoModifyScreen() {
                 }}
               />
             ))}
-          </View>
+          </ScrollView>
 
+          <Text className="text-title-sm mb-2">빙고 내용 수정하기</Text>
           <AddEachBingo
             selectedGrid={grid}
             theme={selectedTheme}
+            title={title}
             cells={cells}
             disabledCells={disabledCells}
             onCellsChange={(newCells) => {
@@ -197,7 +188,7 @@ export default function BingoModifyScreen() {
           </View>
 
           <Pressable onPress={() => setShowDeleteModal(true)} className="mt-6">
-            <Text className="text-body-lg" style={{ color: '#E02828' }}>
+            <Text className="text-body-md" style={{ color: '#E02828' /* red */ }}>
               빙고 삭제하기
             </Text>
           </Pressable>

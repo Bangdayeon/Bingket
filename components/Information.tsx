@@ -24,7 +24,7 @@ export function Information({ content }: InformationProps) {
   return (
     <>
       <Pressable ref={iconRef} onPress={handlePress} hitSlop={8}>
-        <IcInfo width={16} height={16} color={iconColor} />
+        <IcInfo width={20} height={20} color={iconColor} />
       </Pressable>
 
       <Modal transparent visible={visible} onRequestClose={() => setVisible(false)}>

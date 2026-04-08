@@ -51,14 +51,7 @@ export function DatePicker({
           zIndex: 11,
         }}
       >
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: 8,
-          }}
-        >
+        <View className="flex-row justify-between items-center mb-2">
           <Text className="text-body-sm text-gray-500 dark:text-gray-400">
             {target === 'start' ? '시작일' : '종료일'} 선택
           </Text>

@@ -154,7 +154,7 @@ export function BingoAll() {
   }
 
   return (
-    <ScrollView className="flex-1 mt-[50px] dark:bg-gray-900">
+    <ScrollView className="flex-1 mt-[60px] dark:bg-gray-900">
       {bingos.map((bingo) => (
         <BingoCard
           key={bingo.id}
@@ -196,6 +196,9 @@ export function BingoAll() {
             className="items-center justify-center gap-3 bg-green-100 w-full h-[230px] rounded-[20px]"
           >
             <AddIcon width={40} height={40} color="#4C5252" /* gray-700 */ />
+            <Text className="text-title-md" style={{ color: '#4C5252' /* gray-700 */ }}>
+              새 빙고 추가하기
+            </Text>
             <Text className="text-title-md" style={{ color: '#4C5252' /* gray-700 */ }}>
               ({bingos.length}/{MAX_BINGOS})
             </Text>

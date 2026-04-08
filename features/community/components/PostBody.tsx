@@ -1,95 +1,44 @@
-import { useEffect, useState } from 'react';
-import { Dimensions, Image, ScrollView, View } from 'react-native';
+import { Image, View } from 'react-native';
 import { Text } from '@/components/Text';
 import SMSIcon from '@/assets/icons/ic_sms.svg';
 import { LikeButton } from './LikeButton';
-import { AnonymousProfile } from '@/components/AnonymousProfile';
+import AnonymousProfile from '@/components/AnonymousProfile';
 import { ProfileAvatar } from '@/components/ProfileAvatar';
 import { CommunityPost } from '@/types/community';
-import { getThemeImageUrl, FIGMA_W, FIGMA_H, GRID_CONFIGS } from '@/features/bingo/lib/theme';
-import { GridType } from '@/types/bingo-cell';
+import type { StoredBlock } from '@/types/community';
+import BingoPreview from '@/components/BingoPreview';
+import type { BingoData } from '@/types/bingo';
 
 const ICON_SIZE = 20;
 
-// GridType 타입 가드
-function isGridType(grid: string): grid is GridType {
-  return ['3x3', '4x3', '4x4', 'check'].includes(grid);
+function postBingoToBingoData(bingo: NonNullable<CommunityPost['bingo']>): BingoData {
+  return {
+    id: bingo.id ?? 'preview',
+    title: bingo.title ?? '',
+    cells: bingo.cells,
+    grid: bingo.grid,
+    theme: bingo.theme,
+    maxEdits: 0,
+    achievedCount: 0,
+    bingoCount: 0,
+    dday: 0,
+    startDate: null,
+    targetDate: null,
+    state: 'progress',
+    retrospective: null,
+  };
 }
 
-function BingoBoardPreview({
-  cells,
-  grid,
-  theme,
-}: {
-  cells: string[];
-  grid: string;
-  theme: string;
-}) {
-  if (!isGridType(grid)) return null;
-  const [cols, rows] = grid.split('x').map(Number);
-  const availableWidth = Dimensions.get('window').width - 40;
-  const [imageUri, setImageUri] = useState<string | null>(null);
-
-  useEffect(() => {
-    let mounted = true;
-    getThemeImageUrl(theme, grid).then((uri) => {
-      if (mounted) setImageUri(uri);
-    });
-    return () => {
-      mounted = false;
-    };
-  }, [theme, grid]);
-
-  const cfg = GRID_CONFIGS[grid];
-  if (!cfg) return null;
-
-  const scale = availableWidth / FIGMA_W;
-  const cardHeight = FIGMA_H * scale;
-  const gridTop = cfg.top * scale;
-  const gridLeft = cfg.left * scale;
-  const cellW = cfg.cellW * scale;
-  const cellH = cfg.cellH * scale;
-  const gapX = cfg.gapX * scale;
-  const gapY = cfg.gapY * scale;
-
-  return (
-    <View style={{ width: availableWidth, height: cardHeight, marginTop: 12 }}>
-      {imageUri && (
-        <Image
-          source={{ uri: imageUri }}
-          style={{ position: 'absolute', width: '100%', height: '100%' }}
-          resizeMode="cover"
-        />
-      )}
-      {Array.from({ length: cols * rows }).map((_, i) => {
-        const col = i % cols;
-        const row = Math.floor(i / cols);
-        return (
-          <View
-            key={i}
-            style={{
-              position: 'absolute',
-              left: gridLeft + col * (cellW + gapX),
-              top: gridTop + row * (cellH + gapY),
-              width: cellW,
-              height: cellH,
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: 4,
-            }}
-          >
-            <Text
-              className="text-caption-sm text-center"
-              style={{ color: '#181C1C' }}
-              numberOfLines={2}
-            >
-              {cells[i] ?? ''}
-            </Text>
-          </View>
-        );
-      })}
-    </View>
-  );
+function parseBlocks(content: string): StoredBlock[] | null {
+  try {
+    const parsed = JSON.parse(content);
+    if (Array.isArray(parsed) && parsed.length > 0 && typeof parsed[0].type === 'string') {
+      return parsed as StoredBlock[];
+    }
+  } catch {
+    /* noop */
+  }
+  return null;
 }
 
 interface PostBodyProps {
@@ -98,8 +47,16 @@ interface PostBodyProps {
 }
 
 export function PostBody({ post, iconColor }: PostBodyProps) {
+  const blocks = parseBlocks(post.body);
+  const bingoData = post.bingo ? postBingoToBingoData(post.bingo) : null;
+
+  const textBlocks =
+    blocks?.filter((b): b is StoredBlock & { type: 'text' } => b.type === 'text') ?? [];
+  const mediaBlocks = blocks?.filter((b) => b.type !== 'text') ?? [];
+
   return (
     <View className="px-5 pt-4">
+      {/* 작성자 */}
       <View className="flex-row items-center gap-2">
         {post.isAnonymous ? (
           <AnonymousProfile seed={post.id} size="md" />
@@ -117,34 +74,60 @@ export function PostBody({ post, iconColor }: PostBodyProps) {
 
       <Text className="text-title-md mt-3">{post.title}</Text>
 
-      {post.bingo && (
-        <BingoBoardPreview
-          cells={post.bingo.cells}
-          grid={post.bingo.grid}
-          theme={post.bingo.theme}
-        />
-      )}
+      {blocks ? (
+        <>
+          {/* 본문 텍스트 (항상 최상단) */}
+          {textBlocks.map((block, i) =>
+            block.value ? (
+              <Text key={i} className="text-body-sm mt-3">
+                {block.value}
+              </Text>
+            ) : null,
+          )}
 
-      {!post.bingo && post.imageUrls?.length ? (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={{ marginTop: 12 }}
-          contentContainerStyle={{ gap: 8 }}
-        >
-          {post.imageUrls.map((url, i) => (
+          {/* 미디어 (빙고, 이미지) */}
+          {mediaBlocks.map((block, i) => {
+            if (block.type === 'image') {
+              const url = (post.imageUrls ?? [])[block.index];
+              return url ? (
+                <Image
+                  key={i}
+                  source={{ uri: url }}
+                  style={{ width: '100%', height: 220, borderRadius: 12, marginTop: 12 }}
+                  resizeMode="cover"
+                />
+              ) : null;
+            }
+            if (block.type === 'bingo' && bingoData) {
+              return (
+                <View key={i} className="mt-3">
+                  <BingoPreview bingo={bingoData} size="md" />
+                </View>
+              );
+            }
+            return null;
+          })}
+        </>
+      ) : (
+        <>
+          <Text className="text-body-sm mt-3">{post.body}</Text>
+          {bingoData && (
+            <View className="mt-3">
+              <BingoPreview bingo={bingoData} size="md" />
+            </View>
+          )}
+          {post.imageUrls?.map((url, i) => (
             <Image
               key={i}
               source={{ uri: url }}
-              style={{ width: 260, height: 200, borderRadius: 8 }}
+              style={{ width: '100%', height: 220, borderRadius: 12, marginTop: 12 }}
               resizeMode="cover"
             />
           ))}
-        </ScrollView>
-      ) : null}
+        </>
+      )}
 
-      <Text className="text-body-sm mt-3">{post.body}</Text>
-
+      {/* 좋아요 / 댓글 */}
       <View className="flex-row items-center gap-4 mt-3">
         <LikeButton
           count={post.likeCount}

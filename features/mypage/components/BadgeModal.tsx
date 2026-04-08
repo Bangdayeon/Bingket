@@ -1,6 +1,7 @@
 import { Modal, Pressable, View, Image } from 'react-native';
 import { Text } from '@/components/Text';
 import { BADGE_META } from '@/lib/badge-checker';
+import Button from '@/components/Button';
 
 interface BadgeModalProps {
   visible: boolean;
@@ -100,18 +101,7 @@ export function BadgeModal({ visible, badge, onClose }: BadgeModalProps) {
           </View>
 
           {/* 닫기 */}
-          <Pressable
-            onPress={onClose}
-            style={{
-              marginTop: 4,
-              paddingHorizontal: 32,
-              paddingVertical: 12,
-              backgroundColor: '#181C1C',
-              borderRadius: 999,
-            }}
-          >
-            <Text style={{ color: '#FDFDFD', fontSize: 14 }}>확인</Text>
-          </Pressable>
+          <Button onClick={onClose} label="확인" size="sm" className="px-10" />
         </View>
       </View>
     </Modal>

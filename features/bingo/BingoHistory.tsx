@@ -288,7 +288,7 @@ export function BingoHistory({ isReorderMode }: { isReorderMode: boolean }) {
 
   return (
     <ScrollView
-      className="flex-1 mt-[60px] bg-white px-5 dark:bg-gray-900 mb-20"
+      className="flex-1 mt-[70px] bg-white px-5 dark:bg-gray-900 mb-20"
       scrollEnabled={!isReorderMode}
     >
       <Section

@@ -4,9 +4,9 @@ import { useRef, useState } from 'react';
 import { Dimensions, FlatList, View } from 'react-native';
 import { Text } from '@/components/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button } from '@/components/Button';
+import Button from '@/components/Button';
 import { Dot } from '@/features/onboarding/Dot';
-import { IconButton } from '@/components/IconButton';
+import IconButton from '@/components/IconButton';
 import CloseIcon from '@/assets/icons/ic_close.svg';
 import { Image } from 'react-native';
 
