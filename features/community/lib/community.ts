@@ -258,18 +258,25 @@ export const uploadPostImage = async (uri: string, mimeType: string): Promise<st
 
   if (!session) throw new Error('로그인이 필요합니다.');
 
-  const { data, error } = await supabase.functions.invoke('post-presign', {
-    body: {
+  const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL!;
+  const presignRes = await fetch(`${supabaseUrl}/functions/v1/post-presign`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${session.access_token}`,
+    },
+    body: JSON.stringify({
       filename: `${Date.now()}_${Math.random()}.${ext}`,
       contentType: mimeType,
-    },
-    headers: { Authorization: `Bearer ${session.access_token}` },
+    }),
   });
 
-  if (error) {
-    const body = await (error as { context?: Response }).context?.text?.();
-    throw new Error(body ?? error.message);
+  if (!presignRes.ok) {
+    const body = await presignRes.text();
+    throw new Error(body || `presign failed: ${presignRes.status}`);
   }
+
+  const data = (await presignRes.json()) as { presignedUrl: string; key: string } | null;
 
   if (!data) {
     throw new Error('presign data is null');

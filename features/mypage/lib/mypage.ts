@@ -178,6 +178,21 @@ function timeAgo(dateStr: string): string {
 
 export { timeAgo };
 
+function extractTextPreview(content: string): string {
+  try {
+    const parsed = JSON.parse(content);
+    if (Array.isArray(parsed) && parsed.length > 0 && typeof parsed[0].type === 'string') {
+      return parsed
+        .filter((b: { type: string; value?: string }) => b.type === 'text' && b.value)
+        .map((b: { value: string }) => b.value)
+        .join(' ');
+    }
+  } catch {
+    /* 구형 plain text */
+  }
+  return content;
+}
+
 export const fetchMyPosts = async (): Promise<MyPost[]> => {
   const {
     data: { user },
@@ -196,7 +211,7 @@ export const fetchMyPosts = async (): Promise<MyPost[]> => {
   return data.map((p) => ({
     id: p.id,
     title: p.title,
-    content: p.content,
+    content: extractTextPreview(p.content as string),
     category: p.category as MyPost['category'],
     likeCount: p.like_count,
     commentCount: p.comment_count,

@@ -20,7 +20,7 @@ export function CommentSection({
   onReplyPress,
 }: CommentSectionProps) {
   return (
-    <View className="mt-10 pt-10 border-t border-gray-400 pb-4">
+    <View className="mt-5 pt-5 border-t border-gray-400 pb-20">
       {comments.length === 0 ? (
         <View className="items-center py-12 gap-5">
           <MascotImage width={130} height={100} className="" />

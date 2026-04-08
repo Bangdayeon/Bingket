@@ -17,7 +17,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { Text } from '@/components/Text';
 import ArrowBackIcon from '@/assets/icons/ic_arrow_back.svg';
-import CameraIcon from '@/assets/icons/ic_camera.svg';
+// import CameraIcon from '@/assets/icons/ic_camera.svg';
 import CheckIcon from '@/assets/icons/ic_check.svg';
 import CloseIcon from '@/assets/icons/ic_close.svg';
 import type { PostCategory, EditorBlock } from '@/types/community';
@@ -313,7 +313,7 @@ export default function CommunityWriteScreen() {
           <View style={{ flex: 1 }} />
 
           {/* 카메라 */}
-          <Pressable
+          {/* <Pressable
             onPress={() => {
               if (imageBlockCount < MAX_IMAGES) setShowCameraMenu(true);
             }}
@@ -344,7 +344,7 @@ export default function CommunityWriteScreen() {
                 </Text>
               </View>
             )}
-          </Pressable>
+          </Pressable> */}
 
           {/* 빙고 */}
           <Pressable onPress={handleOpenBingoModal} hitSlop={8}>
