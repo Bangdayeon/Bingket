@@ -117,79 +117,37 @@ export const BAD_WORDS: string[] = [
   'ㅅㄲ',
 ];
 
-/**
- * 숫자 → 문자 치환 (우회 방지)
- */
-const numberMap: Record<string, string> = {
-  '1': 'i',
-  '2': 'z',
-  '3': 'e',
-  '4': 'a',
-  '5': 's',
-  '7': 't',
-  '0': 'o',
-};
+// 자모(초성·중성·종성 단독 문자) 범위
+const JAMO_REGEX = /^[ㄱ-ㅎㅏ-ㅣ]+$/;
 
 /**
- * 초성 추출 (간단 버전)
- */
-function getChosung(text: string): string {
-  const CHO = [
-    'ㄱ',
-    'ㄲ',
-    'ㄴ',
-    'ㄷ',
-    'ㄸ',
-    'ㄹ',
-    'ㅁ',
-    'ㅂ',
-    'ㅃ',
-    'ㅅ',
-    'ㅆ',
-    'ㅇ',
-    'ㅈ',
-    'ㅉ',
-    'ㅊ',
-    'ㅋ',
-    'ㅌ',
-    'ㅍ',
-    'ㅎ',
-  ];
-
-  return text
-    .split('')
-    .map((char) => {
-      const code = char.charCodeAt(0) - 44032;
-      if (code >= 0 && code <= 11171) {
-        return CHO[Math.floor(code / 588)];
-      }
-      return char;
-    })
-    .join('');
-}
-
-/**
- * 텍스트 정규화
+ * 텍스트 정규화 (음절 단어 비교용)
+ * - 공백·특수문자 제거, 소문자 변환
+ * - 자모(ㄱ-ㅎ 등)는 유지하지 않음 → 초성 전용 금칙어와 혼동 방지
  */
 function normalize(text: string): string {
   return text
     .toLowerCase()
-    .replace(/\s+/g, '') // 공백 제거
-    .replace(/[0-9]/g, (n) => numberMap[n] || n) // 숫자 치환
-    .replace(/[^가-힣a-z]/gi, ''); // 특수문자 제거
+    .replace(/\s+/g, '')
+    .replace(/[^가-힣a-zA-Z0-9]/g, '');
 }
 
 /**
  * 금칙어 포함 여부 검사
+ *
+ * - 자모 전용 금칙어(ㅅㅂ, ㅂㅅ 등): 원문(공백만 제거)에서 직접 검색
+ * - 음절 금칙어(시발, 병신 등): 정규화된 텍스트에서 검색
  */
 export function containsBadWord(text: string): boolean {
+  const noSpaces = text.replace(/\s+/g, '');
   const normalized = normalize(text);
-  const chosung = getChosung(normalized);
 
   return BAD_WORDS.some((word) => {
-    const normalizedWord = normalize(word);
-    const chosungWord = getChosung(normalizedWord);
-
-    return normalized.includes(normalizedWord) || chosung.includes(chosungWord);
+    if (JAMO_REGEX.test(word)) {
+      // 초성/자모 전용 단어: 원문 그대로 비교
+      return noSpaces.includes(word);
+    }
+    // 일반 음절 단어: 정규화 후 비교
+    return normalized.includes(normalize(word));
   });
 }

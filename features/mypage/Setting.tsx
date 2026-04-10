@@ -169,6 +169,11 @@ export function SettingPage() {
         }
       />
       <MenuItem
+        label="빠른 문의"
+        onPress={() => Linking.openURL('mailto:dybang00@gmail.com?subject=[빙킷] 문의')}
+        rightText="dybang00@gmail.com"
+      />
+      <MenuItem
         label="버전 정보"
         onPress={() => {}}
         rightText={`v ${Constants.expoConfig?.version ?? '1.0.0'}`}

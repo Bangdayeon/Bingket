@@ -1,7 +1,7 @@
 import * as Sentry from '@sentry/react-native';
-import { ScrollView, Pressable, ActivityIndicator, View } from 'react-native';
+import { InteractionManager, ScrollView, Pressable, ActivityIndicator, View } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { useState, useCallback, useRef } from 'react';
+import { startTransition, useState, useCallback, useRef } from 'react';
 import { BingoCard } from './components/BingoCard';
 import { BingoCellModal } from './BingoCellModal';
 import { Text } from '@/components/Text';
@@ -71,8 +71,10 @@ export function BingoAll() {
         const battle = myBattles.find((bt) => bt.myBoardId === b.id);
         avatars[b.id] = battle?.opponent.avatarUrl ?? null;
       });
-      setBattleIds(ids);
-      setFriendAvatars(avatars);
+      startTransition(() => {
+        setBattleIds(ids);
+        setFriendAvatars(avatars);
+      });
     });
   }, []);
 
@@ -81,18 +83,22 @@ export function BingoAll() {
       // 배틀 상태는 항상 최신으로 다시 받아야 하므로 포커스 시 초기화
       setBattleIds({});
       setFriendAvatars({});
-      // 캐시 먼저 보여주기
-      getCache<{ bingos: BingoData[]; cellDetails: Record<string, BingoCellDetail[]> }>(
-        CACHE_KEY_ALL,
-      ).then((cached) => {
-        if (cached) {
-          setBingos(cached.bingos);
-          setCellDetails(cached.cellDetails);
-          setLoading(false);
-        }
-        // 캐시 여부 관계없이 백그라운드에서 갱신
-        loadData();
+
+      // navigation transition 애니메이션 완료 후 데이터 로드 (main thread 블로킹 방지)
+      const task = InteractionManager.runAfterInteractions(() => {
+        getCache<{ bingos: BingoData[]; cellDetails: Record<string, BingoCellDetail[]> }>(
+          CACHE_KEY_ALL,
+        ).then((cached) => {
+          if (cached) {
+            setBingos(cached.bingos);
+            setCellDetails(cached.cellDetails);
+            setLoading(false);
+          }
+          loadData();
+        });
       });
+
+      return () => task.cancel();
     }, [loadData]),
   );
 

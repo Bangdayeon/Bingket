@@ -49,6 +49,7 @@
           "backgroundColor": "#ffffff"
         }
       ],
+      "expo-apple-authentication",
       "expo-web-browser",
       "expo-secure-store",
       [

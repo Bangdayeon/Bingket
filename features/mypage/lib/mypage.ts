@@ -88,16 +88,28 @@ export const updateMyProfile = async (data: {
 };
 
 export const uploadProfileImage = async (uri: string, filename: string): Promise<string> => {
-  const ext = filename.split('.').pop() ?? 'jpg';
-  const contentType = ext === 'png' ? 'image/png' : 'image/jpeg';
+  const ext = (filename.split('.').pop() ?? 'jpg').toLowerCase();
+  const contentType = ext === 'png' ? 'image/png' : ext === 'gif' ? 'image/gif' : 'image/jpeg';
+  // HEIC(iPhone 기본 포맷)는 jpeg로 변환된 채로 picker에서 나오지만
+  // 파일명에 .heic/.heif가 붙는 경우 대비 — jpeg로 처리
+  const safeFilename =
+    ext === 'heic' || ext === 'heif' ? filename.replace(/\.(heic|heif)$/i, '.jpg') : filename;
 
   // getUser() refreshes token if needed — important for Kakao sessions
   await supabase.auth.getUser();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session) throw new Error('로그인이 필요합니다.');
 
   const { data, error } = await supabase.functions.invoke('r2-presign', {
-    body: { filename, contentType },
+    headers: { Authorization: `Bearer ${session.access_token}` },
+    body: { filename: safeFilename, contentType },
   });
-  if (error) throw error;
+  if (error) {
+    const body = await (error as { context?: Response }).context?.text?.();
+    throw new Error(body ?? error.message);
+  }
 
   const file = await fetch(uri);
   const blob = await file.blob();
@@ -107,7 +119,10 @@ export const uploadProfileImage = async (uri: string, filename: string): Promise
     body: blob,
     headers: { 'Content-Type': contentType },
   });
-  if (!uploadRes.ok) throw new Error('이미지 업로드에 실패했습니다.');
+  if (!uploadRes.ok) {
+    const text = await uploadRes.text().catch(() => '');
+    throw new Error(`이미지 업로드 실패 (${uploadRes.status})${text ? `: ${text}` : ''}`);
+  }
 
   return `${R2_PUBLIC_URL}/${data.key as string}`;
 };

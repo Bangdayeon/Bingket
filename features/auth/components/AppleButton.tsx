@@ -1,7 +1,7 @@
 import * as Sentry from '@sentry/react-native';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { useState } from 'react';
-import { ActivityIndicator, Image, Platform, TouchableOpacity } from 'react-native';
+import { ActivityIndicator, Alert, Image, Platform, TouchableOpacity } from 'react-native';
 import { Text } from '@/components/Text';
 import { supabase } from '@/lib/supabase';
 import { router } from 'expo-router';
@@ -73,6 +73,8 @@ export function AppleButton() {
       ) {
         return;
       }
+      const message = e instanceof Error ? e.message : String(e);
+      Alert.alert('Apple 로그인 실패', message);
       Sentry.captureException(e);
     } finally {
       setLoading(false);

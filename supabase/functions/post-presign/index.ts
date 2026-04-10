@@ -1,6 +1,5 @@
 import { S3Client, PutObjectCommand } from 'npm:@aws-sdk/client-s3@3';
 import { getSignedUrl } from 'npm:@aws-sdk/s3-request-presigner@3';
-import { createClient } from 'npm:@supabase/supabase-js@2';
 
 const r2 = new S3Client({
   region: 'auto',
@@ -10,6 +9,15 @@ const r2 = new S3Client({
     secretAccessKey: Deno.env.get('R2_SECRET_ACCESS_KEY') ?? '',
   },
 });
+
+function decodeJwtPayload(token: string): Record<string, unknown> {
+  const part = token.split('.')[1];
+  if (!part) throw new Error('JWT 형식 오류');
+  // base64url → base64 변환 후 디코딩
+  const base64 = part.replace(/-/g, '+').replace(/_/g, '/');
+  const padded = base64 + '='.repeat((4 - (base64.length % 4)) % 4);
+  return JSON.parse(atob(padded));
+}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -22,28 +30,37 @@ Deno.serve(async (req) => {
   }
 
   const authHeader = req.headers.get('Authorization');
-  if (!authHeader) {
-    return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
+  if (!authHeader?.startsWith('Bearer ')) {
+    return new Response(JSON.stringify({ error: 'Missing Authorization header' }), { status: 401 });
   }
 
-  const supabase = createClient(
-    Deno.env.get('SUPABASE_URL') ?? '',
-    Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-    { global: { headers: { Authorization: authHeader } } },
-  );
+  const token = authHeader.slice(7);
+  console.log('authHeader:', authHeader);
 
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
-
-  if (error || !user) {
-    return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
+  let userId: string;
+  try {
+    const payload = decodeJwtPayload(token);
+    console.log('payload:', payload);
+    if (typeof payload.sub !== 'string' || !payload.sub) {
+      throw new Error('sub claim 없음');
+    }
+    userId = payload.sub;
+  } catch (e) {
+    console.log('token decode error:', String(e));
+    return new Response(JSON.stringify({ error: 'Invalid token', detail: String(e) }), {
+      status: 401,
+    });
   }
 
-  const { filename, contentType } = (await req.json()) as { filename: string; contentType: string };
+  const body = (await req.json()) as { filename: string; contentType: string };
+  console.log('body:', body);
+
+  const { filename, contentType } = body;
+
   const ext = filename.split('.').pop();
-  const key = `posts/${user.id}/${crypto.randomUUID()}.${ext ?? 'jpg'}`;
+  const key = `posts/${userId}/${crypto.randomUUID()}.${ext ?? 'jpg'}`;
+  console.log('userId:', userId);
+  console.log('key:', key);
 
   const presignedUrl = await getSignedUrl(
     r2,
