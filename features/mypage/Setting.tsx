@@ -2,7 +2,7 @@ import * as Sentry from '@sentry/react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
 import Constants from 'expo-constants';
-import { Alert, Pressable, ScrollView, View, Platform, Linking } from 'react-native';
+import { Pressable, ScrollView, View, Platform, Linking } from 'react-native';
 import { ProfileAvatar } from '@/components/ProfileAvatar';
 import { Text } from '@/components/Text';
 import { MenuItem } from './MenuItem';
@@ -39,6 +39,7 @@ export function SettingPage() {
   const [profile, setProfile] = useState<MyProfile | null>(null);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [showAskModal, setShowAskModal] = useState(false);
+  const [resultModal, setResultModal] = useState<{ title: string; body: string } | null>(null);
   const [reportInputText, setReportInputText] = useState('');
   const [isReportLoading, setIsReportLoading] = useState(false);
 
@@ -92,10 +93,13 @@ export function SettingPage() {
       await submitReport(reportInputText);
       setShowAskModal(false);
       setReportInputText('');
-      Alert.alert('문의가 접수되었습니다', '빠른 시간 내에 검토 후 조치하겠습니다.');
+      setResultModal({
+        title: '문의가 접수되었습니다',
+        body: '빠른 시간 내에 검토 후 조치하겠습니다.',
+      });
     } catch (e) {
       Sentry.captureException(e);
-      Alert.alert('오류', '문의 접수에 실패했습니다. 다시 시도해주세요.');
+      setResultModal({ title: '오류', body: '문의 접수에 실패했습니다. 다시 시도해주세요.' });
     } finally {
       setIsReportLoading(false);
     }
@@ -198,11 +202,7 @@ export function SettingPage() {
           )
         }
       />
-      <MenuItem
-        label="빠른 문의"
-        onPress={() => setShowAskModal(true)}
-        rightText="dybang00@gmail.com"
-      />
+      <MenuItem label="빠른 문의" onPress={() => setShowAskModal(true)} showArrow />
       <MenuItem
         label="버전 정보"
         onPress={() => {}}
@@ -223,6 +223,14 @@ export function SettingPage() {
         onCancel={() => setShowLogoutModal(false)}
         onConfirm={handleLogout}
         onDismiss={() => setShowLogoutModal(false)}
+      />
+      <Modal
+        visible={resultModal !== null}
+        title={resultModal?.title ?? ''}
+        body={resultModal?.body}
+        variant="single"
+        confirmLabel="확인"
+        onConfirm={() => setResultModal(null)}
       />
       {/* 빠른 문의 모달 */}
       <Modal

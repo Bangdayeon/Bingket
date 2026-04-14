@@ -92,18 +92,8 @@ Deno.serve(async (req) => {
   const title = isReply ? '💬 새 대댓글' : '💬 새 댓글';
   const body = `${authorName}: ${comment.content.slice(0, 60)}`;
 
-  await Promise.all([
-    sendExpoPush(tokenRow.token, title, body, { postId: comment.post_id }),
-    supabase.from('notifications').insert({
-      user_id: post.user_id,
-      type: isReply ? 'reply' : 'comment',
-      message: isReply
-        ? `${authorName}님이 대댓글을 달았어요`
-        : `${authorName}님이 댓글을 달았어요`,
-      target_id: comment.post_id,
-      target_type: 'post',
-    }),
-  ]);
+  // 알림 DB 삽입은 DB 트리거(trg_notify_comment)가 처리 — 여기서는 푸시만 전송
+  await sendExpoPush(tokenRow.token, title, body, { postId: comment.post_id });
 
   return new Response('ok');
 });

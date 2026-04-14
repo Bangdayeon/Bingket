@@ -101,8 +101,8 @@ export function PostCard({ post }: PostCardProps) {
       ) : firstImageUrl ? (
         <Image
           source={{ uri: firstImageUrl }}
-          style={{ width: '100%', height: 180, borderRadius: 8, marginTop: 12 }}
-          contentFit="cover"
+          style={{ width: '100%', aspectRatio: 1, borderRadius: 8, marginTop: 12 }}
+          contentFit="contain"
           cachePolicy="memory"
         />
       ) : null}

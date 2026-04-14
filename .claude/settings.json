@@ -33,7 +33,8 @@
       "Bash(grep -A 20 \"battle_request\\\\|friend_request\" /Users/bangdayeon/Desktop/Projects/Bingket/supabase/migrations/*.sql)",
       "Bash(ls -la /Users/bangdayeon/Desktop/Projects/Bingket/supabase/functions/*/index.ts)",
       "Bash(npx tsc:*)",
-      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); ios=d.get\\('expo',{}\\).get\\('ios',{}\\); print\\(json.dumps\\({'bundleId': ios.get\\('bundleIdentifier'\\), 'usesAppleSignIn': ios.get\\('usesAppleSignIn'\\)}, indent=2\\)\\)\")"
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); ios=d.get\\('expo',{}\\).get\\('ios',{}\\); print\\(json.dumps\\({'bundleId': ios.get\\('bundleIdentifier'\\), 'usesAppleSignIn': ios.get\\('usesAppleSignIn'\\)}, indent=2\\)\\)\")",
+      "Bash(npx supabase:*)"
     ]
   }
 }

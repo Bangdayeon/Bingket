@@ -100,12 +100,18 @@ export const sendFriendRequest = async (params: {
   if (error) throw error;
 
   if (requestData) {
+    const { data: sender } = await supabase
+      .from('users')
+      .select('display_name')
+      .eq('id', user.id)
+      .single();
+
     await supabase.from('notifications').insert({
       user_id: params.receiverId,
       type: 'friend_request',
-      message: `${params.receiverDisplayName}님이 친구 요청을 보냈어요.`,
+      message: `${sender?.display_name ?? '누군가'}님이 친구 요청을 보냈어요`,
       target_id: requestData.id,
-      target_type: 'friend_request',
+      target_type: null,
     });
   }
 };

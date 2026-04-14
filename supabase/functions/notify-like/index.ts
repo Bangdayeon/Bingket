@@ -62,12 +62,12 @@ Deno.serve(async (req) => {
 
   if (!tokenRow?.token) return new Response('ok');
 
-  const inserts: Promise<unknown>[] = [];
+  // 알림 DB 삽입은 DB 트리거(trg_notify_like)가 처리 — 여기서는 푸시만 전송
+  const pushes: Promise<unknown>[] = [];
 
-  // 좋아요 알림 (매번)
   const likeEnabled = !settings || settings.community_like;
   if (likeEnabled) {
-    inserts.push(
+    pushes.push(
       sendExpoPush(
         tokenRow.token,
         '❤️ 좋아요',
@@ -76,38 +76,17 @@ Deno.serve(async (req) => {
       ),
     );
   }
-  inserts.push(
-    supabase.from('notifications').insert({
-      user_id: post.user_id,
-      type: 'like',
-      message: `내 게시글에 좋아요가 달렸어요`,
-      target_id: like.post_id,
-      target_type: 'post',
-    }),
-  );
 
-  // 인기글 알림 (정확히 10개 도달 시 1회)
   const popularEnabled = !settings || settings.community_popular;
   if (popularEnabled && (post.like_count as number) === 10) {
-    inserts.push(
+    pushes.push(
       sendExpoPush(tokenRow.token, '🔥 인기글 달성!', `내 게시글이 좋아요 10개를 받았어요 🎉`, {
         postId: like.post_id,
       }),
     );
   }
-  if ((post.like_count as number) === 10) {
-    inserts.push(
-      supabase.from('notifications').insert({
-        user_id: post.user_id,
-        type: 'popular',
-        message: `내 게시글이 인기글이 됐어요 🔥`,
-        target_id: like.post_id,
-        target_type: 'post',
-      }),
-    );
-  }
 
-  await Promise.all(inserts);
+  await Promise.all(pushes);
 
   return new Response('ok');
 });
