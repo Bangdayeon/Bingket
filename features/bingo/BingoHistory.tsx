@@ -2,15 +2,7 @@ import * as Sentry from '@sentry/react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  ActivityIndicator,
-  Animated,
-  PanResponder,
-  Pressable,
-  ScrollView,
-  View,
-  useColorScheme,
-} from 'react-native';
+import { Animated, PanResponder, Pressable, ScrollView, View, useColorScheme } from 'react-native';
 import { Text } from '@/components/Text';
 import DoneIcon from '@/assets/icons/ic_done.svg';
 import DraftIcon from '@/assets/icons/ic_draft.svg';
@@ -20,6 +12,7 @@ import { fetchMyBingos, fetchMyCompletedBingos } from '@/features/bingo/lib/bing
 import { applyBingoOrder, loadBingoOrder, saveBingoOrder } from '@/features/bingo/lib/bingo-order';
 import { getCache, setCache } from '@/lib/cache';
 import { CACHE_KEY_HISTORY } from '@/constants/cache_key';
+import Loading from '@/components/Loading';
 
 interface HistoryCache {
   drafts: BingoItem[];
@@ -238,6 +231,16 @@ export function BingoHistory({ isReorderMode }: { isReorderMode: boolean }) {
   const [inProgress, setInProgress] = useState<BingoItem[]>([]);
   const [done, setDone] = useState<BingoItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const isNavigatingRef = useRef(false);
+
+  const navigate = useCallback((fn: () => void) => {
+    if (isNavigatingRef.current) return;
+    isNavigatingRef.current = true;
+    fn();
+    setTimeout(() => {
+      isNavigatingRef.current = false;
+    }, 1000);
+  }, []);
 
   const loadData = useCallback(() => {
     Promise.all([
@@ -281,7 +284,7 @@ export function BingoHistory({ isReorderMode }: { isReorderMode: boolean }) {
   if (loading) {
     return (
       <View className="flex-1 mt-[80px] items-center justify-center bg-white dark:bg-gray-900">
-        <ActivityIndicator size="large" />
+        <Loading color="6ADE50" />
       </View>
     );
   }
@@ -295,7 +298,9 @@ export function BingoHistory({ isReorderMode }: { isReorderMode: boolean }) {
         icon={<DraftIcon />}
         label="제작 중"
         items={drafts}
-        onItemPress={() => router.push({ pathname: '/bingo/add', params: { loadDraft: 'true' } })}
+        onItemPress={() =>
+          navigate(() => router.push({ pathname: '/bingo/add', params: { loadDraft: 'true' } }))
+        }
       />
       <DraggableInProgressSection
         icon={<ProgressIcon />}
@@ -303,7 +308,7 @@ export function BingoHistory({ isReorderMode }: { isReorderMode: boolean }) {
         items={inProgress}
         isReorderMode={isReorderMode}
         onItemPress={(item) =>
-          router.push({ pathname: '/bingo/view', params: { bingoId: item.id } })
+          navigate(() => router.push({ pathname: '/bingo/view', params: { bingoId: item.id } }))
         }
         onOrderChange={handleOrderChange}
       />
@@ -312,7 +317,7 @@ export function BingoHistory({ isReorderMode }: { isReorderMode: boolean }) {
         label="완료"
         items={done}
         onItemPress={(item) =>
-          router.push({ pathname: '/bingo/view', params: { bingoId: item.id } })
+          navigate(() => router.push({ pathname: '/bingo/view', params: { bingoId: item.id } }))
         }
       />
     </ScrollView>

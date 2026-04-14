@@ -9,10 +9,11 @@ import { fetchBattleByBoardId, quitBattle } from '@/features/battle/lib/battle';
 import { fetchThemes } from '@/features/bingo/lib/theme';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 import { Text } from '@/components/Text';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Chip } from '@/components/Chip';
+import Loading from '@/components/Loading';
 
 export default function BingoModifyScreen() {
   const insets = useSafeAreaInsets();
@@ -121,7 +122,7 @@ export default function BingoModifyScreen() {
   if (loading) {
     return (
       <View className="flex-1 items-center justify-center bg-white dark:bg-gray-900">
-        <ActivityIndicator size="large" />
+        <Loading color="6ADE50" />
       </View>
     );
   }

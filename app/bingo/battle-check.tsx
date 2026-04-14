@@ -1,6 +1,6 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, ScrollView, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/Text';
 import Button from '@/components/Button';
@@ -16,6 +16,7 @@ import {
 import { getSelectedBoardId, clearSelectedBoardId } from '@/features/battle/lib/battle-selection';
 import BingoPreview from '@/components/BingoPreview';
 import type { BingoData } from '@/types/bingo';
+import Loading from '@/components/Loading';
 
 function boardToBingoData(board: BattleBoardSummary): BingoData {
   return {
@@ -81,7 +82,7 @@ export default function BattleCheckScreen() {
   if (loading) {
     return (
       <View className="flex-1 items-center justify-center bg-white dark:bg-gray-900">
-        <ActivityIndicator size="large" />
+        <Loading color="6ADE50" />
       </View>
     );
   }

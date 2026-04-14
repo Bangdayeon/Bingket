@@ -1,5 +1,5 @@
 import * as Sentry from '@sentry/react-native';
-import { InteractionManager, ScrollView, Pressable, ActivityIndicator, View } from 'react-native';
+import { InteractionManager, ScrollView, Pressable, View } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { startTransition, useState, useCallback, useRef } from 'react';
 import { BingoCard } from './components/BingoCard';
@@ -19,6 +19,7 @@ import { fetchBattleByBoardId, fetchMyBattles } from '@/features/battle/lib/batt
 import { getCache, setCache } from '@/lib/cache';
 import { MAX_BINGOS } from '@/constants/bingo';
 import { CACHE_KEY_ALL } from '@/constants/cache_key';
+import Loading from '@/components/Loading';
 
 export function BingoAll() {
   const router = useRouter();
@@ -31,6 +32,7 @@ export function BingoAll() {
     null,
   );
   const memoDebounceRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+  const isNavigatingRef = useRef(false);
 
   const loadData = useCallback(() => {
     Promise.all([fetchMyBingos(), loadBingoOrder()]).then(async ([fetched, savedOrder]) => {
@@ -154,7 +156,7 @@ export function BingoAll() {
   if (loading) {
     return (
       <View className="flex-1 mt-[50px] items-center justify-center bg-white dark:bg-gray-900">
-        <ActivityIndicator size="large" />
+        <Loading color="6ADE50" />
       </View>
     );
   }
@@ -198,7 +200,14 @@ export function BingoAll() {
       {bingos.length < MAX_BINGOS && (
         <View className="px-5 mt-10">
           <Pressable
-            onPress={() => router.push('/bingo/add')}
+            onPress={() => {
+              if (isNavigatingRef.current) return;
+              isNavigatingRef.current = true;
+              router.push('/bingo/add');
+              setTimeout(() => {
+                isNavigatingRef.current = false;
+              }, 1000);
+            }}
             className="items-center justify-center gap-3 bg-green-100 w-full h-[230px] rounded-[20px]"
           >
             <AddIcon width={40} height={40} color="#4C5252" /* gray-700 */ />

@@ -1,6 +1,6 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, View } from 'react-native';
+import { FlatList, Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/Text';
 import IconButton from '@/components/IconButton';
@@ -18,6 +18,7 @@ import { acceptBattleRequest, fetchMyBattles } from '@/features/battle/lib/battl
 import BingoPreview from '@/components/BingoPreview';
 import Button from '@/components/Button';
 import MascotSad from '@/assets/mascots/mascot_sad.svg';
+import Loading from '@/components/Loading';
 
 export default function BattleSelectBoardScreen() {
   const router = useRouter();
@@ -130,7 +131,7 @@ export default function BattleSelectBoardScreen() {
 
       {loading ? (
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" />
+          <Loading color="6ADE50" />
         </View>
       ) : bingos.length === 0 ? (
         allBingos.length >= 3 ? (

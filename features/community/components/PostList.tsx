@@ -1,8 +1,9 @@
 import { useEffect, useRef, useCallback } from 'react';
-import { ActivityIndicator, FlatList, Pressable, RefreshControl, View } from 'react-native';
+import { FlatList, Pressable, RefreshControl, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { CommunityPost } from '@/types/community';
 import { PostCard } from './PostCard';
+import Loading from '@/components/Loading';
 
 interface PostListProps {
   posts: CommunityPost[];
@@ -25,15 +26,24 @@ export function PostList({
 }: PostListProps) {
   const router = useRouter();
   const flatListRef = useRef<FlatList<CommunityPost>>(null);
+  const isNavigatingRef = useRef(false);
 
-  // 필터 변경 시 맨 위로 스크롤
   useEffect(() => {
     flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
   }, [filterIndex]);
 
   const renderItem = useCallback(
     ({ item }: { item: CommunityPost }) => (
-      <Pressable onPress={() => router.push(`/community/${item.id}`)}>
+      <Pressable
+        onPress={() => {
+          if (isNavigatingRef.current) return;
+          isNavigatingRef.current = true;
+          router.push(`/community/${item.id}`);
+          setTimeout(() => {
+            isNavigatingRef.current = false;
+          }, 1000);
+        }}
+      >
         <PostCard post={item} />
       </Pressable>
     ),
@@ -43,27 +53,48 @@ export function PostList({
   const keyExtractor = useCallback((item: CommunityPost) => item.id, []);
 
   return (
-    <FlatList
-      ref={flatListRef}
-      data={posts}
-      keyExtractor={keyExtractor}
-      renderItem={renderItem}
-      ItemSeparatorComponent={Separator}
-      onEndReached={onLoadMore}
-      onEndReachedThreshold={0.5}
-      refreshControl={
-        <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} tintColor="#929898" />
-      }
-      contentContainerStyle={{ paddingBottom: 120 }}
-      ListFooterComponent={
-        isLoading ? <ActivityIndicator className="py-4" color="#929898" /> : null
-      }
-      // ── 렌더링 최적화 ──────────────────────────────────────
-      windowSize={5} // 현재 뷰포트 기준 ±2 뷰포트 범위만 렌더링
-      initialNumToRender={10} // 초기 렌더 아이템 수
-      maxToRenderPerBatch={8} // JS 프레임당 렌더 배치
-      updateCellsBatchingPeriod={30}
-      removeClippedSubviews // 화면 밖 아이템 네이티브 레이어에서 분리 (Android)
-    />
+    <View className="flex-1">
+      {/* ✅ 커스텀 상단 로딩 */}
+      {isRefreshing && (
+        <View className="absolute top-2 left-0 right-0 items-center z-10">
+          <Loading color="#6ADE50" />
+        </View>
+      )}
+
+      <FlatList
+        ref={flatListRef}
+        data={posts}
+        keyExtractor={keyExtractor}
+        renderItem={renderItem}
+        ItemSeparatorComponent={Separator}
+        onEndReached={onLoadMore}
+        onEndReachedThreshold={0.5}
+        // gesture 유지 + 기본 spinner 숨김
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={onRefresh}
+            tintColor="transparent" // iOS spinner 숨김
+            colors={['transparent']} // Android spinner 숨김
+            progressBackgroundColor="transparent"
+          />
+        }
+        contentContainerStyle={{ paddingBottom: 120 }}
+        // 하단 로딩
+        ListFooterComponent={
+          isLoading ? (
+            <View className="pt-5 items-center">
+              <Loading color="#6ADE50" />
+            </View>
+          ) : null
+        }
+        // ── 성능 ─────────────────────────
+        windowSize={5}
+        initialNumToRender={10}
+        maxToRenderPerBatch={8}
+        updateCellsBatchingPeriod={30}
+        removeClippedSubviews
+      />
+    </View>
   );
 }

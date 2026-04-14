@@ -1,6 +1,6 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, ScrollView, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/Text';
 import IconButton from '@/components/IconButton';
@@ -23,6 +23,7 @@ import { Modal } from '@/components/Modal';
 import InfoIcon from '@/assets/icons/ic_info.svg';
 import MenuIcon from '@/assets/icons/ic_more_vert.svg';
 import { Popover } from '@/components/Popover';
+import Loading from '@/components/Loading';
 
 function calcDday(targetDate: string | null): number {
   if (!targetDate) return 0;
@@ -95,7 +96,7 @@ export default function BattleStatusScreen() {
   if (loading) {
     return (
       <View className="flex-1 items-center justify-center bg-white dark:bg-gray-900">
-        <ActivityIndicator size="large" />
+        <Loading color="6ADE50" />
       </View>
     );
   }

@@ -1,6 +1,5 @@
 import { useRef, useState } from 'react';
 import {
-  ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
   Modal,
@@ -27,6 +26,7 @@ import { checkAndAwardBadges } from '@/lib/badge-checker';
 import BingoPreview from '@/components/BingoPreview';
 import { Toast } from '@/components/Toast';
 import { containsBadWord } from '@/constants/bad-words';
+import Loading from '@/components/Loading';
 
 const HEADER_H = 60;
 const TITLE_H = 60;
@@ -268,9 +268,9 @@ export default function CommunityWriteScreen() {
         <View style={{ width: 56 }} className="pr-4 items-end">
           <Pressable onPress={handleSubmit} disabled={!canSubmit} hitSlop={8}>
             {isSubmitting ? (
-              <ActivityIndicator size="small" color="#28C8DE" />
+              <Loading color="#54DBED" variant="iconloading" size={5} />
             ) : (
-              <Text className="text-label-sm" style={{ color: canSubmit ? '#28C8DE' : '#B4BBBB' }}>
+              <Text className="text-title-sm" style={{ color: canSubmit ? '#28C8DE' : '#B4BBBB' }}>
                 등록
               </Text>
             )}
@@ -551,7 +551,7 @@ export default function CommunityWriteScreen() {
 
           {loadingBingos ? (
             <View className="flex-1 items-center justify-center py-8">
-              <ActivityIndicator color="#28C8DE" />
+              <Loading color="6ADE50" />
             </View>
           ) : myBingos.length === 0 ? (
             <View className="flex-1 items-center justify-center py-8">

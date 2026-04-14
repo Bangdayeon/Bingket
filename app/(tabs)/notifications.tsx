@@ -1,15 +1,17 @@
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, ScrollView, View } from 'react-native';
+import { Alert, Pressable, ScrollView, View } from 'react-native';
 import { Text } from '@/components/Text';
 import Button from '@/components/Button';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   fetchNotifications,
+  markAllNotificationsRead,
   markNotificationRead,
   type Notification,
 } from '@/features/notifications/lib/notifications';
 import { supabase } from '@/lib/supabase';
+import Loading from '@/components/Loading';
 
 interface NotificationItemProps {
   item: Notification;
@@ -101,18 +103,21 @@ export default function NotificationsScreen() {
   const router = useRouter();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   const loadData = useCallback(() => {
     setLoading(true);
+    setFetchError(null);
     fetchNotifications()
       .then(setNotifications)
+      .catch(() => setFetchError('알림을 불러오지 못했어요. 잠시 후 다시 시도해주세요.'))
       .finally(() => setLoading(false));
   }, []);
 
   useFocusEffect(loadData);
 
   const markAllRead = async () => {
-    await supabase.from('notifications').update({ is_read: true }).eq('is_read', false);
+    await markAllNotificationsRead();
     setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
   };
 
@@ -145,7 +150,7 @@ export default function NotificationsScreen() {
   if (loading) {
     return (
       <SafeAreaView className="flex-1 bg-white dark:bg-gray-900 items-center justify-center">
-        <ActivityIndicator size="large" />
+        <Loading color="6ADE50" />
       </SafeAreaView>
     );
   }
@@ -161,11 +166,15 @@ export default function NotificationsScreen() {
       </View>
 
       <ScrollView className="flex-1">
-        {notifications.length === 0 && (
+        {fetchError ? (
+          <View className="flex-1 items-center justify-center mt-20">
+            <Text className="text-body-md text-gray-400">{fetchError}</Text>
+          </View>
+        ) : notifications.length === 0 ? (
           <View className="flex-1 items-center justify-center mt-20">
             <Text className="text-body-md text-gray-400">새로운 알림이 없어요!</Text>
           </View>
-        )}
+        ) : null}
         {notifications.map((item) => (
           <NotificationItem
             key={item.id}

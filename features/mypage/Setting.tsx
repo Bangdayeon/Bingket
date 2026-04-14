@@ -1,16 +1,8 @@
 import * as Sentry from '@sentry/react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import Constants from 'expo-constants';
-import {
-  ActivityIndicator,
-  Alert,
-  Pressable,
-  ScrollView,
-  View,
-  Platform,
-  Linking,
-} from 'react-native';
+import { Alert, Pressable, ScrollView, View, Platform, Linking } from 'react-native';
 import { ProfileAvatar } from '@/components/ProfileAvatar';
 import { Text } from '@/components/Text';
 import { MenuItem } from './MenuItem';
@@ -31,9 +23,19 @@ import Update from '@/assets/pngIcons/update.png';
 import { CACHE_KEY_PROFILE } from '@/constants/cache_key';
 import { PROFILE_TTL } from '@/constants/cache_key';
 import { TextInput } from '@/components/TextInput';
+import Loading from '@/components/Loading';
 
 export function SettingPage() {
   const router = useRouter();
+  const isNavigatingRef = useRef(false);
+  const navigate = (path: Parameters<typeof router.push>[0]) => {
+    if (isNavigatingRef.current) return;
+    isNavigatingRef.current = true;
+    router.push(path);
+    setTimeout(() => {
+      isNavigatingRef.current = false;
+    }, 1000);
+  };
   const [profile, setProfile] = useState<MyProfile | null>(null);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [showAskModal, setShowAskModal] = useState(false);
@@ -113,17 +115,17 @@ export function SettingPage() {
                 <Text className="text-body-sm">{profile.username}</Text>
               </>
             ) : (
-              <ActivityIndicator size="small" />
+              <Loading color="6ADE50" />
             )}
           </View>
           <View className="flex-row gap-8">
             <View className="flex-row gap-3 mb-2">
-              <Pressable onPress={() => router.push('/mypage/my-posts')}>
+              <Pressable onPress={() => navigate('/mypage/my-posts')}>
                 <Text className="text-body-sm">게시글 {profile?.feedCount ?? 0}</Text>
               </Pressable>
             </View>
             <View className="flex-row gap-3 mb-2">
-              <Pressable onPress={() => router.push('/mypage/friend-list')}>
+              <Pressable onPress={() => navigate('/mypage/friend-list')}>
                 <Text className="text-body-sm">친구 {profile?.friendCount ?? 0}</Text>
               </Pressable>
             </View>
@@ -140,19 +142,19 @@ export function SettingPage() {
       <MenuItem
         imgSrc={Profile}
         label="프로필 편집"
-        onPress={() => router.push('/mypage/profile-edit')}
+        onPress={() => navigate('/mypage/profile-edit')}
         showArrow
       />
       <MenuItem
         imgSrc={Account}
         label="계정 관리"
-        onPress={() => router.push('/mypage/account')}
+        onPress={() => navigate('/mypage/account')}
         showArrow
       />
       <MenuItem
         imgSrc={Notification}
         label="알림 설정"
-        onPress={() => router.push('/mypage/alert-setting')}
+        onPress={() => navigate('/mypage/alert-setting')}
         showArrow
       />
       {/* <MenuItem imgSrc={Theme} label="앱 테마" onPress={() => router.push('/mypage/app-theme')} showArrow /> */}

@@ -1,10 +1,11 @@
 import * as Sentry from '@sentry/react-native';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { useState } from 'react';
-import { ActivityIndicator, Alert, Image, Platform, TouchableOpacity } from 'react-native';
+import { Alert, Image, Platform, TouchableOpacity } from 'react-native';
 import { Text } from '@/components/Text';
 import { supabase } from '@/lib/supabase';
 import { router } from 'expo-router';
+import Loading from '@/components/Loading';
 
 async function signInWithApple(): Promise<void> {
   const credential = await AppleAuthentication.signInAsync({
@@ -98,7 +99,7 @@ export function AppleButton({ requireAgreement }: AppleButtonProps) {
       className="w-full h-14 rounded-xl bg-gray-900 dark:bg-white items-center justify-center"
     >
       {loading ? (
-        <ActivityIndicator size="small" color="#fff" />
+        <Loading color="#ffffff" />
       ) : (
         <>
           <Image

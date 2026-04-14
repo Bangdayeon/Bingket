@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Image, Pressable, ScrollView, View } from 'react-native';
+import { Image, Pressable, ScrollView, View } from 'react-native';
 import { Text } from '@/components/Text';
 import { supabase } from '@/lib/supabase';
 import { BadgeModal } from './components/BadgeModal';
+import Loading from '@/components/Loading';
 
 interface EarnedBadge {
   badgeId: string;
@@ -71,7 +72,7 @@ export function BadgesPage() {
       <ScrollView className="flex-1 mt-[80px] bg-white dark:bg-gray-900 mb-20">
         {loading ? (
           <View className="flex-1 items-center justify-center py-20">
-            <ActivityIndicator color="#929898" />
+            <Loading color="6ADE50" />
           </View>
         ) : (
           <View className="py-4 items-center">

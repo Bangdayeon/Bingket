@@ -1,9 +1,10 @@
 import { useEffect } from 'react';
-import { View, ActivityIndicator } from 'react-native';
+import { View } from 'react-native';
 import * as Linking from 'expo-linking';
 import * as WebBrowser from 'expo-web-browser';
 import * as Sentry from '@sentry/react-native';
 import { supabase } from '@/lib/supabase';
+import Loading from '@/components/Loading';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -41,7 +42,7 @@ export default function KakaoCallback() {
 
   return (
     <View className="flex-1 items-center justify-center bg-white dark:bg-gray-900">
-      <ActivityIndicator color="#929898" />
+      <Loading color="6ADE50" />
     </View>
   );
 }

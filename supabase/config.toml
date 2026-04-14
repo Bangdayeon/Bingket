@@ -356,6 +356,15 @@ verify_jwt = false
 [functions.delete-account]
 verify_jwt = false
 
+[functions.r2-presign]
+verify_jwt = false
+
+[functions.post-presign]
+verify_jwt = false
+
+[functions.submit-report]
+verify_jwt = false
+
 [edge_runtime]
 enabled = true
 # Supported request policies: `oneshot`, `per_worker`.

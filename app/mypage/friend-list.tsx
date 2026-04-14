@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Text } from '@/components/Text';
@@ -26,6 +26,7 @@ import type {
   IncomingRequest,
   UserSearchResult,
 } from '@/types/friend';
+import Loading from '@/components/Loading';
 
 export default function FriendListScreen() {
   const router = useRouter();
@@ -196,7 +197,7 @@ export default function FriendListScreen() {
         />
       ) : listLoading ? (
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator />
+          <Loading color="6ADE50" />
         </View>
       ) : (
         <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 16 }}>

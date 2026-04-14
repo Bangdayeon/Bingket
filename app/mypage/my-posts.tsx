@@ -3,11 +3,12 @@ import BackArrowIcon from '@/assets/icons/ic_arrow_back.svg';
 import SMSIcon from '@/assets/icons/ic_sms.svg';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, View, useColorScheme } from 'react-native';
+import { Pressable, ScrollView, View, useColorScheme } from 'react-native';
 import { Text } from '@/components/Text';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { fetchMyPosts, MyPost } from '@/features/mypage/lib/mypage';
 import FavoriteOffIcon from '@/assets/icons/ic_favorite_off.svg';
+import Loading from '@/components/Loading';
 
 const CATEGORY_LABEL: Record<MyPost['category'], string> = {
   bingo_board: '빙고판',
@@ -83,7 +84,7 @@ export default function MyPostsScreen() {
 
       {loading ? (
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" />
+          <Loading color="6ADE50" />
         </View>
       ) : posts.length === 0 ? (
         <View className="flex-1 items-center justify-center">

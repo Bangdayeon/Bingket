@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, ScrollView, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Text } from '@/components/Text';
 import { Modal } from '@/components/Modal';
@@ -17,6 +17,7 @@ import {
   type BattleListEntry,
 } from '@/features/battle/lib/battle';
 import { setSelectedRequestId } from '@/features/battle/lib/battle-selection';
+import Loading from '@/components/Loading';
 
 export function BingoBattle() {
   const router = useRouter();
@@ -98,7 +99,7 @@ export function BingoBattle() {
       <ScrollView className="flex-1 mt-[70px] bg-white dark:bg-gray-900 mb-20">
         {loading ? (
           <View className="py-10 items-center">
-            <ActivityIndicator size="large" />
+            <Loading color="6ADE50" />
           </View>
         ) : (
           <>
@@ -210,7 +211,7 @@ export function BingoBattle() {
 
       {acting && (
         <View className="absolute inset-0 items-center justify-center bg-black/20">
-          <ActivityIndicator size="large" />
+          <Loading color="6ADE50" />
         </View>
       )}
     </>

@@ -1,14 +1,7 @@
 import IconButton from '@/components/IconButton';
 import BackArrowIcon from '@/assets/icons/ic_arrow_back.svg';
 import { useRouter } from 'expo-router';
-import {
-  ActivityIndicator,
-  ImageSourcePropType,
-  Image,
-  Pressable,
-  View,
-  useColorScheme,
-} from 'react-native';
+import { ImageSourcePropType, Image, Pressable, View, useColorScheme } from 'react-native';
 import { Text } from '@/components/Text';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Modal } from '@/components/Modal';
@@ -20,6 +13,7 @@ import {
   resetMyBingos,
   deleteAccount,
 } from '@/features/mypage/lib/mypage';
+import Loading from '@/components/Loading';
 
 const PROVIDER_CONFIG: Record<
   string,
@@ -121,7 +115,7 @@ export default function AccountScreen() {
       <View className="px-5 pt-6 pb-4">
         <Text className="text-title-sm mb-4">연동 계정 정보</Text>
         {accounts.length === 0 ? (
-          <ActivityIndicator size="small" />
+          <Loading color="6ADE50" />
         ) : (
           accounts.map((account) => {
             const cfg = PROVIDER_CONFIG[account.provider];
@@ -153,7 +147,7 @@ export default function AccountScreen() {
 
       {loading ? (
         <View className="py-6 items-center">
-          <ActivityIndicator size="large" />
+          <Loading color="6ADE50" />
         </View>
       ) : (
         <>

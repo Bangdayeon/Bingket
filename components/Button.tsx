@@ -1,5 +1,6 @@
-import { ActivityIndicator, TouchableOpacity, TouchableOpacityProps } from 'react-native';
+import { TouchableOpacity, TouchableOpacityProps, View } from 'react-native';
 import { Text } from './Text';
+import Loading from './Loading';
 
 type Variant = 'primary' | 'secondary' | 'dangerous';
 type Size = 'sm' | 'md';
@@ -30,8 +31,8 @@ const variantStyles: Record<Variant, { container: string; text: string }> = {
 };
 
 const sizeStyles: Record<Size, string> = {
-  sm: 'h-10 md:h-12', // phone: 40px / tablet: 48px
-  md: 'h-14 md:h-[60px]', // phone: 56px / tablet: 60px
+  sm: 'h-10 md:h-12',
+  md: 'h-14 md:h-[60px]',
 };
 
 export default function Button({
@@ -48,25 +49,33 @@ export default function Button({
   const isDisabled = disabled || loading;
   const heightClass = sizeStyles[size];
 
+  const loadingColor = variant === 'secondary' ? '#6E7575' : '#48BE30';
+
   return (
     <TouchableOpacity
       onPress={onClick}
       disabled={isDisabled}
       activeOpacity={0.8}
-      className={`rounded-full items-center justify-center ${heightClass} ${container} ${
+      className={`relative rounded-full items-center justify-center ${heightClass} ${container} ${
         isDisabled ? 'opacity-40' : ''
       } ${className}`}
       {...rest}
     >
-      {loading ? (
-        <ActivityIndicator color={variant === 'secondary' ? '#181C1C' : '#ffffff'} />
-      ) : (
+      {/* 텍스트 */}
+      {!loading && (
         <Text
           className={`text-label-sm md:text-label-md ${text}`}
           style={variant === 'primary' ? { color: '#181C1C' } : undefined}
         >
           {label}
         </Text>
+      )}
+
+      {/* 로딩 (정중앙 absolute) */}
+      {loading && (
+        <View className="absolute inset-0 items-center justify-center">
+          <Loading color={loadingColor} />
+        </View>
       )}
     </TouchableOpacity>
   );

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import IconButton from '@/components/IconButton';
@@ -13,6 +13,7 @@ import {
   saveNotificationSettings,
   type NotificationSettings,
 } from '@/features/mypage/lib/notification-settings';
+import Loading from '@/components/Loading';
 
 interface ToggleRowProps {
   label: string;
@@ -85,11 +86,7 @@ export default function AlertSettingScreen() {
           onClick={() => router.back()}
         />
         <Text className="flex-1 text-center text-title-sm">알림 설정</Text>
-        {loading ? (
-          <ActivityIndicator size="small" color="#929898" /* gray-500 */ style={{ width: 32 }} />
-        ) : (
-          <View className="w-8" />
-        )}
+        {loading ? <Loading color="6ADE50" /> : <View className="w-8" />}
       </View>
 
       <ScrollView className="flex-1">

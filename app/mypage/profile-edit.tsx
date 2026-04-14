@@ -6,14 +6,7 @@ import BackArrowIcon from '@/assets/icons/ic_arrow_back.svg';
 import CameraIcon from '@/assets/icons/ic_camera.svg';
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import {
-  ActionSheetIOS,
-  ActivityIndicator,
-  Platform,
-  Pressable,
-  ScrollView,
-  View,
-} from 'react-native';
+import { ActionSheetIOS, Platform, Pressable, ScrollView, View } from 'react-native';
 import { clearCache } from '@/lib/cache';
 
 import { Text } from '@/components/Text';
@@ -25,6 +18,7 @@ import {
   DEFAULT_AVATAR_PREFIX,
 } from '@/components/ProfileAvatar';
 import { fetchMyProfile, updateMyProfile, uploadProfileImage } from '@/features/mypage/lib/mypage';
+import Loading from '@/components/Loading';
 
 const NAME_MAX = 20;
 const USER_ID_MAX = 20;
@@ -186,7 +180,7 @@ export default function ProfileEditPage() {
         <Text className="flex-1 text-center text-title-sm">프로필 편집</Text>
         <Pressable onPress={handleSave} disabled={saving}>
           {saving ? (
-            <ActivityIndicator size="small" />
+            <Loading color="#6ADE50" variant="iconloading" size={5} />
           ) : (
             <Text className="text-title-sm">저장</Text>
           )}

@@ -1,12 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  ActivityIndicator,
-  FlatList,
-  Pressable,
-  TextInput as RNTextInput,
-  View,
-  useColorScheme,
-} from 'react-native';
+import { FlatList, Pressable, TextInput as RNTextInput, View, useColorScheme } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -17,6 +10,7 @@ import ArrowBackIcon from '@/assets/icons/ic_arrow_back.svg';
 import SearchIcon from '@/assets/icons/ic_search.svg';
 import { searchPosts } from '@/features/community/lib/community';
 import type { CommunityPost } from '@/types/community';
+import Loading from '@/components/Loading';
 
 const MAX_RECENT = 10;
 const RECENT_SEARCHES_KEY = '@bingket/recent-searches';
@@ -121,7 +115,7 @@ export default function CommunitySearchScreen() {
       {/* 로딩 */}
       {loading && (
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator color="#929898" /* gray-500 */ />
+          <Loading color="6ADE50" />
         </View>
       )}
 

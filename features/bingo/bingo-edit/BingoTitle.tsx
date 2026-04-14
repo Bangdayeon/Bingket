@@ -1,7 +1,7 @@
 import { View } from 'react-native';
 import { Text } from '@/components/Text';
 import { TextInput } from '@/components/TextInput';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface BingoTitleProps {
   value?: string;
@@ -10,6 +10,10 @@ interface BingoTitleProps {
 
 export function BingoTitle({ value = '', onChange }: BingoTitleProps) {
   const [title, setTitle] = useState(value);
+
+  useEffect(() => {
+    setTitle(value);
+  }, [value]);
 
   const handleChange = (text: string) => {
     setTitle(text);

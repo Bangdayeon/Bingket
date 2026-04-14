@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
@@ -33,6 +32,7 @@ import { supabase } from '@/lib/supabase';
 import { Modal } from '@/components/Modal';
 import { Toast } from '@/components/Toast';
 import { containsBadWord } from '@/constants/bad-words';
+import Loading from '@/components/Loading';
 
 const REPORT_REASONS = [
   '상업적 광고 및 판매',
@@ -145,7 +145,7 @@ export default function CommunityDetailScreen() {
           </View>
         </View>
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator color="#929898" />
+          <Loading color="6ADE50" />
         </View>
       </SafeAreaView>
     );
@@ -414,6 +414,7 @@ export default function CommunityDetailScreen() {
       {/* ── 신고하기 모달 ── */}
       <Modal
         visible={showReportModal}
+        confirmLoading={isReporting}
         title="신고하기"
         body={
           <>
@@ -448,11 +449,6 @@ export default function CommunityDetailScreen() {
                 <Text className="text-body-md">{reason}</Text>
               </Pressable>
             ))}
-            {isReporting && (
-              <View className="mt-2">
-                <ActivityIndicator size="small" color="#EC5858" />
-              </View>
-            )}
           </>
         }
         variant="default" // 확인 + 취소 버튼 둘 다 사용
@@ -492,17 +488,13 @@ export default function CommunityDetailScreen() {
       <Modal
         visible={showDeleteModal}
         title="게시글 삭제"
+        confirmLoading={isDeleting}
         body={
           <>
             <Text className="text-body-sm text-gray-500">
               정말로 삭제하시겠어요?{'\n'}
               삭제된 게시글은 복구할 수 없어요.
             </Text>
-            {isDeleting && (
-              <View className="mt-2">
-                <ActivityIndicator size="small" color="#EC5858" />
-              </View>
-            )}
           </>
         }
         variant="single"
@@ -515,14 +507,10 @@ export default function CommunityDetailScreen() {
       <Modal
         visible={showDeleteCommentModal}
         title="댓글 삭제"
+        confirmLoading={isDeletingComment}
         body={
           <>
             <Text className="text-body-sm text-gray-500">댓글을 삭제할까요?</Text>
-            {isDeletingComment && (
-              <View className="mt-2">
-                <ActivityIndicator size="small" color="#EC5858" />
-              </View>
-            )}
           </>
         }
         variant="single" // 확인 버튼만 사용
@@ -535,17 +523,13 @@ export default function CommunityDetailScreen() {
       <Modal
         visible={showBlockModal}
         title="차단하기"
+        confirmLoading={isBlocking}
         body={
           <>
             <Text className="text-body-sm text-gray-500">
               이 사용자를 차단하시겠어요?{'\n'}
               차단된 사용자의 게시글과 댓글이 보이지 않습니다.
             </Text>
-            {isBlocking && (
-              <View className="mt-2">
-                <ActivityIndicator size="small" color="#EC5858" />
-              </View>
-            )}
           </>
         }
         variant="single"

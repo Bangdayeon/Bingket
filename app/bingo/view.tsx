@@ -9,7 +9,7 @@ import {
 } from '@/features/bingo/lib/bingo';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, ScrollView, TextInput, View, useColorScheme } from 'react-native';
+import { ScrollView, TextInput, View, useColorScheme } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import IconButton from '@/components/IconButton';
 import { Text } from '@/components/Text';
@@ -19,6 +19,7 @@ import DoneIcon from '@/assets/icons/ic_done.svg';
 import type { FetchedBingo } from '@/features/bingo/lib/bingo';
 import type { BingoCellDetail } from '@/types/bingo-cell';
 import { fetchBattleByBoardId } from '@/features/battle/lib/battle';
+import Loading from '@/components/Loading';
 
 export default function BingoViewScreen() {
   const insets = useSafeAreaInsets();
@@ -79,7 +80,7 @@ export default function BingoViewScreen() {
   if (loading) {
     return (
       <View className="flex-1 items-center justify-center bg-white dark:bg-gray-900">
-        <ActivityIndicator size="large" />
+        <Loading color="6ADE50" />
       </View>
     );
   }

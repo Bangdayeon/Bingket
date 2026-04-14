@@ -1,10 +1,11 @@
 import * as Sentry from '@sentry/react-native';
 import * as WebBrowser from 'expo-web-browser';
 import { useState } from 'react';
-import { ActivityIndicator, Image, TouchableOpacity } from 'react-native';
+import { Image, TouchableOpacity } from 'react-native';
 import { Text } from '@/components/Text';
 import { supabase } from '@/lib/supabase';
 import { router } from 'expo-router';
+import Loading from '@/components/Loading';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -73,7 +74,7 @@ export function KakaoButton({ requireAgreement }: KakaoButtonProps) {
       className="w-full h-14 rounded-xl bg-kakao items-center justify-center"
     >
       {loading ? (
-        <ActivityIndicator size="small" color="#000" />
+        <Loading color="#000000" />
       ) : (
         <>
           <Image

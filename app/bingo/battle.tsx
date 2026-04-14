@@ -1,6 +1,6 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/Text';
 import { TextInput } from '@/components/TextInput';
@@ -20,6 +20,7 @@ import {
 } from '@/features/battle/lib/battle-selection';
 import { ProfileAvatar } from '@/components/ProfileAvatar';
 import { Modal } from '@/components/Modal';
+import Loading from '@/components/Loading';
 
 export default function BattleScreen() {
   const router = useRouter();
@@ -94,7 +95,7 @@ export default function BattleScreen() {
   if (loadingBingo) {
     return (
       <View className="flex-1 items-center justify-center bg-white dark:bg-gray-900">
-        <ActivityIndicator size="large" />
+        <Loading color="6ADE50" />
       </View>
     );
   }

@@ -1,9 +1,10 @@
-import { useEffect, useRef } from 'react';
-import { ActivityIndicator, Pressable, TextInput as RNTextInput, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { Pressable, TextInput as RNTextInput, View } from 'react-native';
 import { Text } from '@/components/Text';
 import { TextInput } from '@/components/TextInput';
 import SendIcon from '@/assets/icons/ic_send.svg';
 import CheckIcon from '@/assets/icons/ic_check.svg';
+import IconButton from '@/components/IconButton';
 
 interface CommentInputProps {
   value: string;
@@ -35,6 +36,7 @@ export function CommentInput({
   }, [replyTo?.id]);
 
   const anonymousColor = isAnonymous ? '#28C8DE' /* sky-500 */ : '#B4BBBB'; /* gray-400 */
+  const [pressed, setPressed] = useState(false);
 
   return (
     <View
@@ -63,24 +65,20 @@ export function CommentInput({
           variant="community"
           value={value}
           onChangeText={onChangeText}
-          placeholder={replyTo ? `${replyTo.author}에게 답글...` : '댓글을 입력해주세요.'}
+          placeholder="댓글을 입력해주세요."
           className="flex-1"
           style={{ flex: 1 }}
         />
 
-        <Pressable hitSlop={8} onPress={onSubmit} disabled={isSubmitting}>
-          {({ pressed }) =>
-            isSubmitting ? (
-              <ActivityIndicator size="small" color="#F07840" /* peach500 */ />
-            ) : (
-              <SendIcon
-                width={24}
-                height={24}
-                color={pressed ? '#F79A6E' /* peach400 */ : '#F07840' /* peach500 */}
-              />
-            )
-          }
-        </Pressable>
+        <IconButton
+          icon={<SendIcon width={24} height={24} color={pressed ? '#F79A6E' : '#F07840'} />}
+          onClick={onSubmit}
+          variant="ghost"
+          loading={isSubmitting}
+          disabled={isSubmitting}
+          onPressIn={() => setPressed(true)}
+          onPressOut={() => setPressed(false)}
+        />
       </View>
     </View>
   );

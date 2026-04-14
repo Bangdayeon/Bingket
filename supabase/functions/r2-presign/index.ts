@@ -30,7 +30,10 @@ Deno.serve(async (req) => {
   }
 
   const authHeader = req.headers.get('Authorization');
+  console.log('[r2-presign] Authorization header present:', !!authHeader);
+
   if (!authHeader?.startsWith('Bearer ')) {
+    console.error('[r2-presign] Missing or malformed Authorization header');
     return new Response(JSON.stringify({ error: 'Missing Authorization header' }), { status: 401 });
   }
 
@@ -39,11 +42,13 @@ Deno.serve(async (req) => {
   let userId: string;
   try {
     const payload = decodeJwtPayload(token);
+    console.log('[r2-presign] JWT payload sub:', payload.sub, 'role:', payload.role);
     if (typeof payload.sub !== 'string' || !payload.sub) {
       throw new Error('sub claim 없음');
     }
     userId = payload.sub;
   } catch (e) {
+    console.error('[r2-presign] JWT decode error:', String(e));
     return new Response(JSON.stringify({ error: 'Invalid token', detail: String(e) }), {
       status: 401,
     });

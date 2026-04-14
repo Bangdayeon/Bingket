@@ -1,6 +1,7 @@
-import { View, Text, FlatList, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, FlatList, Pressable } from 'react-native';
 import { ProfileAvatar } from '@/components/ProfileAvatar';
 import { UserSearchResult as UserSearchResultType } from '@/types/friend';
+import Loading from '@/components/Loading';
 
 interface Props {
   searchLoading: boolean;
@@ -23,7 +24,7 @@ export function SearchList({
     <View className="flex-1">
       {searchLoading ? (
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator />
+          <Loading color="6ADE50" />
         </View>
       ) : searchError ? (
         <View className="flex-1 items-center justify-center px-8">
@@ -64,7 +65,7 @@ export function SearchList({
                   className={`px-4 py-2 rounded-full ${bgClass} ${isFriend || isSending ? 'opacity-60' : ''}`}
                 >
                   {isSending ? (
-                    <ActivityIndicator size="small" color="#181C1C" />
+                    <Loading color="#6ADE50" size={4} spacing={3} />
                   ) : (
                     <Text className="text-caption-sm">{label}</Text>
                   )}

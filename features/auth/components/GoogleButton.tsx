@@ -3,9 +3,10 @@ import { supabase } from '@/lib/supabase';
 import { makeRedirectUri } from 'expo-auth-session';
 import * as WebBrowser from 'expo-web-browser';
 import { useState } from 'react';
-import { ActivityIndicator, Image, TouchableOpacity } from 'react-native';
+import { Image, TouchableOpacity } from 'react-native';
 import { Text } from '@/components/Text';
 import { router } from 'expo-router';
+import Loading from '@/components/Loading';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -101,7 +102,7 @@ export function GoogleButton({ requireAgreement }: GoogleButtonProps) {
       className="w-full h-14 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 items-center justify-center"
     >
       {loading ? (
-        <ActivityIndicator size="small" color="#000" />
+        <Loading color="#000000" />
       ) : (
         <>
           <Image

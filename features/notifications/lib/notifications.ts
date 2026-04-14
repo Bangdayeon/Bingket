@@ -11,10 +11,17 @@ export interface Notification {
 }
 
 export const fetchNotifications = async (): Promise<Notification[]> => {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return [];
+
   const { data, error } = await supabase
     .from('notifications')
-    .select('*')
-    .order('created_at', { ascending: false });
+    .select('id, type, message, target_id, target_type, is_read, created_at')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false })
+    .limit(50);
 
   if (error) throw error;
   return data ?? [];
