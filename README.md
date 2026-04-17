@@ -26,18 +26,14 @@
 
 ## 개발 방식
 
-이 프로젝트는 AI 도구(Claude Code, Figma MCP 등)를 활용해 1인 개발로 진행했습니다.
+이 프로젝트는 AI 도구(Claude Code)를 활용해 1인 개발로 진행했습니다.
 디자인부터 코드 구현까지 AI와 협업하는 방식으로, 빠른 이터레이션과 실제 출시 가능한 품질을 동시에 추구합니다.
 
 - **디자인** — Figma로 직접 설계, MCP를 통해 코드로 변환
 - **CI/CD** — GitHub Actions + EAS Build로 자동 빌드/배포 파이프라인 구성
-- **플랫폼** — iOS / Android 단일 코드베이스로 동시 대응
+- **플랫폼** — iOS (심사중) / Android (준비중)
 
 ## 스크린샷
 
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/ef8dde29-4fab-4032-9cc0-aa5cf559d849" width="20%" />
-  <img src="https://github.com/user-attachments/assets/326452c6-1535-45fe-b570-13810ea51063" width="20%" />
-  <img src="https://github.com/user-attachments/assets/f5867937-6741-401f-ba0f-8baabbdf0005" width= "20%" />
-  <img src="https://github.com/user-attachments/assets/184fce99-15f9-46b9-b707-2ae136178fbd" width= "20%" />
-</p>
+<img width="6485" height="2768" alt="Group 210" src="https://github.com/user-attachments/assets/a5894c65-45c3-4684-a883-445d28811db7" />
+
