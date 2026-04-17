@@ -1,9 +1,10 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import { FlatList, Pressable, RefreshControl, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { CommunityPost } from '@/types/community';
 import { PostCard } from './PostCard';
 import Loading from '@/components/Loading';
+import { supabase } from '@/lib/supabase';
 
 interface PostListProps {
   posts: CommunityPost[];
@@ -27,6 +28,13 @@ export function PostList({
   const router = useRouter();
   const flatListRef = useRef<FlatList<CommunityPost>>(null);
   const isNavigatingRef = useRef(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      setCurrentUserId(data.session?.user.id ?? null);
+    });
+  }, []);
 
   useEffect(() => {
     flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
@@ -44,10 +52,10 @@ export function PostList({
           }, 1000);
         }}
       >
-        <PostCard post={item} />
+        <PostCard post={item} currentUserId={currentUserId} />
       </Pressable>
     ),
-    [router],
+    [router, currentUserId],
   );
 
   const keyExtractor = useCallback((item: CommunityPost) => item.id, []);

@@ -1,7 +1,9 @@
-import { View } from 'react-native';
+import { useState } from 'react';
+import { Pressable, View } from 'react-native';
 import { Image } from 'expo-image';
 import { Text } from '@/components/Text';
 import SMSIcon from '@/assets/icons/ic_sms.svg';
+import SirenIcon from '@/assets/icons/ic_siren.svg';
 import { CommunityPost } from '@/types/community';
 import type { StoredBlock } from '@/types/community';
 import { LikeButton } from './LikeButton';
@@ -9,8 +11,20 @@ import AnonymousProfile from '@/components/AnonymousProfile';
 import { ProfileAvatar } from '@/components/ProfileAvatar';
 import BingoPreview from '@/components/BingoPreview';
 import type { BingoData } from '@/types/bingo';
+import { Popover } from '@/components/Popover';
+import { Modal } from '@/components/Modal';
+import { submitReport, blockUser } from '@/features/community/lib/community';
 
 const ICON_SIZE = 24;
+
+const REPORT_REASONS = [
+  '상업적 광고 및 판매',
+  '욕설/비하',
+  '음란물/성적인 내용',
+  '도배',
+  '사칭/사기',
+  '기타',
+];
 
 function postBingoToBingoData(bingo: NonNullable<CommunityPost['bingo']>): BingoData {
   return {
@@ -44,10 +58,21 @@ function parseBlocks(content: string): StoredBlock[] | null {
 
 interface PostCardProps {
   post: CommunityPost;
+  currentUserId?: string | null;
 }
 
-export function PostCard({ post }: PostCardProps) {
-  const iconColor = '#4C5252';
+export function PostCard({ post, currentUserId }: PostCardProps) {
+  const iconColor = '#4C5252'; /* gray-700 */
+
+  const [showMenu, setShowMenu] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [selectedReason, setSelectedReason] = useState<string | null>(null);
+  const [isReporting, setIsReporting] = useState(false);
+  const [showBlockModal, setShowBlockModal] = useState(false);
+  const [isBlocking, setIsBlocking] = useState(false);
+  const [alertModal, setAlertModal] = useState<{ title: string; message: string } | null>(null);
+
+  const isOwnPost = currentUserId != null ? post.userId === currentUserId : true;
 
   // blocks 기반 첫 번째 미디어 탐색
   const blocks = parseBlocks(post.body);
@@ -62,32 +87,61 @@ export function PostCard({ post }: PostCardProps) {
       if (b.type === 'bingo') hasBingo = true;
     }
   } else {
-    // 구형: bingo > image 우선
     if (post.bingo) hasBingo = true;
     else if (post.imageUrls?.length) firstImageUrl = post.imageUrls[0];
   }
 
   const bingoData = hasBingo && post.bingo ? postBingoToBingoData(post.bingo) : null;
 
+  const menuItems = [
+    {
+      label: '신고하기',
+      onPress: () => setShowReportModal(true),
+    },
+    ...(post.user?.is_deleted
+      ? []
+      : [
+          {
+            label: '차단하기',
+            danger: true as const,
+            onPress: () => setShowBlockModal(true),
+          },
+        ]),
+  ];
+
   return (
     <View className="px-5 pt-4 pb-4">
       {/* 작성자 */}
-      <View className="flex-row items-center gap-2">
-        {post.isAnonymous ? (
-          <AnonymousProfile seed={post.id} size="md" />
-        ) : (
-          <ProfileAvatar avatarUrl={post.avatarUrl ?? null} size={32} />
-        )}
-        <View className="flex-row items-center gap-1">
-          <Text className="text-label-sm">{post.author}</Text>
-          <Text className="text-caption-sm" style={{ color: '#181C1C' }}>
-            •
-          </Text>
-          <Text className="text-caption-sm" style={{ color: '#929898' }}>
-            {post.timeAgo}
-          </Text>
+      <View className="flex-row items-center justify-between">
+        <View className="flex-row items-center gap-2">
+          {post.isAnonymous ? (
+            <AnonymousProfile seed={post.id} size="md" />
+          ) : (
+            <ProfileAvatar avatarUrl={post.avatarUrl ?? null} size={32} />
+          )}
+          <View className="flex-row items-center gap-1">
+            <Text className="text-label-sm">{post.author}</Text>
+            <Text className="text-caption-sm" style={{ color: '#181C1C' }}>
+              •
+            </Text>
+            <Text className="text-caption-sm" style={{ color: '#929898' /* gray-500 */ }}>
+              {post.timeAgo}
+            </Text>
+          </View>
         </View>
+        {!isOwnPost && (
+          <Pressable onPress={() => setShowMenu((v) => !v)} hitSlop={8}>
+            <SirenIcon width={20} height={20} color={iconColor} />
+          </Pressable>
+        )}
       </View>
+
+      <Popover
+        visible={showMenu}
+        items={menuItems}
+        onDismiss={() => setShowMenu(false)}
+        style={{ top: 52, right: 0 }}
+      />
 
       {/* 제목 */}
       <Text className="text-label-md mt-4">{post.title}</Text>
@@ -119,6 +173,120 @@ export function PostCard({ post }: PostCardProps) {
           <Text className="text-body-sm">{post.commentCount}</Text>
         </View>
       </View>
+
+      {/* 신고하기 모달 */}
+      <Modal
+        visible={showReportModal}
+        confirmLoading={isReporting}
+        title="신고하기"
+        body={
+          <>
+            {REPORT_REASONS.map((reason) => (
+              <Pressable
+                key={reason}
+                onPress={() => setSelectedReason(reason)}
+                className="flex-row items-center gap-3 py-2"
+              >
+                <View
+                  style={{
+                    width: 16,
+                    height: 16,
+                    borderRadius: 8,
+                    borderWidth: 1.5,
+                    borderColor: selectedReason === reason ? '#28C8DE' : '#D2D6D6',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  {selectedReason === reason && (
+                    <View
+                      style={{
+                        width: 8,
+                        height: 8,
+                        borderRadius: 4,
+                        backgroundColor: '#28C8DE',
+                      }}
+                    />
+                  )}
+                </View>
+                <Text className="text-body-md">{reason}</Text>
+              </Pressable>
+            ))}
+          </>
+        }
+        variant="default"
+        confirmLabel="신고하기"
+        cancelLabel="취소하기"
+        confirmDisabled={!selectedReason}
+        onConfirm={async () => {
+          if (!selectedReason) return;
+          setIsReporting(true);
+          try {
+            await submitReport('post', post.id, selectedReason);
+            setShowReportModal(false);
+            setSelectedReason(null);
+            setAlertModal({ title: '신고 완료', message: '신고가 접수되었습니다.' });
+          } catch (e) {
+            setAlertModal({
+              title: '오류',
+              message: e instanceof Error ? e.message : '신고에 실패했습니다.',
+            });
+          } finally {
+            setIsReporting(false);
+          }
+        }}
+        onCancel={() => {
+          if (isReporting) return;
+          setShowReportModal(false);
+          setSelectedReason(null);
+        }}
+        onDismiss={() => {
+          if (isReporting) return;
+          setShowReportModal(false);
+        }}
+      />
+
+      {/* 차단하기 모달 */}
+      <Modal
+        visible={showBlockModal}
+        confirmLoading={isBlocking}
+        title="차단하기"
+        body={
+          <Text className="text-body-sm text-gray-500">
+            이 사용자를 차단하시겠어요?{'\n'}
+            차단된 사용자의 게시글과 댓글이 보이지 않습니다.
+          </Text>
+        }
+        variant="single"
+        confirmLabel="차단하기"
+        onConfirm={async () => {
+          setIsBlocking(true);
+          try {
+            await blockUser(post.userId);
+            setShowBlockModal(false);
+            setAlertModal({ title: '차단 완료', message: '해당 사용자를 차단했습니다.' });
+          } catch (e) {
+            setShowBlockModal(false);
+            setAlertModal({
+              title: '오류',
+              message: e instanceof Error ? e.message : '차단에 실패했습니다.',
+            });
+          } finally {
+            setIsBlocking(false);
+          }
+        }}
+        onDismiss={() => !isBlocking && setShowBlockModal(false)}
+      />
+
+      {/* 범용 알림 모달 */}
+      <Modal
+        visible={alertModal !== null}
+        title={alertModal?.title ?? ''}
+        body={alertModal?.message ?? ''}
+        variant="single"
+        onConfirm={() => setAlertModal(null)}
+        onDismiss={() => setAlertModal(null)}
+      />
     </View>
   );
 }
