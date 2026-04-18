@@ -18,7 +18,8 @@
       "usesAppleSignIn": true,
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
-      }
+      },
+      "appleTeamId": "MVHPSL2Y9N"
     },
     "android": {
       "package": "com.day.bingket.app",

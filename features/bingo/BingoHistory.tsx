@@ -277,7 +277,7 @@ export function BingoHistory({ isReorderMode }: { isReorderMode: boolean }) {
   if (loading) {
     return (
       <View className="flex-1 mt-[80px] items-center justify-center bg-white  ">
-        <Loading color="6ADE50" />
+        <Loading color="#6ADE50" />
       </View>
     );
   }

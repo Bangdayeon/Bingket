@@ -24,7 +24,7 @@ export function SearchList({
     <View className="flex-1">
       {searchLoading ? (
         <View className="flex-1 items-center justify-center">
-          <Loading color="6ADE50" />
+          <Loading color="#6ADE50" />
         </View>
       ) : searchError ? (
         <View className="flex-1 items-center justify-center px-8">

@@ -86,7 +86,7 @@ export default function AlertSettingScreen() {
           onClick={() => router.back()}
         />
         <Text className="flex-1 text-center text-title-sm">알림 설정</Text>
-        {loading ? <Loading color="6ADE50" /> : <View className="w-8" />}
+        {loading ? <Loading color="#6ADE50" /> : <View className="w-8" />}
       </View>
 
       <ScrollView className="flex-1">

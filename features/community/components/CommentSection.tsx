@@ -27,6 +27,9 @@ export function CommentSection({
           <Text className="text-body-md" style={{ color: '#929898' /* gray-500 */ }}>
             첫 댓글을 남겨주세요.
           </Text>
+          <Text className="text-body-md" style={{ color: '#929898' /* gray-500 */ }}>
+            부적절한 내용은 제재를 받을 수 있어요.
+          </Text>
         </View>
       ) : (
         <View className="gap-5">

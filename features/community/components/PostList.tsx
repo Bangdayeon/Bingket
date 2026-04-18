@@ -10,6 +10,7 @@ interface PostListProps {
   posts: CommunityPost[];
   onLoadMore: () => void;
   onRefresh: () => void;
+  onBlock?: (userId: string) => void;
   isLoading: boolean;
   isRefreshing: boolean;
   filterIndex: number;
@@ -21,6 +22,7 @@ export function PostList({
   posts,
   onLoadMore,
   onRefresh,
+  onBlock,
   isLoading,
   isRefreshing,
   filterIndex,
@@ -52,10 +54,10 @@ export function PostList({
           }, 1000);
         }}
       >
-        <PostCard post={item} currentUserId={currentUserId} />
+        <PostCard post={item} currentUserId={currentUserId} onBlock={onBlock} />
       </Pressable>
     ),
-    [router, currentUserId],
+    [router, currentUserId, onBlock],
   );
 
   const keyExtractor = useCallback((item: CommunityPost) => item.id, []);

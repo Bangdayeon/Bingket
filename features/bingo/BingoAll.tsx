@@ -156,7 +156,7 @@ export function BingoAll() {
   if (loading) {
     return (
       <View className="flex-1 mt-[50px] items-center justify-center bg-white  ">
-        <Loading color="6ADE50" />
+        <Loading color="#6ADE50" />
       </View>
     );
   }

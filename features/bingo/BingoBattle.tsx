@@ -99,7 +99,7 @@ export function BingoBattle() {
       <ScrollView className="flex-1 mt-[70px] bg-white   mb-20">
         {loading ? (
           <View className="py-10 items-center">
-            <Loading color="6ADE50" />
+            <Loading color="#6ADE50" />
           </View>
         ) : (
           <>
@@ -211,7 +211,7 @@ export function BingoBattle() {
 
       {acting && (
         <View className="absolute inset-0 items-center justify-center bg-black/20">
-          <Loading color="6ADE50" />
+          <Loading color="#6ADE50" />
         </View>
       )}
     </>

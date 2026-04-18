@@ -62,7 +62,7 @@ export function CommentInput({
           variant="community"
           value={value}
           onChangeText={onChangeText}
-          placeholder="부적절한 내용은 제재를 받을 수 있어요."
+          placeholder="부적절한 내용은 제한될 수 있어요."
           className="flex-1"
           style={{ flex: 1 }}
         />

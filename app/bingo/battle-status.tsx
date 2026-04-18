@@ -96,7 +96,7 @@ export default function BattleStatusScreen() {
   if (loading) {
     return (
       <View className="flex-1 items-center justify-center bg-white  ">
-        <Loading color="6ADE50" />
+        <Loading color="#6ADE50" />
       </View>
     );
   }

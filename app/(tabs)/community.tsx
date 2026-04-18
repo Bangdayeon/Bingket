@@ -95,6 +95,10 @@ export default function CommunityScreen() {
     setFilterIndex(index);
   }, []);
 
+  const handleBlock = useCallback((userId: string) => {
+    setPosts((prev) => prev.filter((p) => p.userId !== userId));
+  }, []);
+
   return (
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
       <View className="flex-1 md:self-center md:w-full md:max-w-[600px]">
@@ -104,6 +108,7 @@ export default function CommunityScreen() {
           posts={posts}
           onLoadMore={handleLoadMore}
           onRefresh={handleRefresh}
+          onBlock={handleBlock}
           isLoading={loading}
           isRefreshing={refreshing}
           filterIndex={filterIndex}

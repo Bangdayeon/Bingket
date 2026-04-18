@@ -543,7 +543,7 @@ export default function CommunityWriteScreen() {
 
           {loadingBingos ? (
             <View className="flex-1 items-center justify-center py-8">
-              <Loading color="6ADE50" />
+              <Loading color="#6ADE50" />
             </View>
           ) : myBingos.length === 0 ? (
             <View className="flex-1 items-center justify-center py-8">

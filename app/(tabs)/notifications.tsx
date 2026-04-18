@@ -170,7 +170,7 @@ export default function NotificationsScreen() {
   if (loading) {
     return (
       <SafeAreaView className="flex-1 bg-white   items-center justify-center">
-        <Loading color="6ADE50" />
+        <Loading color="#6ADE50" />
       </SafeAreaView>
     );
   }

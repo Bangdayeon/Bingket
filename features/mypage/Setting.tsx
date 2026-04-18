@@ -10,7 +10,9 @@ import { Modal } from '@/components/Modal';
 import { supabase } from '@/lib/supabase';
 import { fetchMyProfile, MyProfile, submitReport } from '@/features/mypage/lib/mypage';
 import * as WebBrowser from 'expo-web-browser';
+import * as Clipboard from 'expo-clipboard';
 import { getCache, setCache } from '@/lib/cache';
+import { Toast } from '@/components/Toast';
 
 import Profile from '@/assets/pngIcons/profile.png';
 import Account from '@/assets/pngIcons/account.png';
@@ -42,6 +44,7 @@ export function SettingPage() {
   const [resultModal, setResultModal] = useState<{ title: string; body: string } | null>(null);
   const [reportInputText, setReportInputText] = useState('');
   const [isReportLoading, setIsReportLoading] = useState(false);
+  const [emailToastVisible, setEmailToastVisible] = useState(false);
 
   const ANDROID_PACKAGE_NAME = 'com.my.app'; // TODO
   const IOS_APP_ID = '1234567890'; // TODO
@@ -106,167 +109,181 @@ export function SettingPage() {
   };
 
   return (
-    <ScrollView className="flex-1 mt-[52px] bg-white px-5   md:self-center md:w-full md:max-w-[600px]">
-      <View className="h-5" />
-      {/* 프로필 영역 */}
-      <View className="flex-row items-start mb-5  gap-4 h-[100px]">
-        <ProfileAvatar avatarUrl={profile?.avatarUrl} />
-        <View className="flex-1 pt-1 flex flex-col justify-between h-full">
-          <View>
-            {profile ? (
-              <>
-                <Text className="text-title-sm mb-1">{profile.displayName}</Text>
-                <Text className="text-body-sm">{profile.username}</Text>
-              </>
-            ) : (
-              <Loading color="6ADE50" />
-            )}
-          </View>
-          <View className="flex-row gap-8">
-            <View className="flex-row gap-3 mb-2">
-              <Pressable onPress={() => navigate('/mypage/my-posts')}>
-                <Text className="text-body-sm">게시글 {profile?.feedCount ?? 0}</Text>
-              </Pressable>
+    <>
+      <ScrollView className="flex-1 mt-[52px] bg-white px-5   md:self-center md:w-full md:max-w-[600px]">
+        <View className="h-5" />
+        {/* 프로필 영역 */}
+        <View className="flex-row items-start mb-5  gap-4 h-[100px]">
+          <ProfileAvatar avatarUrl={profile?.avatarUrl} />
+          <View className="flex-1 pt-1 flex flex-col justify-between h-full">
+            <View>
+              {profile ? (
+                <>
+                  <Text className="text-title-sm mb-1">{profile.displayName}</Text>
+                  <Text className="text-body-sm">{profile.username}</Text>
+                </>
+              ) : (
+                <Loading color="#6ADE50" />
+              )}
             </View>
-            <View className="flex-row gap-3 mb-2">
-              <Pressable onPress={() => navigate('/mypage/friend-list')}>
-                <Text className="text-body-sm">친구 {profile?.friendCount ?? 0}</Text>
-              </Pressable>
+            <View className="flex-row gap-8">
+              <View className="flex-row gap-3 mb-2">
+                <Pressable onPress={() => navigate('/mypage/my-posts')}>
+                  <Text className="text-body-sm">게시글 {profile?.feedCount ?? 0}</Text>
+                </Pressable>
+              </View>
+              <View className="flex-row gap-3 mb-2">
+                <Pressable onPress={() => navigate('/mypage/friend-list')}>
+                  <Text className="text-body-sm">친구 {profile?.friendCount ?? 0}</Text>
+                </Pressable>
+              </View>
             </View>
           </View>
         </View>
-      </View>
-      <View className="mb-3">
-        <Text className="text-label-sm">한 줄 다짐</Text>
-        <Text className="text-caption-md">{profile?.bio || '아직 한 줄 다짐이 없어요.'}</Text>
-      </View>
+        <View className="mb-3">
+          <Text className="text-label-sm">한 줄 다짐</Text>
+          <Text className="text-caption-md">{profile?.bio || '아직 한 줄 다짐이 없어요.'}</Text>
+        </View>
 
-      <View className="h-px bg-gray-200  " />
+        <View className="h-px bg-gray-200  " />
 
-      <MenuItem
-        imgSrc={Profile}
-        label="프로필 편집"
-        onPress={() => navigate('/mypage/profile-edit')}
-        showArrow
-      />
-      <MenuItem
-        imgSrc={Account}
-        label="계정 관리"
-        onPress={() => navigate('/mypage/account')}
-        showArrow
-      />
-      <MenuItem
-        imgSrc={Notification}
-        label="알림 설정"
-        onPress={() => navigate('/mypage/alert-setting')}
-        showArrow
-      />
-      {/* <MenuItem imgSrc={Theme} label="앱 테마" onPress={() => router.push('/mypage/app-theme')} showArrow /> */}
+        <MenuItem
+          imgSrc={Profile}
+          label="프로필 편집"
+          onPress={() => navigate('/mypage/profile-edit')}
+          showArrow
+        />
+        <MenuItem
+          imgSrc={Account}
+          label="계정 관리"
+          onPress={() => navigate('/mypage/account')}
+          showArrow
+        />
+        <MenuItem
+          imgSrc={Notification}
+          label="알림 설정"
+          onPress={() => navigate('/mypage/alert-setting')}
+          showArrow
+        />
+        {/* <MenuItem imgSrc={Theme} label="앱 테마" onPress={() => router.push('/mypage/app-theme')} showArrow /> */}
 
-      <View className="h-px bg-gray-200  " />
+        <View className="h-px bg-gray-200  " />
 
-      <MenuItem imgSrc={Review} label="앱 리뷰하러 하기" onPress={openReviewPage} />
-      <MenuItem
-        imgSrc={FAQ}
-        label="자주 묻는 질문"
-        onPress={() =>
-          openUrl(
-            'https://aback-shirt-867.notion.site/32eadd99c04280feb05bd33b3e011d0f?source=copy_link',
-          )
-        }
-      />
-      <MenuItem
-        imgSrc={Terms}
-        label="이용 약관"
-        onPress={() =>
-          openUrl(
-            'https://aback-shirt-867.notion.site/32eadd99c0428005b2e0e2437d6cd91a?source=copy_link',
-          )
-        }
-      />
-      <MenuItem
-        imgSrc={Privacy}
-        label="개인정보 처리방침"
-        onPress={() =>
-          openUrl(
-            'https://aback-shirt-867.notion.site/32eadd99c04280558920e3c684d4bd9a?source=copy_link',
-          )
-        }
-      />
-      <MenuItem
-        imgSrc={Update}
-        label="업데이트 내역"
-        onPress={() =>
-          openUrl(
-            'https://aback-shirt-867.notion.site/32eadd99c04280b9843ded4a5c8f3fff?source=copy_link',
-          )
-        }
-      />
-      <MenuItem label="빠른 문의" onPress={() => setShowAskModal(true)} showArrow />
-      <MenuItem
-        label="버전 정보"
-        onPress={() => {}}
-        rightText={`v ${Constants.expoConfig?.version ?? '1.0.0'}`}
-      />
-      <MenuItem label="개발자 이메일" onPress={() => {}} rightText="dybang00@gmail.com" />
+        <MenuItem imgSrc={Review} label="앱 리뷰하러 하기" onPress={openReviewPage} />
+        <MenuItem
+          imgSrc={FAQ}
+          label="자주 묻는 질문"
+          onPress={() =>
+            openUrl(
+              'https://aback-shirt-867.notion.site/32eadd99c04280feb05bd33b3e011d0f?source=copy_link',
+            )
+          }
+        />
+        <MenuItem
+          imgSrc={Terms}
+          label="이용 약관"
+          onPress={() =>
+            openUrl(
+              'https://aback-shirt-867.notion.site/32eadd99c0428005b2e0e2437d6cd91a?source=copy_link',
+            )
+          }
+        />
+        <MenuItem
+          imgSrc={Privacy}
+          label="개인정보 처리방침"
+          onPress={() =>
+            openUrl(
+              'https://aback-shirt-867.notion.site/32eadd99c04280558920e3c684d4bd9a?source=copy_link',
+            )
+          }
+        />
+        <MenuItem
+          imgSrc={Update}
+          label="업데이트 내역"
+          onPress={() =>
+            openUrl(
+              'https://aback-shirt-867.notion.site/32eadd99c04280b9843ded4a5c8f3fff?source=copy_link',
+            )
+          }
+        />
+        <MenuItem label="빠른 문의" onPress={() => setShowAskModal(true)} showArrow />
+        <MenuItem
+          label="버전 정보"
+          onPress={() => {}}
+          rightText={`v ${Constants.expoConfig?.version ?? '1.0.0'}`}
+        />
+        <MenuItem
+          label="개발자 이메일"
+          onPress={async () => {
+            await Clipboard.setStringAsync('dybang00@gmail.com');
+            setEmailToastVisible(true);
+          }}
+          rightText="dybang00@gmail.com"
+        />
 
-      <View className="h-px bg-gray-200  " />
+        <View className="h-px bg-gray-200  " />
 
-      <MenuItem label="로그아웃" onPress={() => setShowLogoutModal(true)} />
-      <View className="h-40" />
+        <MenuItem label="로그아웃" onPress={() => setShowLogoutModal(true)} />
+        <View className="h-40" />
 
-      <Modal
-        visible={showLogoutModal}
-        title="로그아웃 하시겠어요?"
-        variant="warning"
-        cancelLabel="취소"
-        confirmLabel="로그아웃"
-        onCancel={() => setShowLogoutModal(false)}
-        onConfirm={handleLogout}
-        onDismiss={() => setShowLogoutModal(false)}
+        <Modal
+          visible={showLogoutModal}
+          title="로그아웃 하시겠어요?"
+          variant="warning"
+          cancelLabel="취소"
+          confirmLabel="로그아웃"
+          onCancel={() => setShowLogoutModal(false)}
+          onConfirm={handleLogout}
+          onDismiss={() => setShowLogoutModal(false)}
+        />
+        <Modal
+          visible={resultModal !== null}
+          title={resultModal?.title ?? ''}
+          body={resultModal?.body}
+          variant="single"
+          confirmLabel="확인"
+          onConfirm={() => setResultModal(null)}
+        />
+        {/* 빠른 문의 모달 */}
+        <Modal
+          visible={showAskModal}
+          title="문의/신고하기"
+          confirmLabel="제출"
+          cancelLabel="취소"
+          confirmDisabled={!reportInputText.trim()}
+          confirmLoading={isReportLoading}
+          onConfirm={() => void handleReport()}
+          onCancel={() => {
+            setShowAskModal(false);
+            setReportInputText('');
+          }}
+          onDismiss={() => {
+            setShowAskModal(false);
+            setReportInputText('');
+          }}
+          body={
+            <View>
+              <TextInput
+                value={reportInputText}
+                onChangeText={(v) => setReportInputText(v.slice(0, 500))}
+                placeholder="문의/신고하실 내용을 입력하세요."
+                maxLength={500}
+                maxHeight={120}
+                className="min-h-[72px]"
+                style={{ textAlignVertical: 'top' }}
+              />
+              <Text className="text-caption-md text-gray-400   text-right mt-1">
+                {reportInputText.length}/500
+              </Text>
+            </View>
+          }
+        />
+      </ScrollView>
+      <Toast
+        message="이메일이 복사되었습니다."
+        visible={emailToastVisible}
+        onDismiss={() => setEmailToastVisible(false)}
       />
-      <Modal
-        visible={resultModal !== null}
-        title={resultModal?.title ?? ''}
-        body={resultModal?.body}
-        variant="single"
-        confirmLabel="확인"
-        onConfirm={() => setResultModal(null)}
-      />
-      {/* 빠른 문의 모달 */}
-      <Modal
-        visible={showAskModal}
-        title="문의/신고하기"
-        confirmLabel="제출"
-        cancelLabel="취소"
-        confirmDisabled={!reportInputText.trim()}
-        confirmLoading={isReportLoading}
-        onConfirm={() => void handleReport()}
-        onCancel={() => {
-          setShowAskModal(false);
-          setReportInputText('');
-        }}
-        onDismiss={() => {
-          setShowAskModal(false);
-          setReportInputText('');
-        }}
-        body={
-          <View>
-            <TextInput
-              value={reportInputText}
-              onChangeText={(v) => setReportInputText(v.slice(0, 500))}
-              placeholder="문의/신고하실 내용을 입력하세요."
-              maxLength={500}
-              maxHeight={120}
-              className="min-h-[72px]"
-              style={{ textAlignVertical: 'top' }}
-            />
-            <Text className="text-caption-md text-gray-400   text-right mt-1">
-              {reportInputText.length}/500
-            </Text>
-          </View>
-        }
-      />
-    </ScrollView>
+    </>
   );
 }

@@ -114,7 +114,7 @@ export default function AccountScreen() {
       <View className="px-5 pt-6 pb-4">
         <Text className="text-title-sm mb-4">연동 계정 정보</Text>
         {accounts.length === 0 ? (
-          <Loading color="6ADE50" />
+          <Loading color="#6ADE50" />
         ) : (
           accounts.map((account) => {
             const cfg = PROVIDER_CONFIG[account.provider];
@@ -146,7 +146,7 @@ export default function AccountScreen() {
 
       {loading ? (
         <View className="py-6 items-center">
-          <Loading color="6ADE50" />
+          <Loading color="#6ADE50" />
         </View>
       ) : (
         <>

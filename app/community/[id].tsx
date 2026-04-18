@@ -65,6 +65,9 @@ export default function CommunityDetailScreen() {
   const [showPostMenu, setShowPostMenu] = useState(false);
   const [commentMenuId, setCommentMenuId] = useState<string | null>(null);
   const [commentMenuTop, setCommentMenuTop] = useState(0);
+  const [commentMenuTargetUserId, setCommentMenuTargetUserId] = useState<string | undefined>(
+    undefined,
+  );
 
   const [showReportModal, setShowReportModal] = useState(false);
   const [selectedReason, setSelectedReason] = useState<string | null>(null);
@@ -140,7 +143,7 @@ export default function CommunityDetailScreen() {
           </View>
         </View>
         <View className="flex-1 items-center justify-center">
-          <Loading color="6ADE50" />
+          <Loading color="#6ADE50" />
         </View>
       </SafeAreaView>
     );
@@ -313,11 +316,7 @@ export default function CommunityDetailScreen() {
             ]),
       ];
 
-  const commentMenuUserId =
-    localComments.find((c) => c.id === commentMenuId)?.userId ??
-    localComments.flatMap((c) => c.replies ?? []).find((r) => r.id === commentMenuId)?.userId;
-
-  const isOwnComment = commentMenuUserId === currentUserId;
+  const isOwnComment = commentMenuTargetUserId === currentUserId;
 
   const commentMenuItems = isOwnComment
     ? [
@@ -340,7 +339,7 @@ export default function CommunityDetailScreen() {
           label: '차단하기',
           danger: true as const,
           onPress: () => {
-            const uid = commentMenuUserId;
+            const uid = commentMenuTargetUserId;
             setCommentMenuId(null);
             if (uid) handleBlockUser(uid);
           },
@@ -348,8 +347,12 @@ export default function CommunityDetailScreen() {
       ];
 
   const handleCommentMenuPress = (commentId: string, pageY: number) => {
+    const userId =
+      localComments.find((c) => c.id === commentId)?.userId ??
+      localComments.flatMap((c) => c.replies ?? []).find((r) => r.id === commentId)?.userId;
     setCommentMenuTop(pageY - insets.top + 8);
     setCommentMenuId(commentId);
+    setCommentMenuTargetUserId(userId);
   };
 
   return (
@@ -409,7 +412,10 @@ export default function CommunityDetailScreen() {
         confirmLoading={isReporting}
         title="신고하기"
         body={
-          <>
+          <View className="gap-3">
+            <Text className="text-body-sm text-gray-700">
+              누적 신고 횟수가 3회 이상인 유저는 커뮤니티 이용 제한이 있을 수 있습니다.
+            </Text>
             {REPORT_REASONS.map((reason) => (
               <Pressable
                 key={reason}
@@ -441,7 +447,7 @@ export default function CommunityDetailScreen() {
                 <Text className="text-body-md">{reason}</Text>
               </Pressable>
             ))}
-          </>
+          </View>
         }
         variant="default" // 확인 + 취소 버튼 둘 다 사용
         confirmLabel="신고하기"

@@ -72,7 +72,7 @@ export function BadgesPage() {
       <ScrollView className="flex-1 mt-[80px] bg-white   mb-20">
         {loading ? (
           <View className="flex-1 items-center justify-center py-20">
-            <Loading color="6ADE50" />
+            <Loading color="#6ADE50" />
           </View>
         ) : (
           <View className="py-4 items-center">

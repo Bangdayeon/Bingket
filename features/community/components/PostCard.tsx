@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { Pressable, View } from 'react-native';
+import { Image as RNImage, Pressable, View } from 'react-native';
 import { Image } from 'expo-image';
 import { Text } from '@/components/Text';
 import SMSIcon from '@/assets/icons/ic_sms.svg';
-import SirenIcon from '@/assets/icons/ic_siren.svg';
+import AlertIcon from '@/assets/icons/alert.png';
 import { CommunityPost } from '@/types/community';
 import type { StoredBlock } from '@/types/community';
 import { LikeButton } from './LikeButton';
@@ -59,9 +59,10 @@ function parseBlocks(content: string): StoredBlock[] | null {
 interface PostCardProps {
   post: CommunityPost;
   currentUserId?: string | null;
+  onBlock?: (userId: string) => void;
 }
 
-export function PostCard({ post, currentUserId }: PostCardProps) {
+export function PostCard({ post, currentUserId, onBlock }: PostCardProps) {
   const iconColor = '#4C5252'; /* gray-700 */
 
   const [showMenu, setShowMenu] = useState(false);
@@ -131,7 +132,7 @@ export function PostCard({ post, currentUserId }: PostCardProps) {
         </View>
         {!isOwnPost && (
           <Pressable onPress={() => setShowMenu((v) => !v)} hitSlop={8}>
-            <SirenIcon width={20} height={20} color={iconColor} />
+            <RNImage source={AlertIcon} style={{ width: 24, height: 24 }} />
           </Pressable>
         )}
       </View>
@@ -140,7 +141,7 @@ export function PostCard({ post, currentUserId }: PostCardProps) {
         visible={showMenu}
         items={menuItems}
         onDismiss={() => setShowMenu(false)}
-        style={{ top: 52, right: 0 }}
+        style={{ top: 52, right: 10 }}
       />
 
       {/* 제목 */}
@@ -180,7 +181,10 @@ export function PostCard({ post, currentUserId }: PostCardProps) {
         confirmLoading={isReporting}
         title="신고하기"
         body={
-          <>
+          <View className="gap-3">
+            <Text className="text-body-sm text-gray-700">
+              누적 신고 횟수가 3회 이상인 유저는 커뮤니티 이용 제한이 있을 수 있습니다.
+            </Text>
             {REPORT_REASONS.map((reason) => (
               <Pressable
                 key={reason}
@@ -212,7 +216,7 @@ export function PostCard({ post, currentUserId }: PostCardProps) {
                 <Text className="text-body-md">{reason}</Text>
               </Pressable>
             ))}
-          </>
+          </View>
         }
         variant="default"
         confirmLabel="신고하기"
@@ -225,7 +229,10 @@ export function PostCard({ post, currentUserId }: PostCardProps) {
             await submitReport('post', post.id, selectedReason);
             setShowReportModal(false);
             setSelectedReason(null);
-            setAlertModal({ title: '신고 완료', message: '신고가 접수되었습니다.' });
+            setAlertModal({
+              title: '신고 완료',
+              message: '신고가 접수되었습니다. 24시간 내에 처리됩니다.',
+            });
           } catch (e) {
             setAlertModal({
               title: '오류',
@@ -264,7 +271,7 @@ export function PostCard({ post, currentUserId }: PostCardProps) {
           try {
             await blockUser(post.userId);
             setShowBlockModal(false);
-            setAlertModal({ title: '차단 완료', message: '해당 사용자를 차단했습니다.' });
+            onBlock?.(post.userId);
           } catch (e) {
             setShowBlockModal(false);
             setAlertModal({

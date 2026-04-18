@@ -197,7 +197,7 @@ export default function FriendListScreen() {
         />
       ) : listLoading ? (
         <View className="flex-1 items-center justify-center">
-          <Loading color="6ADE50" />
+          <Loading color="#6ADE50" />
         </View>
       ) : (
         <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 16 }}>
