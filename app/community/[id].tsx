@@ -454,7 +454,7 @@ export default function CommunityDetailScreen() {
             setShowReportModal(false);
             setSelectedReason(null);
             setReportTarget(null);
-            setAlertModal({ title: '신고 완료', message: '신고가 접수되었습니다.' });
+            setAlertModal({ title: '신고 완료', message: '신고 내용은 24시간 이내에 조치됩니다.' });
           } catch (e) {
             setAlertModal({
               title: '오류',
