@@ -279,6 +279,7 @@ export default function CommunityDetailScreen() {
                 initContent: post.body,
                 initCategory: post.category,
                 initImageUrls: JSON.stringify(post.imageUrls ?? []),
+                initBingo: post.bingo ? JSON.stringify(post.bingo) : undefined,
                 initIsAnonymous: post.isAnonymous ? '1' : '0',
               },
             });

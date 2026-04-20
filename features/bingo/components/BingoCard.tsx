@@ -1,5 +1,3 @@
-// BingoCard.tsx (수정)
-
 import { Image, Pressable, TouchableOpacity, View } from 'react-native';
 import { Text } from '@/components/Text';
 import { useResponsive } from '@/lib/use-responsive';
@@ -157,7 +155,7 @@ export function BingoCard({
         })}
       </View>
 
-      <View className="mt-10" style={isTablet ? { width: screenWidth } : undefined}>
+      <View className="mt-8" style={isTablet ? { width: screenWidth } : undefined}>
         <View className="flex-row">
           <View className="flex-1 items-center">
             <DonutStat label="달성" current={bingo.achievedCount} total={cols * rows} />

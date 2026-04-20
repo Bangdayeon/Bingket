@@ -34,6 +34,11 @@ const PROVIDER_CONFIG: Record<
     bgColor: '#FEE500',
     logo: require('@/assets/icons/kakao_logo.png'),
   },
+  email: {
+    label: '이메일',
+    bgColor: '#FFFFFF',
+    logo: require('@/assets/icons/mail_logo.png'),
+  },
 };
 
 interface RowItemProps {

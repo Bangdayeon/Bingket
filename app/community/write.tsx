@@ -19,7 +19,7 @@ import CameraIcon from '@/assets/icons/ic_camera.svg';
 import CheckIcon from '@/assets/icons/ic_check.svg';
 import CloseIcon from '@/assets/icons/ic_close.svg';
 import type { PostCategory, EditorBlock } from '@/types/community';
-import type { BingoData, BingoState } from '@/types/bingo';
+import type { BingoData, BingoState, BingoTheme } from '@/types/bingo';
 import { fetchMyBingosForPost, createPost, updatePost } from '@/features/community/lib/community';
 import { checkAndAwardBadges } from '@/lib/badge-checker';
 import BingoPreview from '@/components/BingoPreview';
@@ -71,11 +71,42 @@ function newId() {
 function parseInitialState(
   initContent?: string,
   initImageUrls?: string,
+  initBingo?: string,
 ): { mediaBlocks: EditorBlock[]; textValue: string } {
   const mediaBlocks: EditorBlock[] = [];
   let textValue = '';
 
   if (!initContent) return { mediaBlocks, textValue };
+
+  let bingoData: BingoData | null = null;
+  if (initBingo) {
+    try {
+      const b = JSON.parse(initBingo) as {
+        id?: string;
+        title?: string;
+        cells: string[];
+        grid: string;
+        theme: BingoTheme;
+      };
+      bingoData = {
+        id: b.id ?? 'draft',
+        title: b.title ?? '',
+        grid: b.grid,
+        cells: b.cells,
+        theme: b.theme,
+        state: b.id ? 'progress' : 'draft',
+        maxEdits: 0,
+        achievedCount: 0,
+        bingoCount: 0,
+        dday: 0,
+        startDate: null,
+        targetDate: null,
+        retrospective: null,
+      };
+    } catch {
+      // ignore malformed bingo param
+    }
+  }
 
   try {
     const parsed = JSON.parse(initContent);
@@ -86,8 +117,9 @@ function parseInitialState(
         else if (b.type === 'image') {
           const url = existingUrls[b.index];
           if (url) mediaBlocks.push({ id: newId(), type: 'existing-image', url });
+        } else if (b.type === 'bingo' && bingoData) {
+          mediaBlocks.push({ id: newId(), type: 'bingo', bingo: bingoData });
         }
-        // bingo 블록은 수정 모드에서 재첨부 불필요 (bingo_board_id 기반이므로 로컬에 없음)
       }
     } else {
       textValue = initContent;
@@ -107,6 +139,7 @@ export default function CommunityWriteScreen() {
     initContent?: string;
     initCategory?: string;
     initImageUrls?: string;
+    initBingo?: string;
     initIsAnonymous?: string;
   }>();
   const isEditMode = !!params.postId;
@@ -120,7 +153,7 @@ export default function CommunityWriteScreen() {
   const [title, setTitle] = useState(params.initTitle ?? '');
   const [isAnonymous, setIsAnonymous] = useState(params.initIsAnonymous !== '0');
 
-  const initState = parseInitialState(params.initContent, params.initImageUrls);
+  const initState = parseInitialState(params.initContent, params.initImageUrls, params.initBingo);
   const [mediaBlocks, setMediaBlocks] = useState<EditorBlock[]>(initState.mediaBlocks);
   const [textValue, setTextValue] = useState(initState.textValue);
 

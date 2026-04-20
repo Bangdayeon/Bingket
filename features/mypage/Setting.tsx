@@ -47,7 +47,7 @@ export function SettingPage() {
   const [emailToastVisible, setEmailToastVisible] = useState(false);
 
   const ANDROID_PACKAGE_NAME = 'com.my.app'; // TODO
-  const IOS_APP_ID = '1234567890'; // TODO
+  const IOS_APP_ID = '6761634987';
 
   useFocusEffect(
     useCallback(() => {
@@ -210,7 +210,7 @@ export function SettingPage() {
         <MenuItem
           label="버전 정보"
           onPress={() => {}}
-          rightText={`v ${Constants.expoConfig?.version ?? '1.0.0'}`}
+          rightText={`v ${Constants.expoConfig?.version ?? '1.0.1'}`}
         />
         <MenuItem
           label="개발자 이메일"

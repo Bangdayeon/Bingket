@@ -21,6 +21,7 @@ import {
 import { ProfileAvatar } from '@/components/ProfileAvatar';
 import { Modal } from '@/components/Modal';
 import Loading from '@/components/Loading';
+import { Information } from '@/components/Information';
 
 export default function BattleScreen() {
   const router = useRouter();
@@ -111,7 +112,7 @@ export default function BattleScreen() {
           onClick={() => router.back()}
         />
         <Text className="flex-1 text-center text-title-sm">친구와 대결하기</Text>
-        <View style={{ width: 32 }} />
+        <Information content={`한 빙고당 한 명의 친구와 대결을 할 수 있어요.`} />
       </View>
 
       <ScrollView

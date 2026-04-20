@@ -2,7 +2,7 @@
   "expo": {
     "name": "Bingket",
     "slug": "bingkit",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "scheme": "bingket",
     "orientation": "portrait",
     "icon": "./assets/app_icon.png",
@@ -15,6 +15,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.day.bingket.app",
+      "buildNumber": "2",
       "usesAppleSignIn": true,
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
@@ -71,6 +72,9 @@
       "expo-image",
       "expo-font"
     ],
+    "updates": {
+      "enabled": false
+    },
     "extra": {
       "router": {},
       "eas": {

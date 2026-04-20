@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import { ScrollView, Share, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import * as Clipboard from 'expo-clipboard';
 import { Text } from '@/components/Text';
 import { TextInput } from '@/components/TextInput';
 import IconButton from '@/components/IconButton';
@@ -26,6 +27,7 @@ import type {
   IncomingRequest,
   UserSearchResult,
 } from '@/types/friend';
+import Button from '@/components/Button';
 import Loading from '@/components/Loading';
 
 export default function FriendListScreen() {
@@ -159,6 +161,13 @@ export default function FriendListScreen() {
     }
   };
 
+  const APP_STORE_URL = 'https://apps.apple.com/kr/app/%EB%B9%99%ED%82%B7-bingket/id6761634987';
+
+  const handleInvite = async () => {
+    await Clipboard.setStringAsync(APP_STORE_URL);
+    await Share.share({ message: APP_STORE_URL });
+  };
+
   const isSearching = search.trim().length > 0;
 
   return (
@@ -184,6 +193,13 @@ export default function FriendListScreen() {
           placeholder="id로 친구를 검색해보세요"
           autoCapitalize="none"
         />
+      </View>
+
+      <View className="flex flex-row mx-4 mb-2 px-4 py-5 bg-green-100 rounded-xl items-center justify-between gap-2">
+        <Text className="text-body-sm text-gray-800">
+          {'함께하고 싶은 친구가 아직 없나요?\n친구를 초대해서 함께해요.'}
+        </Text>
+        <Button label="친구 초대하기" onClick={handleInvite} size="sm" className="px-3" />
       </View>
 
       {isSearching ? (

@@ -1,5 +1,5 @@
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { Pressable, View } from 'react-native';
+import { Modal, Platform, Pressable, View } from 'react-native';
 import { Text } from '@/components/Text';
 
 interface DatePickerProps {
@@ -21,8 +21,29 @@ export function DatePicker({
   onConfirm,
   onDismiss,
 }: DatePickerProps) {
+  const minimumDate = target === 'end' && startDate ? startDate : undefined;
+
+  if (Platform.OS === 'android') {
+    return (
+      <DateTimePicker
+        value={tempDate}
+        mode="date"
+        display="default"
+        onChange={(event, date) => {
+          if (event.type === 'dismissed') {
+            onDismiss();
+          } else if (date) {
+            onDateChange(date);
+            onConfirm();
+          }
+        }}
+        minimumDate={minimumDate}
+      />
+    );
+  }
+
   return (
-    <>
+    <Modal transparent animationType="fade" onRequestClose={onDismiss}>
       <Pressable
         style={{
           position: 'absolute',
@@ -31,7 +52,6 @@ export function DatePicker({
           right: 0,
           bottom: 0,
           backgroundColor: 'rgba(0,0,0,0.3)',
-          zIndex: 10,
         }}
         onPress={onDismiss}
       />
@@ -47,11 +67,10 @@ export function DatePicker({
           paddingHorizontal: 20,
           paddingBottom: bottomInset + 16,
           paddingTop: 16,
-          zIndex: 11,
         }}
       >
         <View className="flex-row justify-between items-center mb-2">
-          <Text className="text-body-sm text-gray-500  ">
+          <Text className="text-body-sm text-gray-500">
             {target === 'start' ? '시작일' : '종료일'} 선택
           </Text>
           <Pressable onPress={onConfirm}>
@@ -68,11 +87,11 @@ export function DatePicker({
             }}
             locale="ko-KR"
             style={{ flex: 1 }}
-            textColor={'#181C1C'}
-            minimumDate={target === 'end' && startDate ? startDate : undefined}
+            textColor="#181C1C"
+            minimumDate={minimumDate}
           />
         </View>
       </View>
-    </>
+    </Modal>
   );
 }

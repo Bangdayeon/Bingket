@@ -7,7 +7,7 @@ const EDIT_COUNT: Record<string, number> = {
   '1': 1,
   '2': 2,
   '3': 3,
-  무제한: 99,
+  무제한: 9999,
 };
 
 export interface CreateBingoRequest {

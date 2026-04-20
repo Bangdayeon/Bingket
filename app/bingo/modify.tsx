@@ -9,7 +9,7 @@ import { fetchBattleByBoardId, quitBattle } from '@/features/battle/lib/battle';
 import { fetchThemes } from '@/features/bingo/lib/theme';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { Image, Pressable, ScrollView, View } from 'react-native';
 import { Text } from '@/components/Text';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Chip } from '@/components/Chip';
@@ -109,15 +109,15 @@ export default function BingoModifyScreen() {
     }
   };
 
-  const disabledCells = cells.map((_, i) => {
-    if (maxEdits === -1) return false;
-    if (maxEdits === 0) return true;
-    return (cellOriginalEditCounts[i] ?? 0) + (cellEdits[i] ?? 0) >= maxEdits;
-  });
-
+  const isUnlimited = maxEdits === 9999 || maxEdits === -1;
   const totalUsedEdits =
     cellEdits.reduce((a, b) => a + b, 0) + cellOriginalEditCounts.reduce((a, b) => a + b, 0);
-  const totalMaxEdits = maxEdits === -1 ? -1 : maxEdits * cells.length;
+
+  const disabledCells = cells.map(() => {
+    if (isUnlimited) return false;
+    if (maxEdits === 0) return true;
+    return totalUsedEdits >= maxEdits;
+  });
 
   if (loading) {
     return (
@@ -181,11 +181,19 @@ export default function BingoModifyScreen() {
             }}
           />
 
-          <View className="flex-row justify-end mt-3">
+          <View className="flex-row justify-end items-center mt-3">
             <Text className="text-body-sm text-gray-500  ">수정 가능 횟수 </Text>
-            <Text className="text-label-sm">
-              {totalUsedEdits}/{totalMaxEdits === -1 ? '무제한' : totalMaxEdits}
-            </Text>
+            {isUnlimited ? (
+              <Image
+                source={require('@/assets/icons/infinite.png')}
+                style={{ width: 20, height: 20 }}
+                resizeMode="contain"
+              />
+            ) : (
+              <Text className="text-label-sm">
+                {totalUsedEdits}/{maxEdits}
+              </Text>
+            )}
           </View>
 
           <Pressable onPress={() => setShowDeleteModal(true)} className="mt-6">
