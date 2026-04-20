@@ -19,7 +19,7 @@ export function BingoEditHeader({ title, onBack }: BingoEditHeaderProps) {
         onClick={onBack ?? (() => router.back())}
         size={32}
       />
-      <Text className="flex-1 text-center text-title-sm">{title}</Text>
+      <Text className="flex-1 text-center text-title-sm font-pretendard-medium">{title}</Text>
       <View className="w-8" />
     </View>
   );

@@ -132,7 +132,7 @@ export default function BattleCheckScreen() {
         {/* 내기 내용 */}
         {detail.betText ? (
           <View className="p-4 bg-gray-100   rounded-2xl mb-6">
-            <Text className="text-caption-sm text-gray-500   mb-1">내기 내용</Text>
+            <Text className="text-caption-sm text-gray-500 mb-3">내기 내용</Text>
             <Text className="text-body-md">{detail.betText}</Text>
           </View>
         ) : null}
@@ -140,7 +140,7 @@ export default function BattleCheckScreen() {
         {/* 내 빙고 선택 */}
         <View className="mb-4">
           {selectedBoardId ? (
-            <View className="p-4 bg-green-50    rounded-2xl mb-3 flex-row items-center justify-between">
+            <View className="p-4 bg-green-50 rounded-2xl mb-3 flex-row items-center justify-between">
               <Text className="text-caption-sm text-green-700  ">빙고판이 선택됐어요</Text>
               <Text
                 className="text-caption-sm text-gray-500"

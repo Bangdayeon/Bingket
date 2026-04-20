@@ -145,7 +145,7 @@ export function BingoCellModal({
               {/* Title + check button */}
               <View className="flex-row items-start mb-5 ">
                 <Text
-                  className="flex-1 text-title-lg mr-3 py-2.5"
+                  className="flex-1 text-title-lg mr-3 py-2.5 font-pretendard-semibold"
                   style={{ color: '#181C1C' /* gray-900 */ }}
                   numberOfLines={2}
                   ellipsizeMode="tail"
@@ -170,7 +170,10 @@ export function BingoCellModal({
               {/* 완료일 */}
               {(!readOnly || item.completedAt) && (
                 <>
-                  <Text className="text-title-sm mb-2" style={{ color: '#181C1C' /* gray-900 */ }}>
+                  <Text
+                    className="text-title-sm mb-2 font-pretendard-medium"
+                    style={{ color: '#181C1C' /* gray-900 */ }}
+                  >
                     완료일
                   </Text>
                   {readOnly ? (
@@ -200,7 +203,10 @@ export function BingoCellModal({
               )}
 
               {/* 메모 */}
-              <Text className="text-title-sm mb-2" style={{ color: '#181C1C' /* gray-900 */ }}>
+              <Text
+                className="text-title-sm mb-2 font-pretendard-medium"
+                style={{ color: '#181C1C' /* gray-900 */ }}
+              >
                 메모
               </Text>
               <View style={{ position: 'relative' }}>

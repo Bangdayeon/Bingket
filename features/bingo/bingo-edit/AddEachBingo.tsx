@@ -128,7 +128,7 @@ export function AddEachBingo({
               }}
             >
               <Text
-                className="text-title-md"
+                className="text-title-md font-pretendard-medium"
                 style={{ color: fgColor }}
                 numberOfLines={2}
                 ellipsizeMode="tail"

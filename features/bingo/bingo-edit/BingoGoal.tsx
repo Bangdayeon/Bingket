@@ -34,7 +34,7 @@ export function BingoGoal({
   return (
     <View className="px-5 py-6 border-t border-gray-100  ">
       <View className="flex-row items-center gap-2 mb-4">
-        <Text className="text-title-md">목표 기간</Text>
+        <Text className="text-title-md font-pretendard-medium">목표 기간</Text>
         <Information content="처음 지정 후 수정이 불가능해요." />
       </View>
 

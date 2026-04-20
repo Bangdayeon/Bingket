@@ -121,7 +121,9 @@ export default function BattleSelectBoardScreen() {
           disabled={!selectedId || accepting}
           className={selectedId && !accepting ? '' : 'opacity-40'}
         >
-          <Text className="font-semibold text-green-500">{isAcceptMode ? '수락' : '확인'}</Text>
+          <Text className="font-pretendard-semibold text-green-500">
+            {isAcceptMode ? '수락' : '확인'}
+          </Text>
         </Pressable>
       </View>
 

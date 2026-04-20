@@ -74,7 +74,7 @@ export function HeaderTabBar({
             }}
           >
             <Text
-              className="text-title-lg"
+              className="text-title-lg font-pretendard-semibold"
               style={{
                 color: selectedIndex === index ? '#181C1C' : '#929898',
               }}

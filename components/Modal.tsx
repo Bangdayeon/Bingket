@@ -50,7 +50,7 @@ export function Modal({
       >
         <Pressable className="w-full md:max-w-[480px] bg-white   rounded-[24px] px-6 pt-6 pb-5">
           {/* Title */}
-          <Text className="text-title-sm mb-3">{title}</Text>
+          <Text className="text-title-sm font-pretendard-medium mb-3">{title}</Text>
 
           {/* Body */}
           {body && (

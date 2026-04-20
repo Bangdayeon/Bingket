@@ -83,7 +83,7 @@ export function KakaoButton({ requireAgreement }: KakaoButtonProps) {
             className="absolute left-4"
             resizeMode="contain"
           />
-          <Text className="text-base font-semibold md:text-lg">카카오로 시작하기</Text>
+          <Text className="text-base font-pretendard-semibold md:text-lg">카카오로 시작하기</Text>
         </>
       )}
     </TouchableOpacity>

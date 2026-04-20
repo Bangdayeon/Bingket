@@ -33,7 +33,7 @@ export function DonutStat({
 
   return (
     <View className="items-center gap-1">
-      <Text className="text-label-sm md:text-label-md">{label}</Text>
+      <Text className="text-label-sm md:text-label-md font-pretendard-medium">{label}</Text>
 
       <View style={{ width: SIZE, height: SIZE }}>
         <Svg width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`}>

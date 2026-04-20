@@ -42,7 +42,7 @@ function Section({
     <View className="mb-4">
       <View className="flex-row items-center gap-2 py-3">
         {icon}
-        <Text className="text-title-md">{label}</Text>
+        <Text className="text-title-md font-pretendard-medium">{label}</Text>
       </View>
       {items.length === 0 && <Text className="text-body-sm text-gray-400   py-2">없음</Text>}
       {items.map((item) => (

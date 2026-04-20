@@ -26,7 +26,9 @@ export function PostHeader({ type, iconColor, onBack, onMenuPress }: PostHeaderP
           <ArrowBackIcon width={20} height={20} color={iconColor} />
         </Pressable>
       </View>
-      <Text className="flex-1 text-title-sm text-center">{TYPE_LABELS[type]}</Text>
+      <Text className="flex-1 text-title-sm text-center font-pretendard-medium">
+        {TYPE_LABELS[type]}
+      </Text>
       <View style={{ width: 56 }} className="pr-4 items-end">
         <Pressable onPress={onMenuPress} hitSlop={8}>
           <MoreVertIcon width={24} height={24} color={iconColor} />

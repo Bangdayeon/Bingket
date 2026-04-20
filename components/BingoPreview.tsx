@@ -1,4 +1,5 @@
-import { View, Text, Image, Pressable } from 'react-native';
+import { Image } from 'expo-image';
+import { View, Text, Pressable } from 'react-native';
 import { useEffect, useState } from 'react';
 import { BingoData } from '@/types/bingo';
 import {
@@ -73,7 +74,8 @@ export default function BingoPreview({
           <Image
             source={{ uri: image }}
             style={{ position: 'absolute', width: '100%', height: '100%' }}
-            resizeMode="cover"
+            contentFit="cover"
+            cachePolicy="memory-disk"
           />
 
           <Text
@@ -86,8 +88,8 @@ export default function BingoPreview({
               right: `${(titleStyle.right / FIGMA_W) * 100}%`,
               color: fgColor,
               fontSize: titleStyle.fontSize,
-              fontWeight: titleStyle.fontWeight,
             }}
+            className="font-pretendard-medium"
           >
             {bingo.title}
           </Text>
@@ -111,7 +113,7 @@ export default function BingoPreview({
                 }}
               >
                 <Text
-                  className="text-caption-sm text-center md:text-body-md"
+                  className="text-caption-sm text-center md:text-body-md "
                   style={{ color: '#181C1C' }}
                   numberOfLines={2}
                 >
@@ -126,7 +128,8 @@ export default function BingoPreview({
                       width: '100%',
                       height: '100%',
                     }}
-                    resizeMode="contain"
+                    contentFit="contain"
+                    cachePolicy="memory-disk"
                   />
                 )}
               </View>

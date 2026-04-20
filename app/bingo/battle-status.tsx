@@ -113,7 +113,7 @@ export default function BattleStatusScreen() {
           icon={<BackArrowIcon width={20} height={20} />}
           onClick={() => router.back()}
         />
-        <Text className="flex-1 text-center text-title-sm">대결 현황</Text>
+        <Text className="flex-1 text-center text-title-sm font-pretendard-medium">대결 현황</Text>
         <IconButton
           variant="ghost"
           onClick={() => setShowMenu(true)}
@@ -152,7 +152,7 @@ export default function BattleStatusScreen() {
           {/* 내기 */}
           {detail.betText && (
             <View className="mx-5 mb-8">
-              <Text className="text-title-md mb-1">내기 내용</Text>
+              <Text className="text-title-md mb-3">내기 내용</Text>
               <View className="p-4 bg-gray-100   rounded-2xl">
                 <Text className="text-body-md md:text-body-lg">{detail.betText}</Text>
               </View>

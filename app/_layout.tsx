@@ -20,9 +20,11 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
-    'Nexon-Lv1-Regular': require('../assets/fonts/Nexon-Lv1-regular.otf'),
-    'Nexon-Lv1-Bold': require('../assets/fonts/Nexon-Lv1-Bold.otf'),
-    'Nexon-Lv1-Light': require('../assets/fonts/Nexon-Lv1-light.otf'),
+    'Pretendard-Regular': require('../assets/fonts/Pretendard-Regular.otf'),
+    'Pretendard-Medium': require('../assets/fonts/Pretendard-Medium.otf'),
+    'Pretendard-SemiBold': require('../assets/fonts/Pretendard-SemiBold.otf'),
+    'Pretendard-Bold': require('../assets/fonts/Pretendard-Bold.otf'),
+    'Pretendard-ExtraBold': require('../assets/fonts/Pretendard-ExtraBold.otf'),
   });
 
   useEffect(() => {

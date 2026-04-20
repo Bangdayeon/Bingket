@@ -64,7 +64,7 @@ export default function Button({
       {/* 텍스트 */}
       {!loading && (
         <Text
-          className={`text-label-sm md:text-label-md ${text}`}
+          className={`text-label-sm md:text-label-md font-pretendard-medium ${text}`}
           style={variant === 'primary' ? { color: '#181C1C' } : undefined}
         >
           {label}

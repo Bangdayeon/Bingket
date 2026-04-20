@@ -29,7 +29,7 @@ export default function BingoAddScreen() {
   const [initialCells, setInitialCells] = useState<string[]>([]);
   const [writeBingoKey, setWriteBingoKey] = useState(0);
   const [selectedEditCount, setSelectedEditCount] = useState<string>('0');
-  const [selectedTheme, setSelectedTheme] = useState<string>('기본');
+  const [selectedTheme, setSelectedTheme] = useState<string>('default');
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [pickerTarget, setPickerTarget] = useState<'start' | 'end' | null>(null);

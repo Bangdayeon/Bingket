@@ -177,7 +177,7 @@ export default function ProfileEditPage() {
           icon={<BackArrowIcon width={20} height={20} />}
           onClick={handleBack}
         />
-        <Text className="flex-1 text-center text-title-sm">프로필 편집</Text>
+        <Text className="flex-1 text-center text-title-sm font-pretendard-medium">프로필 편집</Text>
         <Pressable onPress={handleSave} disabled={saving}>
           {saving ? (
             <Loading color="#6ADE50" variant="iconloading" size={5} />

@@ -108,7 +108,10 @@ export function AppleButton({ requireAgreement }: AppleButtonProps) {
             className="absolute left-4"
             resizeMode="contain"
           />
-          <Text className="text-base font-semibold md:text-lg" style={{ color: '#ffffff' }}>
+          <Text
+            className="text-base font-pretendard-semibold md:text-lg"
+            style={{ color: '#ffffff' }}
+          >
             Sign in with Apple
           </Text>
         </>

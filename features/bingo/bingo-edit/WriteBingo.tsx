@@ -3,10 +3,11 @@ import { AddEachBingo } from './AddEachBingo';
 import { ScrollView, View } from 'react-native';
 import { Text } from '@/components/Text';
 import { Information } from '@/components/Information';
+import { fetchThemes } from '@/features/bingo/lib/theme';
+import { useEffect, useState } from 'react';
 
 const GRID_OPTIONS = ['3x3', '4x3', '4x4'];
 const EDIT_COUNT_OPTIONS = ['0', '1', '2', '3', '무제한'];
-const THEME_OPTIONS = ['기본', '토끼', '붉은말', '고먐미', '돼지'];
 
 interface WriteBingoProps {
   title?: string;
@@ -31,9 +32,20 @@ export function WriteBingo({
   cells,
   onCellsChange,
 }: WriteBingoProps) {
+  const [themes, setThemes] = useState<{ id: string; displayName: string }[]>([]);
+
+  useEffect(() => {
+    fetchThemes().then((map) => {
+      const unique = Object.values(map).filter(
+        (v, i, arr) => arr.findIndex((t) => t.id === v.id) === i,
+      );
+      setThemes(unique.map((t) => ({ id: t.id, displayName: t.displayName })));
+    });
+  }, []);
+
   return (
     <View className="px-5 py-6 border-t border-gray-100  ">
-      <Text className="text-title-md mb-4">빙고 작성</Text>
+      <Text className="text-title-md font-pretendard-medium mb-4">빙고 작성</Text>
 
       {/* 칸 개수 */}
       <View className="flex-row items-center gap-2 mb-3">
@@ -88,12 +100,12 @@ export function WriteBingo({
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ gap: 8, paddingBottom: 20 }}
       >
-        {THEME_OPTIONS.map((opt) => (
+        {themes.map((theme) => (
           <Chip
-            key={opt}
-            label={opt}
-            selected={selectedTheme === opt}
-            onPress={() => onThemeSelect(opt)}
+            key={theme.id}
+            label={theme.displayName}
+            selected={selectedTheme === theme.id}
+            onPress={() => onThemeSelect(theme.id)}
           />
         ))}
       </ScrollView>

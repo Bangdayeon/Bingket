@@ -39,5 +39,13 @@ values
     'https://pub-ce1a524f861f4062a6ec96dd100c4aec.r2.dev/bingo_themes/pig/pig_4x4.png',
     'https://pub-ce1a524f861f4062a6ec96dd100c4aec.r2.dev/bingo_themes/pig/pig_check.png',
     '#181C1C'
+  ),
+  (
+    'midnight', '미드나잇',
+    'https://pub-ce1a524f861f4062a6ec96dd100c4aec.r2.dev/bingo_themes/midnight/midnight_3x3.png',
+    'https://pub-ce1a524f861f4062a6ec96dd100c4aec.r2.dev/bingo_themes/midnight/midnight_4x3.png',
+    'https://pub-ce1a524f861f4062a6ec96dd100c4aec.r2.dev/bingo_themes/midnight/midnight_4x4.png',
+    'https://pub-ce1a524f861f4062a6ec96dd100c4aec.r2.dev/bingo_themes/midnight/midnight_check.png',
+    '#181C1C'
   )
 on conflict (id) do nothing;

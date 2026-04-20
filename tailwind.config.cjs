@@ -8,6 +8,13 @@ module.exports = {
   presets: [require('nativewind/preset')],
   darkMode: 'media',
   theme: {
+    fontFamily: {
+      pretendard: ['Pretendard-Regular'],
+      'pretendard-medium': ['Pretendard-Medium'],
+      'pretendard-semibold': ['Pretendard-SemiBold'],
+      'pretendard-bold': ['Pretendard-Bold'],
+      'pretendard-extrabold': ['Pretendard-ExtraBold'],
+    },
     textColor: ({ theme }) => ({
       ...theme('colors'),
       DEFAULT: '#181C1C',
@@ -92,11 +99,6 @@ module.exports = {
           900: '#3E1202',
         },
         kakao: '#FEE500',
-      },
-      fontFamily: {
-        nexon: ['Nexon-Lv1-Regular'],
-        'nexon-bold': ['Nexon-Lv1-Bold'],
-        'nexon-light': ['Nexon-Lv1-Light'],
       },
       fontSize: {
         // title

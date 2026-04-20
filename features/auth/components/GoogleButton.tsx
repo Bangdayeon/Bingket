@@ -111,7 +111,9 @@ export function GoogleButton({ requireAgreement }: GoogleButtonProps) {
             className="absolute left-4"
             resizeMode="contain"
           />
-          <Text className="text-black text-base font-semibold md:text-lg">Google로 시작하기</Text>
+          <Text className="text-black text-base font-pretendard-semibold md:text-lg">
+            Google로 시작하기
+          </Text>
         </>
       )}
     </TouchableOpacity>

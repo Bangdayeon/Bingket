@@ -293,7 +293,7 @@ export default function CommunityWriteScreen() {
             <ArrowBackIcon width={20} height={20} color={iconColor} />
           </Pressable>
         </View>
-        <Text className="flex-1 text-title-sm text-center">
+        <Text className="flex-1 text-title-sm font-pretendard-medium text-center">
           {isEditMode ? '게시글 수정하기' : '게시글 작성하기'}
         </Text>
         <View style={{ width: 56 }} className="pr-4 items-end">
@@ -342,7 +342,7 @@ export default function CommunityWriteScreen() {
             hitSlop={8}
           >
             <Text style={{ color: '#EF4444', fontSize: 18, lineHeight: 20 }}>*</Text>
-            <Text className="text-body-sm" style={{ color: '#181C1C' }}>
+            <Text className="text-body-md" style={{ color: '#181C1C' }}>
               {type ? TYPE_OPTIONS.find((o) => o.value === type)?.label : '게시판 선택'}
             </Text>
             <Text style={{ color: '#929898', fontSize: 9, lineHeight: 14 }}>▼</Text>

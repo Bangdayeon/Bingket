@@ -22,6 +22,7 @@ const THEME_DISPLAY_TO_KEY: Record<string, BingoTheme> = {
   붉은말: 'red_horse',
   고먐미: 'square_cat',
   돼지: 'pig',
+  미드나잇: 'midnight',
 };
 
 function calcDdayLocal(targetDate: string | null): number {

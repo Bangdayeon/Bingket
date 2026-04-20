@@ -141,7 +141,7 @@ export default function BingoModifyScreen() {
         />
 
         <View className="px-5 py-6">
-          <Text className="text-title-md mb-4">빙고 수정</Text>
+          <Text className="text-title-md mb-4 font-pretendard-medium">빙고 수정</Text>
 
           <Text className="text-title-sm mb-3">테마</Text>
           <ScrollView
@@ -162,7 +162,7 @@ export default function BingoModifyScreen() {
             ))}
           </ScrollView>
 
-          <Text className="text-title-sm mb-2">빙고 내용 수정하기</Text>
+          <Text className="text-title-sm mb-4">빙고 내용 수정하기</Text>
           <AddEachBingo
             selectedGrid={grid}
             theme={selectedTheme}
@@ -197,7 +197,10 @@ export default function BingoModifyScreen() {
           </View>
 
           <Pressable onPress={() => setShowDeleteModal(true)} className="mt-6">
-            <Text className="text-body-md" style={{ color: '#E02828' /* red */ }}>
+            <Text
+              className="text-body-md font-pretendard-medium"
+              style={{ color: '#E02828' /* red */ }}
+            >
               빙고 삭제하기
             </Text>
           </Pressable>

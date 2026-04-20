@@ -22,7 +22,7 @@ export function BingoTitle({ value = '', onChange }: BingoTitleProps) {
 
   return (
     <View className="px-5 py-6">
-      <Text className="text-title-md mb-3">제목</Text>
+      <Text className="text-title-md font-pretendard-medium mb-3">제목</Text>
       <TextInput value={title} onChangeText={handleChange} placeholder="제목을 입력해주세요." />
     </View>
   );

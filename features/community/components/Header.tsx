@@ -8,8 +8,8 @@ export function CommunityHeader() {
   const iconColor = '#4C5252'; /* gray-700 */
 
   return (
-    <View className="h-[60px] flex-row items-center justify-between border-b border-gray-300   px-4 bg-white  ">
-      <Text className="text-title-lg">커뮤니티</Text>
+    <View className="h-[60px] flex-row items-center justify-between border-b border-gray-300 px-4 bg-white">
+      <Text className="text-title-lg font-pretendard-semibold">커뮤니티</Text>
       <Pressable hitSlop={8} onPress={() => router.push('/community/search')}>
         <SearchIcon width={24} height={24} color={iconColor} />
       </Pressable>

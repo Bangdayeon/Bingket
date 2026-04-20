@@ -36,7 +36,7 @@ export function AutoHeightImage({ uri, borderRadius = 12, marginTop = 0 }: AutoH
           const { width, height } = e.source;
           if (width && height) setAspectRatio(width / height);
         }}
-        cachePolicy="memory"
+        cachePolicy="memory-disk"
       />
     </View>
   );

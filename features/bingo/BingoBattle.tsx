@@ -151,7 +151,7 @@ export function BingoBattle() {
                 <Text className="text-title-md  ">승부 난 대결</Text>
               </View>
               {finished.length === 0 ? (
-                <Text className="text-body-md text-gray-400">종료된 대결이 없어요.</Text>
+                <Text className="text-body-md text-gray-400 mt-2 px-2">종료된 대결이 없어요.</Text>
               ) : (
                 <View className="flex gap-2">
                   {finished.map((b) => (

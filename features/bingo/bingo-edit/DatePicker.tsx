@@ -74,7 +74,7 @@ export function DatePicker({
             {target === 'start' ? '시작일' : '종료일'} 선택
           </Text>
           <Pressable onPress={onConfirm}>
-            <Text className="text-body-sm text-green-500 font-semibold">확인</Text>
+            <Text className="text-body-sm text-green-500 font-pretendard-semibold">확인</Text>
           </Pressable>
         </View>
         <View style={{ height: 216 }}>

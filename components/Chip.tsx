@@ -27,7 +27,7 @@ export function Chip({ label, selected, onPress, color = 'green' }: ChipProps) {
       }`}
     >
       <Text
-        className={`text-body-md ${selected ? 'font-semibold' : ''}`}
+        className={`text-body-md ${selected ? 'font-pretendard-semibold' : ''}`}
         style={selected ? { color: SELECTED_TEXT_COLOR[color] } : undefined}
       >
         {label}

@@ -111,13 +111,13 @@ export default function AccountScreen() {
           icon={<BackArrowIcon width={20} height={20} />}
           onClick={() => router.back()}
         />
-        <Text className="flex-1 text-center text-title-sm">계정 관리</Text>
+        <Text className="flex-1 text-center text-title-sm font-pretendard-medium">계정 관리</Text>
         <View className="w-8" />
       </View>
 
       {/* 연동 계정 정보 */}
       <View className="px-5 pt-6 pb-4">
-        <Text className="text-title-sm mb-4">연동 계정 정보</Text>
+        <Text className="text-title-sm mb-4 font-pretendard-medium">연동 계정 정보</Text>
         {accounts.length === 0 ? (
           <Loading color="#6ADE50" />
         ) : (

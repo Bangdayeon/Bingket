@@ -1,4 +1,5 @@
-import { Image, Pressable, TouchableOpacity, View } from 'react-native';
+import { Image } from 'expo-image';
+import { Pressable, TouchableOpacity, View } from 'react-native';
 import { Text } from '@/components/Text';
 import { useResponsive } from '@/lib/use-responsive';
 import EditIcon from '@/assets/icons/ic_edit.svg';
@@ -103,11 +104,15 @@ export function BingoCard({
         <Image
           source={{ uri: image }}
           style={{ position: 'absolute', width: '100%', height: '100%' }}
-          resizeMode="cover"
+          contentFit="cover"
+          cachePolicy="memory-disk"
         />
 
         <View className="pt-7 px-5 items-center justify-between flex-row absolute w-full">
-          <Text className="text-title-md" style={{ color: fgColor }}>
+          <Text
+            className="text-title-md font-pretendard-medium"
+            style={{ color: fgColor, fontWeight: 600 }}
+          >
             {bingo.title}
           </Text>
           {onEditPress && (
@@ -147,7 +152,8 @@ export function BingoCard({
                 <Image
                   source={{ uri: checkImage }}
                   style={{ position: 'absolute', width: '100%', height: '100%' }}
-                  resizeMode="contain"
+                  contentFit="contain"
+                  cachePolicy="memory-disk"
                 />
               )}
             </Pressable>

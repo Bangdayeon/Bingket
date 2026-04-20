@@ -85,7 +85,7 @@ export default function AlertSettingScreen() {
           icon={<BackArrowIcon width={20} height={20} />}
           onClick={() => router.back()}
         />
-        <Text className="flex-1 text-center text-title-sm">알림 설정</Text>
+        <Text className="flex-1 text-center text-title-sm font-pretendard-medium">알림 설정</Text>
         {loading ? <Loading color="#6ADE50" /> : <View className="w-8" />}
       </View>
 
@@ -96,7 +96,7 @@ export default function AlertSettingScreen() {
 
         {/* 빙고 알림 */}
         <View className="px-5 pt-3 pb-1">
-          <Text className="text-title-md">빙고 알림</Text>
+          <Text className="text-title-md font-pretendard-medium">빙고 알림</Text>
         </View>
         <ToggleRow
           label="기간 임박 알림"
@@ -109,7 +109,7 @@ export default function AlertSettingScreen() {
 
         {/* 커뮤니티 알림 */}
         <View className="px-5 pt-3 pb-1">
-          <Text className="text-title-md">커뮤니티 알림</Text>
+          <Text className="text-title-md font-pretendard-medium">커뮤니티 알림</Text>
         </View>
         <ToggleRow
           label="인기글 알림"
@@ -134,7 +134,7 @@ export default function AlertSettingScreen() {
 
         {/* 이벤트 및 혜택 알림 */}
         <View className="px-5 pt-3 pb-1">
-          <Text className="text-title-md">이벤트 및 혜택 알림</Text>
+          <Text className="text-title-md font-pretendard-medium">이벤트 및 혜택 알림</Text>
         </View>
         <ToggleRow
           label="앱 푸시"
