@@ -38,7 +38,8 @@
       "Bash(xcodebuild -version)",
       "Bash(xcrun --sdk iphoneos --show-sdk-version)",
       "Bash(xargs sed *)",
-      "Bash(pod install *)"
+      "Bash(pod install *)",
+      "Bash(npx patch-package *)"
     ]
   }
 }
