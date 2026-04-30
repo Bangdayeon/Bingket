@@ -7,8 +7,8 @@ import { useResponsive, TABLET_MAX_MODAL_WIDTH } from '@/lib/use-responsive';
 
 import HomeOff from '@/assets/icons/home_off.svg';
 import HomeOn from '@/assets/icons/home_on.svg';
-import CommunityOff from '@/assets/icons/community_off.svg';
-import CommunityOn from '@/assets/icons/community_on.svg';
+import CommunityOff from '@/assets/icons/ic_community_off.svg';
+import CommunityOn from '@/assets/icons/ic_community_on.svg';
 import AlertOff from '@/assets/icons/alert_off.svg';
 import AlertOn from '@/assets/icons/alert_on.svg';
 import MypageOff from '@/assets/icons/mypage_off.svg';

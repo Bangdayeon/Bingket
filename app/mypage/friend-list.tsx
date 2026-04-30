@@ -157,7 +157,7 @@ export default function FriendListScreen() {
     if (isSelectMode) {
       router.back();
     } else {
-      router.push('/bingo/battle');
+      router.push({ pathname: '/bingo/battle', params: { fromFriend: 'true' } });
     }
   };
 

@@ -49,7 +49,7 @@ export function HeaderTabBar({
 
   return (
     <View
-      className="bg-white   border-b border-gray-300   w-full absolute top-0"
+      className="bg-white border-b border-gray-300 w-full absolute top-0"
       style={{ height: TOTAL_HEIGHT, paddingTop: insets.top, zIndex: 50 }}
     >
       <View className="flex-row h-[60px] items-center">
@@ -74,7 +74,7 @@ export function HeaderTabBar({
             }}
           >
             <Text
-              className="text-title-lg font-pretendard-semibold"
+              className="text-title-md font-pretendard-semibold"
               style={{
                 color: selectedIndex === index ? '#181C1C' : '#929898',
               }}

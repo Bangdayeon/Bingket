@@ -97,6 +97,7 @@ export default function RootLayout() {
         <Stack.Screen name="bingo/battle-check" options={{ headerShown: false }} />
         <Stack.Screen name="bingo/battle-select-board" options={{ headerShown: false }} />
         <Stack.Screen name="bingo/battle-status" options={{ headerShown: false }} />
+        <Stack.Screen name="bingo/semi-battle-check" options={{ headerShown: false }} />
         <Stack.Screen name="community/search" options={{ headerShown: false }} />
         <Stack.Screen name="community/write" options={{ headerShown: false }} />
         <Stack.Screen name="community/[id]" options={{ headerShown: false }} />

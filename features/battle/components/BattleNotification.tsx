@@ -1,14 +1,21 @@
-import { View } from 'react-native';
+import { TouchableOpacity, View } from 'react-native';
+import { useRouter } from 'expo-router';
 import { Text } from '@/components/Text';
 import Button from '@/components/Button';
 import CloseIcon from '@/assets/icons/ic_close.svg';
 import { ProfileAvatar } from '@/components/ProfileAvatar';
+import ArrowForward from '@/assets/icons/ic_arrow_forward.svg';
 
 type Variant = 'sent' | 'rejected' | 'received';
 
+type HeaderConfig = {
+  title: string;
+  actions?: React.ReactNode;
+};
+
 interface BattleNotificationProps {
   variant: Variant;
-  bingoTitle: string;
+  requestId: string;
   friendName: string;
   friendUsername: string;
   avatarUrl?: string | null;
@@ -22,7 +29,7 @@ interface BattleNotificationProps {
 
 export function BattleNotification({
   variant,
-  bingoTitle,
+  requestId,
   friendName,
   friendUsername,
   avatarUrl,
@@ -31,58 +38,68 @@ export function BattleNotification({
   onAccept,
   onReject,
 }: BattleNotificationProps) {
+  const router = useRouter();
   const isGreen = variant === 'sent' || variant === 'received';
-
   const containerStyle = isGreen ? 'bg-green-100 border-green-200' : 'bg-red-100 border-red-200';
 
-  const renderHeader = () => {
+  const handleCheckBattle = () => {
+    router.push({
+      pathname: '/bingo/semi-battle-check',
+      params: {
+        requestId,
+        variant,
+        friendName,
+        friendUsername,
+        friendAvatarUrl: avatarUrl ?? '',
+      },
+    });
+  };
+
+  const getHeaderConfig = (): HeaderConfig => {
     switch (variant) {
       case 'sent':
-        return (
-          <>
-            <Text className="text-body-md">대결 요청을 보냈어요.</Text>
+        return {
+          title: '대결 요청을 보냈어요.',
+          actions: (
             <Button
-              className="h-8 px-4"
+              className="h-[36px]"
               variant="dangerous"
-              label="취소"
+              label="요청 취소하기"
               onClick={onCancel ?? (() => {})}
             />
-          </>
-        );
+          ),
+        };
 
       case 'rejected':
-        return (
-          <>
-            <Text className="text-body-md">친구가 대결 요청을 거절했어요.</Text>
-            <CloseIcon width={20} height={20} onPress={onClose} />
-          </>
-        );
+        return {
+          title: '친구가 대결 요청을 거절했어요.',
+          actions: <CloseIcon width={20} height={20} onPress={onClose} />,
+        };
 
       case 'received':
-        return (
-          <>
-            <Text className="text-body-md">대결 요청을 받았어요.</Text>
+        return {
+          title: '대결 요청을 받았어요.',
+          actions: (
             <View className="flex-row gap-2">
               <Button
-                className="h-8 px-4"
+                className="w-[50%] h-[36px]"
                 variant="dangerous"
                 label="거절"
                 onClick={onReject ?? (() => {})}
               />
-              <Button className="h-8 px-4" label="승인" onClick={onAccept ?? (() => {})} />
+              <Button className="w-[50%] h-[36px]" label="승인" onClick={onAccept ?? (() => {})} />
             </View>
-          </>
-        );
+          ),
+        };
     }
   };
 
   return (
-    <View className={`py-3 px-5 gap-1 border-b ${containerStyle}`}>
+    <View className={`py-3 px-5 gap-2 border-b ${containerStyle}`}>
       {/* header */}
-      <View className="flex-row justify-between items-center">{renderHeader()}</View>
-
-      {/* bingo title */}
-      <Text className="text-title-sm">{bingoTitle}</Text>
+      <View className="flex-row justify-between items-center">
+        <Text className="text-title-sm font-pretendard-medium">{getHeaderConfig().title}</Text>
+      </View>
 
       {/* user info */}
       <View className="flex-row gap-2 items-center">
@@ -92,6 +109,18 @@ export function BattleNotification({
           <Text className="text-[11px] text-gray-700">@{friendUsername}</Text>
         </View>
       </View>
+
+      {variant !== 'rejected' && (
+        <TouchableOpacity
+          className="w-full justify-between items-center flex-row"
+          onPress={handleCheckBattle}
+        >
+          <Text>대결장 확인하기</Text>
+          <ArrowForward width={18} height={18} color="#2E3333" />
+        </TouchableOpacity>
+      )}
+
+      <View className="mt-3">{getHeaderConfig().actions}</View>
     </View>
   );
 }

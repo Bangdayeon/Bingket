@@ -34,6 +34,7 @@ export interface BattleRequestDetail {
   senderDisplayName: string;
   senderAvatarUrl: string | null;
   senderBoard: BattleBoardSummary;
+  title: string | null;
   betText: string | null;
   status: 'pending' | 'accepted' | 'rejected';
 }
@@ -48,6 +49,7 @@ export interface BattleStatusDetail {
   };
   myScore: number;
   friendScore: number;
+  title: string | null;
   betText: string | null;
   status: 'in_progress' | 'completed';
   endDate: string | null;
@@ -64,11 +66,14 @@ export interface BattleNotificationItem {
 
 export interface BattleListEntry {
   battleId: string;
+  title: string | null;
   betText: string | null;
   myBoardId: string;
   myBoardTitle: string;
   opponentBoardTitle: string;
   variant: 'ongoing' | 'finished';
+  startDate: string | null;
+  endDate: string | null;
   me: { name: string; avatarUrl: string | null; isWinner?: boolean };
   opponent: { name: string; avatarUrl: string | null; isWinner?: boolean };
 }
@@ -162,6 +167,7 @@ export const deleteFriend = async (friendUserId: string): Promise<void> => {
 export const sendBattleRequest = async (params: {
   senderBoardId: string;
   receiverId: string;
+  title: string;
   betText: string;
 }): Promise<void> => {
   const {
@@ -175,6 +181,7 @@ export const sendBattleRequest = async (params: {
       sender_id: user.id,
       receiver_id: params.receiverId,
       sender_board_id: params.senderBoardId,
+      title: params.title.trim() || null,
       bet_text: params.betText.trim() || null,
     })
     .select('id')
@@ -203,7 +210,7 @@ export const fetchBattleRequestDetail = async (
   const { data, error } = await supabase
     .from('battle_requests')
     .select(
-      `id, sender_id, status, bet_text,
+      `id, sender_id, status, title, bet_text,
        sender:users!battle_requests_sender_id_fkey(username, display_name, avatar_url),
        sender_board:bingo_boards!battle_requests_sender_board_id_fkey(
          id, title, grid, theme, target_date,
@@ -231,6 +238,7 @@ export const fetchBattleRequestDetail = async (
     senderDisplayName: sender.display_name,
     senderAvatarUrl: sender.avatar_url,
     senderBoard: buildBoardSummary(board),
+    title: data.title as string | null,
     betText: data.bet_text as string | null,
     status: data.status as 'pending' | 'accepted' | 'rejected',
   };
@@ -239,7 +247,7 @@ export const fetchBattleRequestDetail = async (
 export const acceptBattleRequest = async (params: {
   requestId: string;
   receiverBoardId: string;
-}): Promise<void> => {
+}): Promise<{ battleId: string }> => {
   // Step 1: set receiver board
   const { error: boardError } = await supabase
     .from('battle_requests')
@@ -251,7 +259,7 @@ export const acceptBattleRequest = async (params: {
   // Step 2: fetch request data for battle creation
   const { data: req, error: fetchError } = await supabase
     .from('battle_requests')
-    .select('sender_id, receiver_id, sender_board_id, bet_text')
+    .select('sender_id, receiver_id, sender_board_id, title, bet_text')
     .eq('id', params.requestId)
     .single();
 
@@ -273,6 +281,7 @@ export const acceptBattleRequest = async (params: {
       user2_id: req.receiver_id,
       board1_id: req.sender_board_id,
       board2_id: params.receiverBoardId,
+      title: req.title,
       bet_text: req.bet_text,
     })
     .select('id')
@@ -293,6 +302,8 @@ export const acceptBattleRequest = async (params: {
     target_id: battleData.id,
     target_type: null,
   });
+
+  return { battleId: battleData.id as string };
 };
 
 export const cancelBattleRequest = async (requestId: string): Promise<void> => {
@@ -414,7 +425,7 @@ export const fetchMyBattles = async (): Promise<BattleListEntry[]> => {
   const { data, error } = await supabase
     .from('battles')
     .select(
-      `id, user1_id, user2_id, board1_id, board2_id, score1, score2, bet_text, status,
+      `id, user1_id, user2_id, board1_id, board2_id, score1, score2, title, bet_text, status, created_at, end_date,
         board1:bingo_boards!battles_board1_id_fkey(
           title,
           users!bingo_boards_user_id_fkey(display_name, avatar_url)
@@ -443,11 +454,14 @@ export const fetchMyBattles = async (): Promise<BattleListEntry[]> => {
 
     return {
       battleId: row.id as string,
+      title: row.title as string | null,
       betText: row.bet_text as string | null,
       myBoardId: (myIsUser1 ? row.board1_id : row.board2_id) as string,
       myBoardTitle: myBoard?.title ?? '',
       opponentBoardTitle: opponentBoard?.title ?? '',
       variant: isCompleted ? 'finished' : 'ongoing',
+      startDate: row.created_at as string | null,
+      endDate: row.end_date as string | null,
       me: {
         name: myBoard?.users?.display_name ?? '',
         avatarUrl: myBoard?.users?.avatar_url ?? null,
@@ -473,7 +487,7 @@ export const fetchBattleStatusDetail = async (
   const { data, error } = await supabase
     .from('battles')
     .select(
-      `id, user1_id, user2_id, score1, score2, bet_text, status, end_date,
+      `id, user1_id, user2_id, score1, score2, title, bet_text, status, end_date,
        board1:bingo_boards!battles_board1_id_fkey(
          id, title, grid, theme, target_date,
          bingo_cells(is_checked, position, content),
@@ -524,6 +538,7 @@ export const fetchBattleStatusDetail = async (
     },
     myScore: calcScore(myBoardSummary),
     friendScore: calcScore(friendBoardSummary),
+    title: data.title as string | null,
     betText: data.bet_text as string | null,
     status: data.status as 'in_progress' | 'completed',
     endDate: data.end_date as string | null,

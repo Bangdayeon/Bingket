@@ -1,12 +1,12 @@
 import { useCallback, useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import { ScrollView, View, Image } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Text } from '@/components/Text';
 import { Modal } from '@/components/Modal';
 import { BattleNotification } from '@/features/battle/components/BattleNotification';
 import { BattleListItem } from '@/features/battle/components/BattleListItem';
-import BattleDoneIcon from '@/assets/icons/ic_battle_done.svg';
-import BattleProgressIcon from '@/assets/icons/ic_battle_progress.svg';
+import BattleDoneIcon from '@/assets/pngIcons/pencil.png';
+import BattleProgressIcon from '@/assets/pngIcons/fire.png';
 import {
   fetchMyBattleNotifications,
   fetchMyBattles,
@@ -108,7 +108,7 @@ export function BingoBattle() {
               <BattleNotification
                 key={notif.requestId}
                 variant={notif.type}
-                bingoTitle={notif.bingoTitle}
+                requestId={notif.requestId}
                 friendName={notif.friendName}
                 friendUsername={notif.friendUsername}
                 avatarUrl={notif.avatarUrl}
@@ -121,23 +121,27 @@ export function BingoBattle() {
 
             {/* Ongoing battles */}
             <View className="mt-4 mx-5">
-              <View className="flex-row gap-2 mb-2 items-center">
-                <BattleProgressIcon />
-                <Text className="text-title-md  ">승부 중 대결</Text>
+              <View className="flex-row gap-1 mb-4 items-center">
+                <Image
+                  source={BattleProgressIcon}
+                  style={{ width: 24, height: 24 }}
+                  resizeMode="contain"
+                />
+                <Text className="text-title-md">승부 중 대결</Text>
               </View>
               {ongoing.length === 0 ? (
-                <Text className="text-body-md text-gray-400">진행 중인 대결이 없어요.</Text>
+                <Text className="text-body-md text-gray-400 mt-2">진행 중인 대결이 없어요.</Text>
               ) : (
                 <View className="flex gap-2">
                   {ongoing.map((b) => (
                     <BattleListItem
                       key={b.battleId}
-                      variant="ongoing"
-                      myBoardTitle={b.myBoardTitle}
-                      opponentBoardTitle={b.opponentBoardTitle}
                       battleId={b.battleId}
                       me={b.me}
                       opponent={b.opponent}
+                      battleTitle={b.title}
+                      startDate={b.startDate}
+                      endDate={b.endDate}
                     />
                   ))}
                 </View>
@@ -146,23 +150,27 @@ export function BingoBattle() {
 
             {/* Finished battles */}
             <View className="mt-8 mx-5 mb-4">
-              <View className="flex-row gap-2 mb-2 items-center">
-                <BattleDoneIcon />
-                <Text className="text-title-md  ">승부 난 대결</Text>
+              <View className="flex-row gap-1 mb-3 items-center">
+                <Image
+                  source={BattleDoneIcon}
+                  style={{ width: 24, height: 24 }}
+                  resizeMode="contain"
+                />
+                <Text className="text-title-md  ">대결 기록</Text>
               </View>
               {finished.length === 0 ? (
-                <Text className="text-body-md text-gray-400 mt-2 px-2">종료된 대결이 없어요.</Text>
+                <Text className="text-body-md text-gray-400 mt-2">종료된 대결이 없어요.</Text>
               ) : (
                 <View className="flex gap-2">
                   {finished.map((b) => (
                     <BattleListItem
                       key={b.battleId}
-                      variant="finished"
-                      myBoardTitle={b.myBoardTitle}
-                      opponentBoardTitle={b.opponentBoardTitle}
                       battleId={b.battleId}
                       me={b.me}
                       opponent={b.opponent}
+                      battleTitle={b.title}
+                      startDate={b.startDate}
+                      endDate={b.endDate}
                     />
                   ))}
                 </View>

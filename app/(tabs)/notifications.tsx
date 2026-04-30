@@ -135,7 +135,10 @@ export default function NotificationsScreen() {
     if (type === 'friend_request') {
       router.push('/mypage/friend-list');
     } else if (type === 'battle_request' && targetId) {
-      router.push({ pathname: '/bingo/battle-check', params: { requestId: targetId } });
+      router.push({
+        pathname: '/bingo/semi-battle-check',
+        params: { requestId: targetId, variant: 'received' },
+      });
     } else if (type === 'battle_accepted' && targetId) {
       router.push({ pathname: '/bingo/battle-status', params: { battleId: targetId } });
     } else if (
@@ -179,7 +182,7 @@ export default function NotificationsScreen() {
     <SafeAreaView className="flex-1 bg-white  ">
       {/* Header */}
       <View className="h-[60px] flex-row items-center justify-between px-4 border-b border-gray-300  ">
-        <Text className="text-title-lg font-pretendard-semibold">알림</Text>
+        <Text className="text-title-md font-pretendard-semibold">알림</Text>
         <Pressable onPress={markAllRead} className="items-end">
           <Text className="text-body-md">모두 읽음 처리</Text>
         </Pressable>

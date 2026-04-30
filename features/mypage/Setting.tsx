@@ -1,6 +1,6 @@
 import * as Sentry from '@sentry/react-native';
-import { useRouter, useFocusEffect } from 'expo-router';
-import { useCallback, useRef, useState } from 'react';
+import { useRouter } from 'expo-router';
+import { useRef, useState } from 'react';
 import Constants from 'expo-constants';
 import { Pressable, ScrollView, View, Platform, Linking } from 'react-native';
 import { ProfileAvatar } from '@/components/ProfileAvatar';
@@ -8,10 +8,10 @@ import { Text } from '@/components/Text';
 import { MenuItem } from './MenuItem';
 import { Modal } from '@/components/Modal';
 import { supabase } from '@/lib/supabase';
-import { fetchMyProfile, MyProfile, submitReport } from '@/features/mypage/lib/mypage';
+import { submitReport } from '@/features/mypage/lib/mypage';
+import { useMyProfile } from '@/features/mypage/use-my-profile';
 import * as WebBrowser from 'expo-web-browser';
 import * as Clipboard from 'expo-clipboard';
-import { getCache, setCache } from '@/lib/cache';
 import { Toast } from '@/components/Toast';
 
 import Profile from '@/assets/pngIcons/profile.png';
@@ -22,8 +22,6 @@ import FAQ from '@/assets/pngIcons/faq.png';
 import Terms from '@/assets/pngIcons/terms.png';
 import Privacy from '@/assets/pngIcons/privacy.png';
 import Update from '@/assets/pngIcons/update.png';
-import { CACHE_KEY_PROFILE } from '@/constants/cache_key';
-import { PROFILE_TTL } from '@/constants/cache_key';
 import { TextInput } from '@/components/TextInput';
 import Loading from '@/components/Loading';
 
@@ -38,7 +36,7 @@ export function SettingPage() {
       isNavigatingRef.current = false;
     }, 1000);
   };
-  const [profile, setProfile] = useState<MyProfile | null>(null);
+  const profile = useMyProfile();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [showAskModal, setShowAskModal] = useState(false);
   const [resultModal, setResultModal] = useState<{ title: string; body: string } | null>(null);
@@ -48,21 +46,6 @@ export function SettingPage() {
 
   const ANDROID_PACKAGE_NAME = 'com.my.app'; // TODO
   const IOS_APP_ID = '6761634987';
-
-  useFocusEffect(
-    useCallback(() => {
-      getCache<MyProfile>(CACHE_KEY_PROFILE, PROFILE_TTL).then((cached) => {
-        if (cached) setProfile(cached);
-        // 백그라운드에서 갱신
-        fetchMyProfile().then((fresh) => {
-          if (fresh) {
-            setProfile(fresh);
-            setCache(CACHE_KEY_PROFILE, fresh);
-          }
-        });
-      });
-    }, []),
-  );
 
   const openUrl = async (url: string) => {
     await WebBrowser.openBrowserAsync(url);

@@ -145,14 +145,25 @@ export default function BattleStatusScreen() {
             paddingBottom: insets.bottom + 32,
           }}
         >
-          <View className="flex-row items-center gap-2 mx-5 mb-5">
-            <Text className="text-title-lg">{isCompleted ? '대결 종료' : `D-${myBingo.dday}`}</Text>
-            <Information content={<Text>두 빙고의 종료일 중 더 많이 남은 날짜 기준이에요.</Text>} />
-          </View>
+          {/* 제목 */}
+          {detail.title && (
+            <View className="flex-row gap-4 mx-5 mb-5">
+              <Text className="font-pretendard-semibold text-3xl">{detail.title}</Text>
+              <View className="flex-row items-center gap-2">
+                <Text className="text-xl text-gray-600">
+                  {isCompleted ? '대결 종료' : `D-${myBingo.dday}`}
+                </Text>
+                <Information
+                  content={<Text>두 빙고의 종료일 중 더 많이 남은 날짜 기준이에요.</Text>}
+                />
+              </View>
+            </View>
+          )}
+
           {/* 내기 */}
           {detail.betText && (
             <View className="mx-5 mb-8">
-              <Text className="text-title-md mb-3">내기 내용</Text>
+              <Text className="text-title-md mb-3 font-pretendard-semibold">내기 내용</Text>
               <View className="p-4 bg-gray-100   rounded-2xl">
                 <Text className="text-body-md md:text-body-lg">{detail.betText}</Text>
               </View>

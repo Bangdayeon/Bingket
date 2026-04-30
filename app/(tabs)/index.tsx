@@ -5,9 +5,12 @@ import { BingoBattle } from '@/features/bingo/BingoBattle';
 import { useCallback, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
+import AddIcon from '@/assets/icons/ic_add.svg';
+import IconButton from '@/components/IconButton';
 
 export default function HomeScreen() {
+  const router = useRouter();
   const [tabIndex, setTabIndex] = useState(0);
   const [isReorderMode, setIsReorderMode] = useState(false);
   const insets = useSafeAreaInsets();
@@ -21,6 +24,10 @@ export default function HomeScreen() {
   const handleTabChange = (index: number) => {
     setTabIndex(index);
     if (index !== 1) setIsReorderMode(false);
+  };
+
+  const addBattle = () => {
+    router.push('/bingo/battle');
   };
 
   const reorderIconColor = isReorderMode ? '#181C1C' /* gray-900 */ : '#B4BBBB'; /* gray-400 */
@@ -39,7 +46,7 @@ export default function HomeScreen() {
           onPress={() => setIsReorderMode((prev) => !prev)}
           style={{
             position: 'absolute',
-            top: insets.top + 10,
+            top: insets.top + 16,
             right: 16,
             zIndex: 51,
             padding: 6,
@@ -58,6 +65,24 @@ export default function HomeScreen() {
             />
           </View>
         </Pressable>
+      )}
+
+      {/* 대결 탭 전용 버튼 */}
+      {tabIndex === 2 && (
+        <View
+          style={{
+            position: 'absolute',
+            top: insets.top + 8,
+            right: 16,
+            zIndex: 51,
+          }}
+        >
+          <IconButton
+            variant="ghost"
+            icon={<AddIcon width={24} height={24} />}
+            onClick={addBattle}
+          />
+        </View>
       )}
 
       {tabIndex === 0 && <BingoAll />}

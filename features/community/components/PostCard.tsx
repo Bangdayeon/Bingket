@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { Image as RNImage, Pressable, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { Image } from 'expo-image';
 import { Text } from '@/components/Text';
 import SMSIcon from '@/assets/icons/ic_sms.svg';
-import AlertIcon from '@/assets/icons/alert.png';
+import ReportIcon from '@/assets/icons/ic_report.svg';
 import { CommunityPost } from '@/types/community';
 import type { StoredBlock } from '@/types/community';
 import { LikeButton } from './LikeButton';
@@ -132,7 +132,7 @@ export function PostCard({ post, currentUserId, onBlock }: PostCardProps) {
         </View>
         {!isOwnPost && (
           <Pressable onPress={() => setShowMenu((v) => !v)} hitSlop={8}>
-            <RNImage source={AlertIcon} style={{ width: 24, height: 24 }} />
+            <ReportIcon width={20} height={20} color={iconColor} />
           </Pressable>
         )}
       </View>

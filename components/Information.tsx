@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Modal, Pressable, View } from 'react-native';
+import { Modal, Pressable, useWindowDimensions, View } from 'react-native';
 import IcInfo from '@/assets/icons/ic_info.svg';
 import { Text } from '@/components/Text';
 
@@ -8,6 +8,7 @@ interface InformationProps {
 }
 
 export function Information({ content }: InformationProps) {
+  const { width: screenWidth } = useWindowDimensions();
   const [visible, setVisible] = useState(false);
   const [anchor, setAnchor] = useState({ x: 0, y: 0, width: 0, height: 0 });
   const iconRef = useRef<View>(null);
@@ -32,7 +33,8 @@ export function Information({ content }: InformationProps) {
             className="bg-white rounded-lg border border-gray-300 px-3 py-2 absolute"
             style={{
               top: anchor.y + anchor.height + 4,
-              left: anchor.x - 12,
+              left: Math.max(16, Math.min(anchor.x - 12, screenWidth - 256)),
+              maxWidth: 240,
               shadowColor: '#000',
               shadowOpacity: 0.08,
               shadowRadius: 8,

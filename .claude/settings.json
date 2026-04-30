@@ -39,7 +39,8 @@
       "Bash(xcrun --sdk iphoneos --show-sdk-version)",
       "Bash(xargs sed *)",
       "Bash(pod install *)",
-      "Bash(npx patch-package *)"
+      "Bash(npx patch-package *)",
+      "Bash(grep -v \"battle.ts$\")"
     ]
   }
 }
