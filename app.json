@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "Bingket",
+    "name": "빙킷",
     "slug": "bingkit",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "scheme": "bingket",
     "orientation": "portrait",
     "icon": "./assets/app_icon.png",
@@ -60,13 +60,6 @@
           "icon": "./assets/app_icon.png",
           "color": "#F07840",
           "iosDisplayInForeground": true
-        }
-      ],
-      [
-        "@sentry/react-native",
-        {
-          "organization": "bangs-projects",
-          "project": "bingket"
         }
       ],
       "expo-image",

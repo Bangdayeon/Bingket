@@ -40,7 +40,9 @@
       "Bash(xargs sed *)",
       "Bash(pod install *)",
       "Bash(npx patch-package *)",
-      "Bash(grep -v \"battle.ts$\")"
+      "Bash(grep -v \"battle.ts$\")",
+      "Bash(keytool -list -v -keystore /Users/bangdayeon/Desktop/Projects/Bingket/android/app/bingket-release.keystore -alias bingket -storepass 'Bangda!825')",
+      "Bash(xargs cat *)"
     ]
   }
 }
