@@ -2,7 +2,7 @@
   "expo": {
     "name": "빙킷",
     "slug": "bingkit",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "scheme": "bingket",
     "orientation": "portrait",
     "icon": "./assets/app_icon.png",

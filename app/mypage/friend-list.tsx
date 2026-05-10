@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ScrollView, Share, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import * as Clipboard from 'expo-clipboard';
+import KakaoShareLink from 'react-native-kakao-share-link';
 import { Text } from '@/components/Text';
 import { TextInput } from '@/components/TextInput';
 import IconButton from '@/components/IconButton';
 import BackArrowIcon from '@/assets/icons/ic_arrow_back.svg';
+import SearchIcon from '@/assets/icons/ic_search.svg';
 import { deleteFriend, fetchFriends, type Friend } from '@/features/battle/lib/battle';
 import { setSelectedFriend } from '@/features/battle/lib/battle-selection';
 import {
@@ -36,7 +37,10 @@ export default function FriendListScreen() {
   const insets = useSafeAreaInsets();
   const isSelectMode = mode === 'select';
 
-  const [search, setSearch] = useState('');
+  const [friendSearch, setFriendSearch] = useState('');
+
+  const [globalSearchMode, setGlobalSearchMode] = useState(false);
+  const [globalSearch, setGlobalSearch] = useState('');
   const [searchResults, setSearchResults] = useState<UserSearchResult[] | null>(null);
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
@@ -86,11 +90,6 @@ export default function FriendListScreen() {
       setSearchLoading(false);
     }
   }, []);
-
-  useEffect(() => {
-    const t = setTimeout(() => runSearch(search), 300);
-    return () => clearTimeout(t);
-  }, [search, runSearch]);
 
   // Send friend request
   const handleRequest = async (item: UserSearchResult) => {
@@ -164,11 +163,46 @@ export default function FriendListScreen() {
   const APP_STORE_URL = 'https://apps.apple.com/kr/app/%EB%B9%99%ED%82%B7-bingket/id6761634987';
 
   const handleInvite = async () => {
-    await Clipboard.setStringAsync(APP_STORE_URL);
-    await Share.share({ message: APP_STORE_URL });
+    try {
+      await KakaoShareLink.sendFeed({
+        content: {
+          title: '빙킷에서 친구와 목표를 함께 이뤄봐요!',
+          description: '빙고 형태로 목표를 세우고 커뮤니티에서 함께 달성해보세요.',
+          imageUrl: 'https://pub-ce1a524f861f4062a6ec96dd100c4aec.r2.dev/etc/og_image.png',
+          link: {
+            webUrl: APP_STORE_URL,
+            mobileWebUrl: APP_STORE_URL,
+          },
+        },
+        buttons: [
+          {
+            title: '앱에서 열기',
+            link: {
+              androidExecutionParams: [{ key: 'screen', value: 'invite' }],
+              iosExecutionParams: [{ key: 'screen', value: 'invite' }],
+            },
+          },
+        ],
+      });
+    } catch (e) {
+      setErrorMessage(e instanceof Error ? e.message : '초대 링크 공유에 실패했어요.');
+    }
   };
 
-  const isSearching = search.trim().length > 0;
+  const filteredFriends = friendSearch.trim()
+    ? friends.filter(
+        (f) =>
+          f.username.toLowerCase().includes(friendSearch.trim().toLowerCase()) ||
+          f.displayName.toLowerCase().includes(friendSearch.trim().toLowerCase()),
+      )
+    : friends;
+
+  const closeGlobalSearch = () => {
+    setGlobalSearchMode(false);
+    setGlobalSearch('');
+    setSearchResults(null);
+    setSearchError(null);
+  };
 
   return (
     <View className="flex-1 bg-white  " style={{ paddingTop: insets.top }}>
@@ -178,31 +212,49 @@ export default function FriendListScreen() {
           variant="ghost"
           size={32}
           icon={<BackArrowIcon width={20} height={20} />}
-          onClick={() => router.back()}
+          onClick={globalSearchMode ? closeGlobalSearch : () => router.back()}
         />
         <Text className="flex-1 text-center text-title-sm">
           {isSelectMode ? '친구 선택' : '친구'}
         </Text>
-        <View style={{ width: 32 }} />
-      </View>
-
-      <View className="px-4 py-2">
-        <TextInput
-          value={search}
-          onChangeText={setSearch}
-          placeholder="id로 친구를 검색해보세요"
-          autoCapitalize="none"
+        <IconButton
+          variant="ghost"
+          size={32}
+          icon={<SearchIcon width={20} height={20} />}
+          onClick={() => setGlobalSearchMode(true)}
         />
       </View>
 
-      <View className="flex flex-row mx-4 mb-2 px-4 py-5 bg-green-100 rounded-xl items-center justify-between gap-2">
-        <Text className="text-body-sm text-gray-800">
-          {'함께하고 싶은 친구가 아직 없나요?\n친구를 초대해서 함께해요.'}
-        </Text>
-        <Button label="친구 초대하기" onClick={handleInvite} size="sm" className="px-3" />
+      <View className="px-4 py-2">
+        {globalSearchMode ? (
+          <TextInput
+            value={globalSearch}
+            onChangeText={(text) => {
+              setGlobalSearch(text);
+              if (!text) {
+                setSearchResults(null);
+                setSearchError(null);
+              }
+            }}
+            onSubmitEditing={() => runSearch(globalSearch)}
+            returnKeyType="search"
+            placeholder="친구 요청을 보낼 유저의 id/이름을 입력해주세요."
+            autoCapitalize="none"
+            autoFocus
+            leftIcon={<SearchIcon width={16} height={16} />}
+          />
+        ) : (
+          <TextInput
+            value={friendSearch}
+            onChangeText={setFriendSearch}
+            placeholder="친구 목록에서 검색해보세요."
+            autoCapitalize="none"
+            leftIcon={<SearchIcon width={16} height={16} />}
+          />
+        )}
       </View>
 
-      {isSearching ? (
+      {globalSearchMode ? (
         <SearchList
           searchLoading={searchLoading}
           searchError={searchError}
@@ -211,22 +263,38 @@ export default function FriendListScreen() {
           handleRequest={handleRequest}
           insets={insets}
         />
-      ) : listLoading ? (
-        <View className="flex-1 items-center justify-center">
-          <Loading color="#6ADE50" />
-        </View>
       ) : (
-        <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 16 }}>
-          <ReceivedList
-            pendingRequests={pendingRequests}
-            handleIncomingResponse={handleIncomingResponse}
-          />
-          <FriendList
-            friends={friends}
-            handleDeleteFriend={handleDeleteFriend}
-            handleBattleRequest={handleBattleRequest}
-          />
-        </ScrollView>
+        <>
+          <View className="flex flex-row mx-4 mb-2 px-4 py-5 bg-yellow-100 rounded-xl items-center justify-between gap-2">
+            <Text className="text-body-sm text-gray-800">
+              {'아직 앱을 사용하지 않는 친구가 있나요?\n친구를 초대해서 함께해요.'}
+            </Text>
+            <Button
+              label="친구 초대하기"
+              onClick={handleInvite}
+              size="sm"
+              className="px-3 bg-amber-300"
+            />
+          </View>
+
+          {listLoading ? (
+            <View className="flex-1 items-center justify-center">
+              <Loading color="#6ADE50" />
+            </View>
+          ) : (
+            <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 16 }}>
+              <ReceivedList
+                pendingRequests={pendingRequests}
+                handleIncomingResponse={handleIncomingResponse}
+              />
+              <FriendList
+                friends={filteredFriends}
+                handleDeleteFriend={handleDeleteFriend}
+                handleBattleRequest={handleBattleRequest}
+              />
+            </ScrollView>
+          )}
+        </>
       )}
 
       <ConflictModal

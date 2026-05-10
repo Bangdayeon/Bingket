@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Text } from '@/components/Text';
+import { TextInput } from '@/components/TextInput';
 import { RecentSearchTag } from '@/features/community/components/RecentSearchTag';
 import { PostCard } from '@/features/community/components/PostCard';
 import ArrowBackIcon from '@/assets/icons/ic_arrow_back.svg';
@@ -73,42 +74,36 @@ export default function CommunitySearchScreen() {
         <Pressable onPress={() => router.back()} hitSlop={8}>
           <ArrowBackIcon width={24} height={24} color={iconColor} />
         </Pressable>
-        <View className="flex-1 flex-row items-center h-10 px-3 rounded-full bg-gray-200   gap-2">
-          <SearchIcon width={20} height={20} color="#929898" /* gray-500 */ />
-          <RNTextInput
-            ref={inputRef}
-            autoFocus
-            value={value}
-            onChangeText={(text) => {
-              setValue(text);
-              if (!text) setResults(null);
-            }}
-            onSubmitEditing={() => runSearch(value)}
-            returnKeyType="search"
-            placeholder="글 제목, 내용, 빙고 아이템"
-            placeholderTextColor="#929898" /* gray-500 */
-            style={{
-              flex: 1,
-              fontSize: 14,
-              lineHeight: 18,
-              color: '#181C1C' /* gray-900 */,
-            }}
-          />
-          {value.length > 0 && (
-            <Pressable
-              hitSlop={8}
-              onPress={() => {
-                setValue('');
-                setResults(null);
-                inputRef.current?.focus();
-              }}
-            >
-              <Text style={{ color: '#929898' /* gray-500 */, fontSize: 18, lineHeight: 20 }}>
-                ×
-              </Text>
-            </Pressable>
-          )}
-        </View>
+        <TextInput
+          ref={inputRef}
+          autoFocus
+          value={value}
+          onChangeText={(text) => {
+            setValue(text);
+            if (!text) setResults(null);
+          }}
+          onSubmitEditing={() => runSearch(value)}
+          returnKeyType="search"
+          placeholder="글 제목, 내용, 빙고 아이템"
+          className="flex-1 bg-gray-200 h-10 px-3"
+          leftIcon={<SearchIcon width={20} height={20} color="#929898" /* gray-500 */ />}
+          rightIcon={
+            value.length > 0 ? (
+              <Pressable
+                hitSlop={8}
+                onPress={() => {
+                  setValue('');
+                  setResults(null);
+                  inputRef.current?.focus();
+                }}
+              >
+                <Text style={{ color: '#929898' /* gray-500 */, fontSize: 18, lineHeight: 20 }}>
+                  ×
+                </Text>
+              </Pressable>
+            ) : undefined
+          }
+        />
       </View>
 
       {/* 로딩 */}

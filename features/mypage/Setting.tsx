@@ -103,7 +103,7 @@ export function SettingPage() {
               {profile ? (
                 <>
                   <Text className="text-title-sm mb-1">{profile.displayName}</Text>
-                  <Text className="text-body-sm">{profile.username}</Text>
+                  <Text className="text-body-sm">@{profile.username}</Text>
                 </>
               ) : (
                 <Loading color="#6ADE50" />
@@ -111,13 +111,23 @@ export function SettingPage() {
             </View>
             <View className="flex-row gap-8">
               <View className="flex-row gap-3 mb-2">
-                <Pressable onPress={() => navigate('/mypage/my-posts')}>
-                  <Text className="text-body-sm">게시글 {profile?.feedCount ?? 0}</Text>
+                <Pressable onPress={() => navigate('/mypage/my-posts')} className="flex-row gap-1">
+                  <Text className="text-body-sm">게시글</Text>
+                  <Text className="text-body-sm font-pretendard-semibold">
+                    {profile?.feedCount ?? 0}
+                  </Text>
                 </Pressable>
               </View>
               <View className="flex-row gap-3 mb-2">
-                <Pressable onPress={() => navigate('/mypage/friend-list')}>
-                  <Text className="text-body-sm">친구 {profile?.friendCount ?? 0}</Text>
+                <Pressable
+                  onPress={() => navigate('/mypage/friend-list')}
+                  className="flex-row gap-1"
+                >
+                  <Text className="text-body-sm">친구</Text>
+                  <Text className="text-body-sm font-pretendard-semibold">
+                    {' '}
+                    {profile?.friendCount ?? 0}
+                  </Text>
                 </Pressable>
               </View>
             </View>
