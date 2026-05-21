@@ -43,16 +43,20 @@ export const createBingo = async (data: CreateBingoRequest): Promise<string> => 
     .select('id')
     .single();
 
-  if (boardError || !board) throw boardError ?? new Error('빙고 생성 실패');
+  if (boardError || !board) throw new Error(boardError?.message ?? '빙고 생성 실패');
 
   const cells = data.cells.map((content, position) => ({
     board_id: board.id,
     position,
     content,
+    edit_count: 0,
   }));
 
   const { error: cellsError } = await supabase.from('bingo_cells').insert(cells);
-  if (cellsError) throw cellsError;
+  if (cellsError) {
+    await supabase.from('bingo_boards').delete().eq('id', board.id);
+    throw new Error(cellsError.message ?? '셀 생성 실패');
+  }
 
   return board.id as string;
 };
@@ -67,7 +71,7 @@ export const updateCell = async (
   if ('completedAt' in updates) dbUpdates.checked_at = updates.completedAt;
   if (updates.memo !== undefined) dbUpdates.memo = updates.memo;
   const { error } = await supabase.from('bingo_cells').update(dbUpdates).eq('id', cellId);
-  if (error) throw error;
+  if (error) throw new Error(error.message);
 };
 
 // ────────────────────────────────────────────────────────────
@@ -170,14 +174,14 @@ export const updateBingo = async (
     .from('bingo_boards')
     .update({ title, theme })
     .eq('id', boardId);
-  if (boardError) throw boardError;
+  if (boardError) throw new Error(boardError.message);
 
   for (const cell of changedCells) {
     const { error } = await supabase
       .from('bingo_cells')
       .update({ content: cell.content, edit_count: cell.newEditCount })
       .eq('id', cell.id);
-    if (error) throw error;
+    if (error) throw new Error(error.message);
   }
 };
 
@@ -187,7 +191,7 @@ export const markBingoDone = async (boardId: string): Promise<void> => {
     .from('bingo_boards')
     .update({ status: 'done' })
     .eq('id', boardId);
-  if (error) throw error;
+  if (error) throw new Error(error.message);
 };
 
 // 빙고 삭제 (소프트 딜리트)
@@ -196,7 +200,7 @@ export const deleteBingo = async (boardId: string): Promise<void> => {
     .from('bingo_boards')
     .update({ deleted_at: new Date().toISOString() })
     .eq('id', boardId);
-  if (error) throw error;
+  if (error) throw new Error(error.message);
 };
 
 // 회고 저장
@@ -205,7 +209,7 @@ export const updateRetrospective = async (boardId: string, text: string): Promis
     .from('bingo_boards')
     .update({ retrospective: text || null })
     .eq('id', boardId);
-  if (error) throw error;
+  if (error) throw new Error(error.message);
 };
 
 // 단건 조회 (뷰 화면용)
