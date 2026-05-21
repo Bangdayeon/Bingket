@@ -115,8 +115,8 @@ export default function EmailLoginScreen() {
           {/* 폼 */}
           <View className="mt-10 gap-6">
             {/* 이메일 */}
-            <View className="gap-1">
-              <Text className="mb-1 text-label-md">이메일</Text>
+            <View className="gap-2">
+              <Text className="text-label-md">이메일</Text>
               <TextInput
                 placeholder="이메일"
                 keyboardType="email-address"
@@ -140,8 +140,8 @@ export default function EmailLoginScreen() {
             </View>
 
             {/* 비밀번호 */}
-            <View className="gap-1">
-              <Text className="mb-1 text-label-md">비밀번호</Text>
+            <View className="gap-2">
+              <Text className="text-label-md">비밀번호</Text>
               <TextInput
                 placeholder="비밀번호 (6자 이상)"
                 secureTextEntry
@@ -159,8 +159,8 @@ export default function EmailLoginScreen() {
             </View>
 
             {/* 비밀번호 확인 */}
-            <View className="gap-1">
-              <Text className="mb-1 text-label-md">비밀번호 확인</Text>
+            <View className="gap-2">
+              <Text className="text-label-md">비밀번호 확인</Text>
               <TextInput
                 placeholder="비밀번호 확인"
                 secureTextEntry
