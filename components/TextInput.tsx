@@ -8,6 +8,7 @@ interface Props extends TextInputProps {
   maxHeight?: number;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
+  rounded?: number;
 }
 
 const variantStyles: Record<Variant, string> = {
@@ -16,11 +17,12 @@ const variantStyles: Record<Variant, string> = {
 };
 
 export const TextInput = forwardRef<RNTextInput, Props>(function TextInput(
-  { variant = 'default', maxHeight, leftIcon, rightIcon, className = '', style, ...rest },
+  { variant = 'default', maxHeight, leftIcon, rightIcon, rounded, className = '', style, ...rest },
   ref,
 ) {
   const isMultiline = rest.multiline || maxHeight !== undefined;
-  const borderRadiusClass = isMultiline ? 'rounded-2xl' : 'rounded-full';
+  const borderRadiusClass =
+    rounded === undefined ? (isMultiline ? 'rounded-2xl' : 'rounded-full') : '';
 
   return (
     <View
@@ -31,7 +33,10 @@ export const TextInput = forwardRef<RNTextInput, Props>(function TextInput(
         ${variantStyles[variant]}
         ${className}
       `}
-      style={maxHeight ? { maxHeight } : undefined}
+      style={[
+        rounded !== undefined ? { borderRadius: rounded } : null,
+        maxHeight !== undefined ? { maxHeight } : null,
+      ]}
     >
       {leftIcon && <View className="mr-2">{leftIcon}</View>}
       <RNTextInput

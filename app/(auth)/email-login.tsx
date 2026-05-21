@@ -103,17 +103,17 @@ export default function EmailLoginScreen() {
         className="flex-1"
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        {/* 헤더 */}
-        <View className="flex-row items-center px-2 py-2">
-          <TouchableOpacity onPress={() => router.back()} className="p-2">
-            <ArrowBackIcon width={24} height={24} />
-          </TouchableOpacity>
-        </View>
+        <View className="px-5" style={{ marginTop: 60 }}>
+          {/* 헤더: 뒤로가기 + 타이틀 */}
+          <View className="flex-row items-center gap-2">
+            <TouchableOpacity onPress={() => router.back()}>
+              <ArrowBackIcon width={24} height={24} />
+            </TouchableOpacity>
+            <Text className="text-title-lg">이메일로 시작하기</Text>
+          </View>
 
-        <View className="flex-1 px-5 pt-6 gap-8">
-          <Text className="text-title-md">이메일로 시작하기</Text>
-
-          <View className="gap-5">
+          {/* 폼 */}
+          <View className="mt-10 gap-6">
             {/* 이메일 */}
             <View className="gap-1">
               <Text className="mb-1 text-label-md">이메일</Text>
@@ -123,6 +123,7 @@ export default function EmailLoginScreen() {
                 autoCapitalize="none"
                 autoCorrect={false}
                 value={email}
+                rounded={12}
                 onChangeText={(v) => {
                   setEmail(v);
                   if (errors.email) setErrors((prev) => ({ ...prev, email: '' }));
@@ -144,6 +145,7 @@ export default function EmailLoginScreen() {
               <TextInput
                 placeholder="비밀번호 (6자 이상)"
                 secureTextEntry
+                rounded={12}
                 value={password}
                 onChangeText={(v) => {
                   setPassword(v);
@@ -162,6 +164,7 @@ export default function EmailLoginScreen() {
               <TextInput
                 placeholder="비밀번호 확인"
                 secureTextEntry
+                rounded={12}
                 value={passwordConfirm}
                 onFocus={() => setPasswordConfirmTouched(true)}
                 onChangeText={(v) => {
@@ -180,15 +183,16 @@ export default function EmailLoginScreen() {
               ) : null}
             </View>
           </View>
-        </View>
 
-        <View className="px-5 pb-8">
-          <Button
-            label="계속하기"
-            onClick={() => void handleSubmit()}
-            loading={loading}
-            disabled={!email || !password || !passwordConfirm}
-          />
+          {/* 계속하기 버튼 */}
+          <View className="mt-10">
+            <Button
+              label="계속하기"
+              onClick={() => void handleSubmit()}
+              loading={loading}
+              disabled={!email || !password || !passwordConfirm}
+            />
+          </View>
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
