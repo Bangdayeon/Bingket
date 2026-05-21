@@ -68,10 +68,12 @@ export function BingoCellModal({
     if (!visible) return;
     setCurrentIndex(initialIndex);
     const t = setTimeout(() => {
-      flatListRef.current?.scrollToIndex({ index: initialIndex, animated: false });
+      if (cells.length > 0 && initialIndex < cells.length) {
+        flatListRef.current?.scrollToIndex({ index: initialIndex, animated: false });
+      }
     }, 50);
     return () => clearTimeout(t);
-  }, [visible, initialIndex]);
+  }, [visible, initialIndex, cells.length]);
 
   const handleToggleComplete = (cell: BingoCellDetail) => {
     if (!cell.completed) {
