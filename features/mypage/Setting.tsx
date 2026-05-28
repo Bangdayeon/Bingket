@@ -44,7 +44,7 @@ export function SettingPage() {
   const [isReportLoading, setIsReportLoading] = useState(false);
   const [emailToastVisible, setEmailToastVisible] = useState(false);
 
-  const ANDROID_PACKAGE_NAME = 'com.my.app'; // TODO
+  const ANDROID_PACKAGE_NAME = 'com.day.bingket.app';
   const IOS_APP_ID = '6761634987';
 
   const openUrl = async (url: string) => {
