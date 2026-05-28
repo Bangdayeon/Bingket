@@ -1,25 +1,27 @@
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import { AppState, Platform, View } from 'react-native';
+import { AppState, Text, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SvgProps } from 'react-native-svg';
 import { useEffect, useRef, useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { useResponsive, TABLET_MAX_MODAL_WIDTH } from '@/lib/use-responsive';
 
 import HomeOff from '@/assets/icons/home_off.svg';
 import HomeOn from '@/assets/icons/home_on.svg';
 import CommunityOff from '@/assets/icons/ic_community_off.svg';
 import CommunityOn from '@/assets/icons/ic_community_on.svg';
-import AlertOff from '@/assets/icons/alert_off.svg';
-import AlertOn from '@/assets/icons/alert_on.svg';
+import BellOff from '@/assets/icons/ic_bell_off.svg';
+import BellOn from '@/assets/icons/ic_bell_on.svg';
 import MypageOff from '@/assets/icons/mypage_off.svg';
 import MypageOn from '@/assets/icons/mypage_on.svg';
-import IconButton from './IconButton';
 
-const TAB_ICONS: Record<string, { on: React.FC<SvgProps>; off: React.FC<SvgProps> }> = {
-  index: { on: HomeOn, off: HomeOff },
-  community: { on: CommunityOn, off: CommunityOff },
-  notifications: { on: AlertOn, off: AlertOff },
-  mypage: { on: MypageOn, off: MypageOff },
+const TAB_ICONS: Record<
+  string,
+  { on: React.FC<SvgProps>; off: React.FC<SvgProps>; label: string }
+> = {
+  index: { on: HomeOn, off: HomeOff, label: '홈' },
+  community: { on: CommunityOn, off: CommunityOff, label: '라운지' },
+  notifications: { on: BellOn, off: BellOff, label: '알림' },
+  mypage: { on: MypageOn, off: MypageOff, label: '내 정보' },
 };
 
 function useUnreadNotifications(activeTabName: string) {
@@ -66,44 +68,25 @@ function useUnreadNotifications(activeTabName: string) {
 export function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const activeTabName = state.routes[state.index].name;
   const hasUnread = useUnreadNotifications(activeTabName);
-  const { isTablet, width } = useResponsive();
-
-  const TAB_HEIGHT = isTablet ? 72 : 64;
-  const TAB_BAR_WIDTH = TABLET_MAX_MODAL_WIDTH;
-  const horizontalPos = isTablet
-    ? { left: (width - TAB_BAR_WIDTH) / 2, right: (width - TAB_BAR_WIDTH) / 2 }
-    : { left: 24, right: 24 };
+  const insets = useSafeAreaInsets();
 
   return (
     <View
       style={{
-        position: 'absolute',
-        bottom: 28,
-        ...horizontalPos,
-        height: TAB_HEIGHT,
-        backgroundColor: '#ffffff',
-        borderRadius: 32,
         flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-around',
-        paddingHorizontal: 8,
-        ...Platform.select({
-          ios: {
-            shadowColor: '#000000',
-            shadowOffset: { width: 0, height: 8 },
-            shadowOpacity: 0.12,
-            shadowRadius: 24,
-          },
-          android: { elevation: 16 },
-        }),
+        backgroundColor: '#ffffff',
+        borderTopWidth: 1,
+        borderTopColor: '#D2D6D6', // gray-300
+        paddingBottom: insets.bottom,
       }}
     >
       {state.routes.map((route, index) => {
         const { options } = descriptors[route.key];
         const isFocused = state.index === index;
-        const icons = TAB_ICONS[route.name];
-        const Icon = isFocused ? icons?.on : icons?.off;
+        const tab = TAB_ICONS[route.name];
+        const Icon = tab ? (isFocused ? tab.on : tab.off) : null;
         const isNotifications = route.name === 'notifications';
+        const color = isFocused ? '#181C1C' : '#6E7575'; // gray-900 / gray-600
 
         const onPress = () => {
           const event = navigation.emit({
@@ -117,35 +100,43 @@ export function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarP
         };
 
         return (
-          <IconButton
+          <TouchableOpacity
             key={route.key}
-            variant="ghost"
-            active={isFocused}
-            onClick={onPress}
+            style={{ flex: 1, alignItems: 'center', paddingVertical: 8 }}
+            onPress={onPress}
+            activeOpacity={0.7}
             accessibilityRole="button"
             accessibilityState={isFocused ? { selected: true } : {}}
             accessibilityLabel={options.tabBarAccessibilityLabel}
-            icon={
-              Icon ? (
-                <View>
-                  <Icon width={24} height={24} color={isFocused ? '#6ADE50' : '#929898'} />
-                  {isNotifications && hasUnread && (
-                    <View
-                      style={{
-                        position: 'absolute',
-                        top: -2,
-                        right: -2,
-                        width: 6,
-                        height: 6,
-                        borderRadius: 3,
-                        backgroundColor: '#E02828',
-                      }}
-                    />
-                  )}
-                </View>
-              ) : null
-            }
-          />
+          >
+            <View
+              style={{
+                width: 36,
+                height: 36,
+                alignItems: 'center',
+                justifyContent: 'center',
+                position: 'relative',
+              }}
+            >
+              {Icon && <Icon width={24} height={24} color={color} />}
+              {isNotifications && hasUnread && (
+                <View
+                  style={{
+                    position: 'absolute',
+                    top: -2,
+                    right: -2,
+                    width: 6,
+                    height: 6,
+                    borderRadius: 3,
+                    backgroundColor: '#E02828', // red-500
+                  }}
+                />
+              )}
+            </View>
+            <Text style={{ fontSize: 12, lineHeight: 20, color, fontFamily: 'pretendard' }}>
+              {tab?.label}
+            </Text>
+          </TouchableOpacity>
         );
       })}
     </View>
