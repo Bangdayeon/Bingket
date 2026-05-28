@@ -2,7 +2,7 @@
   "expo": {
     "name": "빙킷",
     "slug": "bingkit",
-    "version": "1.0.6",
+    "version": "1.0.7",
     "scheme": "bingket",
     "orientation": "portrait",
     "icon": "./assets/app_icon.png",
@@ -63,7 +63,21 @@
         }
       ],
       "expo-image",
-      "expo-font"
+      "expo-font",
+      [
+        "./plugins/withKakaoShareLink.cjs",
+        {
+          "kakaoAppKey": "501603b9c4106f486b65b3c40cc0922c"
+        }
+      ],
+      [
+        "@sentry/react-native/expo",
+        {
+          "url": "https://sentry.io/",
+          "organization": "bangs-projects",
+          "project": "bingket"
+        }
+      ]
     ],
     "updates": {
       "enabled": false
