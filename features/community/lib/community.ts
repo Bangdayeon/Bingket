@@ -333,6 +333,13 @@ async function processBlocks(blocks: EditorBlock[]): Promise<{
         };
       } else {
         bingoBoardId = block.bingo.id;
+        // 보드가 이후 삭제되거나 계정이 비공개 전환되더라도 포스트에서 빙고판을 볼 수 있도록 snapshot 저장
+        bingoSnapshot = {
+          title: block.bingo.title,
+          cells: block.bingo.cells,
+          grid: block.bingo.grid,
+          theme: block.bingo.theme,
+        };
       }
       storedBlocks.push({ type: 'bingo' });
     }
