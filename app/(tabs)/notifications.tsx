@@ -172,14 +172,14 @@ export default function NotificationsScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 bg-white   items-center justify-center">
+      <SafeAreaView className="flex-1 bg-white   items-center justify-center" edges={['top']}>
         <Loading color="#6ADE50" />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white  ">
+    <SafeAreaView className="flex-1 bg-white  " edges={['top']}>
       {/* Header */}
       <View className="h-[60px] flex-row items-center justify-between px-4 border-b border-gray-300  ">
         <Text className="text-title-md font-pretendard-semibold">알림</Text>

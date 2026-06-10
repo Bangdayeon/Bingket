@@ -33,7 +33,7 @@ export default function HomeScreen() {
   const reorderIconColor = isReorderMode ? '#181C1C' /* gray-900 */ : '#B4BBBB'; /* gray-400 */
 
   return (
-    <SafeAreaView className="relative flex-1 bg-white">
+    <SafeAreaView className="relative flex-1 bg-white" edges={['top']}>
       <HeaderTabBar
         menus={['전체', '기록', '대결']}
         onTabChange={handleTabChange}
