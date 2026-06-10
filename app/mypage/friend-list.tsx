@@ -63,6 +63,8 @@ export default function FriendListScreen() {
       ]);
       setFriends(friendsData);
       setPendingRequests(incomingData);
+    } catch (e) {
+      setErrorMessage(e instanceof Error ? e.message : '데이터를 불러오지 못했어요.');
     } finally {
       setListLoading(false);
     }
