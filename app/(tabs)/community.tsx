@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { CommunityHeader } from '@/features/community/components/Header';
 import { CommunityFilter } from '@/features/community/components/Filter';
@@ -11,8 +11,12 @@ import { fetchPosts, PAGE_SIZE } from '@/features/community/lib/community';
 
 const FILTER_CATEGORIES: (PostCategory | null)[] = [null, 'bingo_board', 'bingo_achieve', 'free'];
 
+const TAB_BAR_CONTENT_HEIGHT = 72; // icon(36) + label(20) + paddingVertical(8*2)
+
 export default function CommunityScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const fabBottom = TAB_BAR_CONTENT_HEIGHT + insets.bottom + 16;
   const [filterIndex, setFilterIndex] = useState(0);
   const [posts, setPosts] = useState<CommunityPost[]>([]);
   const [page, setPage] = useState(0);
@@ -116,7 +120,8 @@ export default function CommunityScreen() {
       </View>
       <Pressable
         onPress={() => router.push('/community/write')}
-        className="absolute bottom-[104px] shadow-gray-100 right-5 w-14 h-14 rounded-full bg-sky-300 items-center justify-center"
+        style={{ position: 'absolute', bottom: fabBottom, right: 20 }}
+        className="shadow-gray-100 w-14 h-14 rounded-full bg-sky-300 items-center justify-center"
       >
         <EditIcon width={32} height={32} color="#4C5252" />
       </Pressable>
