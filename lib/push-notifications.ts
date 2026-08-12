@@ -6,7 +6,9 @@ import { supabase } from '@/lib/supabase';
 // 포그라운드 알림 표시 설정
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldShowAlert: true,
+    // shouldShowAlert는 deprecated -- banner(상단 배너) + list(알림 센터)로 분리됐다
+    shouldShowBanner: true,
+    shouldShowList: true,
     shouldPlaySound: true,
     shouldSetBadge: false,
   }),

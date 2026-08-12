@@ -3,6 +3,9 @@
 # dependencies
 node_modules/
 
+# 외부 도구 임시 파일
+.antigravitycli/
+
 # Expo
 .expo/
 dist/

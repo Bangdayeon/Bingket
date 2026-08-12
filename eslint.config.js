@@ -17,6 +17,7 @@ export default defineConfig([
       'package-lock.json',
       'global.css',
       'supabase/functions/**', // Deno 런타임 — Node.js 규칙 적용 불가
+      '.antigravitycli/**', // 외부 도구 임시 파일 — 실행 중 사라져 lint가 ENOENT로 죽는다
     ],
   },
   {
