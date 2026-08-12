@@ -1,5 +1,13 @@
+import * as Sentry from '@sentry/react-native';
 import { supabase } from '@/lib/supabase';
 import { calcBingoCount } from '@/features/bingo/lib/bingo';
+import {
+  calcBattleScore,
+  isBattleOver,
+  laterDate,
+  resolveOutcome,
+  type BattleOutcome,
+} from '@/features/battle/lib/battle-result';
 import type { BingoTheme } from '@/types/bingo';
 
 // ============================================================
@@ -53,6 +61,12 @@ export interface BattleStatusDetail {
   betText: string | null;
   status: 'in_progress' | 'completed';
   endDate: string | null;
+  /** DB status가 completed 이거나, end_date(KST)가 지났으면 true */
+  isFinished: boolean;
+  /** isFinished일 때만. 점수를 확정하지 못했으면 null */
+  outcome: BattleOutcome | null;
+  /** true면 myScore/friendScore가 DB에 확정 저장된 값이다 */
+  isScoreFrozen: boolean;
 }
 
 export interface BattleNotificationItem {
@@ -72,8 +86,11 @@ export interface BattleListEntry {
   myBoardTitle: string;
   opponentBoardTitle: string;
   variant: 'ongoing' | 'finished';
+  /** finished일 때만. 점수를 확정하지 못했으면 null */
+  outcome: BattleOutcome | null;
   startDate: string | null;
   endDate: string | null;
+  completedAt: string | null;
   me: { name: string; avatarUrl: string | null; isWinner?: boolean };
   opponent: { name: string; avatarUrl: string | null; isWinner?: boolean };
 }
@@ -398,17 +415,106 @@ export const fetchMyBattleNotifications = async (): Promise<BattleNotificationIt
 // Battles
 // ============================================================
 
+/**
+ * 기간이 끝났는데 아직 in_progress인 대결을 확정한다.
+ *
+ * 표시는 end_date에서 파생되므로 이 함수가 실패해도 화면은 정상이다.
+ * 반환값은 battleId -> 확정 점수. 두 참가자가 같은 승자를 보도록
+ * 쓰기 후 DB 값을 다시 읽어 그것을 진실로 삼는다.
+ */
+type FinalizeTarget = { battleId: string; board1Id: string; board2Id: string };
+type FinalScores = { score1: number; score2: number };
+
+/** 같은 세션에서 동시에 여러 화면이 확정을 시도하는 것을 막는다 */
+const finalizingIds = new Set<string>();
+
+const finalizeBattles = async (targets: FinalizeTarget[]): Promise<Map<string, FinalScores>> => {
+  const result = new Map<string, FinalScores>();
+  const pending = targets.filter((t) => !finalizingIds.has(t.battleId));
+  if (pending.length === 0) return result;
+  pending.forEach((t) => finalizingIds.add(t.battleId));
+
+  try {
+    // 1) 확정이 필요한 보드의 셀만 한 번에 조회한다.
+    //    soft-delete된 보드도 포함 -- 기록은 남아야 한다.
+    const boardIds = [...new Set(pending.flatMap((t) => [t.board1Id, t.board2Id]))];
+    const { data: boards, error } = await supabase
+      .from('bingo_boards')
+      .select('id, grid, bingo_cells(is_checked, position)')
+      .in('id', boardIds);
+
+    if (error || !boards) return result;
+
+    const scoreByBoard = new Map<string, number>();
+    for (const board of boards) {
+      const [cols, rows] = (board.grid as string).split('x').map(Number);
+      const cells = (board.bingo_cells ?? []) as { is_checked: boolean; position: number }[];
+      const checked = [...cells].sort((a, b) => a.position - b.position).map((c) => c.is_checked);
+      scoreByBoard.set(
+        board.id as string,
+        calcBattleScore(checked.filter(Boolean).length, calcBingoCount(checked, cols, rows)),
+      );
+    }
+
+    // 2) 조건부 UPDATE -- 먼저 쓴 쪽만 반영된다.
+    await Promise.all(
+      pending.map(async (target) => {
+        const score1 = scoreByBoard.get(target.board1Id);
+        const score2 = scoreByBoard.get(target.board2Id);
+        if (score1 === undefined || score2 === undefined) return;
+
+        // 쓰기가 실패해도 표시용으로는 이 값을 쓴다
+        result.set(target.battleId, { score1, score2 });
+
+        const { error: updateError } = await supabase
+          .from('battles')
+          .update({ status: 'completed', score1, score2 })
+          .eq('id', target.battleId)
+          .eq('status', 'in_progress');
+
+        // 기기 시계 오차로 DB 트리거가 거부하는 경우 등 -- 다음 조회에서 재시도된다
+        if (updateError) Sentry.captureException(updateError);
+      }),
+    );
+
+    // 3) 확정값 재조회 -- 두 참가자가 같은 승자를 보도록 DB 값을 진실로 삼는다
+    const { data: settled } = await supabase
+      .from('battles')
+      .select('id, score1, score2')
+      .in(
+        'id',
+        pending.map((t) => t.battleId),
+      )
+      .eq('status', 'completed');
+
+    for (const row of settled ?? []) {
+      result.set(row.id as string, {
+        score1: row.score1 as number,
+        score2: row.score2 as number,
+      });
+    }
+  } finally {
+    pending.forEach((t) => finalizingIds.delete(t.battleId));
+  }
+
+  return result;
+};
+
 export const fetchBattleByBoardId = async (
   boardId: string,
-): Promise<{ battleId: string } | null> => {
+): Promise<{ battleId: string; isFinished: boolean } | null> => {
   const { data, error } = await supabase
     .from('battles')
-    .select('id')
+    .select('id, status, end_date')
     .or(`board1_id.eq.${boardId},board2_id.eq.${boardId}`)
     .maybeSingle();
 
   if (error || !data) return null;
-  return { battleId: data.id as string };
+  return {
+    battleId: data.id as string,
+    isFinished:
+      data.status === 'completed' || isBattleOver((data.end_date as string | null) ?? null),
+  };
 };
 
 export const quitBattle = async (battleId: string): Promise<void> => {
@@ -425,13 +531,13 @@ export const fetchMyBattles = async (): Promise<BattleListEntry[]> => {
   const { data, error } = await supabase
     .from('battles')
     .select(
-      `id, user1_id, user2_id, board1_id, board2_id, score1, score2, title, bet_text, status, created_at, end_date,
+      `id, user1_id, user2_id, board1_id, board2_id, score1, score2, title, bet_text, status, created_at, end_date, completed_at,
         board1:bingo_boards!battles_board1_id_fkey(
-          title,
+          title, target_date,
           users!bingo_boards_user_id_fkey(display_name, avatar_url)
         ),
         board2:bingo_boards!battles_board2_id_fkey(
-          title,
+          title, target_date,
           users!bingo_boards_user_id_fkey(display_name, avatar_url)
         )`,
     )
@@ -440,17 +546,51 @@ export const fetchMyBattles = async (): Promise<BattleListEntry[]> => {
 
   if (error || !data) return [];
 
+  type BoardWithUser = {
+    title: string;
+    target_date: string | null;
+    users: { display_name: string; avatar_url: string | null } | null;
+  };
+
+  const now = Date.now();
+
+  /** end_date가 null이면 두 보드의 target_date 중 늦은 쪽으로 폴백 */
+  const effectiveEnd = (row: (typeof data)[number]): string | null =>
+    (row.end_date as string | null) ??
+    laterDate(
+      (row.board1 as unknown as BoardWithUser | null)?.target_date ?? null,
+      (row.board2 as unknown as BoardWithUser | null)?.target_date ?? null,
+    );
+
+  // 기간이 끝났는데 아직 in_progress인 대결만 확정한다 -- 평시엔 빈 배열이라 추가 쿼리가 없다.
+  const targets: FinalizeTarget[] = data
+    .filter((row) => row.status === 'in_progress' && isBattleOver(effectiveEnd(row), now))
+    .map((row) => ({
+      battleId: row.id as string,
+      board1Id: row.board1_id as string,
+      board2Id: row.board2_id as string,
+    }));
+
+  const finalized =
+    targets.length > 0 ? await finalizeBattles(targets) : new Map<string, FinalScores>();
+
   return data.map((row) => {
     const myIsUser1 = (row.user1_id as string) === user.id;
-    type BoardWithUser = {
-      title: string;
-      users: { display_name: string; avatar_url: string | null } | null;
-    };
     const myBoard = (myIsUser1 ? row.board1 : row.board2) as unknown as BoardWithUser | null;
     const opponentBoard = (myIsUser1 ? row.board2 : row.board1) as unknown as BoardWithUser | null;
-    const isCompleted = (row.status as string) === 'completed';
-    const myScore = myIsUser1 ? (row.score1 as number) : (row.score2 as number);
-    const friendScore = myIsUser1 ? (row.score2 as number) : (row.score1 as number);
+
+    const endDate = effectiveEnd(row);
+    const isFinished = row.status === 'completed' || isBattleOver(endDate, now);
+
+    // 점수 출처: 방금 확정한 값 > DB 저장값
+    const settled = finalized.get(row.id as string);
+    const hasScores = settled !== undefined || row.status === 'completed';
+    const score1 = settled?.score1 ?? (row.score1 as number);
+    const score2 = settled?.score2 ?? (row.score2 as number);
+    const myScore = myIsUser1 ? score1 : score2;
+    const opponentScore = myIsUser1 ? score2 : score1;
+
+    const outcome = isFinished && hasScores ? resolveOutcome(myScore, opponentScore) : null;
 
     return {
       battleId: row.id as string,
@@ -459,18 +599,21 @@ export const fetchMyBattles = async (): Promise<BattleListEntry[]> => {
       myBoardId: (myIsUser1 ? row.board1_id : row.board2_id) as string,
       myBoardTitle: myBoard?.title ?? '',
       opponentBoardTitle: opponentBoard?.title ?? '',
-      variant: isCompleted ? 'finished' : 'ongoing',
+      variant: isFinished ? 'finished' : 'ongoing',
+      outcome,
       startDate: row.created_at as string | null,
-      endDate: row.end_date as string | null,
+      endDate,
+      completedAt: row.completed_at as string | null,
       me: {
         name: myBoard?.users?.display_name ?? '',
         avatarUrl: myBoard?.users?.avatar_url ?? null,
-        isWinner: isCompleted ? myScore >= friendScore && myScore > 0 : undefined,
+        // 무승부는 양쪽 모두 승자로 표시한다
+        isWinner: outcome === 'win' || outcome === 'draw',
       },
       opponent: {
         name: opponentBoard?.users?.display_name ?? '',
         avatarUrl: opponentBoard?.users?.avatar_url ?? null,
-        isWinner: isCompleted ? friendScore > myScore : undefined,
+        isWinner: outcome === 'lose' || outcome === 'draw',
       },
     };
   });
@@ -487,7 +630,7 @@ export const fetchBattleStatusDetail = async (
   const { data, error } = await supabase
     .from('battles')
     .select(
-      `id, user1_id, user2_id, score1, score2, title, bet_text, status, end_date,
+      `id, user1_id, user2_id, board1_id, board2_id, score1, score2, title, bet_text, status, end_date, completed_at,
        board1:bingo_boards!battles_board1_id_fkey(
          id, title, grid, theme, target_date,
          bingo_cells(is_checked, position, content),
@@ -520,7 +663,37 @@ export const fetchBattleStatusDetail = async (
 
   const myBoardSummary = buildBoardSummary(myBoard);
   const friendBoardSummary = buildBoardSummary(friendBoard);
-  const calcScore = (s: ReturnType<typeof buildBoardSummary>) => s.checkedCount + s.bingoCount * 2;
+  const scoreOf = (s: BattleBoardSummary) => calcBattleScore(s.checkedCount, s.bingoCount);
+
+  const persistedStatus = data.status as 'in_progress' | 'completed';
+  const endDate =
+    (data.end_date as string | null) ?? laterDate(myBoard.target_date, friendBoard.target_date);
+  const isFinished = persistedStatus === 'completed' || isBattleOver(endDate);
+
+  let myScore = scoreOf(myBoardSummary);
+  let friendScore = scoreOf(friendBoardSummary);
+  let isScoreFrozen = false;
+
+  if (persistedStatus === 'completed') {
+    // 확정된 대결은 DB 점수를 쓴다 -- 이후 빙고판을 수정해도 결과가 바뀌지 않는다
+    myScore = myIsUser1 ? (data.score1 as number) : (data.score2 as number);
+    friendScore = myIsUser1 ? (data.score2 as number) : (data.score1 as number);
+    isScoreFrozen = true;
+  } else if (isFinished) {
+    const settled = await finalizeBattles([
+      {
+        battleId: data.id as string,
+        board1Id: data.board1_id as string,
+        board2Id: data.board2_id as string,
+      },
+    ]);
+    const scores = settled.get(data.id as string);
+    if (scores) {
+      myScore = myIsUser1 ? scores.score1 : scores.score2;
+      friendScore = myIsUser1 ? scores.score2 : scores.score1;
+      isScoreFrozen = true;
+    }
+  }
 
   return {
     id: data.id as string,
@@ -536,11 +709,14 @@ export const fetchBattleStatusDetail = async (
       displayName: friendBoard.users?.display_name ?? '',
       avatarUrl: friendBoard.users?.avatar_url ?? null,
     },
-    myScore: calcScore(myBoardSummary),
-    friendScore: calcScore(friendBoardSummary),
+    myScore,
+    friendScore,
     title: data.title as string | null,
     betText: data.bet_text as string | null,
-    status: data.status as 'in_progress' | 'completed',
-    endDate: data.end_date as string | null,
+    status: persistedStatus,
+    endDate,
+    isFinished,
+    outcome: isFinished && isScoreFrozen ? resolveOutcome(myScore, friendScore) : null,
+    isScoreFrozen,
   };
 };

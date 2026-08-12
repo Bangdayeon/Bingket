@@ -1,6 +1,7 @@
 import { View, Pressable } from 'react-native';
 import { Text } from '@/components/Text';
 import { ProfileAvatar } from '@/components/ProfileAvatar';
+import { WinnerCrown } from '@/features/battle/components/WinnerCrown';
 import { router } from 'expo-router';
 
 interface Player {
@@ -40,12 +41,10 @@ function OverlappingAvatars({ me, opponent }: { me: Player; opponent: Player }) 
           left: 0,
           width: AVATAR_SIZE,
           alignItems: 'center',
-          zIndex: opponentWins ? 1 : 2,
+          zIndex: opponentWins && !meWins ? 1 : 2,
         }}
       >
-        <View className="relative w-full">
-          {meWins && <Text className="absolute z-10 -top-3 -left-2 -rotate-45">👑</Text>}
-        </View>
+        <WinnerCrown visible={meWins} />
         <ProfileAvatar size={AVATAR_SIZE} avatarUrl={me.avatarUrl} />
       </View>
 
@@ -56,10 +55,10 @@ function OverlappingAvatars({ me, opponent }: { me: Player; opponent: Player }) 
           left: AVATAR_SIZE - OVERLAP,
           width: AVATAR_SIZE,
           alignItems: 'center',
-          zIndex: opponentWins ? 2 : 1,
+          zIndex: opponentWins && !meWins ? 2 : 1,
         }}
       >
-        {opponentWins && <Text className="absolute z-10 -top-3 -left-2 -rotate-45">👑</Text>}
+        <WinnerCrown visible={opponentWins} />
         <ProfileAvatar size={AVATAR_SIZE} avatarUrl={opponent.avatarUrl} />
       </View>
     </View>

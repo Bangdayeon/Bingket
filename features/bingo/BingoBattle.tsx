@@ -45,7 +45,6 @@ export function BingoBattle() {
 
   useFocusEffect(
     useCallback(() => {
-      setBattles([]);
       loadData();
     }, [loadData]),
   );
@@ -92,12 +91,17 @@ export function BingoBattle() {
   };
 
   const ongoing = battles.filter((b) => b.variant === 'ongoing');
-  const finished = battles.filter((b) => b.variant === 'finished');
+  // 기록은 종료 시각 최신순 (공통 쿼리는 created_at desc라 기록 목록에는 맞지 않는다)
+  const finished = battles
+    .filter((b) => b.variant === 'finished')
+    .sort((a, b) =>
+      (b.completedAt ?? b.endDate ?? '').localeCompare(a.completedAt ?? a.endDate ?? ''),
+    );
 
   return (
     <>
       <ScrollView className="flex-1 mt-[70px] bg-white   mb-20">
-        {loading ? (
+        {loading && battles.length === 0 ? (
           <View className="py-10 items-center">
             <Loading color="#6ADE50" />
           </View>

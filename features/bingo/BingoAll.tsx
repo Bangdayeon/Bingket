@@ -70,7 +70,8 @@ export function BingoAll() {
       const avatars: Record<string, string | null> = {};
       sliced.forEach((b, i) => {
         ids[b.id] = battleResults[i]?.battleId ?? null;
-        const battle = myBattles.find((bt) => bt.myBoardId === b.id);
+        // 종료된 대결의 상대 아바타는 카드에 남기지 않는다
+        const battle = myBattles.find((bt) => bt.myBoardId === b.id && bt.variant === 'ongoing');
         avatars[b.id] = battle?.opponent.avatarUrl ?? null;
       });
       startTransition(() => {

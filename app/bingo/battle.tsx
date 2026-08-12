@@ -187,7 +187,7 @@ export default function BattleScreen() {
             <Text className="text-title-md mt-8">대결 기간</Text>
             <View className="flex gap-1">
               <Text className="text-body-sm text-gray-800">
-                {'두 사람 중 기간이 더 짧은 빙고의 기간으로 설정돼요!'}
+                {'두 사람 중 기간이 더 긴 빙고의 기간으로 설정돼요!'}
               </Text>
               <Text className="text-body-sm text-gray-800">
                 {'친구와 미리 기간을 맞추면 더 재밌게 할 수 있을거예요😊'}

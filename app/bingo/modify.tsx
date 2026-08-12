@@ -99,7 +99,8 @@ export default function BingoModifyScreen() {
   const handleDelete = async () => {
     try {
       const battle = await fetchBattleByBoardId(bingoId);
-      if (battle) await quitBattle(battle.battleId);
+      // 종료된 대결은 상대방의 기록이기도 하므로 지우지 않는다 (빙고는 soft delete라 기록이 유지된다)
+      if (battle && !battle.isFinished) await quitBattle(battle.battleId);
       await deleteBingo(bingoId);
       router.replace('/(tabs)');
     } catch (e) {

@@ -11,6 +11,8 @@ import {
   type BattleStatusDetail,
   type BattleBoardSummary,
 } from '@/features/battle/lib/battle';
+import { calcBattleDday } from '@/features/battle/lib/battle-result';
+import { WinnerCrown } from '@/features/battle/components/WinnerCrown';
 import BingoPreview from '@/components/BingoPreview';
 import type { BingoData } from '@/types/bingo';
 import { Modal as RNModal, Pressable } from 'react-native';
@@ -24,12 +26,6 @@ import InfoIcon from '@/assets/icons/ic_info.svg';
 import MenuIcon from '@/assets/icons/ic_more_vert.svg';
 import { Popover } from '@/components/Popover';
 import Loading from '@/components/Loading';
-
-function calcDday(targetDate: string | null): number {
-  if (!targetDate) return 0;
-  const diff = new Date(targetDate).getTime() - Date.now();
-  return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
-}
 
 /** BattleBoard → BingoData */
 function toBingoData(
@@ -47,7 +43,7 @@ function toBingoData(
     achievedCount: board.checkedCount,
     bingoCount: board.bingoCount,
 
-    dday: calcDday(board.targetDate ?? null),
+    dday: calcBattleDday(board.targetDate ?? null),
 
     startDate: null,
     targetDate: board.targetDate ?? null,
@@ -101,7 +97,8 @@ export default function BattleStatusScreen() {
     );
   }
 
-  const isCompleted = detail?.status === 'completed';
+  const isFinished = detail?.isFinished === true;
+  const outcome = detail?.outcome ?? null;
 
   return (
     <View className="flex-1 bg-white  " style={{ paddingTop: insets.top }}>
@@ -114,11 +111,16 @@ export default function BattleStatusScreen() {
           onClick={() => router.back()}
         />
         <Text className="flex-1 text-center text-title-sm font-pretendard-medium">대결 현황</Text>
-        <IconButton
-          variant="ghost"
-          onClick={() => setShowMenu(true)}
-          icon={<MenuIcon width={20} height={20} />}
-        />
+        {/* 종료된 대결은 그만두기(하드 삭제)로 상대방 기록까지 지워지므로 메뉴를 숨긴다 */}
+        {isFinished ? (
+          <View className="w-8" />
+        ) : (
+          <IconButton
+            variant="ghost"
+            onClick={() => setShowMenu(true)}
+            icon={<MenuIcon width={20} height={20} />}
+          />
+        )}
       </View>
       <Popover
         visible={showMenu}
@@ -145,18 +147,31 @@ export default function BattleStatusScreen() {
             paddingBottom: insets.bottom + 32,
           }}
         >
-          {/* 제목 */}
-          {detail.title && (
-            <View className="flex-row gap-4 mx-5 mb-5">
+          {/* 제목 + 기간 */}
+          <View className="flex-row gap-4 mx-5 mb-5 items-center">
+            {detail.title && (
               <Text className="font-pretendard-semibold text-3xl">{detail.title}</Text>
-              <View className="flex-row items-center gap-2">
-                <Text className="text-xl text-gray-600">
-                  {isCompleted ? '대결 종료' : `D-${myBingo.dday}`}
-                </Text>
-                <Information
-                  content={<Text>두 빙고의 종료일 중 더 많이 남은 날짜 기준이에요.</Text>}
-                />
-              </View>
+            )}
+            <View className="flex-row items-center gap-2">
+              <Text className="text-xl text-gray-600">
+                {isFinished ? '대결 종료' : `D-${calcBattleDday(detail.endDate)}`}
+              </Text>
+              <Information
+                content={<Text>두 빙고의 종료일 중 더 많이 남은 날짜 기준이에요.</Text>}
+              />
+            </View>
+          </View>
+
+          {/* 대결 결과 */}
+          {isFinished && outcome && (
+            <View className="mx-5 mb-6 items-center bg-green-200 rounded-2xl py-4">
+              <Text className="text-title-md font-pretendard-semibold">
+                {outcome === 'draw'
+                  ? '무승부예요! 두 분 다 대단해요 👑'
+                  : outcome === 'win'
+                    ? `${detail.myBoard.displayName}님이 이겼어요! 👑`
+                    : `${detail.friendBoard.displayName}님이 이겼어요! 👑`}
+              </Text>
             </View>
           )}
 
@@ -174,20 +189,26 @@ export default function BattleStatusScreen() {
           <View className="flex flex-row mb-4 mx-5 gap-3">
             <View className="flex-1 w-1/2">
               <View className="flex-row gap-2 items-center">
-                <ProfileAvatar avatarUrl={detail.myBoard.avatarUrl} size={28} />
+                <View className="relative">
+                  <WinnerCrown visible={outcome === 'win' || outcome === 'draw'} />
+                  <ProfileAvatar avatarUrl={detail.myBoard.avatarUrl} size={28} />
+                </View>
                 <Text className="text-body-md md:text-body-lg">
                   {detail.myBoard.displayName}
-                  {detail.myScore > detail.friendScore ? ' 🔥' : ''}
+                  {!isFinished && detail.myScore > detail.friendScore ? ' 🔥' : ''}
                 </Text>
               </View>
             </View>
 
             <View className="flex-1 w-1/2">
               <View className="flex-row gap-2 items-center">
-                <ProfileAvatar avatarUrl={detail.friendBoard.avatarUrl} size={28} />
+                <View className="relative">
+                  <WinnerCrown visible={outcome === 'lose' || outcome === 'draw'} />
+                  <ProfileAvatar avatarUrl={detail.friendBoard.avatarUrl} size={28} />
+                </View>
                 <Text className="text-body-md md:text-body-lg">
                   {detail.friendBoard.displayName}
-                  {detail.friendScore > detail.myScore ? ' 🔥' : ''}
+                  {!isFinished && detail.friendScore > detail.myScore ? ' 🔥' : ''}
                 </Text>
               </View>
             </View>
@@ -255,7 +276,9 @@ export default function BattleStatusScreen() {
           <View className="flex-row items-center gap-2 mx-5 bg-gray-200 rounded-2xl p-3 mt-8">
             <InfoIcon width={20} height={20} color="#4C5252" />
             <Text className="text-caption-md md:text-body-md">
-              점수는 1칸 = 1점, 빙고 1줄 = 보너스 2점으로 합산돼요.
+              {detail.isScoreFrozen
+                ? '점수는 대결 종료 시점 기준으로 확정됐어요. (1칸 = 1점, 빙고 1줄 = 보너스 2점)'
+                : '점수는 1칸 = 1점, 빙고 1줄 = 보너스 2점으로 합산돼요.'}
             </Text>
           </View>
         </ScrollView>
