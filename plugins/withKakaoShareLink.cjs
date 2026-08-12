@@ -1,8 +1,15 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
-const { withStringsXml, withAndroidManifest, AndroidConfig } = require('@expo/config-plugins');
+const {
+  withStringsXml,
+  withAndroidManifest,
+  withInfoPlist,
+  AndroidConfig,
+} = require('@expo/config-plugins');
 
 const META_APP_KEY = 'com.kakao.sdk.AppKey';
 const KAKAO_TALK_PACKAGE = 'com.kakao.talk';
+// 카카오톡 설치 여부 확인(ShareApi.isKakaoTalkSharingAvailable)에 필요한 iOS 조회 스킴
+const KAKAO_QUERY_SCHEMES = ['kakaokompassauth', 'kakaolink', 'kakaoplus'];
 
 function upsertStringItem(modResults, name, value) {
   const items = (modResults.resources.string ||= []);
@@ -54,6 +61,18 @@ const withKakaoShareLink = (config, props) => {
     const application = AndroidConfig.Manifest.getMainApplicationOrThrow(cfg.modResults);
     upsertMetaData(application, META_APP_KEY, kakaoAppKey);
     upsertKakaoTalkQuery(cfg.modResults.manifest);
+    return cfg;
+  });
+
+  // iOS 네이티브 모듈(KakaoShareLink.swift)은 init에서 Info.plist의 KAKAO_APP_KEY를
+  // 강제 언래핑하므로, 값이 없으면 모듈 생성 시점에 앱이 크래시한다.
+  config = withInfoPlist(config, (cfg) => {
+    cfg.modResults.KAKAO_APP_KEY = kakaoAppKey;
+
+    const schemes = (cfg.modResults.LSApplicationQueriesSchemes ||= []);
+    for (const scheme of KAKAO_QUERY_SCHEMES) {
+      if (!schemes.includes(scheme)) schemes.push(scheme);
+    }
     return cfg;
   });
 

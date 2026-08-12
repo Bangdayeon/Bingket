@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import KakaoShareLink from 'react-native-kakao-share-link';
 import { Text } from '@/components/Text';
 import { TextInput } from '@/components/TextInput';
 import IconButton from '@/components/IconButton';
@@ -166,6 +165,9 @@ export default function FriendListScreen() {
 
   const handleInvite = async () => {
     try {
+      // 네이티브 모듈 초기화가 화면 진입 시점에 일어나지 않도록 버튼 클릭 시에만 로드
+      const { default: KakaoShareLink } = await import('react-native-kakao-share-link');
+
       await KakaoShareLink.sendFeed({
         content: {
           title: '빙킷에서 친구와 목표를 함께 이뤄봐요!',
