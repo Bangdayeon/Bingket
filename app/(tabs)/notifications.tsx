@@ -1,4 +1,4 @@
-import { useFocusEffect, useRouter } from 'expo-router';
+import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Alert, Pressable, ScrollView, View } from 'react-native';
 import { Text } from '@/components/Text';
@@ -10,6 +10,7 @@ import {
   markNotificationRead,
   type Notification,
 } from '@/features/notifications/lib/notifications';
+import { navigateToNotification } from '@/features/notifications/lib/notification-route';
 import { supabase } from '@/lib/supabase';
 import Loading from '@/components/Loading';
 import { ProfileAvatar } from '@/components/ProfileAvatar';
@@ -110,7 +111,6 @@ function NotificationItem({ item, onRead, onAction, onFriendResponse }: Notifica
 }
 
 export default function NotificationsScreen() {
-  const router = useRouter();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
@@ -132,21 +132,7 @@ export default function NotificationsScreen() {
   };
 
   const handleAction = (type: string, targetId: string | null) => {
-    if (type === 'friend_request') {
-      router.push('/mypage/friend-list');
-    } else if (type === 'battle_request' && targetId) {
-      router.push({
-        pathname: '/bingo/semi-battle-check',
-        params: { requestId: targetId, variant: 'received' },
-      });
-    } else if (type === 'battle_accepted' && targetId) {
-      router.push({ pathname: '/bingo/battle-status', params: { battleId: targetId } });
-    } else if (
-      (type === 'comment' || type === 'reply' || type === 'like' || type === 'popular') &&
-      targetId
-    ) {
-      router.push(`/community/${targetId}`);
-    }
+    navigateToNotification(type, targetId);
   };
 
   const handleFriendResponse = async (requestId: string, accept: boolean) => {

@@ -365,6 +365,20 @@ verify_jwt = false
 [functions.submit-report]
 verify_jwt = false
 
+# 아래 notify-* 함수는 Database Webhook / Cron 이 service_role 키를 직접 실어 호출한다.
+# (각 함수가 Authorization 헤더를 직접 검증하므로 verify_jwt 는 끈다)
+[functions.notify-comment]
+verify_jwt = false
+
+[functions.notify-like]
+verify_jwt = false
+
+[functions.notify-bingo-deadline]
+verify_jwt = false
+
+[functions.notify-generic]
+verify_jwt = false
+
 [edge_runtime]
 enabled = true
 # Supported request policies: `oneshot`, `per_worker`.

@@ -97,34 +97,15 @@ export const checkAndAwardBadges = async (type: BadgeType, knownCount?: number):
 
   const notificationMessage = `🏅 새 뱃지 획득! ${meta.name} - ${meta.message}`;
 
-  // 앱 내 알림 저장 + 푸시 토큰 조회 병렬 처리
-  const [, tokenResult] = await Promise.all([
-    supabase.from('notifications').insert({
-      user_id: user.id,
-      type: 'badge',
-      message: notificationMessage,
-      target_id: topBadge.id,
-      target_type: 'badge',
-    }),
-    supabase.from('push_tokens').select('token').eq('user_id', user.id).single(),
-  ]);
-
-  // 푸시 알림 전송
-  const token = tokenResult.data?.token as string | undefined;
-  if (!token) return;
-
-  await fetch('https://exp.host/--/api/v2/push/send', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-    },
-    body: JSON.stringify({
-      to: token,
-      title: '🏅 새 뱃지 획득!',
-      body: `${meta.name} - ${meta.message}`,
-      sound: 'default',
-      data: { type: 'badge', badgeId: topBadge.id as string },
-    }),
+  // 앱 내 알림만 저장한다.
+  // 푸시는 notifications INSERT 웹훅 → notify-generic 엣지 함수가 서버에서 전송한다.
+  // (예전에는 여기서 클라이언트가 직접 Expo API 를 호출했는데,
+  //  앱이 켜져 있을 때만 발동하고 알림 설정도 무시하는 문제가 있었다)
+  await supabase.from('notifications').insert({
+    user_id: user.id,
+    type: 'badge',
+    message: notificationMessage,
+    target_id: topBadge.id,
+    target_type: 'badge',
   });
 };

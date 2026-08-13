@@ -1,4 +1,5 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
+import { sendExpoPush } from '../_shared/expo-push.ts';
 
 interface LikeRecord {
   post_id: string;
@@ -9,19 +10,6 @@ interface WebhookPayload {
   type: 'INSERT';
   table: string;
   record: LikeRecord;
-}
-
-async function sendExpoPush(
-  token: string,
-  title: string,
-  body: string,
-  data?: Record<string, string>,
-): Promise<void> {
-  await fetch('https://exp.host/--/api/v2/push/send', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-    body: JSON.stringify({ to: token, title, body, data, sound: 'default' }),
-  });
 }
 
 Deno.serve(async (req) => {
@@ -63,7 +51,7 @@ Deno.serve(async (req) => {
   if (!tokenRow?.token) return new Response('ok');
 
   // 알림 DB 삽입은 DB 트리거(trg_notify_like)가 처리 — 여기서는 푸시만 전송
-  const pushes: Promise<unknown>[] = [];
+  const pushes: Promise<boolean>[] = [];
 
   const likeEnabled = !settings || settings.community_like;
   if (likeEnabled) {
@@ -72,7 +60,7 @@ Deno.serve(async (req) => {
         tokenRow.token,
         '❤️ 좋아요',
         `내 게시글에 좋아요가 달렸어요: ${(post.title as string).slice(0, 40)}`,
-        { postId: like.post_id },
+        { type: 'like', targetId: like.post_id, postId: like.post_id },
       ),
     );
   }
@@ -81,12 +69,16 @@ Deno.serve(async (req) => {
   if (popularEnabled && (post.like_count as number) === 10) {
     pushes.push(
       sendExpoPush(tokenRow.token, '🔥 인기글 달성!', `내 게시글이 좋아요 10개를 받았어요 🎉`, {
+        type: 'popular',
+        targetId: like.post_id,
         postId: like.post_id,
       }),
     );
   }
 
-  await Promise.all(pushes);
+  const results = await Promise.all(pushes);
 
-  return new Response('ok');
+  return new Response(JSON.stringify({ ok: true, sent: results.filter(Boolean).length }), {
+    headers: { 'Content-Type': 'application/json' },
+  });
 });

@@ -8,7 +8,7 @@ Sentry.init({
   tracesSampleRate: 0.2,
 });
 import { supabase } from '@/lib/supabase';
-import { registerForPushNotifications, savePushToken } from '@/lib/push-notifications';
+import { addNotificationTapListener, syncPushToken } from '@/lib/push-notifications';
 import { router, Stack } from 'expo-router';
 import { useEffect } from 'react';
 import { Appearance } from 'react-native';
@@ -60,21 +60,20 @@ function RootLayout() {
               { onConflict: 'id', ignoreDuplicates: true },
             );
           router.replace('/(tabs)');
-          registerForPushNotifications().then((token) => {
-            if (token) savePushToken(token);
-          });
+          void syncPushToken().catch(Sentry.captureException);
         })();
       } else if (event === 'INITIAL_SESSION' && session) {
         // 앱 재실행 시 이미 로그인된 경우에도 토큰 갱신
-        registerForPushNotifications().then((token) => {
-          if (token) savePushToken(token);
-        });
+        void syncPushToken().catch(Sentry.captureException);
       } else if (event === 'SIGNED_OUT') {
         router.replace('/(auth)/login');
       }
     });
     return () => subscription.unsubscribe();
   }, []);
+
+  // 푸시 알림 탭 → 화면 이동
+  useEffect(() => addNotificationTapListener(), []);
 
   return (
     <SafeAreaProvider>
