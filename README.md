@@ -28,7 +28,6 @@
 - 일상에 소소한 성취감과 재미를 원하는 사람
 - 혼자보다 함께할 때 더 잘 되는 사람
 
-
 ## 스크린샷
 
 <img alt="Group 210" src="https://github.com/user-attachments/assets/a5894c65-45c3-4684-a883-445d28811db7" />
@@ -45,19 +44,20 @@
 
 ## 기술 스택
 
-| 분류 | 기술 |
-|------|------|
-| Framework | Expo ~55.0.6, React Native 0.83.2 |
-| Language | TypeScript (strict mode) |
-| Styling | NativeWind 4.x (Tailwind CSS 3.x) |
-| Navigation | Expo Router (file-based routing) |
-| Backend | Supabase (Auth, Database) |
-| Notifications | Expo Notifications |
-| Error Tracking | Sentry |
-| CI/CD | GitHub Actions + EAS Build |
-| Distribution | EAS (Expo Application Services) |
+| 분류           | 기술                              |
+| -------------- | --------------------------------- |
+| Framework      | Expo ~55.0.6, React Native 0.83.2 |
+| Language       | TypeScript (strict mode)          |
+| Styling        | NativeWind 4.x (Tailwind CSS 3.x) |
+| Navigation     | Expo Router (file-based routing)  |
+| Backend        | Supabase (Auth, Database)         |
+| Notifications  | Expo Notifications                |
+| Error Tracking | Sentry                            |
+| CI/CD          | GitHub Actions + EAS Build        |
+| Distribution   | EAS (Expo Application Services)   |
 
 ## 디렉토리 구조
+
 ```
 /
 ├── app/                    # Expo Router 페이지 & 레이아웃
