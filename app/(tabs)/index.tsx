@@ -1,7 +1,7 @@
 import { HeaderTabBar } from '@/components/HeaderTabbar';
 import { BingoAll } from '@/features/bingo/BingoAll';
 import { BingoHistory } from '@/features/bingo/BingoHistory';
-import { BingoBattle } from '@/features/bingo/BingoBattle';
+import { BingoTeam } from '@/features/bingo/BingoTeam';
 import { useCallback, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -26,8 +26,8 @@ export default function HomeScreen() {
     if (index !== 1) setIsReorderMode(false);
   };
 
-  const addBattle = () => {
-    router.push('/bingo/battle');
+  const addTeamBingo = () => {
+    router.push('/bingo/team-mode');
   };
 
   const reorderIconColor = isReorderMode ? '#181C1C' /* gray-900 */ : '#B4BBBB'; /* gray-400 */
@@ -35,7 +35,7 @@ export default function HomeScreen() {
   return (
     <SafeAreaView className="relative flex-1 bg-white" edges={['top']}>
       <HeaderTabBar
-        menus={['전체', '기록', '대결']}
+        menus={['전체', '기록', '함께']}
         onTabChange={handleTabChange}
         selectedIndex={tabIndex}
       />
@@ -67,7 +67,7 @@ export default function HomeScreen() {
         </Pressable>
       )}
 
-      {/* 대결 탭 전용 버튼 */}
+      {/* 함께 탭 전용 버튼 */}
       {tabIndex === 2 && (
         <View
           style={{
@@ -80,14 +80,14 @@ export default function HomeScreen() {
           <IconButton
             variant="ghost"
             icon={<AddIcon width={24} height={24} />}
-            onClick={addBattle}
+            onClick={addTeamBingo}
           />
         </View>
       )}
 
       {tabIndex === 0 && <BingoAll />}
       {tabIndex === 1 && <BingoHistory isReorderMode={isReorderMode} />}
-      {tabIndex === 2 && <BingoBattle />}
+      {tabIndex === 2 && <BingoTeam />}
     </SafeAreaView>
   );
 }

@@ -3,11 +3,10 @@ import { Pressable, TouchableOpacity, View } from 'react-native';
 import { Text } from '@/components/Text';
 import { useResponsive } from '@/lib/use-responsive';
 import EditIcon from '@/assets/icons/ic_edit.svg';
-import AddBattleIcon from '@/assets/icons/ic_add_battle.svg';
 import BattleIcon from '@/assets/icons/ic_battle.svg';
 import { BingoData } from '@/types/bingo';
 import { DonutStat } from './DonutStat';
-import { ProfileAvatar } from '@/components/ProfileAvatar';
+import { TeamAvatars, type TeamAvatarMember } from '@/features/team/components/TeamAvatars';
 import { calcMaxBingo } from '@/lib/calcMaxBingo';
 import { useEffect, useState } from 'react';
 import {
@@ -40,9 +39,10 @@ interface BingoCardProps {
   completedCells?: boolean[];
   onCellPress: (index: number) => void;
   onEditPress?: () => void;
-  onBattlePress?: () => void;
-  hasBattle?: boolean;
-  friendAvatarUrl?: string | null;
+  /** 팀 빙고일 때만 넘긴다. 팀 현황으로 이동한다 */
+  onTeamPress?: () => void;
+  /** 비어 있으면 개인 빙고로 보고 아이콘을 그리지 않는다 */
+  teamMembers?: TeamAvatarMember[];
 }
 
 export function BingoCard({
@@ -50,9 +50,8 @@ export function BingoCard({
   completedCells = [],
   onCellPress,
   onEditPress,
-  onBattlePress,
-  hasBattle = false,
-  friendAvatarUrl,
+  onTeamPress,
+  teamMembers,
 }: BingoCardProps) {
   const [image, setImage] = useState<string | null>(null);
   const [checkImage, setCheckImage] = useState<string | null>(null);
@@ -190,16 +189,13 @@ export function BingoCard({
             <Text className="text-caption-sm text-gray-600">{formattedEndDate}</Text>
           ) : null}
 
-          {onBattlePress && (
-            <TouchableOpacity onPress={onBattlePress} hitSlop={8}>
-              {hasBattle ? (
-                <View className="flex-row items-center gap-2">
-                  <BattleIcon width={22} height={22} color="#4C5252" />
-                  <ProfileAvatar size={22} avatarUrl={friendAvatarUrl} />
-                </View>
-              ) : (
-                <AddBattleIcon width={22} height={22} color="#4C5252" />
-              )}
+          {/* 팀 빙고 표시 겸 현황 이동. 개인 빙고에는 그리지 않는다. */}
+          {onTeamPress && teamMembers && teamMembers.length > 0 && (
+            <TouchableOpacity onPress={onTeamPress} hitSlop={8}>
+              <View className="flex-row items-center gap-2">
+                <BattleIcon width={22} height={22} color="#4C5252" />
+                <TeamAvatars members={teamMembers} size={22} />
+              </View>
             </TouchableOpacity>
           )}
         </View>

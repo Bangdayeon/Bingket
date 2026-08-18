@@ -92,11 +92,10 @@ function RootLayout() {
         <Stack.Screen name="mypage/app-theme" options={{ headerShown: false }} />
         <Stack.Screen name="mypage/my-posts" options={{ headerShown: false }} />
         <Stack.Screen name="mypage/friend-list" options={{ headerShown: false }} />
-        <Stack.Screen name="bingo/battle" options={{ headerShown: false }} />
-        <Stack.Screen name="bingo/battle-check" options={{ headerShown: false }} />
-        <Stack.Screen name="bingo/battle-select-board" options={{ headerShown: false }} />
-        <Stack.Screen name="bingo/battle-status" options={{ headerShown: false }} />
-        <Stack.Screen name="bingo/semi-battle-check" options={{ headerShown: false }} />
+        <Stack.Screen name="bingo/team-mode" options={{ headerShown: false }} />
+        <Stack.Screen name="bingo/team-create" options={{ headerShown: false }} />
+        <Stack.Screen name="bingo/team-invite" options={{ headerShown: false }} />
+        <Stack.Screen name="bingo/team-status" options={{ headerShown: false }} />
         <Stack.Screen name="community/search" options={{ headerShown: false }} />
         <Stack.Screen name="community/write" options={{ headerShown: false }} />
         <Stack.Screen name="community/[id]" options={{ headerShown: false }} />

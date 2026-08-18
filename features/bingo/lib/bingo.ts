@@ -21,57 +21,51 @@ export interface CreateBingoRequest {
   cells: string[];
 }
 
+/**
+ * 판과 칸을 한 트랜잭션에서 만든다.
+ *
+ * 예전에는 board를 넣고 cells를 넣은 뒤 실패 시 board를 지워 롤백했는데,
+ * bingo_boards에 DELETE 정책이 없어 그 롤백이 조용히 실패하고 고아 판이 남았다.
+ * 개수 제한이 살아 있는 지금은 그 고아가 칸을 영구히 차지하므로 RPC로 묶었다.
+ */
 export const createBingo = async (data: CreateBingoRequest): Promise<string> => {
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-  if (authError || !user) throw new Error('로그인이 필요합니다.');
+  const { data: boardId, error } = await supabase.rpc('create_bingo_with_cells', {
+    p_title: data.title,
+    p_grid: data.grid,
+    p_theme: data.theme,
+    p_max_edits: EDIT_COUNT[data.editCount] ?? 0,
+    p_start_date: data.startDate ? data.startDate.split('T')[0] : null,
+    p_target_date: data.endDate ? data.endDate.split('T')[0] : null,
+    p_cells: data.cells,
+  });
 
-  const { data: board, error: boardError } = await supabase
-    .from('bingo_boards')
-    .insert({
-      user_id: user.id,
-      title: data.title,
-      grid: data.grid,
-      theme: data.theme,
-      max_edits: EDIT_COUNT[data.editCount] ?? 0,
-      start_date: data.startDate ? data.startDate.split('T')[0] : null,
-      target_date: data.endDate ? data.endDate.split('T')[0] : null,
-      status: 'progress',
-    })
-    .select('id')
-    .single();
+  if (error || !boardId) throw new Error(error?.message ?? '빙고 생성 실패');
 
-  if (boardError || !board) throw new Error(boardError?.message ?? '빙고 생성 실패');
-
-  const cells = data.cells.map((content, position) => ({
-    board_id: board.id,
-    position,
-    content,
-    edit_count: 0,
-  }));
-
-  const { error: cellsError } = await supabase.from('bingo_cells').insert(cells);
-  if (cellsError) {
-    await supabase.from('bingo_boards').delete().eq('id', board.id);
-    throw new Error(cellsError.message ?? '셀 생성 실패');
-  }
-
-  return board.id as string;
+  return boardId as string;
 };
 
 // 셀 완료 여부 / 완료일 / 메모 저장
 export const updateCell = async (
   cellId: string,
   updates: { completed?: boolean; completedAt?: string | null; memo?: string },
-): Promise<void> => {
+  /**
+   * onlyIfUnchecked: 아직 비어 있을 때만 쓴다.
+   * 같이 채우기에서 두 사람이 같은 칸을 동시에 누르면 먼저 누른 쪽만 반영된다.
+   */
+  options?: { onlyIfUnchecked?: boolean },
+): Promise<{ applied: boolean }> => {
   const dbUpdates: Record<string, unknown> = {};
   if (updates.completed !== undefined) dbUpdates.is_checked = updates.completed;
   if ('completedAt' in updates) dbUpdates.checked_at = updates.completedAt;
   if (updates.memo !== undefined) dbUpdates.memo = updates.memo;
-  const { error } = await supabase.from('bingo_cells').update(dbUpdates).eq('id', cellId);
+
+  let query = supabase.from('bingo_cells').update(dbUpdates).eq('id', cellId);
+  if (options?.onlyIfUnchecked) query = query.eq('is_checked', false);
+
+  const { data, error } = await query.select('id');
   if (error) throw new Error(error.message);
+
+  return { applied: (data?.length ?? 0) > 0 };
 };
 
 // ────────────────────────────────────────────────────────────
@@ -218,7 +212,7 @@ export const fetchBingoForView = async (boardId: string): Promise<FetchedBingo |
     .from('bingo_boards')
     .select(
       `id, title, grid, theme, max_edits, start_date, target_date, status, retrospective,
-       bingo_cells (id, position, content, memo, is_checked, checked_at)`,
+       bingo_cells (id, position, content, memo, is_checked, checked_at, completed_by, memo_updated_by)`,
     )
     .eq('id', boardId)
     .is('deleted_at', null)
@@ -251,6 +245,8 @@ export const fetchBingoForView = async (boardId: string): Promise<FetchedBingo |
       title: c.content,
       completed: c.is_checked,
       completedAt: c.checked_at ?? null,
+      completedBy: c.completed_by ?? null,
+      memoUpdatedBy: c.memo_updated_by ?? null,
       memo: c.memo ?? '',
     })),
   };
@@ -267,7 +263,7 @@ export const fetchMyCompletedBingos = async (): Promise<FetchedBingo[]> => {
     .from('bingo_boards')
     .select(
       `id, title, grid, theme, max_edits, start_date, target_date, retrospective,
-       bingo_cells (id, position, content, memo, is_checked, checked_at)`,
+       bingo_cells (id, position, content, memo, is_checked, checked_at, completed_by, memo_updated_by)`,
     )
     .eq('user_id', user.id)
     .eq('status', 'done')
@@ -302,6 +298,8 @@ export const fetchMyCompletedBingos = async (): Promise<FetchedBingo[]> => {
         title: c.content,
         completed: c.is_checked,
         completedAt: c.checked_at ?? null,
+        completedBy: c.completed_by ?? null,
+        memoUpdatedBy: c.memo_updated_by ?? null,
         memo: c.memo ?? '',
       })),
     };
@@ -318,7 +316,7 @@ export const fetchMyBingos = async (): Promise<FetchedBingo[]> => {
     .from('bingo_boards')
     .select(
       `id, title, grid, theme, max_edits, start_date, target_date,
-       bingo_cells (id, position, content, memo, is_checked, checked_at)`,
+       bingo_cells (id, position, content, memo, is_checked, checked_at, completed_by, memo_updated_by)`,
     )
     .eq('user_id', user.id)
     .eq('status', 'progress')
@@ -353,6 +351,8 @@ export const fetchMyBingos = async (): Promise<FetchedBingo[]> => {
         title: c.content,
         completed: c.is_checked,
         completedAt: c.checked_at ?? null,
+        completedBy: c.completed_by ?? null,
+        memoUpdatedBy: c.memo_updated_by ?? null,
         memo: c.memo ?? '',
       })),
     };

@@ -1,3 +1,12 @@
+/** 맺어진 친구 관계. rowId는 friends 테이블의 행 id */
+export type Friend = {
+  rowId: string;
+  friendId: string;
+  username: string;
+  displayName: string;
+  avatarUrl: string | null;
+};
+
 export type ConflictModal = {
   requestId: string;
   senderDisplayName: string;

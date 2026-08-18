@@ -1,5 +1,5 @@
 import * as Sentry from '@sentry/react-native';
-import { InteractionManager, ScrollView, Pressable, View } from 'react-native';
+import { InteractionManager, RefreshControl, ScrollView, Pressable, View } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { startTransition, useState, useCallback, useRef } from 'react';
 import { BingoCard } from './components/BingoCard';
@@ -15,18 +15,30 @@ import {
   calcBingoCount,
 } from '@/features/bingo/lib/bingo';
 import { applyBingoOrder, loadBingoOrder } from '@/features/bingo/lib/bingo-order';
-import { fetchBattleByBoardId, fetchMyBattles } from '@/features/battle/lib/battle';
+import { fetchMyTeams, notifyTeamCellChecked } from '@/features/team/lib/team';
+import type { TeamAvatarMember } from '@/features/team/components/TeamAvatars';
+import { supabase } from '@/lib/supabase';
 import { getCache, setCache } from '@/lib/cache';
 import { MAX_BINGOS } from '@/constants/bingo';
 import { CACHE_KEY_ALL } from '@/constants/cache_key';
 import Loading from '@/components/Loading';
+import { Modal } from '@/components/Modal';
 
 export function BingoAll() {
   const router = useRouter();
   const [bingos, setBingos] = useState<BingoData[]>([]);
   const [cellDetails, setCellDetails] = useState<Record<string, BingoCellDetail[]>>({});
-  const [battleIds, setBattleIds] = useState<Record<string, string | null>>({});
-  const [friendAvatars, setFriendAvatars] = useState<Record<string, string | null>>({});
+  /** 빙고판 id → 그 판이 속한 팀 (없으면 개인 빙고) */
+  const [teamsByBoard, setTeamsByBoard] = useState<
+    Record<
+      string,
+      | { teamId: string; members: TeamAvatarMember[]; startDate: string; endDate: string }
+      | undefined
+    >
+  >({});
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [conflictMessage, setConflictMessage] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [modalTarget, setModalTarget] = useState<{ bingoId: string; cellIndex: number } | null>(
     null,
@@ -61,31 +73,32 @@ export function BingoAll() {
       setLoading(false);
       setCache(CACHE_KEY_ALL, { bingos: sliced, cellDetails: details });
 
-      // 각 빙고의 배틀 여부 조회 + 상대방 아바타
-      const [battleResults, myBattles] = await Promise.all([
-        Promise.all(sliced.map((b) => fetchBattleByBoardId(b.id))),
-        fetchMyBattles(),
+      // 각 빙고가 팀에 속해 있는지 조회. 종료된 팀은 카드에 표시하지 않는다.
+      const [myTeams, { data: auth }] = await Promise.all([
+        fetchMyTeams(),
+        supabase.auth.getUser(),
       ]);
-      const ids: Record<string, string | null> = {};
-      const avatars: Record<string, string | null> = {};
-      sliced.forEach((b, i) => {
-        ids[b.id] = battleResults[i]?.battleId ?? null;
-        // 종료된 대결의 상대 아바타는 카드에 남기지 않는다
-        const battle = myBattles.find((bt) => bt.myBoardId === b.id && bt.variant === 'ongoing');
-        avatars[b.id] = battle?.opponent.avatarUrl ?? null;
-      });
+      const byBoard: typeof teamsByBoard = {};
+      for (const team of myTeams) {
+        if (team.isInvite || team.isFinished || !team.myBoardId) continue;
+        byBoard[team.myBoardId] = {
+          teamId: team.teamId,
+          members: team.members,
+          startDate: team.startDate,
+          endDate: team.endDate,
+        };
+      }
       startTransition(() => {
-        setBattleIds(ids);
-        setFriendAvatars(avatars);
+        setTeamsByBoard(byBoard);
+        setCurrentUserId(auth.user?.id ?? null);
       });
     });
   }, []);
 
   useFocusEffect(
     useCallback(() => {
-      // 배틀 상태는 항상 최신으로 다시 받아야 하므로 포커스 시 초기화
-      setBattleIds({});
-      setFriendAvatars({});
+      // 팀 상태는 항상 최신으로 다시 받아야 하므로 포커스 시 초기화
+      setTeamsByBoard({});
 
       // navigation transition 애니메이션 완료 후 데이터 로드 (main thread 블로킹 방지)
       const task = InteractionManager.runAfterInteractions(() => {
@@ -104,6 +117,23 @@ export function BingoAll() {
       return () => task.cancel();
     }, [loadData]),
   );
+
+  // Realtime을 쓰지 않으므로 팀원이 채운 칸은 당겨서 새로고침으로 반영한다
+  const handleRefresh = useCallback(() => {
+    setRefreshing(true);
+    loadData();
+    setTimeout(() => setRefreshing(false), 600);
+  }, [loadData]);
+
+  /** 연타로 화면이 두 번 쌓이는 것을 막는다 */
+  const navigateOnce = (pathname: string) => {
+    if (isNavigatingRef.current) return;
+    isNavigatingRef.current = true;
+    router.push(pathname);
+    setTimeout(() => {
+      isNavigatingRef.current = false;
+    }, 1000);
+  };
 
   const handleCellPress = (bingo: BingoData, cellIndex: number) => {
     setModalTarget({ bingoId: bingo.id, cellIndex });
@@ -142,7 +172,25 @@ export function BingoAll() {
     // DB 저장: memo는 디바운스, 나머지는 즉시
     const { memo, ...nonMemoUpdates } = updates;
     if (Object.keys(nonMemoUpdates).length > 0) {
-      updateCell(cellId, nonMemoUpdates).catch(Sentry.captureException);
+      const isTeamBoard = !!teamsByBoard[bingoId];
+      const isChecking = updates.completed === true;
+
+      updateCell(cellId, nonMemoUpdates, {
+        // 같이 채우기에서 동시에 누르면 먼저 누른 사람이 이긴다
+        onlyIfUnchecked: isTeamBoard && isChecking,
+      })
+        .then(({ applied }) => {
+          if (isTeamBoard && isChecking && !applied) {
+            // 내가 늦었다 -- 화면을 실제 상태로 되돌린다
+            setConflictMessage('한발 늦었어요! 이미 다른 팀원이 채운 칸이에요.');
+            loadData();
+            return;
+          }
+          if (!isChecking || !isTeamBoard) return;
+          const cell = updatedCells.find((c) => c.id === cellId);
+          return notifyTeamCellChecked(bingoId, cell?.title ?? '');
+        })
+        .catch(Sentry.captureException);
     }
     if (memo !== undefined) {
       clearTimeout(memoDebounceRef.current[cellId]);
@@ -153,6 +201,7 @@ export function BingoAll() {
   };
 
   const modalCells = modalTarget ? (cellDetails[modalTarget.bingoId] ?? []) : [];
+  const modalTeam = modalTarget ? teamsByBoard[modalTarget.bingoId] : undefined;
 
   if (loading) {
     return (
@@ -163,7 +212,12 @@ export function BingoAll() {
   }
 
   return (
-    <ScrollView className="flex-1 mt-[60px]  ">
+    <ScrollView
+      className="flex-1 mt-[60px]  "
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#6ADE50" />
+      }
+    >
       {bingos.map((bingo) => (
         <BingoCard
           key={bingo.id}
@@ -175,17 +229,11 @@ export function BingoAll() {
               ? router.push({ pathname: '/bingo/add', params: { loadDraft: 'true' } })
               : router.push({ pathname: '/bingo/modify', params: { bingoId: bingo.id } })
           }
-          hasBattle={!!battleIds[bingo.id]}
-          friendAvatarUrl={friendAvatars[bingo.id]}
-          onBattlePress={() => {
-            const battleId = battleIds[bingo.id];
-            if (battleId) {
-              router.push({ pathname: '/bingo/battle-status', params: { battleId } });
-            } else {
-              router.push({
-                pathname: '/bingo/battle',
-                params: { bingoId: bingo.id, bingoTitle: bingo.title },
-              });
+          teamMembers={teamsByBoard[bingo.id]?.members}
+          onTeamPress={() => {
+            const teamId = teamsByBoard[bingo.id]?.teamId;
+            if (teamId) {
+              router.push({ pathname: '/bingo/team-status', params: { teamId } });
             }
           }}
         />
@@ -197,31 +245,43 @@ export function BingoAll() {
         </View>
       )}
 
-      {/* 새 빙고 추가 섹션 */}
+      {/* 새 빙고 추가 섹션: 혼자 할지 함께 할지 먼저 고른다 */}
       {bingos.length < MAX_BINGOS && (
         <View className="px-5 mt-10">
-          <Pressable
-            onPress={() => {
-              if (isNavigatingRef.current) return;
-              isNavigatingRef.current = true;
-              router.push('/bingo/add');
-              setTimeout(() => {
-                isNavigatingRef.current = false;
-              }, 1000);
-            }}
-            className="items-center justify-center gap-3 bg-green-100 w-full h-[230px] rounded-[20px]"
-          >
+          <View className="items-center justify-center gap-4 bg-green-100 w-full rounded-[20px] py-8 px-5">
             <AddIcon width={40} height={40} color="#4C5252" /* gray-700 */ />
             <Text
               className="text-title-md font-pretendard-medium"
               style={{ color: '#4C5252' /* gray-700 */ }}
             >
-              새 빙고 추가하기
+              새 빙고 만들기
             </Text>
             <Text className="text-title-md" style={{ color: '#4C5252' /* gray-700 */ }}>
               ({bingos.length}/{MAX_BINGOS})
             </Text>
-          </Pressable>
+
+            <View className="w-full gap-3 mt-2">
+              <Pressable
+                onPress={() => navigateOnce('/bingo/add')}
+                className="bg-white rounded-2xl px-5 py-4 gap-1"
+              >
+                <Text className="text-title-sm font-pretendard-semibold">나만의 빙고</Text>
+                <Text className="text-body-sm" style={{ color: '#4C5252' /* gray-700 */ }}>
+                  혼자 세운 목표를 내 속도로 채워요
+                </Text>
+              </Pressable>
+
+              <Pressable
+                onPress={() => navigateOnce('/bingo/team-mode')}
+                className="bg-white rounded-2xl px-5 py-4 gap-1"
+              >
+                <Text className="text-title-sm font-pretendard-semibold">친구와 같이하기</Text>
+                <Text className="text-body-sm" style={{ color: '#4C5252' /* gray-700 */ }}>
+                  친구를 초대해 같은 기간 동안 함께 채워요
+                </Text>
+              </Pressable>
+            </View>
+          </View>
         </View>
       )}
       <View className="h-24" />
@@ -232,6 +292,26 @@ export function BingoAll() {
         initialIndex={modalTarget?.cellIndex ?? 0}
         onClose={() => setModalTarget(null)}
         onUpdate={handleCellUpdate}
+        team={
+          modalTeam && currentUserId
+            ? {
+                currentUserId,
+                members: modalTeam.members,
+                startDate: modalTeam.startDate,
+                endDate: modalTeam.endDate,
+              }
+            : undefined
+        }
+      />
+
+      <Modal
+        visible={!!conflictMessage}
+        title="이미 채워진 칸이에요"
+        body={conflictMessage ?? ''}
+        variant="single"
+        confirmLabel="확인"
+        onConfirm={() => setConflictMessage(null)}
+        onDismiss={() => setConflictMessage(null)}
       />
     </ScrollView>
   );

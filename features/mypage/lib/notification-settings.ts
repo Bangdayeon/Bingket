@@ -8,6 +8,8 @@ export interface NotificationSettings {
   communityComment: boolean;
   communityLike: boolean;
   eventPush: boolean;
+  /** 팀원이 칸을 채우거나 팀에 합류했을 때 */
+  teamActivity: boolean;
 }
 
 const STORAGE_KEY = '@bingket/alert-settings';
@@ -20,6 +22,7 @@ export const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = {
   communityComment: true,
   communityLike: true,
   eventPush: true,
+  teamActivity: true,
 };
 
 // Supabase에서 설정 조회 (없으면 기본값 반환)
@@ -44,6 +47,7 @@ export const fetchNotificationSettings = async (): Promise<NotificationSettings>
     communityComment: data.community_comment as boolean,
     communityLike: data.community_like as boolean,
     eventPush: data.event_push as boolean,
+    teamActivity: data.team_activity as boolean,
   };
 
   // 다음 진입 시 깜빡임 없이 표시되도록 캐시에도 반영한다
@@ -70,6 +74,7 @@ export const saveNotificationSettings = async (settings: NotificationSettings): 
       community_comment: settings.communityComment,
       community_like: settings.communityLike,
       event_push: settings.eventPush,
+      team_activity: settings.teamActivity,
       updated_at: new Date().toISOString(),
     },
     { onConflict: 'user_id' },

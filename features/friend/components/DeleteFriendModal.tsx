@@ -1,5 +1,5 @@
 import { Modal } from '@/components/Modal';
-import type { Friend } from '@/features/battle/lib/battle';
+import type { Friend } from '@/types/friend';
 
 interface Props {
   friend: Friend | null;

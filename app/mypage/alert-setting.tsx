@@ -81,6 +81,7 @@ export default function AlertSettingScreen() {
       communityComment: v,
       communityLike: v,
       eventPush: v,
+      teamActivity: v,
     });
   };
 
@@ -112,6 +113,19 @@ export default function AlertSettingScreen() {
           description="빙고 기간이 10일, 5일 남았을 때"
           value={settings.bingoDeadline}
           onValueChange={(v) => update({ bingoDeadline: v })}
+        />
+
+        <View className="h-px bg-gray-200   mx-5 my-2" />
+
+        {/* 팀 빙고 알림 */}
+        <View className="px-5 pt-3 pb-1">
+          <Text className="text-title-md font-pretendard-medium">팀 빙고 알림</Text>
+        </View>
+        <ToggleRow
+          label="팀원 활동 알림"
+          description="팀원이 칸을 채우거나 팀에 합류했을 때"
+          value={settings.teamActivity}
+          onValueChange={(v) => update({ teamActivity: v })}
         />
 
         <View className="h-px bg-gray-200   mx-5 my-2" />

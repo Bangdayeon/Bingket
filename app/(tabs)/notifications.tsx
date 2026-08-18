@@ -24,8 +24,12 @@ interface NotificationItemProps {
 
 function NotificationItem({ item, onRead, onAction, onFriendResponse }: NotificationItemProps) {
   const isFriendRequest = item.type === 'friend_request';
-  const isBattleRequest = item.type === 'battle_request';
-  const isBattleAccepted = item.type === 'battle_accepted';
+  const isTeamInvite = item.type === 'team_invite';
+  // 합류/종료 알림은 모두 팀 현황으로 보낸다
+  const isTeamUpdate =
+    item.type === 'team_joined' ||
+    item.type === 'team_finished' ||
+    item.type === 'team_cell_checked';
   const [responding, setResponding] = useState(false);
 
   const handlePress = async () => {
@@ -49,7 +53,7 @@ function NotificationItem({ item, onRead, onAction, onFriendResponse }: Notifica
       onPress={handlePress}
     >
       {/* 친구/배틀 요청: sender 프로필 */}
-      {(isFriendRequest || isBattleRequest) && item.senderProfile && (
+      {(isFriendRequest || isTeamInvite) && item.senderProfile && (
         <View className="flex-row items-center gap-3 mb-3">
           <ProfileAvatar avatarUrl={item.senderProfile.avatarUrl} size={40} />
           <View>
@@ -83,10 +87,10 @@ function NotificationItem({ item, onRead, onAction, onFriendResponse }: Notifica
         </View>
       ) : null}
 
-      {/* 배틀 요청: 확인하기 버튼 */}
-      {isBattleRequest && item.target_id ? (
+      {/* 팀 초대: 초대장 확인 */}
+      {isTeamInvite && item.target_id ? (
         <Button
-          label="확인하기"
+          label="초대 확인하기"
           variant="secondary"
           onClick={async () => {
             await onRead();
@@ -95,10 +99,10 @@ function NotificationItem({ item, onRead, onAction, onFriendResponse }: Notifica
         />
       ) : null}
 
-      {/* 배틀 수락: 대결 현황 보기 버튼 */}
-      {isBattleAccepted && item.target_id ? (
+      {/* 팀 소식: 현황 보기 */}
+      {isTeamUpdate && item.target_id ? (
         <Button
-          label="대결 현황 보기"
+          label="팀 현황 보기"
           variant="secondary"
           onClick={async () => {
             await onRead();

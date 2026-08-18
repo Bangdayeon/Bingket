@@ -12,16 +12,16 @@ export const navigateToNotification = (type: string, targetId: string | null): b
     return true;
   }
 
-  if (type === 'battle_request' && targetId) {
-    router.push({
-      pathname: '/bingo/semi-battle-check',
-      params: { requestId: targetId, variant: 'received' },
-    });
+  if (type === 'team_invite' && targetId) {
+    router.push({ pathname: '/bingo/team-invite', params: { teamId: targetId } });
     return true;
   }
 
-  if (type === 'battle_accepted' && targetId) {
-    router.push({ pathname: '/bingo/battle-status', params: { battleId: targetId } });
+  if (
+    (type === 'team_joined' || type === 'team_finished' || type === 'team_cell_checked') &&
+    targetId
+  ) {
+    router.push({ pathname: '/bingo/team-status', params: { teamId: targetId } });
     return true;
   }
 

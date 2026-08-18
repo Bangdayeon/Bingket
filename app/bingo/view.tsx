@@ -18,7 +18,8 @@ import ProgressIcon from '@/assets/icons/ic_progress.svg';
 import DoneIcon from '@/assets/icons/ic_done.svg';
 import type { FetchedBingo } from '@/features/bingo/lib/bingo';
 import type { BingoCellDetail } from '@/types/bingo-cell';
-import { fetchBattleByBoardId } from '@/features/battle/lib/battle';
+import { fetchMyTeams } from '@/features/team/lib/team';
+import type { TeamAvatarMember } from '@/features/team/components/TeamAvatars';
 import Loading from '@/components/Loading';
 
 export default function BingoViewScreen() {
@@ -29,7 +30,7 @@ export default function BingoViewScreen() {
   const [data, setData] = useState<FetchedBingo | null>(null);
   const [cellDetails, setCellDetails] = useState<BingoCellDetail[]>([]);
   const [loading, setLoading] = useState(true);
-  const [battleId, setBattleId] = useState<string | null>(null);
+  const [team, setTeam] = useState<{ teamId: string; members: TeamAvatarMember[] } | null>(null);
   const [modalTarget, setModalTarget] = useState<number | null>(null);
   const [retrospective, setRetrospective] = useState('');
   const memoDebounceRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
@@ -45,8 +46,9 @@ export default function BingoViewScreen() {
       }
       setLoading(false);
     });
-    fetchBattleByBoardId(bingoId).then((res) => {
-      if (res) setBattleId(res.battleId);
+    fetchMyTeams().then((teams) => {
+      const found = teams.find((t) => t.myBoardId === bingoId && !t.isInvite);
+      if (found) setTeam({ teamId: found.teamId, members: found.members });
     });
   }, [bingoId]);
 
@@ -127,13 +129,12 @@ export default function BingoViewScreen() {
               ? undefined
               : () => router.push({ pathname: '/bingo/modify', params: { bingoId: bingo.id } })
           }
-          hasBattle={!!battleId}
-          onBattlePress={
-            isDone
-              ? undefined
-              : battleId
-                ? () => router.push({ pathname: '/bingo/battle-status', params: { battleId } })
-                : () => router.push({ pathname: '/bingo/battle', params: { bingoId: bingo.id } })
+          teamMembers={team?.members}
+          onTeamPress={
+            team
+              ? () =>
+                  router.push({ pathname: '/bingo/team-status', params: { teamId: team.teamId } })
+              : undefined
           }
         />
 

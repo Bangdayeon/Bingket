@@ -7,8 +7,8 @@ import { TextInput } from '@/components/TextInput';
 import IconButton from '@/components/IconButton';
 import BackArrowIcon from '@/assets/icons/ic_arrow_back.svg';
 import SearchIcon from '@/assets/icons/ic_search.svg';
-import { deleteFriend, fetchFriends, type Friend } from '@/features/battle/lib/battle';
-import { setSelectedFriend } from '@/features/battle/lib/battle-selection';
+import { deleteFriend, fetchFriends } from '@/features/friend/lib/friend';
+import type { Friend } from '@/types/friend';
 import {
   checkIncomingConflict,
   fetchIncomingRequests,
@@ -151,16 +151,6 @@ export default function FriendListScreen() {
     }
   };
 
-  // Battle request / select friend
-  const handleBattleRequest = (friend: Friend) => {
-    setSelectedFriend(friend);
-    if (isSelectMode) {
-      router.back();
-    } else {
-      router.push({ pathname: '/bingo/battle', params: { fromFriend: 'true' } });
-    }
-  };
-
   const APP_STORE_URL = 'https://apps.apple.com/kr/app/%EB%B9%99%ED%82%B7-bingket/id6761634987';
 
   const handleInvite = async () => {
@@ -291,11 +281,7 @@ export default function FriendListScreen() {
                 pendingRequests={pendingRequests}
                 handleIncomingResponse={handleIncomingResponse}
               />
-              <FriendList
-                friends={filteredFriends}
-                handleDeleteFriend={handleDeleteFriend}
-                handleBattleRequest={handleBattleRequest}
-              />
+              <FriendList friends={filteredFriends} handleDeleteFriend={handleDeleteFriend} />
             </ScrollView>
           )}
         </>

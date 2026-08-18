@@ -30,8 +30,10 @@ interface WebhookPayload {
 
 const TITLES: Record<string, string> = {
   friend_request: '👋 친구 요청',
-  battle_request: '⚔️ 대결 신청',
-  battle_accepted: '⚔️ 대결 시작',
+  team_invite: '🤝 팀 빙고 초대',
+  team_joined: '🤝 팀에 합류했어요',
+  team_finished: '🏁 팀 빙고 종료',
+  team_cell_checked: '✅ 팀원이 칸을 채웠어요',
   badge: '🏅 새 뱃지 획득!',
   bingo_reminder: '⏰ 빙고 기간 임박',
   bingo_dday: '⏰ 빙고 마감일',
@@ -49,6 +51,9 @@ const SETTING_COLUMNS: Record<string, string> = {
   reply: 'community_comment',
   like: 'community_like',
   popular: 'community_popular',
+  // 초대/종료는 놓치면 안 되는 알림이라 토글에 걸지 않는다
+  team_joined: 'team_activity',
+  team_cell_checked: 'team_activity',
 };
 
 Deno.serve(async (req) => {
