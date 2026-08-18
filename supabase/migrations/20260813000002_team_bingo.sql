@@ -684,6 +684,10 @@ create policy "bingo_cells: 공유 판 팀 멤버 수정" on public.bingo_cells
 -- ============================================================
 -- 11. 알림
 -- ============================================================
+-- 기존 대결 알림은 battles drop과 함께 참조 대상을 잃으므로 제거한다.
+-- (남겨두면 새 type 제약에 걸려 마이그레이션이 실패한다)
+delete from public.notifications where type in ('battle_request', 'battle_accepted');
+
 alter table public.notifications drop constraint if exists notifications_type_check;
 alter table public.notifications add constraint notifications_type_check check (type in (
   'bingo_reminder', 'bingo_dday',
