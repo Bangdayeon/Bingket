@@ -142,8 +142,58 @@ function buildBoardSummary(board: RawBoard): TeamBoardSummary {
   };
 }
 
-const BOARD_SELECT = `id, title, grid, theme, max_edits,
-  bingo_cells(is_checked, position, content, completed_by, first_checked_at)`;
+type RawTeamBoardRow = {
+  member_id: string;
+  board_id: string;
+  title: string;
+  grid: string;
+  theme: string;
+  max_edits: number;
+  cells: RawCell[];
+};
+
+interface TeamBoards {
+  /** 멤버 id → 그 멤버의 판. 같이 채우기에서는 전원이 같은 판을 가리킨다 */
+  byMember: Map<string, TeamBoardSummary>;
+  /** 판 id → 판. 같은 판을 여러 멤버가 공유해도 한 번만 담긴다 */
+  byBoard: Map<string, TeamBoardSummary>;
+  maxEditsByBoard: Map<string, number>;
+}
+
+/**
+ * 팀원들의 빙고판을 한 번에 가져온다.
+ *
+ * bingo_boards 를 직접 조인하지 않는 이유는 RLS가 행 단위라서다.
+ * 조인이 열리는 순간 memo / retrospective 컬럼까지 같이 열려버려서,
+ * 반환 컬럼을 통제할 수 있는 security definer RPC로 모았다.
+ */
+const fetchTeamBoards = async (teamId: string): Promise<TeamBoards> => {
+  const byMember = new Map<string, TeamBoardSummary>();
+  const byBoard = new Map<string, TeamBoardSummary>();
+  const maxEditsByBoard = new Map<string, number>();
+
+  const { data, error } = await supabase.rpc('get_team_boards', { p_team_id: teamId });
+  if (error || !data) return { byMember, byBoard, maxEditsByBoard };
+
+  for (const row of data as RawTeamBoardRow[]) {
+    const summary =
+      byBoard.get(row.board_id) ??
+      buildBoardSummary({
+        id: row.board_id,
+        title: row.title,
+        grid: row.grid,
+        theme: row.theme,
+        max_edits: row.max_edits,
+        bingo_cells: row.cells ?? [],
+      });
+
+    byBoard.set(row.board_id, summary);
+    byMember.set(row.member_id, summary);
+    maxEditsByBoard.set(row.board_id, row.max_edits);
+  }
+
+  return { byMember, byBoard, maxEditsByBoard };
+};
 
 const currentUserId = async (): Promise<string | null> => {
   const {
@@ -265,14 +315,9 @@ export const fetchTeamInvite = async (teamId: string): Promise<TeamInviteItem | 
 
   const ownerId = team.owner_id as string;
 
-  const [{ data: owner }, { data: ownerRow }, { count }] = await Promise.all([
+  const [{ data: owner }, boards, { count }] = await Promise.all([
     supabase.from('users').select('display_name, avatar_url').eq('id', ownerId).single(),
-    supabase
-      .from('team_members')
-      .select(`board:bingo_boards!team_members_board_id_fkey(${BOARD_SELECT})`)
-      .eq('team_id', teamId)
-      .eq('user_id', ownerId)
-      .single(),
+    fetchTeamBoards(teamId),
     supabase
       .from('team_members')
       .select('id', { count: 'exact', head: true })
@@ -280,7 +325,7 @@ export const fetchTeamInvite = async (teamId: string): Promise<TeamInviteItem | 
       .in('status', ['invited', 'joined']),
   ]);
 
-  const rawBoard = (ownerRow?.board ?? null) as unknown as RawBoard | null;
+  const ownerBoard = boards.byMember.get(ownerId) ?? null;
 
   return {
     teamId: team.id as string,
@@ -292,8 +337,8 @@ export const fetchTeamInvite = async (teamId: string): Promise<TeamInviteItem | 
     ownerId,
     ownerDisplayName: (owner?.display_name as string | undefined) ?? '',
     ownerAvatarUrl: (owner?.avatar_url as string | null | undefined) ?? null,
-    ownerBoard: rawBoard ? buildBoardSummary(rawBoard) : null,
-    ownerBoardMaxEdits: rawBoard?.max_edits ?? 0,
+    ownerBoard,
+    ownerBoardMaxEdits: ownerBoard ? (boards.maxEditsByBoard.get(ownerBoard.id) ?? 0) : 0,
     memberCount: count ?? 0,
   };
 };
@@ -453,25 +498,22 @@ const finalizeTeam = async (teamId: string): Promise<boolean> => {
 
     if (!team || team.status === 'completed') return false;
 
-    const { data: rows } = await supabase
-      .from('team_members')
-      .select(`user_id, board_id, board:bingo_boards!team_members_board_id_fkey(${BOARD_SELECT})`)
-      .eq('team_id', teamId)
-      .eq('status', 'joined');
+    const [{ data: rows }, boards] = await Promise.all([
+      supabase
+        .from('team_members')
+        .select('user_id, board_id')
+        .eq('team_id', teamId)
+        .eq('status', 'joined'),
+      fetchTeamBoards(teamId),
+    ]);
 
     if (!rows) return false;
-
-    const boards = new Map<string, TeamBoardSummary>();
-    for (const row of rows) {
-      const raw = row.board as unknown as RawBoard | null;
-      if (raw) boards.set(raw.id, buildBoardSummary(raw));
-    }
 
     const mode = team.mode as TeamMode;
     const results = computeMemberResults(
       mode,
       rows.map((r) => ({ userId: r.user_id as string, boardId: r.board_id as string | null })),
-      boards,
+      boards.byBoard,
     );
 
     // 같이 채우기는 순위가 없다
@@ -659,27 +701,26 @@ export const fetchTeamDetail = async (teamId: string): Promise<TeamDetail | null
     await finalizeTeam(teamId);
   }
 
-  const { data: rows } = await supabase
-    .from('team_members')
-    .select(
-      `user_id, status, board_id, achieved_count, total_count, bingo_count, final_rank,
-       users!team_members_user_id_fkey(display_name, avatar_url),
-       board:bingo_boards!team_members_board_id_fkey(${BOARD_SELECT})`,
-    )
-    .eq('team_id', teamId)
-    .in('status', ['invited', 'joined']);
+  const [{ data: rows }, teamBoards] = await Promise.all([
+    supabase
+      .from('team_members')
+      .select(
+        `user_id, status, board_id, achieved_count, total_count, bingo_count, final_rank,
+         users!team_members_user_id_fkey(display_name, avatar_url)`,
+      )
+      .eq('team_id', teamId)
+      .in('status', ['invited', 'joined']),
+    fetchTeamBoards(teamId),
+  ]);
 
   if (!rows) return null;
 
+  const boardById = teamBoards.byBoard;
   const boards: Record<string, TeamBoardSummary | undefined> = {};
-  const boardById = new Map<string, TeamBoardSummary>();
 
   for (const row of rows) {
-    const raw = row.board as unknown as RawBoard | null;
-    if (!raw) continue;
-    const summary = boardById.get(raw.id) ?? buildBoardSummary(raw);
-    boardById.set(raw.id, summary);
-    boards[row.user_id as string] = summary;
+    const summary = teamBoards.byMember.get(row.user_id as string);
+    if (summary) boards[row.user_id as string] = summary;
   }
 
   const joined = rows.filter((r) => r.status === 'joined');
