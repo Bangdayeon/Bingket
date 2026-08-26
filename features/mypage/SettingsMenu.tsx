@@ -46,19 +46,27 @@ export function SettingsMenu() {
     await WebBrowser.openBrowserAsync(url);
   };
 
+  /**
+   * canOpenURL 로 먼저 물어보지 않는다.
+   * AndroidManifest 의 <queries> 에 market 스킴이 없어서 Android 11+ 에서는
+   * 스토어가 깔려 있어도 무조건 false 가 나온다 (패키지 가시성).
+   * openURL 은 그 선언이 필요 없고 처리할 앱이 없으면 throw 하므로,
+   * 스토어 앱을 먼저 시도하고 실패할 때만 웹으로 내려간다.
+   */
   const openReviewPage = async () => {
+    const isAndroid = Platform.OS === 'android';
+    const url = isAndroid
+      ? `market://details?id=${ANDROID_PACKAGE_NAME}`
+      : `itms-apps://itunes.apple.com/app/id${IOS_APP_ID}?action=write-review`;
+    const fallback = isAndroid
+      ? `https://play.google.com/store/apps/details?id=${ANDROID_PACKAGE_NAME}`
+      : `https://apps.apple.com/kr/app/id${IOS_APP_ID}?action=write-review`;
+
     try {
-      if (Platform.OS === 'android') {
-        const url = `market://details?id=${ANDROID_PACKAGE_NAME}`;
-        const fallback = `https://play.google.com/store/apps/details?id=${ANDROID_PACKAGE_NAME}`;
-        const supported = await Linking.canOpenURL(url);
-        await Linking.openURL(supported ? url : fallback);
-      } else {
-        const url = `itms-apps://itunes.apple.com/app/id${IOS_APP_ID}?action=write-review`;
-        await Linking.openURL(url);
-      }
+      await Linking.openURL(url);
     } catch (error) {
       Sentry.captureException(error);
+      await Linking.openURL(fallback).catch(Sentry.captureException);
     }
   };
 
