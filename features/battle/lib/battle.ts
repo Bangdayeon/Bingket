@@ -99,18 +99,40 @@ export interface BattleListEntry {
 // Internal helpers
 // ============================================================
 
-type RawBoard = {
+type BattleBoardRow = {
   id: string;
+  user_id: string;
   title: string;
   grid: string;
   theme: string;
+  status: string;
   target_date: string | null;
-  bingo_cells: { is_checked: boolean; position: number; content: string }[];
+  display_name: string;
+  avatar_url: string | null;
+  cells: { is_checked: boolean; position: number; content: string }[];
 };
 
-function buildBoardSummary(board: RawBoard): BattleBoardSummary {
+/**
+ * 대결에 걸린 빙고판 조회.
+ * 상대 빙고판은 테이블 직접 조회가 막혀 있어 RPC를 거친다.
+ * soft-delete된 보드도 함께 반환되므로 종료된 대결 기록이 유지된다.
+ */
+const fetchBattleBoards = async (boardIds: string[]): Promise<Map<string, BattleBoardRow>> => {
+  const ids = [...new Set(boardIds)].filter(Boolean);
+  if (ids.length === 0) return new Map();
+
+  const { data, error } = await supabase.rpc('get_battle_boards', { p_board_ids: ids });
+  if (error || !data) {
+    if (error) Sentry.captureException(error);
+    return new Map();
+  }
+
+  return new Map((data as BattleBoardRow[]).map((b) => [b.id, b]));
+};
+
+function buildBoardSummary(board: BattleBoardRow): BattleBoardSummary {
   const [cols, rows] = board.grid.split('x').map(Number);
-  const sorted = [...board.bingo_cells].sort((a, b) => a.position - b.position);
+  const sorted = [...(board.cells ?? [])].sort((a, b) => a.position - b.position);
   const checked = sorted.map((c) => c.is_checked);
   return {
     id: board.id,
@@ -227,12 +249,8 @@ export const fetchBattleRequestDetail = async (
   const { data, error } = await supabase
     .from('battle_requests')
     .select(
-      `id, sender_id, status, title, bet_text,
-       sender:users!battle_requests_sender_id_fkey(username, display_name, avatar_url),
-       sender_board:bingo_boards!battle_requests_sender_board_id_fkey(
-         id, title, grid, theme, target_date,
-         bingo_cells(is_checked, position, content)
-       )`,
+      `id, sender_id, sender_board_id, status, title, bet_text,
+       sender:users!battle_requests_sender_id_fkey(username, display_name, avatar_url)`,
     )
     .eq('id', requestId)
     .single();
@@ -244,7 +262,9 @@ export const fetchBattleRequestDetail = async (
     display_name: string;
     avatar_url: string | null;
   } | null;
-  const board = data.sender_board as unknown as RawBoard | null;
+
+  const boards = await fetchBattleBoards([data.sender_board_id as string]);
+  const board = boards.get(data.sender_board_id as string) ?? null;
 
   if (!board || !sender) return null;
 
@@ -355,22 +375,25 @@ export const fetchMyBattleNotifications = async (): Promise<BattleNotificationIt
     supabase
       .from('battle_requests')
       .select(
-        `id, status,
-         receiver:users!battle_requests_receiver_id_fkey(username, display_name, avatar_url),
-         sender_board:bingo_boards!battle_requests_sender_board_id_fkey(title)`,
+        `id, status, sender_board_id,
+         receiver:users!battle_requests_receiver_id_fkey(username, display_name, avatar_url)`,
       )
       .eq('sender_id', user.id)
       .in('status', ['pending', 'rejected']),
     supabase
       .from('battle_requests')
       .select(
-        `id,
-         sender:users!battle_requests_sender_id_fkey(username, display_name, avatar_url),
-         sender_board:bingo_boards!battle_requests_sender_board_id_fkey(title)`,
+        `id, sender_board_id,
+         sender:users!battle_requests_sender_id_fkey(username, display_name, avatar_url)`,
       )
       .eq('receiver_id', user.id)
       .eq('status', 'pending'),
   ]);
+
+  // 받은 요청의 sender_board는 상대 소유라 테이블 직접 조회가 되지 않는다
+  const boards = await fetchBattleBoards(
+    [...(sentData ?? []), ...(receivedData ?? [])].map((r) => r.sender_board_id as string),
+  );
 
   const notifications: BattleNotificationItem[] = [];
 
@@ -380,7 +403,7 @@ export const fetchMyBattleNotifications = async (): Promise<BattleNotificationIt
       display_name: string;
       avatar_url: string | null;
     } | null;
-    const board = row.sender_board as unknown as { title: string } | null;
+    const board = boards.get(row.sender_board_id as string) ?? null;
     notifications.push({
       type: (row.status as string) === 'rejected' ? 'rejected' : 'sent',
       requestId: row.id as string,
@@ -397,7 +420,7 @@ export const fetchMyBattleNotifications = async (): Promise<BattleNotificationIt
       display_name: string;
       avatar_url: string | null;
     } | null;
-    const board = row.sender_board as unknown as { title: string } | null;
+    const board = boards.get(row.sender_board_id as string) ?? null;
     notifications.push({
       type: 'received',
       requestId: row.id as string,
@@ -437,21 +460,18 @@ const finalizeBattles = async (targets: FinalizeTarget[]): Promise<Map<string, F
   try {
     // 1) 확정이 필요한 보드의 셀만 한 번에 조회한다.
     //    soft-delete된 보드도 포함 -- 기록은 남아야 한다.
-    const boardIds = [...new Set(pending.flatMap((t) => [t.board1Id, t.board2Id]))];
-    const { data: boards, error } = await supabase
-      .from('bingo_boards')
-      .select('id, grid, bingo_cells(is_checked, position)')
-      .in('id', boardIds);
-
-    if (error || !boards) return result;
+    const boardIds = pending.flatMap((t) => [t.board1Id, t.board2Id]);
+    const boards = await fetchBattleBoards(boardIds);
+    if (boards.size === 0) return result;
 
     const scoreByBoard = new Map<string, number>();
-    for (const board of boards) {
-      const [cols, rows] = (board.grid as string).split('x').map(Number);
-      const cells = (board.bingo_cells ?? []) as { is_checked: boolean; position: number }[];
-      const checked = [...cells].sort((a, b) => a.position - b.position).map((c) => c.is_checked);
+    for (const board of boards.values()) {
+      const [cols, rows] = board.grid.split('x').map(Number);
+      const checked = [...(board.cells ?? [])]
+        .sort((a, b) => a.position - b.position)
+        .map((c) => c.is_checked);
       scoreByBoard.set(
-        board.id as string,
+        board.id,
         calcBattleScore(checked.filter(Boolean).length, calcBingoCount(checked, cols, rows)),
       );
     }
@@ -531,26 +551,16 @@ export const fetchMyBattles = async (): Promise<BattleListEntry[]> => {
   const { data, error } = await supabase
     .from('battles')
     .select(
-      `id, user1_id, user2_id, board1_id, board2_id, score1, score2, title, bet_text, status, created_at, end_date, completed_at,
-        board1:bingo_boards!battles_board1_id_fkey(
-          title, target_date,
-          users!bingo_boards_user_id_fkey(display_name, avatar_url)
-        ),
-        board2:bingo_boards!battles_board2_id_fkey(
-          title, target_date,
-          users!bingo_boards_user_id_fkey(display_name, avatar_url)
-        )`,
+      `id, user1_id, user2_id, board1_id, board2_id, score1, score2, title, bet_text, status, created_at, end_date, completed_at`,
     )
     .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
     .order('created_at', { ascending: false });
 
   if (error || !data) return [];
 
-  type BoardWithUser = {
-    title: string;
-    target_date: string | null;
-    users: { display_name: string; avatar_url: string | null } | null;
-  };
+  const boards = await fetchBattleBoards(
+    data.flatMap((row) => [row.board1_id as string, row.board2_id as string]),
+  );
 
   const now = Date.now();
 
@@ -558,8 +568,8 @@ export const fetchMyBattles = async (): Promise<BattleListEntry[]> => {
   const effectiveEnd = (row: (typeof data)[number]): string | null =>
     (row.end_date as string | null) ??
     laterDate(
-      (row.board1 as unknown as BoardWithUser | null)?.target_date ?? null,
-      (row.board2 as unknown as BoardWithUser | null)?.target_date ?? null,
+      boards.get(row.board1_id as string)?.target_date ?? null,
+      boards.get(row.board2_id as string)?.target_date ?? null,
     );
 
   // 기간이 끝났는데 아직 in_progress인 대결만 확정한다 -- 평시엔 빈 배열이라 추가 쿼리가 없다.
@@ -576,8 +586,8 @@ export const fetchMyBattles = async (): Promise<BattleListEntry[]> => {
 
   return data.map((row) => {
     const myIsUser1 = (row.user1_id as string) === user.id;
-    const myBoard = (myIsUser1 ? row.board1 : row.board2) as unknown as BoardWithUser | null;
-    const opponentBoard = (myIsUser1 ? row.board2 : row.board1) as unknown as BoardWithUser | null;
+    const myBoard = boards.get((myIsUser1 ? row.board1_id : row.board2_id) as string) ?? null;
+    const opponentBoard = boards.get((myIsUser1 ? row.board2_id : row.board1_id) as string) ?? null;
 
     const endDate = effectiveEnd(row);
     const isFinished = row.status === 'completed' || isBattleOver(endDate, now);
@@ -605,14 +615,14 @@ export const fetchMyBattles = async (): Promise<BattleListEntry[]> => {
       endDate,
       completedAt: row.completed_at as string | null,
       me: {
-        name: myBoard?.users?.display_name ?? '',
-        avatarUrl: myBoard?.users?.avatar_url ?? null,
+        name: myBoard?.display_name ?? '',
+        avatarUrl: myBoard?.avatar_url ?? null,
         // 무승부는 양쪽 모두 승자로 표시한다
         isWinner: outcome === 'win' || outcome === 'draw',
       },
       opponent: {
-        name: opponentBoard?.users?.display_name ?? '',
-        avatarUrl: opponentBoard?.users?.avatar_url ?? null,
+        name: opponentBoard?.display_name ?? '',
+        avatarUrl: opponentBoard?.avatar_url ?? null,
         isWinner: outcome === 'lose' || outcome === 'draw',
       },
     };
@@ -630,28 +640,16 @@ export const fetchBattleStatusDetail = async (
   const { data, error } = await supabase
     .from('battles')
     .select(
-      `id, user1_id, user2_id, board1_id, board2_id, score1, score2, title, bet_text, status, end_date, completed_at,
-       board1:bingo_boards!battles_board1_id_fkey(
-         id, title, grid, theme, target_date,
-         bingo_cells(is_checked, position, content),
-         users!bingo_boards_user_id_fkey(display_name, avatar_url)
-       ),
-       board2:bingo_boards!battles_board2_id_fkey(
-         id, title, grid, theme, target_date,
-         bingo_cells(is_checked, position, content),
-         users!bingo_boards_user_id_fkey(display_name, avatar_url)
-       )`,
+      `id, user1_id, user2_id, board1_id, board2_id, score1, score2, title, bet_text, status, end_date, completed_at`,
     )
     .eq('id', battleId)
     .single();
 
   if (error || !data) return null;
 
-  type RawBoardWithUser = RawBoard & {
-    users: { display_name: string; avatar_url: string | null } | null;
-  };
-  const board1 = data.board1 as unknown as RawBoardWithUser | null;
-  const board2 = data.board2 as unknown as RawBoardWithUser | null;
+  const boards = await fetchBattleBoards([data.board1_id as string, data.board2_id as string]);
+  const board1 = boards.get(data.board1_id as string) ?? null;
+  const board2 = boards.get(data.board2_id as string) ?? null;
 
   if (!board1 || !board2) return null;
 
@@ -700,14 +698,14 @@ export const fetchBattleStatusDetail = async (
     myBoard: {
       ...myBoardSummary,
       userId: myUserId,
-      displayName: myBoard.users?.display_name ?? '',
-      avatarUrl: myBoard.users?.avatar_url ?? null,
+      displayName: myBoard.display_name ?? '',
+      avatarUrl: myBoard.avatar_url ?? null,
     },
     friendBoard: {
       ...friendBoardSummary,
       userId: friendUserId,
-      displayName: friendBoard.users?.display_name ?? '',
-      avatarUrl: friendBoard.users?.avatar_url ?? null,
+      displayName: friendBoard.display_name ?? '',
+      avatarUrl: friendBoard.avatar_url ?? null,
     },
     myScore,
     friendScore,
