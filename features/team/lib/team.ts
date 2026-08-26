@@ -1,6 +1,12 @@
 import * as Sentry from '@sentry/react-native';
 import { supabase } from '@/lib/supabase';
-import { calcBingoCount, createBingo } from '@/features/bingo/lib/bingo';
+import {
+  calcBingoCount,
+  createBingo,
+  toProgressBingo,
+  PROGRESS_BOARD_SELECT,
+  type FetchedBingo,
+} from '@/features/bingo/lib/bingo';
 import { isTeamOver, isTeamStarted, rankMembers } from '@/features/team/lib/team-result';
 import type { BingoTheme } from '@/types/bingo';
 import type { TeamMemberStatus, TeamMode, TeamStatus } from '@/types/team';
@@ -926,4 +932,48 @@ export const notifyTeamCellChecked = async (
       targetId: teamId,
     })),
   );
+};
+
+/**
+ * 같이 채우기 공유판 중 내가 만들지 않은 판.
+ *
+ * 공유판의 주인은 방장 한 명이라 fetchMyBingos(user_id = 나)에는 잡히지 않는다.
+ * 그래서 방장이 아닌 팀원은 홈에서 공유판을 볼 수도, 채울 수도 없었다.
+ * 칸을 채우는 권한과 충돌 처리는 이미 DB에 있으므로 목록에 올려주기만 하면 된다.
+ */
+export const fetchJoinedSharedBoards = async (): Promise<FetchedBingo[]> => {
+  const userId = await currentUserId();
+  if (!userId) return [];
+
+  const { data: rows } = await supabase
+    .from('team_members')
+    .select('board_id, team:team_bingos!team_members_team_id_fkey(mode, status)')
+    .eq('user_id', userId)
+    .eq('status', 'joined')
+    .not('board_id', 'is', null);
+
+  if (!rows) return [];
+
+  const boardIds = rows
+    .filter((row) => {
+      const team = row.team as unknown as { mode: TeamMode; status: TeamStatus } | null;
+      return team?.mode === 'shared' && team.status !== 'completed';
+    })
+    .map((row) => row.board_id as string);
+
+  if (boardIds.length === 0) return [];
+
+  // user_id 조건으로 내가 만든 판을 걸러낸다. 그건 이미 fetchMyBingos 가 가져온다.
+  const { data: boards, error } = await supabase
+    .from('bingo_boards')
+    .select(PROGRESS_BOARD_SELECT)
+    .in('id', boardIds)
+    .neq('user_id', userId)
+    .eq('status', 'progress')
+    .is('deleted_at', null)
+    .order('created_at', { ascending: false });
+
+  if (error || !boards) return [];
+
+  return boards.map((board) => toProgressBingo(board, { isGuestSharedBoard: true }));
 };

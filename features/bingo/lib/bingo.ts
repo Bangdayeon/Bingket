@@ -312,6 +312,68 @@ export const fetchMyCompletedBingos = async (): Promise<FetchedBingo[]> => {
   });
 };
 
+/** 진행 중 빙고판 조회에 쓰는 select 목록. 같이 채우기 공유판 조회와 공유한다 */
+export const PROGRESS_BOARD_SELECT = `id, title, grid, theme, max_edits, start_date, target_date,
+       bingo_cells (id, position, content, memo, is_checked, checked_at, completed_by, memo_updated_by)`;
+
+type ProgressBoardRow = {
+  id: string;
+  title: string;
+  grid: string;
+  theme: string;
+  max_edits: number;
+  start_date: string | null;
+  target_date: string | null;
+  bingo_cells: {
+    id: string;
+    position: number;
+    content: string;
+    memo: string | null;
+    is_checked: boolean;
+    checked_at: string | null;
+    completed_by: string | null;
+    memo_updated_by: string | null;
+  }[];
+};
+
+/** 진행 중 빙고판 행을 화면용 형태로 바꾼다 */
+export const toProgressBingo = (
+  board: ProgressBoardRow,
+  options?: { isGuestSharedBoard?: boolean },
+): FetchedBingo => {
+  const cells = [...(board.bingo_cells ?? [])].sort((a, b) => a.position - b.position);
+  const [cols, rows] = board.grid.split('x').map(Number);
+  const checked = cells.map((c) => c.is_checked);
+
+  return {
+    bingo: {
+      id: board.id,
+      title: board.title,
+      grid: board.grid,
+      cells: cells.map((c) => c.content),
+      maxEdits: board.max_edits,
+      achievedCount: checked.filter(Boolean).length,
+      bingoCount: calcBingoCount(checked, cols, rows),
+      dday: calcDday(board.target_date),
+      startDate: board.start_date ?? null,
+      targetDate: board.target_date ?? null,
+      state: 'progress',
+      theme: board.theme as BingoTheme,
+      retrospective: null,
+      isGuestSharedBoard: options?.isGuestSharedBoard,
+    },
+    cellDetails: cells.map((c) => ({
+      id: c.id,
+      title: c.content,
+      completed: c.is_checked,
+      completedAt: c.checked_at ?? null,
+      completedBy: c.completed_by ?? null,
+      memoUpdatedBy: c.memo_updated_by ?? null,
+      memo: c.memo ?? '',
+    })),
+  };
+};
+
 export const fetchMyBingos = async (): Promise<FetchedBingo[]> => {
   const {
     data: { user },
@@ -320,10 +382,7 @@ export const fetchMyBingos = async (): Promise<FetchedBingo[]> => {
 
   const { data: boards, error } = await supabase
     .from('bingo_boards')
-    .select(
-      `id, title, grid, theme, max_edits, start_date, target_date,
-       bingo_cells (id, position, content, memo, is_checked, checked_at, completed_by, memo_updated_by)`,
-    )
+    .select(PROGRESS_BOARD_SELECT)
     .eq('user_id', user.id)
     .eq('status', 'progress')
     .is('deleted_at', null)
@@ -331,36 +390,5 @@ export const fetchMyBingos = async (): Promise<FetchedBingo[]> => {
 
   if (error || !boards) return [];
 
-  return boards.map((board) => {
-    const cells = [...(board.bingo_cells ?? [])].sort((a, b) => a.position - b.position);
-    const [cols, rows] = board.grid.split('x').map(Number);
-    const checked = cells.map((c) => c.is_checked);
-
-    return {
-      bingo: {
-        id: board.id,
-        title: board.title,
-        grid: board.grid,
-        cells: cells.map((c) => c.content),
-        maxEdits: board.max_edits,
-        achievedCount: checked.filter(Boolean).length,
-        bingoCount: calcBingoCount(checked, cols, rows),
-        dday: calcDday(board.target_date),
-        startDate: board.start_date ?? null,
-        targetDate: board.target_date ?? null,
-        state: 'progress',
-        theme: board.theme as BingoTheme,
-        retrospective: null,
-      },
-      cellDetails: cells.map((c) => ({
-        id: c.id,
-        title: c.content,
-        completed: c.is_checked,
-        completedAt: c.checked_at ?? null,
-        completedBy: c.completed_by ?? null,
-        memoUpdatedBy: c.memo_updated_by ?? null,
-        memo: c.memo ?? '',
-      })),
-    };
-  });
+  return boards.map((board) => toProgressBingo(board));
 };

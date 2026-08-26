@@ -15,7 +15,11 @@ import {
   updateCell,
   calcBingoCount,
 } from '@/features/bingo/lib/bingo';
-import { fetchMyTeams, notifyTeamCellChecked } from '@/features/team/lib/team';
+import {
+  fetchJoinedSharedBoards,
+  fetchMyTeams,
+  notifyTeamCellChecked,
+} from '@/features/team/lib/team';
 import type { TeamAvatarMember } from '@/features/team/components/TeamAvatars';
 import { supabase } from '@/lib/supabase';
 import { getCache, setCache } from '@/lib/cache';
@@ -87,52 +91,64 @@ export function BingoAll() {
   const isNavigatingRef = useRef(false);
 
   const loadData = useCallback(() => {
-    Promise.all([fetchMyBingos(), loadDraftBingo()]).then(async ([fetched, draft]) => {
-      const details: Record<string, BingoCellDetail[]> = {};
-      const serverBingos = fetched.map(({ bingo, cellDetails: cd }) => {
-        details[bingo.id] = cd;
-        return bingo;
-      });
-
-      // 종료일이 오늘 이전인 빙고 자동 완료 처리
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const expiredIds = serverBingos
-        .filter((b) => b.targetDate && new Date(b.targetDate) < today)
-        .map((b) => b.id);
-      if (expiredIds.length > 0) {
-        await Promise.all(expiredIds.map((id) => markBingoDone(id).catch(Sentry.captureException)));
-      }
-
-      // 만료된 빙고는 BingoAll에서 제외 (마이페이지 피드에서 완료로 표시된다)
-      const progressBingos = serverBingos.filter((b) => !expiredIds.includes(b.id));
-      // 제작 중인 빙고는 로컬에만 있고 서버에 없다. 맨 앞에 붙여 이어서 만들 수 있게 한다
-      const sliced = [...(draft ? [draft] : []), ...progressBingos].slice(0, MAX_BINGOS);
-      setBingos(sliced);
-      setCellDetails(details);
-      setLoading(false);
-      setCache(CACHE_KEY_ALL, { bingos: sliced, cellDetails: details });
-
-      // 각 빙고가 팀에 속해 있는지 조회. 종료된 팀은 카드에 표시하지 않는다.
-      const [myTeams, { data: auth }] = await Promise.all([
-        fetchMyTeams(),
-        supabase.auth.getUser(),
-      ]);
-      const byBoard: typeof teamsByBoard = {};
-      for (const team of myTeams) {
-        if (team.isInvite || team.isFinished || !team.myBoardId) continue;
-        byBoard[team.myBoardId] = {
-          teamId: team.teamId,
-          members: team.members,
-          startDate: team.startDate,
-          endDate: team.endDate,
+    Promise.all([fetchMyBingos(), fetchJoinedSharedBoards(), loadDraftBingo()]).then(
+      async ([fetched, sharedFetched, draft]) => {
+        const details: Record<string, BingoCellDetail[]> = {};
+        const collect = ({ bingo, cellDetails: cd }: (typeof fetched)[number]) => {
+          details[bingo.id] = cd;
+          return bingo;
         };
-      }
-      startTransition(() => {
-        setTeamsByBoard(byBoard);
-        setCurrentUserId(auth.user?.id ?? null);
-      });
-    });
+        const serverBingos = fetched.map(collect);
+        // 방장이 아니라서 내 소유가 아닌 공유판. 칸만 채울 수 있다
+        const guestBingos = sharedFetched.map(collect);
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const isExpired = (b: BingoData) => !!b.targetDate && new Date(b.targetDate) < today;
+
+        // 종료일이 오늘 이전인 빙고 자동 완료 처리.
+        // 남의 공유판은 방장만 완료 처리할 수 있으므로 목록에서 빼기만 한다.
+        const expiredIds = serverBingos.filter(isExpired).map((b) => b.id);
+        if (expiredIds.length > 0) {
+          await Promise.all(
+            expiredIds.map((id) => markBingoDone(id).catch(Sentry.captureException)),
+          );
+        }
+
+        // 만료된 빙고는 BingoAll에서 제외 (마이페이지 피드에서 완료로 표시된다)
+        const progressBingos = serverBingos.filter((b) => !expiredIds.includes(b.id));
+        // 제작 중인 빙고는 로컬에만 있고 서버에 없다. 맨 앞에 붙여 이어서 만들 수 있게 한다
+        // 개수 제한은 내가 만든 판에만 적용된다. 남의 공유판은 뒤에 덧붙인다.
+        const sliced = [
+          ...[...(draft ? [draft] : []), ...progressBingos].slice(0, MAX_BINGOS),
+          ...guestBingos.filter((b) => !isExpired(b)),
+        ];
+        setBingos(sliced);
+        setCellDetails(details);
+        setLoading(false);
+        setCache(CACHE_KEY_ALL, { bingos: sliced, cellDetails: details });
+
+        // 각 빙고가 팀에 속해 있는지 조회. 종료된 팀은 카드에 표시하지 않는다.
+        const [myTeams, { data: auth }] = await Promise.all([
+          fetchMyTeams(),
+          supabase.auth.getUser(),
+        ]);
+        const byBoard: typeof teamsByBoard = {};
+        for (const team of myTeams) {
+          if (team.isInvite || team.isFinished || !team.myBoardId) continue;
+          byBoard[team.myBoardId] = {
+            teamId: team.teamId,
+            members: team.members,
+            startDate: team.startDate,
+            endDate: team.endDate,
+          };
+        }
+        startTransition(() => {
+          setTeamsByBoard(byBoard);
+          setCurrentUserId(auth.user?.id ?? null);
+        });
+      },
+    );
   }, []);
 
   useFocusEffect(
@@ -245,6 +261,8 @@ export function BingoAll() {
     }
   };
 
+  // 개수 제한은 내가 만든 판만 센다. 남의 공유판은 내 몫을 쓰지 않는다.
+  const myBingoCount = bingos.filter((b) => !b.isGuestSharedBoard).length;
   const modalCells = modalTarget ? (cellDetails[modalTarget.bingoId] ?? []) : [];
   const modalTeam = modalTarget ? teamsByBoard[modalTarget.bingoId] : undefined;
 
@@ -269,10 +287,14 @@ export function BingoAll() {
           bingo={bingo}
           completedCells={cellDetails[bingo.id]?.map((c) => c.completed)}
           onCellPress={(cellIndex) => handleCellPress(bingo, cellIndex)}
-          onEditPress={() =>
-            bingo.id === DRAFT_ID
-              ? router.push({ pathname: '/bingo/add', params: { loadDraft: 'true' } })
-              : router.push({ pathname: '/bingo/modify', params: { bingoId: bingo.id } })
+          // 남의 공유판은 제목·내용을 방장만 고칠 수 있으므로 수정 진입을 감춘다
+          onEditPress={
+            bingo.isGuestSharedBoard
+              ? undefined
+              : () =>
+                  bingo.id === DRAFT_ID
+                    ? router.push({ pathname: '/bingo/add', params: { loadDraft: 'true' } })
+                    : router.push({ pathname: '/bingo/modify', params: { bingoId: bingo.id } })
           }
           teamMembers={teamsByBoard[bingo.id]?.members}
           onTeamPress={() => {
@@ -291,7 +313,7 @@ export function BingoAll() {
       )}
 
       {/* 새 빙고 추가 섹션: 혼자 할지 함께 할지 먼저 고른다 */}
-      {bingos.length < MAX_BINGOS && (
+      {myBingoCount < MAX_BINGOS && (
         <View className="px-5 mt-10">
           <View className="items-center justify-center gap-4 bg-green-100 w-full rounded-[20px] py-8 px-5">
             <AddIcon width={40} height={40} color="#4C5252" /* gray-700 */ />
@@ -302,7 +324,7 @@ export function BingoAll() {
               새 빙고 만들기
             </Text>
             <Text className="text-title-md" style={{ color: '#4C5252' /* gray-700 */ }}>
-              ({bingos.length}/{MAX_BINGOS})
+              ({myBingoCount}/{MAX_BINGOS})
             </Text>
 
             <View className="w-full gap-3 mt-2">
