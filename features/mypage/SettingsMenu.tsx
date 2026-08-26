@@ -22,6 +22,7 @@ import Terms from '@/assets/pngIcons/terms.png';
 import Privacy from '@/assets/pngIcons/privacy.png';
 import Update from '@/assets/pngIcons/update.png';
 import { TextInput } from '@/components/TextInput';
+import { ANDROID_PACKAGE_NAME, IOS_APP_ID } from '@/constants/store';
 
 export function SettingsMenu() {
   const router = useRouter();
@@ -40,9 +41,6 @@ export function SettingsMenu() {
   const [reportInputText, setReportInputText] = useState('');
   const [isReportLoading, setIsReportLoading] = useState(false);
   const [emailToastVisible, setEmailToastVisible] = useState(false);
-
-  const ANDROID_PACKAGE_NAME = 'com.day.bingket.app';
-  const IOS_APP_ID = '6761634987';
 
   const openUrl = async (url: string) => {
     await WebBrowser.openBrowserAsync(url);

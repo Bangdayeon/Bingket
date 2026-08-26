@@ -13,6 +13,7 @@ import { router, Stack } from 'expo-router';
 import { useEffect } from 'react';
 import { Appearance } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { ForceUpdateGate } from '@/features/app-update/ForceUpdateGate';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 
@@ -103,6 +104,7 @@ function RootLayout() {
         <Stack.Screen name="community/write" options={{ headerShown: false }} />
         <Stack.Screen name="community/[id]" options={{ headerShown: false }} />
       </Stack>
+      <ForceUpdateGate />
     </SafeAreaProvider>
   );
 }
