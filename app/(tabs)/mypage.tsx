@@ -6,7 +6,7 @@ import * as Sentry from '@sentry/react-native';
 import { Text } from '@/components/Text';
 import IconButton from '@/components/IconButton';
 import Loading from '@/components/Loading';
-import MoreIcon from '@/assets/icons/ic_more_vert.svg';
+import SettingsIcon from '@/assets/icons/ic_settings.svg';
 import { BadgesPage } from '@/features/mypage/Badges';
 import { ProfileHeader } from '@/features/profile/components/ProfileHeader';
 import { FeedGrid } from '@/features/profile/components/FeedGrid';
@@ -54,7 +54,7 @@ export default function MyPageScreen() {
         <IconButton
           variant="ghost"
           size={32}
-          icon={<MoreIcon width={20} height={20} />}
+          icon={<SettingsIcon width={20} height={20} />}
           onClick={() => router.push('/mypage/settings')}
         />
       </View>
