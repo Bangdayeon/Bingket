@@ -8,7 +8,7 @@ Sentry.init({
   tracesSampleRate: 0.2,
 });
 import { supabase } from '@/lib/supabase';
-import { registerForPushNotifications, savePushToken } from '@/lib/push-notifications';
+import { addNotificationTapListener, syncPushToken } from '@/lib/push-notifications';
 import { router, Stack } from 'expo-router';
 import { useEffect } from 'react';
 import { Appearance } from 'react-native';
@@ -60,21 +60,20 @@ function RootLayout() {
               { onConflict: 'id', ignoreDuplicates: true },
             );
           router.replace('/(tabs)');
-          registerForPushNotifications().then((token) => {
-            if (token) savePushToken(token);
-          });
+          void syncPushToken().catch(Sentry.captureException);
         })();
       } else if (event === 'INITIAL_SESSION' && session) {
         // 앱 재실행 시 이미 로그인된 경우에도 토큰 갱신
-        registerForPushNotifications().then((token) => {
-          if (token) savePushToken(token);
-        });
+        void syncPushToken().catch(Sentry.captureException);
       } else if (event === 'SIGNED_OUT') {
         router.replace('/(auth)/login');
       }
     });
     return () => subscription.unsubscribe();
   }, []);
+
+  // 푸시 알림 탭 → 화면 이동
+  useEffect(() => addNotificationTapListener(), []);
 
   return (
     <SafeAreaProvider>
@@ -96,11 +95,10 @@ function RootLayout() {
         <Stack.Screen name="mypage/settings" options={{ headerShown: false }} />
         <Stack.Screen name="profile/[id]" options={{ headerShown: false }} />
         <Stack.Screen name="bingo/friend-view" options={{ headerShown: false }} />
-        <Stack.Screen name="bingo/battle" options={{ headerShown: false }} />
-        <Stack.Screen name="bingo/battle-check" options={{ headerShown: false }} />
-        <Stack.Screen name="bingo/battle-select-board" options={{ headerShown: false }} />
-        <Stack.Screen name="bingo/battle-status" options={{ headerShown: false }} />
-        <Stack.Screen name="bingo/semi-battle-check" options={{ headerShown: false }} />
+        <Stack.Screen name="bingo/team-mode" options={{ headerShown: false }} />
+        <Stack.Screen name="bingo/team-create" options={{ headerShown: false }} />
+        <Stack.Screen name="bingo/team-invite" options={{ headerShown: false }} />
+        <Stack.Screen name="bingo/team-status" options={{ headerShown: false }} />
         <Stack.Screen name="community/search" options={{ headerShown: false }} />
         <Stack.Screen name="community/write" options={{ headerShown: false }} />
         <Stack.Screen name="community/[id]" options={{ headerShown: false }} />

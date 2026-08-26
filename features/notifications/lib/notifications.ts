@@ -38,17 +38,18 @@ export const fetchNotifications = async (): Promise<Notification[]> => {
   if (error) throw error;
   const notifications = data ?? [];
 
-  // friend_request / battle_request 알림에 sender 프로필 병렬 조회
+  // friend_request / team_invite 알림에 보낸 사람 프로필 병렬 조회
   const friendIds = notifications
     .filter((n) => n.type === 'friend_request' && n.target_id)
     .map((n) => n.target_id as string);
-  const battleIds = notifications
-    .filter((n) => n.type === 'battle_request' && n.target_id)
+  // team_invite의 target_id는 팀 id이고, 보낸 사람은 그 팀의 방장이다
+  const teamIds = notifications
+    .filter((n) => n.type === 'team_invite' && n.target_id)
     .map((n) => n.target_id as string);
 
   const senderMap = new Map<string, SenderProfile>();
 
-  const [friendRows, battleRows] = await Promise.all([
+  const [friendRows, teamRows] = await Promise.all([
     friendIds.length > 0
       ? supabase
           .from('friend_requests')
@@ -58,13 +59,11 @@ export const fetchNotifications = async (): Promise<Notification[]> => {
           .in('id', friendIds)
           .returns<RequestRow[]>()
       : Promise.resolve({ data: [] as RequestRow[] }),
-    battleIds.length > 0
+    teamIds.length > 0
       ? supabase
-          .from('battle_requests')
-          .select(
-            'id, sender:users!battle_requests_sender_id_fkey(display_name, username, avatar_url)',
-          )
-          .in('id', battleIds)
+          .from('team_bingos')
+          .select('id, sender:users!team_bingos_owner_id_fkey(display_name, username, avatar_url)')
+          .in('id', teamIds)
           .returns<RequestRow[]>()
       : Promise.resolve({ data: [] as RequestRow[] }),
   ]);
@@ -78,7 +77,7 @@ export const fetchNotifications = async (): Promise<Notification[]> => {
       });
     }
   }
-  for (const row of battleRows.data ?? []) {
+  for (const row of teamRows.data ?? []) {
     if (row.sender) {
       senderMap.set(row.id, {
         displayName: row.sender.display_name,

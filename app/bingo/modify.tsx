@@ -7,7 +7,7 @@ import { AddEachBingo } from '@/features/bingo/bingo-edit/AddEachBingo';
 import { fetchBingoForEdit, updateBingo, deleteBingo } from '@/features/bingo/lib/bingo';
 import { VisibilitySelector } from '@/features/bingo/bingo-edit/VisibilitySelector';
 import type { BoardVisibility } from '@/features/profile/lib/profile';
-import { fetchBattleByBoardId, quitBattle } from '@/features/battle/lib/battle';
+import { fetchTeamByBoardId, leaveTeam } from '@/features/team/lib/team';
 import { fetchThemes } from '@/features/bingo/lib/theme';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
@@ -102,10 +102,15 @@ export default function BingoModifyScreen() {
 
   const handleDelete = async () => {
     try {
-      const battle = await fetchBattleByBoardId(bingoId);
-      // 종료된 대결은 상대방의 기록이기도 하므로 지우지 않는다 (빙고는 soft delete라 기록이 유지된다)
-      if (battle && !battle.isFinished) await quitBattle(battle.battleId);
-      await deleteBingo(bingoId);
+      const team = await fetchTeamByBoardId(bingoId);
+
+      // 진행 중인 팀에 속한 판이면 먼저 팀에서 빠진다.
+      // 종료된 팀은 다른 사람의 기록이기도 하므로 건드리지 않는다.
+      if (team && !team.isFinished) await leaveTeam(team.teamId);
+
+      // 같이 채우기 판은 팀 공용이라 나 혼자 지울 수 없다 -- 팀에서 나가는 것으로 끝낸다
+      if (!team || team.mode !== 'shared') await deleteBingo(bingoId);
+
       router.replace('/(tabs)');
     } catch (e) {
       Sentry.captureException(e);

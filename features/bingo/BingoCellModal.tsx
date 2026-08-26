@@ -16,12 +16,22 @@ import { TABLET_MAX_CONTENT_WIDTH } from '@/lib/use-responsive';
 import { Text } from '@/components/Text';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import IconButton from '@/components/IconButton';
+import { ProfileAvatar } from '@/components/ProfileAvatar';
 
 const PEEK = 20;
 const CARD_MARGIN = 4;
 const CARD_HEIGHT = 460;
 
 type CellUpdate = Partial<Pick<BingoCellDetail, 'completed' | 'completedAt' | 'memo'>>;
+
+/** 팀 빙고에서만 넘긴다. 완료자 표시와 해제 권한 판정에 쓴다. */
+export interface CellTeamContext {
+  currentUserId: string;
+  members: { userId: string; displayName: string; avatarUrl: string | null }[];
+  /** 'YYYY-MM-DD'. 완료일 선택 범위를 기간 안으로 제한한다 */
+  startDate: string;
+  endDate: string;
+}
 
 interface BingoCellModalProps {
   visible: boolean;
@@ -31,6 +41,7 @@ interface BingoCellModalProps {
   onUpdate: (cellId: string, updates: CellUpdate) => void;
   /** 완료된 빙고: 메모만 편집 가능, 완료 토글/완료일 숨김 */
   readOnly?: boolean;
+  team?: CellTeamContext;
 }
 
 /** 들여쓰기(탭·개행)를 공백으로 정규화하고 앞뒤 공백을 제거 */
@@ -54,6 +65,7 @@ export function BingoCellModal({
   onClose,
   onUpdate,
   readOnly = false,
+  team,
 }: BingoCellModalProps) {
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
@@ -75,7 +87,15 @@ export function BingoCellModal({
     return () => clearTimeout(t);
   }, [visible, initialIndex, cells.length]);
 
+  /** 팀 빙고에서 남이 채운 칸은 해제할 수 없다 (DB 트리거와 같은 규칙) */
+  const lockedByOther = (cell: BingoCellDetail): boolean =>
+    Boolean(team && cell.completed && cell.completedBy && cell.completedBy !== team.currentUserId);
+
+  const memberOf = (userId: string | null) =>
+    userId ? team?.members.find((m) => m.userId === userId) : undefined;
+
   const handleToggleComplete = (cell: BingoCellDetail) => {
+    if (lockedByOther(cell)) return;
     if (!cell.completed) {
       onUpdate(cell.id, {
         completed: true,
@@ -155,19 +175,33 @@ export function BingoCellModal({
                   {normalizeTitle(item.title)}
                 </Text>
                 {!readOnly && (
-                  <IconButton
-                    variant="ghost"
-                    onClick={() => handleToggleComplete(item)}
-                    icon={
-                      item.completed ? (
-                        <DoneIcon width={24} height={24} color="#48BE30" /* green-600 */ />
-                      ) : (
-                        <CheckIcon width={24} height={24} color="#4C5252" /* gray-700 */ />
-                      )
-                    }
-                  />
+                  <View style={{ opacity: lockedByOther(item) ? 0.4 : 1 }}>
+                    <IconButton
+                      variant="ghost"
+                      onClick={() => handleToggleComplete(item)}
+                      icon={
+                        item.completed ? (
+                          <DoneIcon width={24} height={24} color="#48BE30" /* green-600 */ />
+                        ) : (
+                          <CheckIcon width={24} height={24} color="#4C5252" /* gray-700 */ />
+                        )
+                      }
+                    />
+                  </View>
                 )}
               </View>
+
+              {/* 팀 빙고: 이 칸을 누가 채웠는지 */}
+              {team && item.completed && item.completedBy && (
+                <View className="flex-row items-center gap-2 mb-4">
+                  <ProfileAvatar avatarUrl={memberOf(item.completedBy)?.avatarUrl} size={24} />
+                  <Text className="text-body-sm" style={{ color: '#4C5252' /* gray-700 */ }}>
+                    {item.completedBy === team.currentUserId
+                      ? '내가 채웠어요'
+                      : `${memberOf(item.completedBy)?.displayName ?? '탈퇴한 멤버'}님이 채웠어요`}
+                  </Text>
+                </View>
+              )}
 
               {/* 완료일 */}
               {(!readOnly || item.completedAt) && (
@@ -187,8 +221,9 @@ export function BingoCellModal({
                     </View>
                   ) : (
                     <Pressable
-                      onPress={() => handleOpenDatePicker(item)}
+                      onPress={() => !lockedByOther(item) && handleOpenDatePicker(item)}
                       className="flex-row items-center gap-1 bg-gray-100 rounded-full h-10 px-4 mb-5 self-start"
+                      style={{ opacity: lockedByOther(item) ? 0.4 : 1 }}
                     >
                       <CalendarIcon width={16} height={16} color="#4C5252" /* gray-700 */ />
                       <Text
@@ -239,6 +274,13 @@ export function BingoCellModal({
                   {item.memo?.length ?? 0}/500
                 </Text>
               </View>
+
+              {/* 팀 메모는 전원이 고칠 수 있어, 조용히 바뀌지 않도록 마지막 수정자를 남긴다 */}
+              {team && item.memoUpdatedBy && item.memoUpdatedBy !== team.currentUserId && (
+                <Text className="text-caption-sm mt-2" style={{ color: '#929898' /* gray-500 */ }}>
+                  마지막 수정: {memberOf(item.memoUpdatedBy)?.displayName ?? '탈퇴한 멤버'}
+                </Text>
+              )}
             </View>
           )}
         />
@@ -278,7 +320,13 @@ export function BingoCellModal({
                 value={tempDate}
                 mode="date"
                 display="spinner"
-                maximumDate={new Date()}
+                // 팀 빙고는 진행 기간 밖의 날짜를 DB가 거부하므로 선택 자체를 막는다
+                minimumDate={team ? new Date(`${team.startDate}T00:00:00`) : undefined}
+                maximumDate={
+                  team && new Date(`${team.endDate}T23:59:59`) < new Date()
+                    ? new Date(`${team.endDate}T23:59:59`)
+                    : new Date()
+                }
                 onChange={(_, date) => {
                   if (date) setTempDate(date);
                 }}

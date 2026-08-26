@@ -1,17 +1,5 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
-
-async function sendExpoPush(
-  token: string,
-  title: string,
-  body: string,
-  data?: Record<string, string>,
-): Promise<void> {
-  await fetch('https://exp.host/--/api/v2/push/send', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-    body: JSON.stringify({ to: token, title, body, data, sound: 'default' }),
-  });
-}
+import { sendExpoPush } from '../_shared/expo-push.ts';
 
 Deno.serve(async (req) => {
   // Supabase Cron은 Authorization: Bearer {service_role_key} 로 호출
@@ -52,7 +40,8 @@ Deno.serve(async (req) => {
         .eq('user_id', board.user_id)
         .single();
 
-      if (!settings?.bingo_deadline) continue;
+      // 설정 행이 없으면 허용 (notify-comment / notify-like 와 동일한 정책)
+      if (settings && !settings.bingo_deadline) continue;
 
       // 푸시 토큰 조회
       const { data: tokenRow } = await supabase
@@ -63,14 +52,18 @@ Deno.serve(async (req) => {
 
       if (!tokenRow?.token) continue;
 
-      await sendExpoPush(
+      const ok = await sendExpoPush(
         tokenRow.token,
         '⏰ 빙고 기간 임박',
         `'${(board.title as string).slice(0, 20)}' 빙고의 기간이 ${daysLeft}일 남았어요!`,
-        { boardId: board.id as string },
+        {
+          type: 'bingo_reminder',
+          targetId: board.id as string,
+          boardId: board.id as string,
+        },
       );
 
-      sent++;
+      if (ok) sent++;
     }
   }
 

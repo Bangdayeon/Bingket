@@ -5,7 +5,7 @@ interface WinnerCrownProps {
   visible: boolean;
 }
 
-/** 승자 표시용 왕관. 부모에 relative(position) 컨텍스트가 있어야 한다. */
+/** 1등 표시용 왕관. 부모에 relative(position) 컨텍스트가 있어야 한다. */
 export function WinnerCrown({ visible }: WinnerCrownProps) {
   if (!visible) return null;
 

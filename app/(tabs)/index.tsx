@@ -1,6 +1,6 @@
 import { HeaderTabBar } from '@/components/HeaderTabbar';
 import { BingoAll } from '@/features/bingo/BingoAll';
-import { BingoBattle } from '@/features/bingo/BingoBattle';
+import { BingoTeam } from '@/features/bingo/BingoTeam';
 import { useCallback, useState } from 'react';
 import { View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -23,19 +23,19 @@ export default function HomeScreen() {
     setTabIndex(index);
   };
 
-  const addBattle = () => {
-    router.push('/bingo/battle');
+  const addTeamBingo = () => {
+    router.push('/bingo/team-mode');
   };
 
   return (
     <SafeAreaView className="relative flex-1 bg-white" edges={['top']}>
       <HeaderTabBar
-        menus={['전체', '대결']}
+        menus={['전체', '함께']}
         onTabChange={handleTabChange}
         selectedIndex={tabIndex}
       />
 
-      {/* 대결 탭 전용 버튼 */}
+      {/* 함께 탭 전용 버튼 */}
       {tabIndex === 1 && (
         <View
           style={{
@@ -48,13 +48,13 @@ export default function HomeScreen() {
           <IconButton
             variant="ghost"
             icon={<AddIcon width={24} height={24} />}
-            onClick={addBattle}
+            onClick={addTeamBingo}
           />
         </View>
       )}
 
       {tabIndex === 0 && <BingoAll />}
-      {tabIndex === 1 && <BingoBattle />}
+      {tabIndex === 1 && <BingoTeam />}
     </SafeAreaView>
   );
 }

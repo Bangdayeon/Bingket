@@ -1,5 +1,54 @@
 import { supabase } from '@/lib/supabase';
-import type { IncomingRequest, UserSearchResult } from '@/types/friend';
+import type { Friend, IncomingRequest, UserSearchResult } from '@/types/friend';
+
+// ─── Friends ──────────────────────────────────────────────────
+
+export const fetchFriends = async (): Promise<Friend[]> => {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return [];
+
+  const { data, error } = await supabase
+    .from('friends')
+    .select('id, friend_id, users!friends_friend_id_fkey(username, display_name, avatar_url)')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false });
+
+  if (error || !data) return [];
+
+  return data.map((row) => {
+    const u = row.users as unknown as {
+      username: string;
+      display_name: string;
+      avatar_url: string | null;
+    } | null;
+    return {
+      rowId: row.id as string,
+      friendId: row.friend_id as string,
+      username: u?.username ?? '',
+      displayName: u?.display_name ?? '',
+      avatarUrl: u?.avatar_url ?? null,
+    };
+  });
+};
+
+export const deleteFriend = async (friendUserId: string): Promise<void> => {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error('로그인이 필요합니다.');
+
+  // 양방향 행을 함께 지운다
+  const { error } = await supabase
+    .from('friends')
+    .delete()
+    .or(
+      `and(user_id.eq.${user.id},friend_id.eq.${friendUserId}),and(user_id.eq.${friendUserId},friend_id.eq.${user.id})`,
+    );
+
+  if (error) throw error;
+};
 
 // ─── User Search ─────────────────────────────────────────────
 

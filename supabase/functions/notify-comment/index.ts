@@ -1,4 +1,5 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
+import { sendExpoPush } from '../_shared/expo-push.ts';
 
 interface CommentRecord {
   id: string;
@@ -14,19 +15,6 @@ interface WebhookPayload {
   type: 'INSERT';
   table: string;
   record: CommentRecord;
-}
-
-async function sendExpoPush(
-  token: string,
-  title: string,
-  body: string,
-  data?: Record<string, string>,
-): Promise<void> {
-  await fetch('https://exp.host/--/api/v2/push/send', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-    body: JSON.stringify({ to: token, title, body, data, sound: 'default' }),
-  });
 }
 
 Deno.serve(async (req) => {
@@ -93,7 +81,13 @@ Deno.serve(async (req) => {
   const body = `${authorName}: ${comment.content.slice(0, 60)}`;
 
   // 알림 DB 삽입은 DB 트리거(trg_notify_comment)가 처리 — 여기서는 푸시만 전송
-  await sendExpoPush(tokenRow.token, title, body, { postId: comment.post_id });
+  const sent = await sendExpoPush(tokenRow.token, title, body, {
+    type: isReply ? 'reply' : 'comment',
+    targetId: comment.post_id,
+    postId: comment.post_id,
+  });
 
-  return new Response('ok');
+  return new Response(JSON.stringify({ ok: true, sent }), {
+    headers: { 'Content-Type': 'application/json' },
+  });
 });

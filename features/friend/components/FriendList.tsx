@@ -1,20 +1,14 @@
 import { Pressable, Text, View } from 'react-native';
 import { ProfileAvatar } from '@/components/ProfileAvatar';
-import { type Friend } from '@/features/battle/lib/battle';
+import { type Friend } from '@/types/friend';
 
 interface Props {
   friends: Friend[];
   handleDeleteFriend: (friend: Friend) => void;
-  handleBattleRequest: (friend: Friend) => void;
   handleProfilePress: (friend: Friend) => void;
 }
 
-export function FriendList({
-  friends,
-  handleDeleteFriend,
-  handleBattleRequest,
-  handleProfilePress,
-}: Props) {
+export function FriendList({ friends, handleDeleteFriend, handleProfilePress }: Props) {
   return (
     <View>
       <Text className="text-title-sm   px-5 pt-4 pb-2">친구 {friends.length}</Text>
@@ -38,20 +32,13 @@ export function FriendList({
                 <Text className="text-caption-sm text-gray-500  ">@{friend.username}</Text>
               </View>
             </Pressable>
+            {/* 팀 빙고 초대는 '새 빙고 만들기' 흐름에서만 시작한다 */}
             <View className="flex-row gap-2">
               <Pressable
                 onPress={() => handleDeleteFriend(friend)}
                 className="px-4 py-2 rounded-full border border-gray-200   bg-white  "
               >
                 <Text className="text-caption-sm text-gray-700  ">삭제</Text>
-              </Pressable>
-              <Pressable
-                onPress={() => handleBattleRequest(friend)}
-                className="px-4 py-2 rounded-full bg-green-400"
-              >
-                <Text className="text-caption-sm" style={{ color: '#181C1C' }}>
-                  대결 요청
-                </Text>
               </Pressable>
             </View>
           </View>

@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/react-native';
 import { useEffect, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -14,6 +15,7 @@ import {
   type NotificationSettings,
 } from '@/features/mypage/lib/notification-settings';
 import Loading from '@/components/Loading';
+import { Toast } from '@/components/Toast';
 
 interface ToggleRowProps {
   label: string;
@@ -43,6 +45,7 @@ export default function AlertSettingScreen() {
   const insets = useSafeAreaInsets();
   const [settings, setSettings] = useState<NotificationSettings>(DEFAULT_NOTIFICATION_SETTINGS);
   const [loading, setLoading] = useState(true);
+  const [saveFailed, setSaveFailed] = useState(false);
 
   useEffect(() => {
     // 1. AsyncStorage 캐시 → 즉시 표시
@@ -57,9 +60,15 @@ export default function AlertSettingScreen() {
   }, []);
 
   const update = (patch: Partial<NotificationSettings>) => {
+    const prev = settings;
     const next = { ...settings, ...patch };
     setSettings(next);
-    saveNotificationSettings(next);
+    // 저장 실패 시 토글이 켜진 것처럼 보이는데 실제로는 반영되지 않는 상황을 막는다
+    saveNotificationSettings(next).catch((error: unknown) => {
+      Sentry.captureException(error);
+      setSettings(prev);
+      setSaveFailed(true);
+    });
   };
 
   const allAlert = Object.values(settings).every(Boolean);
@@ -72,6 +81,7 @@ export default function AlertSettingScreen() {
       communityComment: v,
       communityLike: v,
       eventPush: v,
+      teamActivity: v,
     });
   };
 
@@ -103,6 +113,19 @@ export default function AlertSettingScreen() {
           description="빙고 기간이 10일, 5일 남았을 때"
           value={settings.bingoDeadline}
           onValueChange={(v) => update({ bingoDeadline: v })}
+        />
+
+        <View className="h-px bg-gray-200   mx-5 my-2" />
+
+        {/* 팀 빙고 알림 */}
+        <View className="px-5 pt-3 pb-1">
+          <Text className="text-title-md font-pretendard-medium">팀 빙고 알림</Text>
+        </View>
+        <ToggleRow
+          label="팀원 활동 알림"
+          description="팀원이 칸을 채우거나 팀에 합류했을 때"
+          value={settings.teamActivity}
+          onValueChange={(v) => update({ teamActivity: v })}
         />
 
         <View className="h-px bg-gray-200   mx-5 my-2" />
@@ -143,6 +166,12 @@ export default function AlertSettingScreen() {
           onValueChange={(v) => update({ eventPush: v })}
         />
       </ScrollView>
+
+      <Toast
+        message="알림 설정 저장에 실패했어요. 잠시 후 다시 시도해주세요."
+        visible={saveFailed}
+        onDismiss={() => setSaveFailed(false)}
+      />
     </View>
   );
 }
