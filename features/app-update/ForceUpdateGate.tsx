@@ -37,11 +37,18 @@ export function ForceUpdateGate() {
     return () => subscription.remove();
   }, [check]);
 
+  /**
+   * canOpenURL 로 먼저 물어보지 않는다.
+   * iOS 는 LSApplicationQueriesSchemes 에 선언된 스킴에만 true 를 주는데
+   * itms-apps 가 없고, Android 도 <queries> 에 market 스킴이 없어서
+   * 양쪽 다 무조건 false 가 나온다. 그러면 늘 웹으로 돌아가 브라우저를 한 번 거친다.
+   * openURL 은 그 선언이 필요 없고 처리할 앱이 없으면 그냥 throw 하므로,
+   * 스토어 앱을 먼저 시도하고 실패할 때만 웹으로 간다.
+   */
   const openStore = async () => {
     const { primary, fallback } = storeUrls();
     try {
-      const supported = await Linking.canOpenURL(primary);
-      await Linking.openURL(supported ? primary : fallback);
+      await Linking.openURL(primary);
     } catch (e) {
       Sentry.captureException(e);
       await Linking.openURL(fallback).catch(Sentry.captureException);
