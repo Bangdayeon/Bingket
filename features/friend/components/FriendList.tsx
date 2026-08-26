@@ -6,9 +6,15 @@ interface Props {
   friends: Friend[];
   handleDeleteFriend: (friend: Friend) => void;
   handleBattleRequest: (friend: Friend) => void;
+  handleProfilePress: (friend: Friend) => void;
 }
 
-export function FriendList({ friends, handleDeleteFriend, handleBattleRequest }: Props) {
+export function FriendList({
+  friends,
+  handleDeleteFriend,
+  handleBattleRequest,
+  handleProfilePress,
+}: Props) {
   return (
     <View>
       <Text className="text-title-sm   px-5 pt-4 pb-2">친구 {friends.length}</Text>
@@ -22,11 +28,16 @@ export function FriendList({ friends, handleDeleteFriend, handleBattleRequest }:
             key={friend.friendId}
             className="flex-row items-center px-5 py-3 border-b border-gray-100  "
           >
-            <ProfileAvatar avatarUrl={friend.avatarUrl} size={40} />
-            <View className="flex-1 ml-3">
-              <Text className="text-title-sm">{friend.displayName}</Text>
-              <Text className="text-caption-sm text-gray-500  ">@{friend.username}</Text>
-            </View>
+            <Pressable
+              onPress={() => handleProfilePress(friend)}
+              className="flex-1 flex-row items-center"
+            >
+              <ProfileAvatar avatarUrl={friend.avatarUrl} size={40} />
+              <View className="flex-1 ml-3">
+                <Text className="text-title-sm">{friend.displayName}</Text>
+                <Text className="text-caption-sm text-gray-500  ">@{friend.username}</Text>
+              </View>
+            </Pressable>
             <View className="flex-row gap-2">
               <Pressable
                 onPress={() => handleDeleteFriend(friend)}

@@ -5,6 +5,8 @@ import { BingoEditHeader } from '@/features/bingo/bingo-edit/Header';
 import { BingoTitle } from '@/features/bingo/bingo-edit/BingoTitle';
 import { AddEachBingo } from '@/features/bingo/bingo-edit/AddEachBingo';
 import { fetchBingoForEdit, updateBingo, deleteBingo } from '@/features/bingo/lib/bingo';
+import { VisibilitySelector } from '@/features/bingo/bingo-edit/VisibilitySelector';
+import type { BoardVisibility } from '@/features/profile/lib/profile';
 import { fetchBattleByBoardId, quitBattle } from '@/features/battle/lib/battle';
 import { fetchThemes } from '@/features/bingo/lib/theme';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -29,6 +31,7 @@ export default function BingoModifyScreen() {
   const [cellOriginalEditCounts, setCellOriginalEditCounts] = useState<number[]>([]);
   const [cellEdits, setCellEdits] = useState<number[]>([]);
   const [selectedTheme, setSelectedTheme] = useState<string>('');
+  const [visibility, setVisibility] = useState<BoardVisibility>('friends');
   const [themes, setThemes] = useState<{ id: string; displayName: string }[]>([]);
 
   useEffect(() => {
@@ -55,6 +58,7 @@ export default function BingoModifyScreen() {
         setCellOriginalEditCounts(data.cellEditCounts);
         setCellEdits(Array(data.cells.length).fill(0));
         setSelectedTheme(data.theme);
+        setVisibility(data.visibility);
         setLoading(false);
       } catch (e) {
         Sentry.captureException(e);
@@ -88,7 +92,7 @@ export default function BingoModifyScreen() {
           newEditCount: cellOriginalEditCounts[i] + (cellEdits[i] ?? 0),
         }))
         .filter((_, i) => (cellEdits[i] ?? 0) > 0);
-      await updateBingo(bingoId, title, selectedTheme, changedCells);
+      await updateBingo(bingoId, title, selectedTheme, changedCells, visibility);
       router.replace('/(tabs)');
     } catch (e) {
       Sentry.captureException(e);
@@ -206,6 +210,8 @@ export default function BingoModifyScreen() {
             </Text>
           </Pressable>
         </View>
+
+        <VisibilitySelector value={visibility} onChange={setVisibility} />
       </ScrollView>
 
       <Modal

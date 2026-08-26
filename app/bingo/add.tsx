@@ -8,6 +8,8 @@ import { WriteBingo } from '@/features/bingo/bingo-edit/WriteBingo';
 import { DatePicker } from '@/features/bingo/bingo-edit/DatePicker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createBingo } from '@/features/bingo/lib/bingo';
+import { VisibilitySelector } from '@/features/bingo/bingo-edit/VisibilitySelector';
+import type { BoardVisibility } from '@/features/profile/lib/profile';
 import { setSelectedBoardId, setSelectedBoardTitle } from '@/features/battle/lib/battle-selection';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
@@ -30,6 +32,7 @@ export default function BingoAddScreen() {
   const [writeBingoKey, setWriteBingoKey] = useState(0);
   const [selectedEditCount, setSelectedEditCount] = useState<string>('0');
   const [selectedTheme, setSelectedTheme] = useState<string>('default');
+  const [visibility, setVisibility] = useState<BoardVisibility>('friends');
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [pickerTarget, setPickerTarget] = useState<'start' | 'end' | null>(null);
@@ -56,6 +59,7 @@ export default function BingoAddScreen() {
       if (d.selectedGrid) setSelectedGrid(d.selectedGrid);
       if (d.selectedEditCount) setSelectedEditCount(d.selectedEditCount);
       if (d.selectedTheme) setSelectedTheme(d.selectedTheme);
+      if (d.visibility) setVisibility(d.visibility);
       if (d.startDate) setStartDate(new Date(d.startDate));
       if (d.endDate) setEndDate(new Date(d.endDate));
       if (d.cells) {
@@ -135,6 +139,7 @@ export default function BingoAddScreen() {
         grid: selectedGrid,
         editCount: selectedEditCount,
         theme: selectedTheme,
+        visibility,
         cells: cellsRef.current,
       });
       await AsyncStorage.removeItem('@bingket/draft-bingo');
@@ -159,12 +164,13 @@ export default function BingoAddScreen() {
       selectedGrid,
       selectedEditCount,
       selectedTheme,
+      visibility,
       startDate: startDate?.toISOString() ?? null,
       endDate: endDate?.toISOString() ?? null,
       cells: cellsRef.current,
     };
     await AsyncStorage.setItem('@bingket/draft-bingo', JSON.stringify(data));
-    showAlert('임시 저장되었습니다.\n홈 화면의 기록 탭에서 확인할 수 있어요.', () =>
+    showAlert('임시 저장되었습니다.\n홈 화면에서 이어서 만들 수 있어요.', () =>
       router.replace('/(tabs)'),
     );
   };
@@ -225,6 +231,14 @@ export default function BingoAddScreen() {
           onCellsChange={(v) => {
             markDirty();
             cellsRef.current = v;
+          }}
+        />
+
+        <VisibilitySelector
+          value={visibility}
+          onChange={(v) => {
+            markDirty();
+            setVisibility(v);
           }}
         />
       </ScrollView>

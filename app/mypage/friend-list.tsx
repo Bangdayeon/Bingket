@@ -295,6 +295,9 @@ export default function FriendListScreen() {
                 friends={filteredFriends}
                 handleDeleteFriend={handleDeleteFriend}
                 handleBattleRequest={handleBattleRequest}
+                handleProfilePress={(friend) =>
+                  router.push({ pathname: '/profile/[id]', params: { id: friend.friendId } })
+                }
               />
             </ScrollView>
           )}

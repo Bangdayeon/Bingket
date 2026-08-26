@@ -93,6 +93,9 @@ function RootLayout() {
         <Stack.Screen name="mypage/app-theme" options={{ headerShown: false }} />
         <Stack.Screen name="mypage/my-posts" options={{ headerShown: false }} />
         <Stack.Screen name="mypage/friend-list" options={{ headerShown: false }} />
+        <Stack.Screen name="mypage/settings" options={{ headerShown: false }} />
+        <Stack.Screen name="profile/[id]" options={{ headerShown: false }} />
+        <Stack.Screen name="bingo/friend-view" options={{ headerShown: false }} />
         <Stack.Screen name="bingo/battle" options={{ headerShown: false }} />
         <Stack.Screen name="bingo/battle-check" options={{ headerShown: false }} />
         <Stack.Screen name="bingo/battle-select-board" options={{ headerShown: false }} />

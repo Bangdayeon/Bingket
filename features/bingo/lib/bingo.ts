@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import type { BoardVisibility } from '@/features/profile/lib/profile';
 import type { BingoData, BingoTheme } from '@/types/bingo';
 import type { BingoCellDetail } from '@/types/bingo-cell';
 
@@ -19,6 +20,7 @@ export interface CreateBingoRequest {
   editCount: string;
   theme: string;
   cells: string[];
+  visibility: BoardVisibility;
 }
 
 export const createBingo = async (data: CreateBingoRequest): Promise<string> => {
@@ -39,6 +41,7 @@ export const createBingo = async (data: CreateBingoRequest): Promise<string> => 
       start_date: data.startDate ? data.startDate.split('T')[0] : null,
       target_date: data.endDate ? data.endDate.split('T')[0] : null,
       status: 'progress',
+      visibility: data.visibility,
     })
     .select('id')
     .single();
@@ -136,13 +139,14 @@ export interface FetchedBingoForEdit {
   cells: string[];
   cellIds: string[];
   cellEditCounts: number[];
+  visibility: BoardVisibility;
 }
 
 export const fetchBingoForEdit = async (boardId: string): Promise<FetchedBingoForEdit | null> => {
   const { data: board, error } = await supabase
     .from('bingo_boards')
     .select(
-      `title, grid, theme, max_edits,
+      `title, grid, theme, max_edits, visibility,
        bingo_cells (id, position, content, edit_count)`,
     )
     .eq('id', boardId)
@@ -157,6 +161,7 @@ export const fetchBingoForEdit = async (boardId: string): Promise<FetchedBingoFo
     grid: board.grid,
     theme: board.theme,
     maxEdits: board.max_edits,
+    visibility: (board.visibility ?? 'friends') as BoardVisibility,
     cells: cells.map((c) => c.content),
     cellIds: cells.map((c) => c.id),
     cellEditCounts: cells.map((c) => c.edit_count),
@@ -169,10 +174,11 @@ export const updateBingo = async (
   title: string,
   theme: string,
   changedCells: Array<{ id: string; content: string; newEditCount: number }>,
+  visibility: BoardVisibility,
 ): Promise<void> => {
   const { error: boardError } = await supabase
     .from('bingo_boards')
-    .update({ title, theme })
+    .update({ title, theme, visibility })
     .eq('id', boardId);
   if (boardError) throw new Error(boardError.message);
 

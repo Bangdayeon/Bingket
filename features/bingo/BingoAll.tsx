@@ -1,4 +1,5 @@
 import * as Sentry from '@sentry/react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { InteractionManager, ScrollView, Pressable, View } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { startTransition, useState, useCallback, useRef } from 'react';
@@ -14,12 +15,51 @@ import {
   updateCell,
   calcBingoCount,
 } from '@/features/bingo/lib/bingo';
-import { applyBingoOrder, loadBingoOrder } from '@/features/bingo/lib/bingo-order';
 import { fetchBattleByBoardId, fetchMyBattles } from '@/features/battle/lib/battle';
 import { getCache, setCache } from '@/lib/cache';
 import { MAX_BINGOS } from '@/constants/bingo';
 import { CACHE_KEY_ALL } from '@/constants/cache_key';
 import Loading from '@/components/Loading';
+
+const DRAFT_ID = 'draft_0';
+
+/** 로컬에 임시 저장된 제작 중 빙고를 카드 하나로 변환한다. 없으면 null */
+async function loadDraftBingo(): Promise<BingoData | null> {
+  try {
+    const raw = await AsyncStorage.getItem('@bingket/draft-bingo');
+    if (!raw) return null;
+    const d = JSON.parse(raw) as {
+      title?: string;
+      selectedGrid?: string;
+      selectedTheme?: string;
+      startDate?: string | null;
+      endDate?: string | null;
+      cells?: string[];
+    };
+    if (!d.title) return null;
+
+    const grid = d.selectedGrid ?? '3x3';
+    const [cols, rows] = grid.split('x').map(Number);
+    return {
+      id: DRAFT_ID,
+      title: d.title,
+      grid,
+      cells: (d.cells ?? []).slice(0, cols * rows),
+      maxEdits: 0,
+      achievedCount: 0,
+      bingoCount: 0,
+      dday: 0,
+      startDate: d.startDate ? d.startDate.split('T')[0] : null,
+      targetDate: d.endDate ? d.endDate.split('T')[0] : null,
+      state: 'draft',
+      theme: d.selectedTheme ?? 'default',
+      retrospective: null,
+    };
+  } catch (e) {
+    Sentry.captureException(e);
+    return null;
+  }
+}
 
 export function BingoAll() {
   const router = useRouter();
@@ -35,7 +75,7 @@ export function BingoAll() {
   const isNavigatingRef = useRef(false);
 
   const loadData = useCallback(() => {
-    Promise.all([fetchMyBingos(), loadBingoOrder()]).then(async ([fetched, savedOrder]) => {
+    Promise.all([fetchMyBingos(), loadDraftBingo()]).then(async ([fetched, draft]) => {
       const details: Record<string, BingoCellDetail[]> = {};
       const serverBingos = fetched.map(({ bingo, cellDetails: cd }) => {
         details[bingo.id] = cd;
@@ -52,10 +92,10 @@ export function BingoAll() {
         await Promise.all(expiredIds.map((id) => markBingoDone(id).catch(Sentry.captureException)));
       }
 
-      // 만료된 빙고는 BingoAll에서 제외 (BingoHistory 완료 탭으로 이동)
+      // 만료된 빙고는 BingoAll에서 제외 (마이페이지 피드에서 완료로 표시된다)
       const progressBingos = serverBingos.filter((b) => !expiredIds.includes(b.id));
-      const ordered = applyBingoOrder(progressBingos, savedOrder);
-      const sliced = ordered.slice(0, MAX_BINGOS);
+      // 제작 중인 빙고는 로컬에만 있고 서버에 없다. 맨 앞에 붙여 이어서 만들 수 있게 한다
+      const sliced = [...(draft ? [draft] : []), ...progressBingos].slice(0, MAX_BINGOS);
       setBingos(sliced);
       setCellDetails(details);
       setLoading(false);
@@ -106,6 +146,11 @@ export function BingoAll() {
   );
 
   const handleCellPress = (bingo: BingoData, cellIndex: number) => {
+    // 제작 중 빙고는 서버에 셀이 없다. 칸을 누르면 이어서 만들기로 보낸다
+    if (bingo.id === DRAFT_ID) {
+      router.push({ pathname: '/bingo/add', params: { loadDraft: 'true' } });
+      return;
+    }
     setModalTarget({ bingoId: bingo.id, cellIndex });
   };
 
@@ -171,13 +216,14 @@ export function BingoAll() {
           completedCells={cellDetails[bingo.id]?.map((c) => c.completed)}
           onCellPress={(cellIndex) => handleCellPress(bingo, cellIndex)}
           onEditPress={() =>
-            bingo.id === 'draft_0'
+            bingo.id === DRAFT_ID
               ? router.push({ pathname: '/bingo/add', params: { loadDraft: 'true' } })
               : router.push({ pathname: '/bingo/modify', params: { bingoId: bingo.id } })
           }
           hasBattle={!!battleIds[bingo.id]}
           friendAvatarUrl={friendAvatars[bingo.id]}
           onBattlePress={() => {
+            if (bingo.id === DRAFT_ID) return;
             const battleId = battleIds[bingo.id];
             if (battleId) {
               router.push({ pathname: '/bingo/battle-status', params: { battleId } });

@@ -1,4 +1,7 @@
+import * as Sentry from '@sentry/react-native';
 import IconButton from '@/components/IconButton';
+import { Switch } from 'react-native';
+import { fetchMyProfileSummary, updateAccountPrivacy } from '@/features/profile/lib/profile';
 import BackArrowIcon from '@/assets/icons/ic_arrow_back.svg';
 import { useRouter } from 'expo-router';
 import { ImageSourcePropType, Image, Pressable, View } from 'react-native';
@@ -59,6 +62,37 @@ function RowItem({ label, onPress }: RowItemProps) {
 }
 
 export default function AccountScreen() {
+  const [isPrivate, setIsPrivate] = useState(true);
+  const [privacyLoading, setPrivacyLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchMyProfileSummary()
+      .then((p) => {
+        if (!cancelled && p) setIsPrivate(p.isPrivate);
+      })
+      .catch(Sentry.captureException)
+      .finally(() => {
+        if (!cancelled) setPrivacyLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const handlePrivacyChange = async (next: boolean) => {
+    const prev = isPrivate;
+    setIsPrivate(next);
+    setPrivacyLoading(true);
+    try {
+      await updateAccountPrivacy(next);
+    } catch (e) {
+      Sentry.captureException(e);
+      setIsPrivate(prev);
+    } finally {
+      setPrivacyLoading(false);
+    }
+  };
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [accounts, setAccounts] = useState<LinkedAccount[]>([]);
@@ -145,6 +179,26 @@ export default function AccountScreen() {
             );
           })
         )}
+      </View>
+
+      <View className="h-px bg-gray-200   mx-5 my-2" />
+
+      {/* 계정 공개 설정 */}
+      <View className="px-5 pt-4 pb-2">
+        <View className="flex-row items-center justify-between">
+          <Text className="text-title-sm font-pretendard-medium">비공개 계정</Text>
+          <Switch
+            value={isPrivate}
+            disabled={privacyLoading}
+            onValueChange={handlePrivacyChange}
+            trackColor={{ true: '#6ADE50' /* green500 */, false: '#D2D6D6' /* gray-300 */ }}
+          />
+        </View>
+        <Text className="text-body-sm text-gray-500   mt-2">
+          {
+            '켜두면 친구만 내 빙고를 볼 수 있어요.\n검색과 프로필(사진·이름·한 줄 다짐)은 항상 공개돼요.'
+          }
+        </Text>
       </View>
 
       <View className="h-px bg-gray-200   mx-5 my-2" />

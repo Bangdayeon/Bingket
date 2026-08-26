@@ -8,7 +8,7 @@ export default function TabLayout() {
       <Tabs.Screen name="index" options={{ title: '홈' }} />
       <Tabs.Screen name="community" options={{ title: '라운지' }} />
       <Tabs.Screen name="notifications" options={{ title: '알림' }} />
-      <Tabs.Screen name="mypage" options={{ title: '내 정보' }} />
+      <Tabs.Screen name="mypage" options={{ title: '마이페이지' }} />
     </Tabs>
   );
 }

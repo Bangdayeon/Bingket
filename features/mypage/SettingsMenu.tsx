@@ -2,14 +2,12 @@ import * as Sentry from '@sentry/react-native';
 import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 import Constants from 'expo-constants';
-import { Pressable, ScrollView, View, Platform, Linking } from 'react-native';
-import { ProfileAvatar } from '@/components/ProfileAvatar';
+import { ScrollView, View, Platform, Linking } from 'react-native';
 import { Text } from '@/components/Text';
 import { MenuItem } from './MenuItem';
 import { Modal } from '@/components/Modal';
 import { supabase } from '@/lib/supabase';
 import { submitReport } from '@/features/mypage/lib/mypage';
-import { useMyProfile } from '@/features/mypage/use-my-profile';
 import * as WebBrowser from 'expo-web-browser';
 import * as Clipboard from 'expo-clipboard';
 import { Toast } from '@/components/Toast';
@@ -23,9 +21,8 @@ import Terms from '@/assets/pngIcons/terms.png';
 import Privacy from '@/assets/pngIcons/privacy.png';
 import Update from '@/assets/pngIcons/update.png';
 import { TextInput } from '@/components/TextInput';
-import Loading from '@/components/Loading';
 
-export function SettingPage() {
+export function SettingsMenu() {
   const router = useRouter();
   const isNavigatingRef = useRef(false);
   const navigate = (path: Parameters<typeof router.push>[0]) => {
@@ -36,7 +33,6 @@ export function SettingPage() {
       isNavigatingRef.current = false;
     }, 1000);
   };
-  const profile = useMyProfile();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [showAskModal, setShowAskModal] = useState(false);
   const [resultModal, setResultModal] = useState<{ title: string; body: string } | null>(null);
@@ -93,51 +89,7 @@ export function SettingPage() {
 
   return (
     <>
-      <ScrollView className="flex-1 mt-[52px] bg-white px-5   md:self-center md:w-full md:max-w-[600px]">
-        <View className="h-5" />
-        {/* 프로필 영역 */}
-        <View className="flex-row items-start mb-5  gap-4 h-[100px]">
-          <ProfileAvatar avatarUrl={profile?.avatarUrl} />
-          <View className="flex-1 pt-1 flex flex-col justify-between h-full">
-            <View>
-              {profile ? (
-                <>
-                  <Text className="text-title-sm mb-1">{profile.displayName}</Text>
-                  <Text className="text-body-sm">@{profile.username}</Text>
-                </>
-              ) : (
-                <Loading color="#6ADE50" />
-              )}
-            </View>
-            <View className="flex-row gap-8">
-              <View className="flex-row gap-3 mb-2">
-                <Pressable onPress={() => navigate('/mypage/my-posts')} className="flex-row gap-1">
-                  <Text className="text-body-sm">게시글</Text>
-                  <Text className="text-body-sm font-pretendard-semibold">
-                    {profile?.feedCount ?? 0}
-                  </Text>
-                </Pressable>
-              </View>
-              <View className="flex-row gap-3 mb-2">
-                <Pressable
-                  onPress={() => navigate('/mypage/friend-list')}
-                  className="flex-row gap-1"
-                >
-                  <Text className="text-body-sm">친구</Text>
-                  <Text className="text-body-sm font-pretendard-semibold">
-                    {' '}
-                    {profile?.friendCount ?? 0}
-                  </Text>
-                </Pressable>
-              </View>
-            </View>
-          </View>
-        </View>
-        <View className="mb-3">
-          <Text className="text-label-sm">한 줄 다짐</Text>
-          <Text className="text-caption-md">{profile?.bio || '아직 한 줄 다짐이 없어요.'}</Text>
-        </View>
-
+      <ScrollView className="flex-1 bg-white px-5 md:self-center md:w-full md:max-w-[600px]">
         <View className="h-px bg-gray-200  " />
 
         <MenuItem
