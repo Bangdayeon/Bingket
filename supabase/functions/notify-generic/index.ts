@@ -4,14 +4,18 @@ import { sendExpoPush } from '../_shared/expo-push.ts';
 /**
  * public.notifications INSERT 웹훅을 받아 푸시를 전송한다.
  *
- * 친구 요청 / 대결 요청·수락 / 뱃지는 지금까지 notifications 행만 INSERT 하고
- * 푸시를 전혀 보내지 않았다. 이 함수가 그 구멍을 메운다.
+ * 친구 요청 / 팀 빙고 / 뱃지 / 빙고 마감은 notifications 행만 INSERT 되고 푸시가
+ * 전혀 나가지 않던 구멍을 이 함수가 메운다.
  *
- * 댓글·좋아요는 notify-comment / notify-like 웹훅이 이미 처리하므로 여기서 제외한다.
+ * 댓글·좋아요는 notify-comment / notify-like 웹훅이 보내므로 여기서 제외한다.
+ * popular 는 제외하지 않는다 -- notify-like 가 posts.like_count 로, DB 트리거가
+ * COUNT(*) 로 각각 판정하던 이중 경로를 없애고, 트리거가 넣은 행 하나가 곧 푸시 하나가
+ * 되도록 이쪽으로 일원화했다.
+ *
  * (두 웹훅을 걷어내고 이 함수 하나로 통합하고 싶다면 SKIPPED_TYPES 를 비우고
  *  notify-comment / notify-like 웹훅을 대시보드에서 삭제할 것. 둘 다 살아 있으면 중복 발송된다.)
  */
-const SKIPPED_TYPES = new Set(['comment', 'reply', 'like', 'popular']);
+const SKIPPED_TYPES = new Set(['comment', 'reply', 'like']);
 
 interface NotificationRecord {
   id: string;
@@ -97,9 +101,22 @@ Deno.serve(async (req) => {
   if (!tokenRow?.token) return new Response('ok');
 
   const title = TITLES[notification.type] ?? '빙킷';
+
+  // 구버전 앱은 type/targetId 를 모르고 postId/boardId 로만 목적지를 판별한다.
+  // (lib/push-notifications.ts 의 하위 호환 분기) 스토어 배포가 충분히 퍼질 때까지 함께 싣는다.
+  const targetId = notification.target_id ?? '';
+  const legacy: Record<string, string> = {};
+  if (targetId) {
+    if (notification.target_type === 'post') legacy.postId = targetId;
+    if (notification.type === 'bingo_reminder' || notification.type === 'bingo_dday') {
+      legacy.boardId = targetId;
+    }
+  }
+
   const sent = await sendExpoPush(tokenRow.token, title, notification.message, {
     type: notification.type,
-    targetId: notification.target_id ?? '',
+    targetId,
+    ...legacy,
   });
 
   return new Response(JSON.stringify({ ok: true, sent }), {

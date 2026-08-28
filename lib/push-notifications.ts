@@ -168,20 +168,41 @@ const handleNotificationTap = (raw: unknown): void => {
 };
 
 /**
+ * 이미 처리한 알림 응답 id.
+ * 리스너와 콜드스타트 경로가 같은 탭을 두 번 잡아 화면이 두 번 밀리는 것을 막는다.
+ */
+const handledResponseIds = new Set<string>();
+
+/**
+ * getLastNotificationResponseAsync 는 "가장 최근" 응답을 앱 실행 원인과 무관하게 돌려준다.
+ * 매 마운트마다 확인하면 푸시로 연 게 아닌 실행에서도 예전에 탭했던 알림으로 이동한다.
+ * 그래서 프로세스당 1회만 본다.
+ */
+let coldStartResponseChecked = false;
+
+const handleResponse = (response: Notifications.NotificationResponse): void => {
+  const id = response.notification.request.identifier;
+  if (handledResponseIds.has(id)) return;
+  handledResponseIds.add(id);
+  handleNotificationTap(response.notification.request.content.data);
+};
+
+/**
  * 푸시를 탭했을 때의 화면 이동을 등록한다.
  * 반환된 함수를 useEffect cleanup에서 호출할 것.
  */
 export function addNotificationTapListener(): () => void {
-  const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
-    handleNotificationTap(response.notification.request.content.data);
-  });
+  const subscription = Notifications.addNotificationResponseReceivedListener(handleResponse);
 
   // 앱이 완전히 종료된 상태에서 푸시로 실행된 경우 리스너가 잡지 못하므로 별도 확인
-  void Notifications.getLastNotificationResponseAsync()
-    .then((response) => {
-      if (response) handleNotificationTap(response.notification.request.content.data);
-    })
-    .catch((error: unknown) => reportPushFailure('getLastNotificationResponseAsync 실패', error));
+  if (!coldStartResponseChecked) {
+    coldStartResponseChecked = true;
+    void Notifications.getLastNotificationResponseAsync()
+      .then((response) => {
+        if (response) handleResponse(response);
+      })
+      .catch((error: unknown) => reportPushFailure('getLastNotificationResponseAsync 실패', error));
+  }
 
   return () => subscription.remove();
 }

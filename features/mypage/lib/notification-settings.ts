@@ -1,23 +1,21 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { CACHE_KEY_ALERT_SETTINGS } from '@/constants/cache_key';
 import { supabase } from '@/lib/supabase';
 
 export interface NotificationSettings {
   bingoDeadline: boolean;
-  bingoDaily: boolean;
   communityPopular: boolean;
   communityComment: boolean;
   communityLike: boolean;
+  /** 아직 이 값을 읽는 서버 코드가 없다. 이벤트 발송 기능이 생기면 연결할 것 */
   eventPush: boolean;
   /** 팀원이 칸을 채우거나 팀에 합류했을 때 */
   teamActivity: boolean;
 }
 
-const STORAGE_KEY = '@bingket/alert-settings';
-
 // DB(notification_settings) 컬럼 DEFAULT와 반드시 동일하게 유지할 것
 export const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = {
   bingoDeadline: true,
-  bingoDaily: true,
   communityPopular: true,
   communityComment: true,
   communityLike: true,
@@ -42,7 +40,6 @@ export const fetchNotificationSettings = async (): Promise<NotificationSettings>
 
   const settings: NotificationSettings = {
     bingoDeadline: data.bingo_deadline as boolean,
-    bingoDaily: data.bingo_daily as boolean,
     communityPopular: data.community_popular as boolean,
     communityComment: data.community_comment as boolean,
     communityLike: data.community_like as boolean,
@@ -51,14 +48,15 @@ export const fetchNotificationSettings = async (): Promise<NotificationSettings>
   };
 
   // 다음 진입 시 깜빡임 없이 표시되도록 캐시에도 반영한다
-  await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+  await AsyncStorage.setItem(CACHE_KEY_ALERT_SETTINGS, JSON.stringify(settings));
 
   return settings;
 };
 
 // 설정 저장: AsyncStorage(즉시) + Supabase(백엔드 동기화)
+// bingo_daily 컬럼은 읽는 곳도 UI 행도 없어 여기서 건드리지 않는다 (DB DEFAULT 유지)
 export const saveNotificationSettings = async (settings: NotificationSettings): Promise<void> => {
-  await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+  await AsyncStorage.setItem(CACHE_KEY_ALERT_SETTINGS, JSON.stringify(settings));
 
   const {
     data: { user },
@@ -69,7 +67,6 @@ export const saveNotificationSettings = async (settings: NotificationSettings): 
     {
       user_id: user.id,
       bingo_deadline: settings.bingoDeadline,
-      bingo_daily: settings.bingoDaily,
       community_popular: settings.communityPopular,
       community_comment: settings.communityComment,
       community_like: settings.communityLike,
@@ -85,14 +82,33 @@ export const saveNotificationSettings = async (settings: NotificationSettings): 
 
 // AsyncStorage 캐시에서 즉시 로드 (화면 깜빡임 없이 초기값 설정용)
 export const loadCachedNotificationSettings = async (): Promise<NotificationSettings | null> => {
-  const raw = await AsyncStorage.getItem(STORAGE_KEY);
+  const raw = await AsyncStorage.getItem(CACHE_KEY_ALERT_SETTINGS);
   if (!raw) return null;
   try {
+    const cached = JSON.parse(raw) as Partial<NotificationSettings>;
+    // 스프레드로 통째로 합치면 예전 버전이 저장해둔 키(bingoDaily 등)가 그대로 살아남아
+    // 화면의 "전체 알림" 계산을 다시 망가뜨린다. 아는 키만 골라 담는다.
+    const pick = (key: keyof NotificationSettings): boolean =>
+      typeof cached[key] === 'boolean' ? cached[key] : DEFAULT_NOTIFICATION_SETTINGS[key];
+
     return {
-      ...DEFAULT_NOTIFICATION_SETTINGS,
-      ...(JSON.parse(raw) as Partial<NotificationSettings>),
+      bingoDeadline: pick('bingoDeadline'),
+      communityPopular: pick('communityPopular'),
+      communityComment: pick('communityComment'),
+      communityLike: pick('communityLike'),
+      eventPush: pick('eventPush'),
+      teamActivity: pick('teamActivity'),
     };
   } catch {
     return null;
   }
+};
+
+/**
+ * 로그아웃·탈퇴 시 호출해야 한다.
+ * 지우지 않으면 같은 기기에 다른 계정이 로그인했을 때
+ * 이전 사용자의 알림 설정이 초기 화면에 그대로 뜬다.
+ */
+export const clearNotificationSettingsCache = async (): Promise<void> => {
+  await AsyncStorage.removeItem(CACHE_KEY_ALERT_SETTINGS);
 };

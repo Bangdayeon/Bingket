@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/react-native';
 import { supabase } from '@/lib/supabase';
 
 export const BADGE_META: Record<string, { name: string; message: string }> = {
@@ -101,11 +102,17 @@ export const checkAndAwardBadges = async (type: BadgeType, knownCount?: number):
   // 푸시는 notifications INSERT 웹훅 → notify-generic 엣지 함수가 서버에서 전송한다.
   // (예전에는 여기서 클라이언트가 직접 Expo API 를 호출했는데,
   //  앱이 켜져 있을 때만 발동하고 알림 설정도 무시하는 문제가 있었다)
-  await supabase.from('notifications').insert({
+  const { error } = await supabase.from('notifications').insert({
     user_id: user.id,
     type: 'badge',
     message: notificationMessage,
     target_id: topBadge.id,
     target_type: 'badge',
   });
+
+  // 행이 안 생기면 인앱 알림도 푸시도 통째로 사라진다 -- 조용히 넘기지 않는다
+  if (error) {
+    console.warn('[push] 뱃지 알림 INSERT 실패', error);
+    Sentry.captureException(error, { tags: { feature: 'push-notifications' } });
+  }
 };

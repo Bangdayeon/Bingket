@@ -1,6 +1,7 @@
 import * as Sentry from '@sentry/react-native';
+import * as Notifications from 'expo-notifications';
 import { useEffect, useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import { Linking, Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import IconButton from '@/components/IconButton';
@@ -46,6 +47,7 @@ export default function AlertSettingScreen() {
   const [settings, setSettings] = useState<NotificationSettings>(DEFAULT_NOTIFICATION_SETTINGS);
   const [loading, setLoading] = useState(true);
   const [saveFailed, setSaveFailed] = useState(false);
+  const [osDenied, setOsDenied] = useState(false);
 
   useEffect(() => {
     // 1. AsyncStorage 캐시 → 즉시 표시
@@ -57,6 +59,14 @@ export default function AlertSettingScreen() {
       setSettings(data);
       setLoading(false);
     });
+  }, []);
+
+  // OS 알림 권한이 꺼져 있으면 아래 토글이 전부 켜져 있어도 알림은 오지 않는다.
+  // 사용자가 원인을 알 방법이 없으므로 상단에 안내를 띄운다.
+  useEffect(() => {
+    Notifications.getPermissionsAsync()
+      .then(({ status }) => setOsDenied(status !== 'granted'))
+      .catch((error: unknown) => Sentry.captureException(error));
   }, []);
 
   const update = (patch: Partial<NotificationSettings>) => {
@@ -76,7 +86,6 @@ export default function AlertSettingScreen() {
   const handleAllAlert = (v: boolean) => {
     update({
       bingoDeadline: v,
-      bingoDaily: v,
       communityPopular: v,
       communityComment: v,
       communityLike: v,
@@ -100,6 +109,18 @@ export default function AlertSettingScreen() {
       </View>
 
       <ScrollView className="flex-1">
+        {osDenied ? (
+          <Pressable
+            onPress={() => void Linking.openSettings()}
+            className="mx-5 mt-4 rounded-xl bg-gray-100 px-4 py-3"
+          >
+            <Text className="text-body-md font-pretendard-medium">기기 알림이 꺼져 있어요</Text>
+            <Text className="text-caption-sm mt-0.5" style={{ color: '#929898' /* gray-500 */ }}>
+              아래 설정과 무관하게 알림이 오지 않아요. 눌러서 기기 설정에서 켜주세요.
+            </Text>
+          </Pressable>
+        ) : null}
+
         <ToggleRow label="전체 알림" value={allAlert} onValueChange={handleAllAlert} />
 
         <View className="h-px bg-gray-200   mx-5 my-2" />
@@ -110,7 +131,7 @@ export default function AlertSettingScreen() {
         </View>
         <ToggleRow
           label="기간 임박 알림"
-          description="빙고 기간이 10일, 5일 남았을 때"
+          description="빙고 기간이 10일, 5일 남았을 때와 마감일"
           value={settings.bingoDeadline}
           onValueChange={(v) => update({ bingoDeadline: v })}
         />

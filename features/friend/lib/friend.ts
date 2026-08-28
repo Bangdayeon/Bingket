@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/react-native';
 import { supabase } from '@/lib/supabase';
 import type { Friend, IncomingRequest, UserSearchResult } from '@/types/friend';
 
@@ -155,13 +156,19 @@ export const sendFriendRequest = async (params: {
       .eq('id', user.id)
       .single();
 
-    await supabase.from('notifications').insert({
+    const { error: notifyError } = await supabase.from('notifications').insert({
       user_id: params.receiverId,
       type: 'friend_request',
       message: `${sender?.display_name ?? '누군가'}님이 친구 요청을 보냈어요`,
       target_id: requestData.id,
       target_type: null,
     });
+
+    // 행이 안 생기면 인앱 알림도 푸시도 통째로 사라진다 -- 조용히 넘기지 않는다
+    if (notifyError) {
+      console.warn('[push] 친구 요청 알림 INSERT 실패', notifyError);
+      Sentry.captureException(notifyError, { tags: { feature: 'push-notifications' } });
+    }
   }
 };
 

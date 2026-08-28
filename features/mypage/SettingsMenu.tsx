@@ -8,6 +8,7 @@ import { MenuItem } from './MenuItem';
 import { Modal } from '@/components/Modal';
 import { supabase } from '@/lib/supabase';
 import { deletePushToken } from '@/lib/push-notifications';
+import { clearNotificationSettingsCache } from '@/features/mypage/lib/notification-settings';
 import { submitReport } from '@/features/mypage/lib/mypage';
 import * as WebBrowser from 'expo-web-browser';
 import * as Clipboard from 'expo-clipboard';
@@ -66,6 +67,8 @@ export function SettingsMenu() {
     setShowLogoutModal(false);
     // RLS 때문에 세션이 살아있는 동안에만 토큰을 지울 수 있다
     await deletePushToken();
+    // 남겨두면 다음에 로그인한 계정의 알림 설정 화면에 이전 사용자 값이 뜬다
+    await clearNotificationSettingsCache();
     await supabase.auth.signOut();
   };
 
