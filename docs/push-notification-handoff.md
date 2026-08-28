@@ -8,13 +8,26 @@
 iOS(TestFlight)에서 푸시 알림이 전혀 오지 않는 문제를 조사해 **코드 수정은 끝냈다.**
 남은 것은 **배포 + 실기기 검증**이고, 아직 아무것도 검증되지 않았다.
 
-## 현재 상태
+## 현재 상태 (2026-08-28 갱신)
 
-- 코드 수정: 완료. `tsc --noEmit`, `eslint`, `jest`(15개) 전부 통과
-- Supabase 마이그레이션 적용: **안 함**
-- 엣지 함수 배포: **안 함**
-- Database Webhook 추가: **안 함**
-- 실기기 검증: **안 함** (원인 가설이 맞는지 아직 모른다)
+아래 세 줄은 2026-08-13 시점 기록이었고 그 뒤 전부 완료됐다. 확인 방법도 함께 적어둔다.
+
+- Supabase 마이그레이션 적용: **완료** (`supabase migration list --linked`)
+- 엣지 함수 배포: **완료** — 4종 모두 2026-08-18 (`supabase functions list`)
+- Database Webhook 3개 + Cron: **완료** (대시보드)
+- 실기기 검증: **아직 안 됨**
+
+**그런데도 푸시가 오지 않는 진짜 이유는 따로 있었다.**
+`eas build:list` 로 확인해 보면 **마지막 iOS 빌드가 2026-04-19 (v1.0.1 build 26, 커밋
+`13f80f7`)** 다. 아래 수정이 담긴 커밋 `2def094` 는 2026-08-13 이므로,
+**TestFlight 에 올라가 있는 앱에는 이 문서의 수정이 하나도 들어있지 않다.**
+`app.config.ts` 조차 없으니 `aps-environment` 는 `development` 로 박혀 있고,
+층위 1 가설(sandbox 토큰 → `BadDeviceToken`)이 그대로 성립한다.
+
+8월 이후 빌드는 전부 **Android preview** 인데, Android 는 `google-services.json` 이 없어
+`getExpoPushTokenAsync` 자체가 실패한다. 즉 **수정된 클라이언트가 담긴 빌드가 어느
+플랫폼에도 존재한 적이 없다.** 검증의 첫 단계는 `eas build --profile production
+--platform ios` 다.
 
 ---
 
@@ -127,22 +140,25 @@ production APNs 로 전송하므로 전량 `BadDeviceToken` 으로 실패한다.
 npm ci   # 다른 컴퓨터에는 node_modules 가 없다
 ```
 
-### 1. 마이그레이션 적용
+### 1. 마이그레이션 적용 — ✅ 완료 (2026-08-28 재확인)
 
 ```bash
 supabase db push
 ```
 
-### 2. 엣지 함수 배포
+### 2. 엣지 함수 배포 — ✅ 완료 (재배포는 여전히 필요)
 
 ```bash
 supabase functions deploy notify-comment
 supabase functions deploy notify-like
 supabase functions deploy notify-bingo-deadline
-supabase functions deploy notify-generic   # 신규
+supabase functions deploy notify-generic
 ```
 
-### 3. Database Webhook 추가 (대시보드)
+> 2026-08-28 의 로직 수정(`20260828000001_notification_fixes.sql` 과 함께)이 반영되려면
+> **네 함수를 모두 다시 배포해야 한다.**
+
+### 3. Database Webhook 추가 (대시보드) — ✅ 완료
 
 `public.notifications` 의 INSERT → `notify-generic`.
 HTTP Headers 에 `Authorization: Bearer <service_role key>` 필수. 빠지면 401 로 조용히 사라진다.
@@ -205,10 +221,11 @@ eas build --profile production --platform ios
 - **안드로이드 푸시는 여전히 동작하지 않는다.**
   `google-services.json` 도 `app.json` 의 `android.googleServicesFile` 설정도 없다.
   EAS 에 FCM v1 서비스 계정 키 업로드도 필요하다. 테스트 기기가 없어 후순위로 뺐다.
-- `notify-bingo-deadline` 의 **Cron 스케줄이 레포에 없다.** 대시보드에 등록돼 있는지 확인
-  필요하고, 없으면 `pg_cron` 마이그레이션으로 코드화하는 게 낫다.
-- `notification_settings.bingo_daily` / `event_push` 는 **읽는 곳이 없는 죽은 설정**이다.
-  `bingo_daily` 는 UI 행조차 없는데 "전체 알림" 마스터 토글 계산에는 포함된다.
+- `notify-bingo-deadline` 의 **Cron 스케줄이 레포에 없다.** 대시보드에는 등록돼 있지만
+  코드로는 검증할 수 없다. `pg_cron` 마이그레이션으로 코드화하는 게 낫다.
+  (웹훅 3개도 마찬가지로 대시보드에만 있다)
+- `notification_settings.event_push` 는 **읽는 서버 코드가 없는 설정**이다. UI 행은 있다.
+  (`bingo_daily` 는 2026-08-28 에 클라이언트 모델에서 제거했다 — DB 컬럼만 DEFAULT 로 남아 있다)
 - `push_tokens.user_id` 가 단독 PK라 **유저당 기기 1대**만 가능하다. 두 번째 기기가 첫 기기를
   덮어쓴다. 다기기 지원이 필요하면 `(user_id, token)` 복합 PK로 바꿔야 한다.
 - Expo **push receipt** 조회와 `DeviceNotRegistered` 토큰 정리 로직이 없다. 죽은 토큰이 계속
