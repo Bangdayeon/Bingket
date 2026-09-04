@@ -46,3 +46,7 @@ yarn-error.*
 /android
 sentry.properties
 .aider*
+
+# Firebase 설정 파일 — 커밋하지 않고 EAS file 환경변수로 주입한다
+GoogleService-Info.plist
+google-services.json

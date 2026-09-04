@@ -9,7 +9,8 @@ Sentry.init({
 });
 import { supabase } from '@/lib/supabase';
 import { addNotificationTapListener, syncPushToken } from '@/lib/push-notifications';
-import { router, Stack } from 'expo-router';
+import { logScreenView } from '@/lib/analytics';
+import { router, Stack, useSegments } from 'expo-router';
 import { useEffect } from 'react';
 import { Appearance } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -75,6 +76,11 @@ function RootLayout() {
 
   // 푸시 알림 탭 → 화면 이동
   useEffect(() => addNotificationTapListener(), []);
+
+  const segments = useSegments();
+  useEffect(() => {
+    void logScreenView(segments.join('/') || 'index').catch(Sentry.captureException);
+  }, [segments]);
 
   return (
     <SafeAreaProvider>

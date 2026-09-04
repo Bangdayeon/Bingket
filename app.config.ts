@@ -11,6 +11,14 @@ import type { ConfigContext, ExpoConfig } from 'expo/config';
  */
 const isProductionBuild = process.env.EAS_BUILD_PROFILE === 'production';
 
+/**
+ * Firebase 설정 파일(GoogleService-Info.plist, google-services.json)은 커밋하지 않는다.
+ * EAS 빌드에서는 file 타입 환경변수로 올려두면 빌드 서버가 임시 경로를 환경변수에 담아 주므로
+ * 그 경로를 쓰고, 로컬(prebuild/run)에서는 app.json에 적힌 프로젝트 루트 경로를 그대로 쓴다.
+ */
+const iosGoogleServicesFile = process.env.GOOGLE_SERVICES_INFO_PLIST;
+const androidGoogleServicesFile = process.env.GOOGLE_SERVICES_JSON;
+
 export default ({ config }: ConfigContext): ExpoConfig => {
   const plugins = (config.plugins ?? []).map((plugin) => {
     if (Array.isArray(plugin) && plugin[0] === 'expo-notifications') {
@@ -20,5 +28,16 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     return plugin;
   });
 
-  return { ...config, plugins } as ExpoConfig;
+  return {
+    ...config,
+    plugins,
+    ios: {
+      ...config.ios,
+      ...(iosGoogleServicesFile ? { googleServicesFile: iosGoogleServicesFile } : {}),
+    },
+    android: {
+      ...config.android,
+      ...(androidGoogleServicesFile ? { googleServicesFile: androidGoogleServicesFile } : {}),
+    },
+  } as ExpoConfig;
 };
