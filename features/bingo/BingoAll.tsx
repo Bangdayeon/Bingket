@@ -81,7 +81,7 @@ export function BingoAll() {
     >
   >({});
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [conflictMessage, setConflictMessage] = useState<string | null>(null);
+  const [notice, setNotice] = useState<{ title: string; body: string } | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [modalTarget, setModalTarget] = useState<{ bingoId: string; cellIndex: number } | null>(
@@ -207,28 +207,44 @@ export function BingoAll() {
     if (!modalTarget) return;
     const { bingoId } = modalTarget;
 
-    const updatedCells = (cellDetails[bingoId] ?? []).map((cell) =>
+    const previousCells = cellDetails[bingoId] ?? [];
+    const updatedCells = previousCells.map((cell) =>
       cell.id === cellId ? { ...cell, ...updates } : cell,
     );
-    setCellDetails((prev) => ({ ...prev, [bingoId]: updatedCells }));
 
-    // 달성/빙고 수 실시간 재계산
-    if ('completed' in updates) {
+    /** 화면(칸 + 달성/빙고 수)을 주어진 칸 상태로 맞춘다 */
+    const applyCells = (cells: BingoCellDetail[]) => {
+      setCellDetails((prev) => ({ ...prev, [bingoId]: cells }));
+      if (!('completed' in updates)) return;
       const bingo = bingos.find((b) => b.id === bingoId);
-      if (bingo) {
-        const [cols, rows] = bingo.grid.split('x').map(Number);
-        const checked = updatedCells.map((c) => c.completed);
-        const newAchievedCount = checked.filter(Boolean).length;
-        const newBingoCount = calcBingoCount(checked, cols, rows);
-        setBingos((prev) =>
-          prev.map((b) =>
-            b.id === bingoId
-              ? { ...b, achievedCount: newAchievedCount, bingoCount: newBingoCount }
-              : b,
-          ),
-        );
-      }
-    }
+      if (!bingo) return;
+      const [cols, rows] = bingo.grid.split('x').map(Number);
+      const checked = cells.map((c) => c.completed);
+      const newAchievedCount = checked.filter(Boolean).length;
+      const newBingoCount = calcBingoCount(checked, cols, rows);
+      setBingos((prev) =>
+        prev.map((b) =>
+          b.id === bingoId
+            ? { ...b, achievedCount: newAchievedCount, bingoCount: newBingoCount }
+            : b,
+        ),
+      );
+    };
+
+    applyCells(updatedCells);
+
+    /**
+     * 저장이 끝내 실패하면 화면만 채워진 채로 남아 다음 새로고침에 되돌아간다.
+     * 그 전에 알려주고, 칸 체크는 저장 전 상태로 되돌린다.
+     */
+    const handleSaveFailure = (error: unknown, rollback: boolean) => {
+      Sentry.captureException(error);
+      if (rollback) applyCells(previousCells);
+      setNotice({
+        title: '저장하지 못했어요',
+        body: '네트워크 연결이 불안정해요. 연결을 확인한 뒤 다시 시도해 주세요.',
+      });
+    };
 
     // DB 저장: memo는 디바운스, 나머지는 즉시
     const { memo, ...nonMemoUpdates } = updates;
@@ -243,20 +259,25 @@ export function BingoAll() {
         .then(({ applied }) => {
           if (isTeamBoard && isChecking && !applied) {
             // 내가 늦었다 -- 화면을 실제 상태로 되돌린다
-            setConflictMessage('한발 늦었어요! 이미 다른 팀원이 채운 칸이에요.');
+            setNotice({
+              title: '이미 채워진 칸이에요',
+              body: '한발 늦었어요! 이미 다른 팀원이 채운 칸이에요.',
+            });
             loadData();
             return;
           }
           if (!isChecking || !isTeamBoard) return;
           const cell = updatedCells.find((c) => c.id === cellId);
-          return notifyTeamCellChecked(bingoId, cell?.title ?? '');
+          // 알림 전송 실패로 칸 체크까지 되돌리지는 않는다
+          return notifyTeamCellChecked(bingoId, cell?.title ?? '').catch(Sentry.captureException);
         })
-        .catch(Sentry.captureException);
+        .catch((error) => handleSaveFailure(error, true));
     }
     if (memo !== undefined) {
       clearTimeout(memoDebounceRef.current[cellId]);
       memoDebounceRef.current[cellId] = setTimeout(() => {
-        updateCell(cellId, { memo }).catch(Sentry.captureException);
+        // 메모는 입력 중일 수 있어 되돌리지 않고 알리기만 한다
+        updateCell(cellId, { memo }).catch((error) => handleSaveFailure(error, false));
       }, 500);
     }
   };
@@ -372,13 +393,13 @@ export function BingoAll() {
       />
 
       <Modal
-        visible={!!conflictMessage}
-        title="이미 채워진 칸이에요"
-        body={conflictMessage ?? ''}
+        visible={!!notice}
+        title={notice?.title ?? ''}
+        body={notice?.body ?? ''}
         variant="single"
         confirmLabel="확인"
-        onConfirm={() => setConflictMessage(null)}
-        onDismiss={() => setConflictMessage(null)}
+        onConfirm={() => setNotice(null)}
+        onDismiss={() => setNotice(null)}
       />
     </ScrollView>
   );

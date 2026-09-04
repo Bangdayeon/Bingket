@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
 import { supabase } from '@/lib/supabase';
+import { withNetworkRetry } from '@/lib/network-retry';
 
 const R2_PUBLIC_URL = 'https://pub-ce1a524f861f4062a6ec96dd100c4aec.r2.dev';
 
@@ -84,8 +85,10 @@ export const updateMyProfile = async (data: {
   };
   if (data.avatarUrl !== undefined) updates.avatar_url = data.avatarUrl;
 
-  const { error } = await supabase.from('users').update(updates).eq('id', user.id);
-  if (error) throw error;
+  await withNetworkRetry(async () => {
+    const { error } = await supabase.from('users').update(updates).eq('id', user.id);
+    if (error) throw error;
+  });
 };
 
 export const uploadProfileImage = async (uri: string, filename: string): Promise<string> => {
@@ -107,29 +110,31 @@ export const uploadProfileImage = async (uri: string, filename: string): Promise
   } = await supabase.auth.getSession();
   if (!session) throw new Error('로그인이 필요합니다.');
 
-  const { data, error } = await supabase.functions.invoke('r2-presign', {
-    headers: { Authorization: `Bearer ${session.access_token}` },
-    body: { filename: safeFilename, contentType },
+  return withNetworkRetry(async () => {
+    const { data, error } = await supabase.functions.invoke('r2-presign', {
+      headers: { Authorization: `Bearer ${session.access_token}` },
+      body: { filename: safeFilename, contentType },
+    });
+    if (error) {
+      const body = await (error as { context?: Response }).context?.text?.();
+      throw new Error(body ?? error.message);
+    }
+
+    const file = await fetch(resized.uri);
+    const blob = await file.blob();
+
+    const uploadRes = await fetch(data.presignedUrl as string, {
+      method: 'PUT',
+      body: blob,
+      headers: { 'Content-Type': contentType },
+    });
+    if (!uploadRes.ok) {
+      const text = await uploadRes.text().catch(() => '');
+      throw new Error(`이미지 업로드 실패 (${uploadRes.status})${text ? `: ${text}` : ''}`);
+    }
+
+    return `${R2_PUBLIC_URL}/${data.key as string}`;
   });
-  if (error) {
-    const body = await (error as { context?: Response }).context?.text?.();
-    throw new Error(body ?? error.message);
-  }
-
-  const file = await fetch(resized.uri);
-  const blob = await file.blob();
-
-  const uploadRes = await fetch(data.presignedUrl as string, {
-    method: 'PUT',
-    body: blob,
-    headers: { 'Content-Type': contentType },
-  });
-  if (!uploadRes.ok) {
-    const text = await uploadRes.text().catch(() => '');
-    throw new Error(`이미지 업로드 실패 (${uploadRes.status})${text ? `: ${text}` : ''}`);
-  }
-
-  return `${R2_PUBLIC_URL}/${data.key as string}`;
 };
 
 export interface LinkedAccount {

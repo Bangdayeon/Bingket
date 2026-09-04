@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import type { BoardVisibility } from '@/features/profile/lib/profile';
+import { withNetworkRetry } from '@/lib/network-retry';
 import type { BingoData, BingoTheme } from '@/types/bingo';
 import type { BingoCellDetail } from '@/types/bingo-cell';
 
@@ -56,20 +57,23 @@ export const updateCell = async (
    * 같이 채우기에서 두 사람이 같은 칸을 동시에 누르면 먼저 누른 쪽만 반영된다.
    */
   options?: { onlyIfUnchecked?: boolean },
-): Promise<{ applied: boolean }> => {
-  const dbUpdates: Record<string, unknown> = {};
-  if (updates.completed !== undefined) dbUpdates.is_checked = updates.completed;
-  if ('completedAt' in updates) dbUpdates.checked_at = updates.completedAt;
-  if (updates.memo !== undefined) dbUpdates.memo = updates.memo;
+): Promise<{ applied: boolean }> =>
+  // 칸 저장은 사용자가 다시 누를 수 없는(모달을 닫아버리는) 요청이라
+  // 순간적인 연결 끊김은 조용히 재시도해서 넘긴다.
+  withNetworkRetry(async () => {
+    const dbUpdates: Record<string, unknown> = {};
+    if (updates.completed !== undefined) dbUpdates.is_checked = updates.completed;
+    if ('completedAt' in updates) dbUpdates.checked_at = updates.completedAt;
+    if (updates.memo !== undefined) dbUpdates.memo = updates.memo;
 
-  let query = supabase.from('bingo_cells').update(dbUpdates).eq('id', cellId);
-  if (options?.onlyIfUnchecked) query = query.eq('is_checked', false);
+    let query = supabase.from('bingo_cells').update(dbUpdates).eq('id', cellId);
+    if (options?.onlyIfUnchecked) query = query.eq('is_checked', false);
 
-  const { data, error } = await query.select('id');
-  if (error) throw new Error(error.message);
+    const { data, error } = await query.select('id');
+    if (error) throw new Error(error.message);
 
-  return { applied: (data?.length ?? 0) > 0 };
-};
+    return { applied: (data?.length ?? 0) > 0 };
+  });
 
 // ────────────────────────────────────────────────────────────
 // 조회
@@ -204,13 +208,14 @@ export const deleteBingo = async (boardId: string): Promise<void> => {
 };
 
 // 회고 저장
-export const updateRetrospective = async (boardId: string, text: string): Promise<void> => {
-  const { error } = await supabase
-    .from('bingo_boards')
-    .update({ retrospective: text || null })
-    .eq('id', boardId);
-  if (error) throw new Error(error.message);
-};
+export const updateRetrospective = async (boardId: string, text: string): Promise<void> =>
+  withNetworkRetry(async () => {
+    const { error } = await supabase
+      .from('bingo_boards')
+      .update({ retrospective: text || null })
+      .eq('id', boardId);
+    if (error) throw new Error(error.message);
+  });
 
 // 단건 조회 (뷰 화면용)
 export const fetchBingoForView = async (boardId: string): Promise<FetchedBingo | null> => {

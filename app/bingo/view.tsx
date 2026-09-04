@@ -21,6 +21,7 @@ import type { BingoCellDetail } from '@/types/bingo-cell';
 import { fetchMyTeams } from '@/features/team/lib/team';
 import type { TeamAvatarMember } from '@/features/team/components/TeamAvatars';
 import Loading from '@/components/Loading';
+import { Modal } from '@/components/Modal';
 
 export default function BingoViewScreen() {
   const insets = useSafeAreaInsets();
@@ -33,39 +34,59 @@ export default function BingoViewScreen() {
   const [team, setTeam] = useState<{ teamId: string; members: TeamAvatarMember[] } | null>(null);
   const [modalTarget, setModalTarget] = useState<number | null>(null);
   const [retrospective, setRetrospective] = useState('');
+  const [saveFailed, setSaveFailed] = useState(false);
   const memoDebounceRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
   const retroDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (!bingoId) return;
-    fetchBingoForView(bingoId).then((result) => {
-      setData(result);
-      if (result) {
-        setCellDetails(result.cellDetails);
-        setRetrospective(result.bingo.retrospective ?? '');
-      }
-      setLoading(false);
-    });
-    fetchMyTeams().then((teams) => {
-      const found = teams.find((t) => t.myBoardId === bingoId && !t.isInvite);
-      if (found) setTeam({ teamId: found.teamId, members: found.members });
-    });
+    fetchBingoForView(bingoId)
+      .then((result) => {
+        setData(result);
+        if (result) {
+          setCellDetails(result.cellDetails);
+          setRetrospective(result.bingo.retrospective ?? '');
+        }
+      })
+      // 연결이 끊겨 조회에 실패해도 로딩 스피너에 갇히지 않게 한다
+      .catch(Sentry.captureException)
+      .finally(() => setLoading(false));
+    fetchMyTeams()
+      .then((teams) => {
+        const found = teams.find((t) => t.myBoardId === bingoId && !t.isInvite);
+        if (found) setTeam({ teamId: found.teamId, members: found.members });
+      })
+      .catch(Sentry.captureException);
   }, [bingoId]);
+
+  /**
+   * 저장이 끝내 실패하면 화면만 채워진 채로 남아 다음 진입에 되돌아간다.
+   * 그 전에 알려준다. rollback을 받은 경우 저장 전 상태로 되돌린다.
+   */
+  const handleSaveFailure = (error: unknown, rollback?: () => void) => {
+    Sentry.captureException(error);
+    rollback?.();
+    setSaveFailed(true);
+  };
 
   const handleCellUpdate = (
     cellId: string,
     updates: Partial<Pick<BingoCellDetail, 'completed' | 'completedAt' | 'memo'>>,
   ) => {
+    const previousCells = cellDetails;
     setCellDetails((prev) => prev.map((c) => (c.id === cellId ? { ...c, ...updates } : c)));
 
     const { memo, ...nonMemoUpdates } = updates;
     if (Object.keys(nonMemoUpdates).length > 0) {
-      updateCell(cellId, nonMemoUpdates).catch(Sentry.captureException);
+      updateCell(cellId, nonMemoUpdates).catch((error) =>
+        handleSaveFailure(error, () => setCellDetails(previousCells)),
+      );
     }
     if (memo !== undefined) {
       clearTimeout(memoDebounceRef.current[cellId]);
       memoDebounceRef.current[cellId] = setTimeout(() => {
-        updateCell(cellId, { memo }).catch(Sentry.captureException);
+        // 메모는 입력 중일 수 있어 되돌리지 않고 알리기만 한다
+        updateCell(cellId, { memo }).catch((error) => handleSaveFailure(error));
       }, 500);
     }
   };
@@ -74,7 +95,7 @@ export default function BingoViewScreen() {
     setRetrospective(text);
     if (retroDebounceRef.current) clearTimeout(retroDebounceRef.current);
     retroDebounceRef.current = setTimeout(() => {
-      updateRetrospective(bingoId, text).catch(Sentry.captureException);
+      updateRetrospective(bingoId, text).catch((error) => handleSaveFailure(error));
     }, 500);
   };
 
@@ -172,6 +193,16 @@ export default function BingoViewScreen() {
         onClose={() => setModalTarget(null)}
         onUpdate={handleCellUpdate}
         readOnly={isDone}
+      />
+
+      <Modal
+        visible={saveFailed}
+        title="저장하지 못했어요"
+        body="네트워크 연결이 불안정해요. 연결을 확인한 뒤 다시 시도해 주세요."
+        variant="single"
+        confirmLabel="확인"
+        onConfirm={() => setSaveFailed(false)}
+        onDismiss={() => setSaveFailed(false)}
       />
     </View>
   );
