@@ -248,7 +248,7 @@ export default function AccountScreen() {
       <Modal
         visible={showSecessionModal}
         title="정말로 탈퇴를 하시겠어요?"
-        body={`• 계정이 완전히 삭제돼요.\n• 계정 삭제 후 데이터 복구가 불가능해요.\n• 작성한 글과 댓글은 (알 수 없음)으로 남아요`}
+        body={`• 계정과 프로필 정보, 프로필 사진이 삭제돼요.\n• 계정 삭제 후 데이터 복구가 불가능해요.\n• 작성한 글과 댓글은 첨부한 사진과 함께 (알 수 없음)으로 남아요`}
         variant="warning"
         cancelLabel="취소하기"
         confirmLabel="회원 탈퇴하기"
