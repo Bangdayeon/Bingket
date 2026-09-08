@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 import { hasAgreed, saveAgreement } from '@/features/auth/lib/agreement';
+import { applyAnalyticsConsent } from '@/lib/analytics';
 
 export function useAgreement() {
   const [modalVisible, setModalVisible] = useState(false);
@@ -17,6 +18,8 @@ export function useAgreement() {
 
   const onAgree = useCallback(async () => {
     await saveAgreement();
+    // 동의 즉시 Firebase 자동 수집을 켠다. 분석 실패가 동의 흐름을 막아서는 안 된다.
+    void applyAnalyticsConsent().catch(() => {});
     setModalVisible(false);
 
     setTimeout(() => {

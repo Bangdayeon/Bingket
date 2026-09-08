@@ -26,14 +26,31 @@ export type PushRegistrationResult =
   | { status: 'error'; error: unknown };
 
 /**
+ * Supabase 에러 객체의 details/hint에는 실패한 행의 값이 그대로 실려 온다.
+ * push_tokens upsert가 실패하면 거기에 푸시 토큰과 user_id가 포함되므로,
+ * 원인 파악에 필요한 message와 code만 남기고 나머지는 버린다.
+ */
+const describeError = (error: unknown): string => {
+  if (error instanceof Error) return error.message;
+  if (error && typeof error === 'object') {
+    const { message, code } = error as { message?: unknown; code?: unknown };
+    if (typeof message === 'string') {
+      return typeof code === 'string' ? `${message} (${code})` : message;
+    }
+  }
+  return '알 수 없는 오류';
+};
+
+/**
  * 푸시 관련 실패는 전 구간이 조용히 무시되면 원인 추적이 불가능하므로
  * 반드시 콘솔 + Sentry 양쪽에 남긴다.
  */
 const reportPushFailure = (context: string, error: unknown): void => {
-  console.warn(`[push] ${context}`, error);
+  const detail = describeError(error);
+  console.warn(`[push] ${context}: ${detail}`);
   Sentry.captureException(error instanceof Error ? error : new Error(`[push] ${context}`), {
     tags: { feature: 'push-notifications' },
-    extra: { context, error: String(error) },
+    extra: { context, error: detail },
   });
 };
 
