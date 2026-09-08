@@ -8,6 +8,7 @@ import {
   type FetchedBingo,
 } from '@/features/bingo/lib/bingo';
 import { isTeamOver, isTeamStarted, rankMembers } from '@/features/team/lib/team-result';
+import { deleteNotificationByTarget } from '@/features/notifications/lib/notifications';
 import type { BingoTheme } from '@/types/bingo';
 import type { TeamMemberStatus, TeamMode, TeamStatus } from '@/types/team';
 
@@ -228,6 +229,15 @@ const displayNameOf = async (userId: string): Promise<string> => {
   return (data?.display_name as string | undefined) ?? '누군가';
 };
 
+const teamOwnerId = async (teamId: string): Promise<string | null> => {
+  const { data } = await supabase
+    .from('team_bingos')
+    .select('owner_id')
+    .eq('id', teamId)
+    .maybeSingle();
+  return (data?.owner_id as string | undefined) ?? null;
+};
+
 // ============================================================
 // 생성 · 초대
 // ============================================================
@@ -301,7 +311,7 @@ export const createTeam = async (params: CreateTeamParams): Promise<{ teamId: st
       params.friendIds.map((friendId) => ({
         userId: friendId,
         type: 'team_invite',
-        message: `${name}님이 팀 빙고에 초대했어요`,
+        message: `${name}님이 빙고를 함께하고 싶어해요`,
         targetId: teamId,
       })),
     );
@@ -404,11 +414,30 @@ export const acceptTeamInvite = async (params: {
       targetId: params.teamId,
     },
   ]);
+
+  // 처리한 초대 알림은 지운다. 남겨두면 다시 눌러 수락할 수 있고, 그러면 빙고판이 하나 더 생긴다
+  await deleteNotificationByTarget('team_invite', params.teamId).catch(Sentry.captureException);
 };
 
 export const rejectTeamInvite = async (teamId: string): Promise<void> => {
   const userId = await currentUserId();
   if (!userId) throw new Error('로그인이 필요합니다.');
+
+  // 멤버 행을 지우기 전에 처리한다. 삭제 뒤에는 RLS가 이 팀에 대한 읽기 권한을 회수해
+  // 방장 조회도, 알림 삭제도 할 수 없다.
+  const ownerId = await teamOwnerId(teamId);
+  if (ownerId) {
+    const name = await displayNameOf(userId);
+    await notify([
+      {
+        userId: ownerId,
+        type: 'team_invite_declined',
+        message: `${name}님이 빙고 함께하기를 거절했어요`,
+        targetId: teamId,
+      },
+    ]).catch(Sentry.captureException);
+  }
+  await deleteNotificationByTarget('team_invite', teamId).catch(Sentry.captureException);
 
   const { error } = await supabase
     .from('team_members')

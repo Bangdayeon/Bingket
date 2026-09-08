@@ -5,6 +5,7 @@ import { Text } from '@/components/Text';
 import Button from '@/components/Button';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
+  deleteNotificationByTarget,
   fetchNotifications,
   markAllNotificationsRead,
   markNotificationRead,
@@ -25,9 +26,10 @@ interface NotificationItemProps {
 function NotificationItem({ item, onRead, onAction, onFriendResponse }: NotificationItemProps) {
   const isFriendRequest = item.type === 'friend_request';
   const isTeamInvite = item.type === 'team_invite';
-  // 합류/종료 알림은 모두 팀 현황으로 보낸다
+  // 합류/거절/종료 알림은 모두 팀 현황으로 보낸다
   const isTeamUpdate =
     item.type === 'team_joined' ||
+    item.type === 'team_invite_declined' ||
     item.type === 'team_finished' ||
     item.type === 'team_cell_checked';
   const [responding, setResponding] = useState(false);
@@ -151,11 +153,7 @@ export default function NotificationsScreen() {
     }
 
     // 알림 DB에서 삭제 (재진입 시 버튼 재노출 방지)
-    await supabase
-      .from('notifications')
-      .delete()
-      .eq('target_id', requestId)
-      .eq('type', 'friend_request');
+    await deleteNotificationByTarget('friend_request', requestId);
 
     setNotifications((prev) => prev.filter((n) => n.target_id !== requestId));
   };
