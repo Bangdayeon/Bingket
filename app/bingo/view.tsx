@@ -1,6 +1,6 @@
 import * as Sentry from '@sentry/react-native';
 import { BingoCard } from '@/features/bingo/components/BingoCard';
-import { BingoCellModal } from '@/features/bingo/BingoCellModal';
+import { BingoCellModal, type MemoSaveState } from '@/features/bingo/BingoCellModal';
 import {
   fetchBingoForView,
   updateCell,
@@ -36,6 +36,7 @@ export default function BingoViewScreen() {
   const [retrospective, setRetrospective] = useState('');
   const [saveFailed, setSaveFailed] = useState(false);
   const memoDebounceRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+  const [memoSaveState, setMemoSaveState] = useState<Record<string, MemoSaveState | undefined>>({});
   const retroDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -84,9 +85,15 @@ export default function BingoViewScreen() {
     }
     if (memo !== undefined) {
       clearTimeout(memoDebounceRef.current[cellId]);
+      setMemoSaveState((prev) => ({ ...prev, [cellId]: 'saving' }));
       memoDebounceRef.current[cellId] = setTimeout(() => {
         // 메모는 입력 중일 수 있어 되돌리지 않고 알리기만 한다
-        updateCell(cellId, { memo }).catch((error) => handleSaveFailure(error));
+        updateCell(cellId, { memo })
+          .then(() => setMemoSaveState((prev) => ({ ...prev, [cellId]: 'saved' })))
+          .catch((error) => {
+            setMemoSaveState((prev) => ({ ...prev, [cellId]: 'error' }));
+            handleSaveFailure(error);
+          });
       }, 500);
     }
   };
@@ -192,6 +199,7 @@ export default function BingoViewScreen() {
         initialIndex={modalTarget ?? 0}
         onClose={() => setModalTarget(null)}
         onUpdate={handleCellUpdate}
+        memoSaveState={memoSaveState}
         readOnly={isDone}
       />
 
