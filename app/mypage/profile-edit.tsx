@@ -8,6 +8,7 @@ import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { ActionSheetIOS, Platform, Pressable, ScrollView, View } from 'react-native';
 import { clearCache } from '@/lib/cache';
+import { ensurePhotoLibraryPermission } from '@/lib/photo-library';
 
 import { Text } from '@/components/Text';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -93,12 +94,12 @@ export default function ProfileEditPage() {
   };
 
   const pickImage = async (source: 'camera' | 'library') => {
-    const permission =
+    const granted =
       source === 'camera'
-        ? await ImagePicker.requestCameraPermissionsAsync()
-        : await ImagePicker.requestMediaLibraryPermissionsAsync();
+        ? (await ImagePicker.requestCameraPermissionsAsync()).granted
+        : await ensurePhotoLibraryPermission();
 
-    if (!permission.granted) {
+    if (!granted) {
       showToast(source === 'camera' ? '카메라 권한이 필요해요.' : '사진 접근 권한이 필요해요.');
       return;
     }
@@ -107,7 +108,7 @@ export default function ProfileEditPage() {
       source === 'camera'
         ? await ImagePicker.launchCameraAsync({ allowsEditing: true, aspect: [1, 1], quality: 0.8 })
         : await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: 'images',
+            mediaTypes: ['images'],
             allowsEditing: true,
             aspect: [1, 1],
             quality: 0.8,

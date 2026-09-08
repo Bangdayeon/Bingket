@@ -25,6 +25,7 @@ import { checkAndAwardBadges } from '@/lib/badge-checker';
 import BingoPreview from '@/components/BingoPreview';
 import { Toast } from '@/components/Toast';
 import { containsBadWord } from '@/constants/bad-words';
+import { ensurePhotoLibraryPermission } from '@/lib/photo-library';
 import Loading from '@/components/Loading';
 
 const HEADER_H = 60;
@@ -227,8 +228,7 @@ export default function CommunityWriteScreen() {
   const handleGalleryPick = async () => {
     setShowCameraMenu(false);
     if (imageBlockCount >= MAX_IMAGES) return;
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
+    if (!(await ensurePhotoLibraryPermission())) {
       Alert.alert('앨범 권한 필요', '설정에서 사진 접근을 허용해주세요.');
       return;
     }
