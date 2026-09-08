@@ -15,7 +15,7 @@ interface PostListProps {
   isRefreshing: boolean;
 }
 
-const Separator = () => <View className="h-px bg-gray-300  " />;
+const Separator = () => <View className="h-2 bg-gray-100  " />;
 
 export function PostList({
   posts,

@@ -85,9 +85,9 @@ export default function CommunityScreen() {
       <Pressable
         onPress={() => router.push('/community/write')}
         style={{ position: 'absolute', bottom: fabBottom, right: 20 }}
-        className="shadow-gray-100 w-14 h-14 rounded-full bg-sky-300 items-center justify-center"
+        className="shadow-gray-100 w-14 h-14 rounded-full bg-green-500   items-center justify-center"
       >
-        <EditIcon width={32} height={32} color="#4C5252" />
+        <EditIcon width={28} height={28} color="#FDFDFD" /* white */ />
       </Pressable>
     </SafeAreaView>
   );

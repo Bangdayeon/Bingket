@@ -56,6 +56,17 @@ function parseBlocks(content: string): StoredBlock[] | null {
   return null;
 }
 
+/** 목록에 보여줄 본문 미리보기. 개행은 공백으로 눌러 두 줄 안에 최대한 담는다 */
+function bodyPreview(blocks: StoredBlock[] | null, raw: string): string {
+  const text = blocks
+    ? blocks
+        .filter((b): b is Extract<StoredBlock, { type: 'text' }> => b.type === 'text')
+        .map((b) => b.value)
+        .join(' ')
+    : raw;
+  return text.replace(/\s+/g, ' ').trim();
+}
+
 interface PostCardProps {
   post: CommunityPost;
   currentUserId?: string | null;
@@ -93,6 +104,7 @@ export function PostCard({ post, currentUserId, onBlock }: PostCardProps) {
   }
 
   const bingoData = hasBingo && post.bingo ? postBingoToBingoData(post.bingo) : null;
+  const preview = bodyPreview(blocks, post.body);
 
   const menuItems = [
     {
@@ -144,9 +156,6 @@ export function PostCard({ post, currentUserId, onBlock }: PostCardProps) {
         style={{ top: 52, right: 10 }}
       />
 
-      {/* 제목 */}
-      <Text className="text-label-md mt-4">{post.title}</Text>
-
       {/* 미디어 썸네일 (빙고 우선, 없으면 첫 이미지) */}
       {bingoData ? (
         <View className="mt-4">
@@ -155,10 +164,17 @@ export function PostCard({ post, currentUserId, onBlock }: PostCardProps) {
       ) : firstImageUrl ? (
         <Image
           source={{ uri: firstImageUrl }}
-          style={{ width: '100%', aspectRatio: 1, borderRadius: 8, marginTop: 12 }}
+          style={{ width: '100%', aspectRatio: 1, borderRadius: 12, marginTop: 16 }}
           contentFit="contain"
           cachePolicy="memory"
         />
+      ) : null}
+
+      {/* 본문 미리보기 */}
+      {preview ? (
+        <Text className="text-body-sm mt-3" numberOfLines={2}>
+          {preview}
+        </Text>
       ) : null}
 
       {/* 좋아요 / 댓글 */}
