@@ -100,17 +100,21 @@ module.exports = {
         },
         kakao: '#FEE500',
       },
+      // 자간은 제목에만 준다. 시안이 % (폰트 크기 대비)로 정의하지만 React Native는
+      // pt 단위만 받으므로 `크기 × 0.07`로 환산해 적는다. 본문·라벨·캡션은 0 —
+      // 한글은 음절마다 좌우 여백이 내장돼 있어 자간을 더 주면 한 단어 안에서
+      // 글자가 밀려 보인다.
       fontSize: {
         // title
         'title-lg': ['24px', { lineHeight: '30px', letterSpacing: '1.68px', fontWeight: '500' }], // 7%
         'title-md': ['20px', { lineHeight: '24px', letterSpacing: '1.4px', fontWeight: '500' }], // 7%
         'title-sm': ['18px', { lineHeight: '24px', letterSpacing: '1.26px', fontWeight: '500' }], // 7%
         // body
-        'body-md': ['16px', { lineHeight: '18px', letterSpacing: '1.12px', fontWeight: '400' }], // 7%
+        'body-md': ['16px', { lineHeight: '18px', fontWeight: '400' }],
         'body-sm': ['14px', { lineHeight: '18px', fontWeight: '400' }],
         // caption
         'caption-md': ['12px', { lineHeight: '20px', fontWeight: '400' }],
-        'caption-sm': ['8px', { lineHeight: '10px', letterSpacing: '0.32px', fontWeight: '400' }], // 4%
+        'caption-sm': ['10px', { lineHeight: '12px', fontWeight: '400' }],
         // label
         'label-sm': ['14px', { lineHeight: '18px', fontWeight: '600' }],
         'label-md': ['16px', { lineHeight: '20px', fontWeight: '600' }],
