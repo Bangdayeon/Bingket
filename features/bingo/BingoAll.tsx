@@ -103,6 +103,8 @@ export function BingoAll() {
     null,
   );
   const memoDebounceRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+  /** 아직 서버에 못 보낸 메모. 닫을 때 밀어넣고, 실패하면 여기 남는다 */
+  const pendingMemoRef = useRef<Record<string, string>>({});
   const [memoSaveState, setMemoSaveState] = useState<Record<string, MemoSaveState | undefined>>({});
   const isNavigatingRef = useRef(false);
 
@@ -291,16 +293,40 @@ export function BingoAll() {
     }
     if (memo !== undefined) {
       clearTimeout(memoDebounceRef.current[cellId]);
+      pendingMemoRef.current[cellId] = memo;
       setMemoSaveState((prev) => ({ ...prev, [cellId]: 'saving' }));
-      memoDebounceRef.current[cellId] = setTimeout(() => {
-        // 메모는 입력 중일 수 있어 되돌리지 않고 알리기만 한다
-        updateCell(cellId, { memo })
-          .then(() => setMemoSaveState((prev) => ({ ...prev, [cellId]: 'saved' })))
-          .catch((error) => {
-            setMemoSaveState((prev) => ({ ...prev, [cellId]: 'error' }));
-            handleSaveFailure(error, false);
-          });
-      }, 500);
+      memoDebounceRef.current[cellId] = setTimeout(() => saveMemo(cellId), 500);
+    }
+  };
+
+  /** 메모는 입력 중일 수 있어 실패해도 되돌리지 않고 알리기만 한다 */
+  const saveMemo = (cellId: string) => {
+    const memo = pendingMemoRef.current[cellId];
+    if (memo === undefined) return;
+    delete pendingMemoRef.current[cellId];
+    updateCell(cellId, { memo })
+      .then(() => setMemoSaveState((prev) => ({ ...prev, [cellId]: 'saved' })))
+      .catch((error) => {
+        // 실패한 텍스트를 되살릴 수 있게 다시 대기열에 넣는다
+        pendingMemoRef.current[cellId] = memo;
+        setMemoSaveState((prev) => ({ ...prev, [cellId]: 'error' }));
+        // 칸 체크와 달리 메모는 되돌리지 않는다. 입력 중일 수 있어서다.
+        Sentry.captureException(error);
+        setNotice({
+          title: '저장하지 못했어요',
+          body: '네트워크 연결이 불안정해요. 연결을 확인한 뒤 다시 시도해 주세요.',
+        });
+      });
+  };
+
+  /**
+   * 대기 중인 메모를 즉시 저장한다. 모달을 닫는 순간 500ms를 더 기다릴 이유가 없고,
+   * 그 사이 화면을 떠나면 저장 결과를 받을 곳이 없어진다.
+   */
+  const flushPendingMemos = () => {
+    for (const cellId of Object.keys(pendingMemoRef.current)) {
+      clearTimeout(memoDebounceRef.current[cellId]);
+      saveMemo(cellId);
     }
   };
 
@@ -385,7 +411,10 @@ export function BingoAll() {
         visible={!!modalTarget}
         cells={modalCells}
         initialIndex={modalTarget?.cellIndex ?? 0}
-        onClose={() => setModalTarget(null)}
+        onClose={() => {
+          flushPendingMemos();
+          setModalTarget(null);
+        }}
         onUpdate={handleCellUpdate}
         memoSaveState={memoSaveState}
         team={
