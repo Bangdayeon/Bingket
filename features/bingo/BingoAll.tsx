@@ -15,7 +15,10 @@ import {
   calcBingoCount,
 } from '@/features/bingo/lib/bingo';
 import {
+  acceptTeamInvite,
   fetchJoinedSharedBoards,
+  fetchTeamInvite,
+  rejectTeamInvite,
   fetchMyTeams,
   notifyTeamCellChecked,
 } from '@/features/team/lib/team';
@@ -27,8 +30,17 @@ import { CACHE_KEY_ALL } from '@/constants/cache_key';
 import Loading from '@/components/Loading';
 import Button from '@/components/Button';
 import { Modal } from '@/components/Modal';
+import {
+  deleteNotificationByTarget,
+  fetchNotifications,
+  type Notification,
+} from '@/features/notifications/lib/notifications';
+import { NotificationStrip } from '@/features/notifications/components/NotificationStrip';
 
 const DRAFT_ID = 'draft_0';
+
+/** 홈 상단 스트립에 띄우는 알림 타입 */
+const STRIP_TYPES = new Set(['team_invite', 'team_invite_declined']);
 
 /** 로컬에 임시 저장된 제작 중 빙고를 카드 하나로 변환한다. 없으면 null */
 async function loadDraftBingo(): Promise<BingoData | null> {
@@ -107,6 +119,8 @@ export function BingoAll() {
   const pendingMemoRef = useRef<Record<string, string>>({});
   const [memoSaveState, setMemoSaveState] = useState<Record<string, MemoSaveState | undefined>>({});
   const isNavigatingRef = useRef(false);
+  const [stripNotifications, setStripNotifications] = useState<Notification[]>([]);
+  const [stripPendingId, setStripPendingId] = useState<string | null>(null);
 
   const loadData = useCallback(() => {
     Promise.all([fetchMyBingos(), fetchJoinedSharedBoards(), loadDraftBingo()]).then(
@@ -169,10 +183,21 @@ export function BingoAll() {
     );
   }, []);
 
+  /**
+   * 홈 상단 스트립에 띄울 알림. 캐시를 태우지 않는다 — 알림 페이지에서 먼저 처리한
+   * 초대가 3분 stale 창에 걸려 홈에 남아 있으면 안 된다.
+   */
+  const loadStripNotifications = useCallback(() => {
+    fetchNotifications()
+      .then((all) => setStripNotifications(all.filter((n) => STRIP_TYPES.has(n.type))))
+      .catch(Sentry.captureException);
+  }, []);
+
   useFocusEffect(
     useCallback(() => {
       // 팀 상태는 항상 최신으로 다시 받아야 하므로 포커스 시 초기화
       setTeamsByBoard({});
+      loadStripNotifications();
 
       // navigation transition 애니메이션 완료 후 데이터 로드 (main thread 블로킹 방지)
       const task = InteractionManager.runAfterInteractions(() => {
@@ -189,7 +214,7 @@ export function BingoAll() {
       });
 
       return () => task.cancel();
-    }, [loadData]),
+    }, [loadData, loadStripNotifications]),
   );
 
   // Realtime을 쓰지 않으므로 팀원이 채운 칸은 당겨서 새로고침으로 반영한다
@@ -200,10 +225,10 @@ export function BingoAll() {
   }, [loadData]);
 
   /** 연타로 화면이 두 번 쌓이는 것을 막는다 */
-  const navigateOnce = (pathname: string) => {
+  const navigateOnce = (href: Parameters<typeof router.push>[0]) => {
     if (isNavigatingRef.current) return;
     isNavigatingRef.current = true;
-    router.push(pathname);
+    router.push(href);
     setTimeout(() => {
       isNavigatingRef.current = false;
     }, 1000);
@@ -332,112 +357,199 @@ export function BingoAll() {
 
   // 개수 제한은 내가 만든 판만 센다. 남의 공유판은 내 몫을 쓰지 않는다.
   const myBingoCount = bingos.filter((b) => !b.isGuestSharedBoard).length;
+  const atBingoCap = myBingoCount >= MAX_BINGOS;
+
+  /** 스트립에서 지우고 화면에서도 즉시 뺀다. loadData는 쿼리가 깊어 느리다 */
+  const dismissStrip = (item: Notification) => {
+    setStripNotifications((prev) => prev.filter((n) => n.id !== item.id));
+  };
+
+  const handleStripAccept = async (item: Notification) => {
+    if (!item.target_id) return;
+    if (atBingoCap) {
+      setNotice({
+        title: '빙고를 먼저 정리해주세요',
+        body: `빙고는 한 번에 ${MAX_BINGOS}개까지 진행할 수 있어요. 진행 중인 빙고를 마치면 함께할 수 있어요.`,
+      });
+      return;
+    }
+    // 다른 목표로(own)는 내 빙고를 직접 만들어야 해서 여기서 바로 수락할 수 없다
+    if (item.teamMode === 'own') {
+      navigateOnce({ pathname: '/bingo/team-invite', params: { teamId: item.target_id } });
+      return;
+    }
+
+    setStripPendingId(item.id);
+    try {
+      const invite = await fetchTeamInvite(item.target_id);
+      if (!invite) throw new Error('초대를 찾을 수 없어요.');
+      await acceptTeamInvite({
+        teamId: item.target_id,
+        // 같은 목표로(copied)는 방장 빙고를 그대로 복제한다
+        board:
+          invite.mode === 'copied' && invite.ownerBoard
+            ? {
+                title: invite.ownerBoard.title,
+                grid: invite.ownerBoard.grid,
+                theme: invite.ownerBoard.theme,
+                editCount: String(invite.ownerBoardMaxEdits),
+                cells: invite.ownerBoard.cells,
+              }
+            : undefined,
+      });
+      dismissStrip(item);
+      loadData();
+    } catch (e) {
+      Sentry.captureException(e);
+      setNotice({ title: '수락하지 못했어요', body: '잠시 후 다시 시도해 주세요.' });
+    } finally {
+      setStripPendingId(null);
+    }
+  };
+
+  const handleStripDecline = async (item: Notification) => {
+    if (!item.target_id) return;
+    setStripPendingId(item.id);
+    try {
+      await rejectTeamInvite(item.target_id);
+      dismissStrip(item);
+    } catch (e) {
+      Sentry.captureException(e);
+      setNotice({ title: '거절하지 못했어요', body: '잠시 후 다시 시도해 주세요.' });
+    } finally {
+      setStripPendingId(null);
+    }
+  };
+
+  const handleStripConfirm = async (item: Notification) => {
+    if (!item.target_id) return;
+    dismissStrip(item);
+    await deleteNotificationByTarget(item.type, item.target_id).catch(Sentry.captureException);
+  };
   const modalCells = modalTarget ? (cellDetails[modalTarget.bingoId] ?? []) : [];
   const modalTeam = modalTarget ? teamsByBoard[modalTarget.bingoId] : undefined;
 
+  /** 스트립은 스크롤과 함께 밀려나지 않도록 목록 밖 최상단에 둔다 */
+  const strip = (
+    <NotificationStrip
+      items={stripNotifications}
+      pendingId={stripPendingId}
+      atBingoCap={atBingoCap}
+      onAccept={handleStripAccept}
+      onDecline={handleStripDecline}
+      onConfirm={handleStripConfirm}
+    />
+  );
+
   if (loading) {
     return (
-      <View className="flex-1 items-center justify-center bg-white  ">
-        <Loading color="#6ADE50" />
+      <View className="flex-1 bg-white  ">
+        {strip}
+        <View className="flex-1 items-center justify-center">
+          <Loading color="#6ADE50" />
+        </View>
       </View>
     );
   }
 
   return (
-    <ScrollView
-      className="flex-1"
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#6ADE50" />
-      }
-    >
-      {bingos.map((bingo) => (
-        <BingoCard
-          key={bingo.id}
-          bingo={bingo}
-          completedCells={cellDetails[bingo.id]?.map((c) => c.completed)}
-          onCellPress={(cellIndex) => handleCellPress(bingo, cellIndex)}
-          // 남의 공유판은 제목·내용을 방장만 고칠 수 있으므로 수정 진입을 감춘다
-          onEditPress={
-            bingo.isGuestSharedBoard
-              ? undefined
-              : () =>
-                  bingo.id === DRAFT_ID
-                    ? router.push({ pathname: '/bingo/add', params: { loadDraft: 'true' } })
-                    : router.push({ pathname: '/bingo/modify', params: { bingoId: bingo.id } })
-          }
-          teamMembers={teamsByBoard[bingo.id]?.members}
-          onTeamPress={() => {
-            const teamId = teamsByBoard[bingo.id]?.teamId;
-            if (teamId) {
-              router.push({ pathname: '/bingo/team-status', params: { teamId } });
-            }
-          }}
-        />
-      ))}
-      {/* 빙고가 하나도 없을 때: 화면 가운데 안내 + 만들기 버튼 */}
-      {bingos.length === 0 && (
-        <View className="items-center px-5 mt-40">
-          <Text className="text-body-md" style={{ color: '#4C5252' /* gray-700 */ }}>
-            빙고가 하나도 없어요
-          </Text>
-          <Text className="text-body-md mb-8" style={{ color: '#4C5252' /* gray-700 */ }}>
-            첫 빙고를 만들어 볼까요?
-          </Text>
-          <CreateBingoButtons onCreate={navigateOnce} />
-        </View>
-      )}
-
-      {/* 빙고가 있을 때: 목록 아래에 추가 카드, 상한에 닿으면 안내 문구 */}
-      {bingos.length > 0 &&
-        (myBingoCount < MAX_BINGOS ? (
-          <View className="px-5 mt-6">
-            <View className="items-center bg-white   rounded-[20px] py-6 px-5">
-              <Text className="text-body-md mb-5" style={{ color: '#181C1C' /* gray-900 */ }}>
-                빙고 추가하기 ({myBingoCount}/{MAX_BINGOS})
-              </Text>
-              <CreateBingoButtons onCreate={navigateOnce} />
-            </View>
-          </View>
-        ) : (
-          <View className="items-center px-5 mt-10">
-            <Text className="text-body-md" style={{ color: '#929898' /* gray-500 */ }}>
-              빙고는 한 번에 {MAX_BINGOS}개까지 진행할 수 있어요
-            </Text>
-          </View>
-        ))}
-      <View className="h-24" />
-
-      <BingoCellModal
-        visible={!!modalTarget}
-        cells={modalCells}
-        initialIndex={modalTarget?.cellIndex ?? 0}
-        onClose={() => {
-          flushPendingMemos();
-          setModalTarget(null);
-        }}
-        onUpdate={handleCellUpdate}
-        memoSaveState={memoSaveState}
-        team={
-          modalTeam && currentUserId
-            ? {
-                currentUserId,
-                members: modalTeam.members,
-                startDate: modalTeam.startDate,
-                endDate: modalTeam.endDate,
-              }
-            : undefined
+    <View className="flex-1">
+      {strip}
+      <ScrollView
+        className="flex-1"
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#6ADE50" />
         }
-      />
+      >
+        {bingos.map((bingo) => (
+          <BingoCard
+            key={bingo.id}
+            bingo={bingo}
+            completedCells={cellDetails[bingo.id]?.map((c) => c.completed)}
+            onCellPress={(cellIndex) => handleCellPress(bingo, cellIndex)}
+            // 남의 공유판은 제목·내용을 방장만 고칠 수 있으므로 수정 진입을 감춘다
+            onEditPress={
+              bingo.isGuestSharedBoard
+                ? undefined
+                : () =>
+                    bingo.id === DRAFT_ID
+                      ? router.push({ pathname: '/bingo/add', params: { loadDraft: 'true' } })
+                      : router.push({ pathname: '/bingo/modify', params: { bingoId: bingo.id } })
+            }
+            teamMembers={teamsByBoard[bingo.id]?.members}
+            onTeamPress={() => {
+              const teamId = teamsByBoard[bingo.id]?.teamId;
+              if (teamId) {
+                router.push({ pathname: '/bingo/team-status', params: { teamId } });
+              }
+            }}
+          />
+        ))}
+        {/* 빙고가 하나도 없을 때: 화면 가운데 안내 + 만들기 버튼 */}
+        {bingos.length === 0 && (
+          <View className="items-center px-5 mt-40">
+            <Text className="text-body-md" style={{ color: '#4C5252' /* gray-700 */ }}>
+              빙고가 하나도 없어요
+            </Text>
+            <Text className="text-body-md mb-8" style={{ color: '#4C5252' /* gray-700 */ }}>
+              첫 빙고를 만들어 볼까요?
+            </Text>
+            <CreateBingoButtons onCreate={navigateOnce} />
+          </View>
+        )}
 
-      <Modal
-        visible={!!notice}
-        title={notice?.title ?? ''}
-        body={notice?.body ?? ''}
-        variant="single"
-        confirmLabel="확인"
-        onConfirm={() => setNotice(null)}
-        onDismiss={() => setNotice(null)}
-      />
-    </ScrollView>
+        {/* 빙고가 있을 때: 목록 아래에 추가 카드, 상한에 닿으면 안내 문구 */}
+        {bingos.length > 0 &&
+          (myBingoCount < MAX_BINGOS ? (
+            <View className="px-5 mt-6">
+              <View className="items-center bg-white   rounded-[20px] py-6 px-5">
+                <Text className="text-body-md mb-5" style={{ color: '#181C1C' /* gray-900 */ }}>
+                  빙고 추가하기 ({myBingoCount}/{MAX_BINGOS})
+                </Text>
+                <CreateBingoButtons onCreate={navigateOnce} />
+              </View>
+            </View>
+          ) : (
+            <View className="items-center px-5 mt-10">
+              <Text className="text-body-md" style={{ color: '#929898' /* gray-500 */ }}>
+                빙고는 한 번에 {MAX_BINGOS}개까지 진행할 수 있어요
+              </Text>
+            </View>
+          ))}
+        <View className="h-24" />
+
+        <BingoCellModal
+          visible={!!modalTarget}
+          cells={modalCells}
+          initialIndex={modalTarget?.cellIndex ?? 0}
+          onClose={() => {
+            flushPendingMemos();
+            setModalTarget(null);
+          }}
+          onUpdate={handleCellUpdate}
+          memoSaveState={memoSaveState}
+          team={
+            modalTeam && currentUserId
+              ? {
+                  currentUserId,
+                  members: modalTeam.members,
+                  startDate: modalTeam.startDate,
+                  endDate: modalTeam.endDate,
+                }
+              : undefined
+          }
+        />
+
+        <Modal
+          visible={!!notice}
+          title={notice?.title ?? ''}
+          body={notice?.body ?? ''}
+          variant="single"
+          confirmLabel="확인"
+          onConfirm={() => setNotice(null)}
+          onDismiss={() => setNotice(null)}
+        />
+      </ScrollView>
+    </View>
   );
 }
