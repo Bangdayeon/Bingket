@@ -47,6 +47,10 @@ export function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarP
         borderColor: '#E8EAEA', // gray-200
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
+        // 탭을 flex로 균등 분배하지 않는다. 좌우 60을 비우고 나머지를 space-between으로
+        // 벌린다 — 시안의 아이콘 위치가 이 방식이라야 맞는다.
+        justifyContent: 'space-between',
+        paddingHorizontal: 60,
         paddingTop: 10,
         paddingBottom: insets.bottom + 6,
       }}
@@ -73,7 +77,10 @@ export function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarP
         return (
           <TouchableOpacity
             key={route.key}
-            style={{ flex: 1, alignItems: 'center', gap: 6 }}
+            style={{ alignItems: 'center', gap: 6 }}
+            // flex를 뺀 만큼 탭 영역이 아이콘+라벨 크기로 줄어든다.
+            // 손가락으로 누르기엔 좁아서 터치 범위만 좌우로 넓힌다.
+            hitSlop={{ top: 8, bottom: 8, left: 16, right: 16 }}
             onPress={onPress}
             activeOpacity={0.7}
             accessibilityRole="button"
