@@ -77,7 +77,10 @@ export function BingoCard({
   const screenWidth = contentWidth;
 
   const [dayElapsed, dayTotal] = calcDayProgress(bingo.startDate, bingo.targetDate);
-  const formattedEndDate = formatDate(bingo.targetDate);
+  // 시작일 - 종료일. 둘 중 하나만 있으면 있는 쪽만 보여준다 (제작 중 빙고는 비어 있을 수 있다)
+  const formattedPeriod = [formatDate(bingo.startDate), formatDate(bingo.targetDate)]
+    .filter(Boolean)
+    .join(' - ');
 
   if (!image)
     return (
@@ -184,8 +187,8 @@ export function BingoCard({
         </View>
 
         <View className="flex-row items-center justify-between px-5 mt-10 gap-3">
-          {formattedEndDate ? (
-            <Text className="text-caption-sm text-gray-600">{formattedEndDate}</Text>
+          {formattedPeriod ? (
+            <Text className="text-caption-sm text-gray-600">{formattedPeriod}</Text>
           ) : null}
 
           {/* 팀 빙고 표시 겸 현황 이동. 개인 빙고에는 그리지 않는다. */}

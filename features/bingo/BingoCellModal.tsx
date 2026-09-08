@@ -1,7 +1,7 @@
 import DateTimePicker from '@react-native-community/datetimepicker';
 import CalendarIcon from '@/assets/icons/ic_calendar.svg';
 import DoneIcon from '@/assets/icons/ic_done.svg';
-import CheckIcon from '@/assets/icons/ic_check.svg';
+import CloseIcon from '@/assets/icons/ic_close.svg';
 import { BingoCellDetail } from '@/types/bingo-cell';
 import { useEffect, useRef, useState } from 'react';
 import {
@@ -13,10 +13,10 @@ import {
   View,
   useWindowDimensions,
 } from 'react-native';
+import { BlurView } from 'expo-blur';
 import { TABLET_MAX_CONTENT_WIDTH } from '@/lib/use-responsive';
 import { Text } from '@/components/Text';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import IconButton from '@/components/IconButton';
 import { ProfileAvatar } from '@/components/ProfileAvatar';
 
 const PEEK = 20;
@@ -34,15 +34,47 @@ export interface CellTeamContext {
   endDate: string;
 }
 
+/** 메모 저장 상태. 디바운스 타이머를 부모가 들고 있어 저장 시점도 부모만 안다. */
+export type MemoSaveState = 'saving' | 'saved' | 'error';
+
 interface BingoCellModalProps {
   visible: boolean;
   cells: BingoCellDetail[];
   initialIndex: number;
   onClose: () => void;
   onUpdate: (cellId: string, updates: CellUpdate) => void;
+  /** 칸 id → 메모 저장 상태 */
+  memoSaveState?: Record<string, MemoSaveState | undefined>;
   /** 완료된 빙고: 메모만 편집 가능, 완료 토글/완료일 숨김 */
   readOnly?: boolean;
   team?: CellTeamContext;
+}
+
+/** 메모 상자 아래 우측 줄: 저장 상태 + 글자수 */
+function MemoFooter({ length, saveState }: { length: number; saveState?: MemoSaveState }) {
+  return (
+    <View className="flex-row items-center justify-end gap-2 mt-2">
+      {saveState === 'saved' && (
+        <View className="flex-row items-center gap-0.5">
+          <Text className="text-caption-md" style={{ color: '#48BE30' /* green-600 */ }}>
+            저장됨
+          </Text>
+          <DoneIcon width={12} height={12} color="#48BE30" /* green-600 */ />
+        </View>
+      )}
+      {saveState === 'error' && (
+        <Text className="text-caption-md" style={{ color: '#E02828' /* red-500 */ }}>
+          저장 실패
+        </Text>
+      )}
+      <Text
+        className="text-caption-md"
+        style={{ color: length >= 500 ? '#4C5252' : '#929898' /* gray-700 : gray-500 */ }}
+      >
+        {length}/500
+      </Text>
+    </View>
+  );
 }
 
 /** 들여쓰기(탭·개행)를 공백으로 정규화하고 앞뒤 공백을 제거 */
@@ -56,7 +88,9 @@ function normalizeTitle(title: string): string {
 function formatDate(iso: string | null): string {
   if (!iso) return '';
   const d = new Date(iso);
-  return `${d.getFullYear()}. ${d.getMonth() + 1}. ${d.getDate()}.`;
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${d.getFullYear()}.${mm}.${dd}`;
 }
 
 export function BingoCellModal({
@@ -65,6 +99,7 @@ export function BingoCellModal({
   initialIndex,
   onClose,
   onUpdate,
+  memoSaveState = {},
   readOnly = false,
   team,
 }: BingoCellModalProps) {
@@ -140,7 +175,12 @@ export function BingoCellModal({
       // 안드로이드 백 버튼: 메모 편집 중이면 편집만 닫고 카드로 돌아간다
       onRequestClose={editingMemoCell ? closeMemoEditor : onClose}
     >
-      {/* Backdrop */}
+      {/* Backdrop — 뒤의 빙고판을 흐리게 깔아둔다 */}
+      <BlurView
+        intensity={30}
+        tint="dark"
+        style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+      />
       <Pressable
         style={{
           position: 'absolute',
@@ -148,7 +188,7 @@ export function BingoCellModal({
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundColor: 'rgba(115,115,115,0.7)' /* gray-600/70 */,
+          backgroundColor: 'rgba(115,115,115,0.4)' /* gray-600/40 */,
         }}
         onPress={onClose}
       />
@@ -159,6 +199,13 @@ export function BingoCellModal({
         style={{ flex: 1, justifyContent: 'center', opacity: editingMemoCell ? 0 : 1 }}
         pointerEvents={editingMemoCell ? 'none' : 'box-none'}
       >
+        {/* 몇 번째 칸인지 — 카드 위 */}
+        <View className="items-center mb-4" pointerEvents="none">
+          <Text className="text-body-sm text-white">
+            {currentIndex + 1} / {cells.length}
+          </Text>
+        </View>
+
         <FlatList
           ref={flatListRef}
           data={cells}
@@ -200,19 +247,28 @@ export function BingoCellModal({
                   {normalizeTitle(item.title)}
                 </Text>
                 {!readOnly && (
-                  <View style={{ opacity: lockedByOther(item) ? 0.4 : 1 }}>
-                    <IconButton
-                      variant="ghost"
-                      onClick={() => handleToggleComplete(item)}
-                      icon={
-                        item.completed ? (
-                          <DoneIcon width={24} height={24} color="#48BE30" /* green-600 */ />
-                        ) : (
-                          <CheckIcon width={24} height={24} color="#4C5252" /* gray-700 */ />
-                        )
-                      }
-                    />
-                  </View>
+                  <Pressable
+                    onPress={() => handleToggleComplete(item)}
+                    hitSlop={8}
+                    style={{ opacity: lockedByOther(item) ? 0.4 : 1 }}
+                    className="mt-1"
+                  >
+                    {item.completed ? (
+                      // ic_done은 원 안에서 체크가 파인 모양이라 그대로 두면 채워진 녹색 원이 된다
+                      <DoneIcon width={32} height={32} color="#6ADE50" /* green-500 */ />
+                    ) : (
+                      // 빈 테두리 원은 에셋이 없어 View로 만든다
+                      <View
+                        style={{
+                          width: 32,
+                          height: 32,
+                          borderRadius: 16,
+                          borderWidth: 1.5,
+                          borderColor: '#D2D6D6' /* gray-300 */,
+                        }}
+                      />
+                    )}
+                  </Pressable>
                 )}
               </View>
 
@@ -228,11 +284,13 @@ export function BingoCellModal({
                 </View>
               )}
 
-              {/* 완료일 */}
-              {(!readOnly || item.completedAt) && (
+              {/* 완료일 — 채운 칸에만 보여준다.
+                  아직 안 채운 칸에 '날짜 선택'을 띄우면 순서가 거꾸로 읽힌다.
+                  체크하면 현재 시각이 자동으로 찍히고, 그 뒤 날짜를 고쳐 잡으면 된다. */}
+              {item.completed && (
                 <>
                   <Text
-                    className="text-title-sm mb-2 font-pretendard-medium"
+                    className="text-label-md mb-2 font-pretendard-medium"
                     style={{ color: '#181C1C' /* gray-900 */ }}
                   >
                     완료일
@@ -266,16 +324,13 @@ export function BingoCellModal({
 
               {/* 메모 */}
               <Text
-                className="text-title-sm mb-2 font-pretendard-medium"
+                className="text-label-md mb-2 font-pretendard-medium"
                 style={{ color: '#181C1C' /* gray-900 */ }}
               >
                 메모
               </Text>
               {/* 여기서는 미리보기만 한다. 실제 입력은 아래 메모 편집 오버레이에서. */}
-              <Pressable
-                style={{ position: 'relative' }}
-                onPress={() => setEditingMemoCellId(item.id)}
-              >
+              <Pressable onPress={() => setEditingMemoCellId(item.id)}>
                 <RNTextInput
                   value={item.memo}
                   placeholder="메모를 입력해주세요."
@@ -285,23 +340,10 @@ export function BingoCellModal({
                   editable={false}
                   pointerEvents="none"
                   textAlignVertical="top"
-                  className="h-[190px] bg-gray-100 rounded-2xl p-4 text-body-md"
-                  style={{ paddingBottom: 28, color: '#181C1C' /* gray-900 */ }}
+                  className="h-[170px] bg-gray-100 rounded-2xl p-4 text-body-md"
+                  style={{ color: '#181C1C' /* gray-900 */ }}
                 />
-                <Text
-                  className="text-caption-sm"
-                  style={{
-                    position: 'absolute',
-                    bottom: 10,
-                    right: 14,
-                    color:
-                      (item.memo?.length ?? 0) >= 500
-                        ? '#4C5252' /* gray-700 */
-                        : '#929898' /* gray-500 */,
-                  }}
-                >
-                  {item.memo?.length ?? 0}/500
-                </Text>
+                <MemoFooter length={item.memo?.length ?? 0} saveState={memoSaveState[item.id]} />
               </Pressable>
 
               {/* 팀 메모는 전원이 고칠 수 있어, 조용히 바뀌지 않도록 마지막 수정자를 남긴다 */}
@@ -314,11 +356,15 @@ export function BingoCellModal({
           )}
         />
 
-        {/* Page indicator */}
-        <View className="items-center mt-4" pointerEvents="none">
-          <Text className="text-body-sm text-white">
-            {currentIndex + 1} / {cells.length}
-          </Text>
+        {/* 닫기 */}
+        <View className="items-center mt-6">
+          <Pressable
+            onPress={onClose}
+            hitSlop={8}
+            className="w-12 h-12 rounded-full bg-white   items-center justify-center"
+          >
+            <CloseIcon width={24} height={24} color="#181C1C" /* gray-900 */ />
+          </Pressable>
         </View>
       </View>
 
@@ -372,22 +418,11 @@ export function BingoCellModal({
                   textAlignVertical="top"
                   maxLength={500}
                   className="h-[190px] bg-gray-100 rounded-2xl p-4 text-body-md"
-                  style={{ paddingBottom: 28 }}
                 />
-                <Text
-                  className="text-caption-sm"
-                  style={{
-                    position: 'absolute',
-                    bottom: 10,
-                    right: 14,
-                    color:
-                      (editingMemoCell.memo?.length ?? 0) >= 500
-                        ? '#4C5252' /* gray-700 */
-                        : '#929898' /* gray-500 */,
-                  }}
-                >
-                  {editingMemoCell.memo?.length ?? 0}/500
-                </Text>
+                <MemoFooter
+                  length={editingMemoCell.memo?.length ?? 0}
+                  saveState={memoSaveState[editingMemoCell.id]}
+                />
               </View>
             </View>
           </View>
@@ -398,15 +433,11 @@ export function BingoCellModal({
       {datePickerCellId && (
         <>
           <Pressable className="absolute z-10" onPress={() => setDatePickerCellId(null)} />
+          {/* 하단 여백은 인라인 스타일로 준다. `pb-[${'{'}...{'}'}px]` 같은 동적 클래스는
+              NativeWind가 빌드 타임에 생성하지 못해 패딩이 조용히 사라진다. */}
           <View
-            className={`
-            absolute bottom-0 left-0 right-0
-            bg-white
-            rounded-t-[16px]
-            px-5 pt-4
-            pb-[${insets.bottom + 16}px]
-            z-11
-          `}
+            className="absolute bottom-0 left-0 right-0 bg-white   rounded-t-[16px] px-5 pt-4 z-11"
+            style={{ paddingBottom: insets.bottom + 16 }}
           >
             <View className="flex-row justify-between items-center mb-2">
               <Text className="text-title-sm">완료일 선택</Text>

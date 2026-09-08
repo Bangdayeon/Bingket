@@ -1,12 +1,11 @@
 import * as Sentry from '@sentry/react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { InteractionManager, RefreshControl, ScrollView, Pressable, View } from 'react-native';
+import { InteractionManager, RefreshControl, ScrollView, View } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { startTransition, useState, useCallback, useRef } from 'react';
 import { BingoCard } from './components/BingoCard';
-import { BingoCellModal } from './BingoCellModal';
+import { BingoCellModal, type MemoSaveState } from './BingoCellModal';
 import { Text } from '@/components/Text';
-import AddIcon from '@/assets/icons/ic_add.svg';
 import { BingoData } from '@/types/bingo';
 import { BingoCellDetail } from '@/types/bingo-cell';
 import {
@@ -26,6 +25,7 @@ import { getCache, setCache } from '@/lib/cache';
 import { MAX_BINGOS } from '@/constants/bingo';
 import { CACHE_KEY_ALL } from '@/constants/cache_key';
 import Loading from '@/components/Loading';
+import Button from '@/components/Button';
 import { Modal } from '@/components/Modal';
 
 const DRAFT_ID = 'draft_0';
@@ -68,6 +68,21 @@ async function loadDraftBingo(): Promise<BingoData | null> {
   }
 }
 
+/** 빈 화면과 추가 카드 양쪽에서 쓰는 만들기 버튼 한 쌍 */
+function CreateBingoButtons({ onCreate }: { onCreate: (pathname: string) => void }) {
+  return (
+    <View className="w-full gap-3">
+      <Button label="혼자 할래요" onClick={() => onCreate('/bingo/add')} className="w-full" />
+      <Button
+        label="지인과 할래요"
+        variant="secondary"
+        onClick={() => onCreate('/bingo/team-mode')}
+        className="w-full"
+      />
+    </View>
+  );
+}
+
 export function BingoAll() {
   const router = useRouter();
   const [bingos, setBingos] = useState<BingoData[]>([]);
@@ -88,6 +103,7 @@ export function BingoAll() {
     null,
   );
   const memoDebounceRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+  const [memoSaveState, setMemoSaveState] = useState<Record<string, MemoSaveState | undefined>>({});
   const isNavigatingRef = useRef(false);
 
   const loadData = useCallback(() => {
@@ -275,9 +291,15 @@ export function BingoAll() {
     }
     if (memo !== undefined) {
       clearTimeout(memoDebounceRef.current[cellId]);
+      setMemoSaveState((prev) => ({ ...prev, [cellId]: 'saving' }));
       memoDebounceRef.current[cellId] = setTimeout(() => {
         // 메모는 입력 중일 수 있어 되돌리지 않고 알리기만 한다
-        updateCell(cellId, { memo }).catch((error) => handleSaveFailure(error, false));
+        updateCell(cellId, { memo })
+          .then(() => setMemoSaveState((prev) => ({ ...prev, [cellId]: 'saved' })))
+          .catch((error) => {
+            setMemoSaveState((prev) => ({ ...prev, [cellId]: 'error' }));
+            handleSaveFailure(error, false);
+          });
       }, 500);
     }
   };
@@ -289,7 +311,7 @@ export function BingoAll() {
 
   if (loading) {
     return (
-      <View className="flex-1 mt-[50px] items-center justify-center bg-white  ">
+      <View className="flex-1 items-center justify-center bg-white  ">
         <Loading color="#6ADE50" />
       </View>
     );
@@ -297,7 +319,7 @@ export function BingoAll() {
 
   return (
     <ScrollView
-      className="flex-1 mt-[60px]  "
+      className="flex-1"
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#6ADE50" />
       }
@@ -326,52 +348,37 @@ export function BingoAll() {
           }}
         />
       ))}
+      {/* 빙고가 하나도 없을 때: 화면 가운데 안내 + 만들기 버튼 */}
       {bingos.length === 0 && (
-        <View className="flex items-center mt-32">
-          <Text className="text-title-md ">아직 빙고가 없어요</Text>
-          <Text className="text-title-md">첫 빙고를 추가해볼까요?</Text>
+        <View className="items-center px-5 mt-40">
+          <Text className="text-body-md" style={{ color: '#4C5252' /* gray-700 */ }}>
+            빙고가 하나도 없어요
+          </Text>
+          <Text className="text-body-md mb-8" style={{ color: '#4C5252' /* gray-700 */ }}>
+            첫 빙고를 만들어 볼까요?
+          </Text>
+          <CreateBingoButtons onCreate={navigateOnce} />
         </View>
       )}
 
-      {/* 새 빙고 추가 섹션: 혼자 할지 함께 할지 먼저 고른다 */}
-      {myBingoCount < MAX_BINGOS && (
-        <View className="px-5 mt-10">
-          <View className="items-center justify-center gap-4 bg-green-100 w-full rounded-[20px] py-8 px-5">
-            <AddIcon width={40} height={40} color="#4C5252" /* gray-700 */ />
-            <Text
-              className="text-title-md font-pretendard-medium"
-              style={{ color: '#4C5252' /* gray-700 */ }}
-            >
-              새 빙고 만들기
-            </Text>
-            <Text className="text-title-md" style={{ color: '#4C5252' /* gray-700 */ }}>
-              ({myBingoCount}/{MAX_BINGOS})
-            </Text>
-
-            <View className="w-full gap-3 mt-2">
-              <Pressable
-                onPress={() => navigateOnce('/bingo/add')}
-                className="bg-white rounded-2xl px-5 py-4 gap-1"
-              >
-                <Text className="text-title-sm font-pretendard-semibold">나만의 빙고</Text>
-                <Text className="text-body-sm" style={{ color: '#4C5252' /* gray-700 */ }}>
-                  혼자 세운 목표를 내 속도로 채워요
-                </Text>
-              </Pressable>
-
-              <Pressable
-                onPress={() => navigateOnce('/bingo/team-mode')}
-                className="bg-white rounded-2xl px-5 py-4 gap-1"
-              >
-                <Text className="text-title-sm font-pretendard-semibold">친구와 같이하기</Text>
-                <Text className="text-body-sm" style={{ color: '#4C5252' /* gray-700 */ }}>
-                  친구를 초대해 같은 기간 동안 함께 채워요
-                </Text>
-              </Pressable>
+      {/* 빙고가 있을 때: 목록 아래에 추가 카드, 상한에 닿으면 안내 문구 */}
+      {bingos.length > 0 &&
+        (myBingoCount < MAX_BINGOS ? (
+          <View className="px-5 mt-6">
+            <View className="items-center bg-white   rounded-[20px] py-6 px-5">
+              <Text className="text-body-md mb-5" style={{ color: '#181C1C' /* gray-900 */ }}>
+                빙고 추가하기 ({myBingoCount}/{MAX_BINGOS})
+              </Text>
+              <CreateBingoButtons onCreate={navigateOnce} />
             </View>
           </View>
-        </View>
-      )}
+        ) : (
+          <View className="items-center px-5 mt-10">
+            <Text className="text-body-md" style={{ color: '#929898' /* gray-500 */ }}>
+              빙고는 한 번에 {MAX_BINGOS}개까지 진행할 수 있어요
+            </Text>
+          </View>
+        ))}
       <View className="h-24" />
 
       <BingoCellModal
@@ -380,6 +387,7 @@ export function BingoAll() {
         initialIndex={modalTarget?.cellIndex ?? 0}
         onClose={() => setModalTarget(null)}
         onUpdate={handleCellUpdate}
+        memoSaveState={memoSaveState}
         team={
           modalTeam && currentUserId
             ? {

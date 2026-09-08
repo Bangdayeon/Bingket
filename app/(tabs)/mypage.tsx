@@ -16,6 +16,8 @@ import {
   type FeedItem,
   type ProfileSummary,
 } from '@/features/profile/lib/profile';
+import { fetchMyTeams, type TeamListEntry } from '@/features/team/lib/team';
+import { TeamListItem } from '@/features/team/components/TeamListItem';
 
 const TABS = ['피드', '뱃지'] as const;
 
@@ -24,6 +26,7 @@ export default function MyPageScreen() {
   const [tabIndex, setTabIndex] = useState(0);
   const [profile, setProfile] = useState<ProfileSummary | null>(null);
   const [feed, setFeed] = useState<FeedItem[]>([]);
+  const [teams, setTeams] = useState<TeamListEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
   useFocusEffect(
@@ -40,10 +43,23 @@ export default function MyPageScreen() {
         .finally(() => {
           if (!cancelled) setLoading(false);
         });
+      // 함께하는 빙고는 여기서만 볼 수 있다 (홈의 '함께' 탭이 없어졌다)
+      fetchMyTeams()
+        .then((t) => {
+          if (!cancelled) setTeams(t);
+        })
+        .catch(Sentry.captureException);
       return () => {
         cancelled = true;
       };
     }, []),
+  );
+
+  // 수락 안 한 초대는 빙고판이 아직 없어 썸네일로 못 그린다. 피드 맨 위에 따로 띄운다.
+  const invites = teams.filter((t) => t.isInvite);
+  // 팀에 속한 내 빙고판. 피드 항목에 '함께' 뱃지를 붙이는 데 쓴다.
+  const teamBoardIds = new Set(
+    teams.filter((t) => !t.isInvite && t.myBoardId).map((t) => t.myBoardId as string),
   );
 
   return (
@@ -93,9 +109,17 @@ export default function MyPageScreen() {
           </View>
         ) : (
           <ScrollView className="flex-1" contentContainerStyle={{ paddingTop: 16 }}>
+            {invites.length > 0 && (
+              <View className="mb-4">
+                {invites.map((team) => (
+                  <TeamListItem key={team.teamId} team={team} />
+                ))}
+              </View>
+            )}
             <FeedGrid
               items={feed}
               isMe
+              teamBoardIds={teamBoardIds}
               onItemPress={(item) =>
                 router.push({ pathname: '/bingo/view', params: { bingoId: item.id } })
               }

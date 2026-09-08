@@ -18,11 +18,19 @@ interface Props {
   items: FeedItem[];
   /** 본인 피드면 공개범위 배지를 함께 노출한다 */
   isMe: boolean;
+  /** 팀에 속한 빙고판 id. 해당 항목에 '함께' 배지를 붙인다 */
+  teamBoardIds?: Set<string>;
   onItemPress: (item: FeedItem) => void;
   emptyText?: string;
 }
 
-export function FeedGrid({ items, isMe, onItemPress, emptyText = '아직 빙고가 없어요.' }: Props) {
+export function FeedGrid({
+  items,
+  isMe,
+  teamBoardIds,
+  onItemPress,
+  emptyText = '아직 빙고가 없어요.',
+}: Props) {
   const { contentWidth } = useResponsive();
   const itemWidth = (contentWidth - H_PADDING * 2 - GAP * (COLUMNS - 1)) / COLUMNS;
 
@@ -63,6 +71,14 @@ export function FeedGrid({ items, isMe, onItemPress, emptyText = '아직 빙고�
                 {item.status === 'done' ? '완료' : '진행 중'}
               </Text>
             </View>
+
+            {teamBoardIds?.has(item.id) && (
+              <View className="px-2 py-0.5 rounded-full bg-sky-100  ">
+                <Text className="text-caption-sm" style={{ color: '#088094' /* sky-700 */ }}>
+                  함께
+                </Text>
+              </View>
+            )}
 
             {isMe && item.visibility && (
               <Text className="text-caption-sm text-gray-500" numberOfLines={1}>
