@@ -6,6 +6,7 @@ import { BingoCellDetail } from '@/types/bingo-cell';
 import { useEffect, useRef, useState } from 'react';
 import {
   FlatList,
+  Keyboard,
   Modal,
   Pressable,
   TextInput as RNTextInput,
@@ -75,9 +76,23 @@ export function BingoCellModal({
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [datePickerCellId, setDatePickerCellId] = useState<string | null>(null);
   const [tempDate, setTempDate] = useState(new Date());
+  /**
+   * 메모 편집 중인 칸. 카드는 460px라 키보드가 올라오면 하단 메모가 가려진다.
+   * 편집 중에는 카드를 숨기고 메모 입력창만 화면 위쪽에 따로 띄운다.
+   */
+  const [editingMemoCellId, setEditingMemoCellId] = useState<string | null>(null);
+  const editingMemoCell = cells.find((c) => c.id === editingMemoCellId) ?? null;
+
+  const closeMemoEditor = () => {
+    Keyboard.dismiss();
+    setEditingMemoCellId(null);
+  };
 
   useEffect(() => {
-    if (!visible) return;
+    if (!visible) {
+      setEditingMemoCellId(null);
+      return;
+    }
     setCurrentIndex(initialIndex);
     const t = setTimeout(() => {
       if (cells.length > 0 && initialIndex < cells.length) {
@@ -118,7 +133,13 @@ export function BingoCellModal({
   };
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+    <Modal
+      visible={visible}
+      transparent
+      animationType="fade"
+      // 안드로이드 백 버튼: 메모 편집 중이면 편집만 닫고 카드로 돌아간다
+      onRequestClose={editingMemoCell ? closeMemoEditor : onClose}
+    >
       {/* Backdrop */}
       <Pressable
         style={{
@@ -132,8 +153,12 @@ export function BingoCellModal({
         onPress={onClose}
       />
 
-      {/* Centered content */}
-      <View style={{ flex: 1, justifyContent: 'center' }} pointerEvents="box-none">
+      {/* Centered content — 메모 편집 중에는 숨긴다.
+          언마운트하면 FlatList가 첫 칸으로 돌아가므로 투명하게만 만든다. */}
+      <View
+        style={{ flex: 1, justifyContent: 'center', opacity: editingMemoCell ? 0 : 1 }}
+        pointerEvents={editingMemoCell ? 'none' : 'box-none'}
+      >
         <FlatList
           ref={flatListRef}
           data={cells}
@@ -246,18 +271,22 @@ export function BingoCellModal({
               >
                 메모
               </Text>
-              <View style={{ position: 'relative' }}>
+              {/* 여기서는 미리보기만 한다. 실제 입력은 아래 메모 편집 오버레이에서. */}
+              <Pressable
+                style={{ position: 'relative' }}
+                onPress={() => setEditingMemoCellId(item.id)}
+              >
                 <RNTextInput
                   value={item.memo}
-                  onChangeText={(v) => onUpdate(item.id, { memo: v })}
                   placeholder="메모를 입력해주세요."
                   placeholderTextColor="#B4BBBB" /* gray-400 */
                   multiline
-                  scrollEnabled
+                  scrollEnabled={false}
+                  editable={false}
+                  pointerEvents="none"
                   textAlignVertical="top"
-                  maxLength={500}
                   className="h-[190px] bg-gray-100 rounded-2xl p-4 text-body-md"
-                  style={{ paddingBottom: 28 }}
+                  style={{ paddingBottom: 28, color: '#181C1C' /* gray-900 */ }}
                 />
                 <Text
                   className="text-caption-sm"
@@ -273,7 +302,7 @@ export function BingoCellModal({
                 >
                   {item.memo?.length ?? 0}/500
                 </Text>
-              </View>
+              </Pressable>
 
               {/* 팀 메모는 전원이 고칠 수 있어, 조용히 바뀌지 않도록 마지막 수정자를 남긴다 */}
               {team && item.memoUpdatedBy && item.memoUpdatedBy !== team.currentUserId && (
@@ -292,6 +321,78 @@ export function BingoCellModal({
           </Text>
         </View>
       </View>
+
+      {/* 메모 편집 — 키보드에 가리지 않도록 화면 위쪽에 붙인다 */}
+      {editingMemoCell && (
+        <>
+          <Pressable
+            style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+            onPress={closeMemoEditor}
+          />
+          <View
+            style={{ position: 'absolute', top: 0, left: 0, right: 0, alignItems: 'center' }}
+            pointerEvents="box-none"
+          >
+            <View
+              style={{
+                width: CARD_WIDTH,
+                marginTop: insets.top + 16,
+                backgroundColor: '#FDFDFD' /* white */,
+                borderRadius: 30,
+                padding: 24,
+              }}
+            >
+              <View className="flex-row justify-between items-center mb-2">
+                <Text
+                  className="text-title-sm font-pretendard-medium"
+                  style={{ color: '#181C1C' /* gray-900 */ }}
+                >
+                  메모
+                </Text>
+                <Pressable onPress={closeMemoEditor} hitSlop={8}>
+                  <Text className="text-title-sm" style={{ color: '#6ADE50' /* green-500 */ }}>
+                    완료
+                  </Text>
+                </Pressable>
+              </View>
+
+              <Text className="text-body-sm mb-3" style={{ color: '#929898' /* gray-500 */ }}>
+                {normalizeTitle(editingMemoCell.title)}
+              </Text>
+
+              <View style={{ position: 'relative' }}>
+                <RNTextInput
+                  autoFocus
+                  value={editingMemoCell.memo}
+                  onChangeText={(v) => onUpdate(editingMemoCell.id, { memo: v })}
+                  placeholder="메모를 입력해주세요."
+                  placeholderTextColor="#B4BBBB" /* gray-400 */
+                  multiline
+                  scrollEnabled
+                  textAlignVertical="top"
+                  maxLength={500}
+                  className="h-[190px] bg-gray-100 rounded-2xl p-4 text-body-md"
+                  style={{ paddingBottom: 28 }}
+                />
+                <Text
+                  className="text-caption-sm"
+                  style={{
+                    position: 'absolute',
+                    bottom: 10,
+                    right: 14,
+                    color:
+                      (editingMemoCell.memo?.length ?? 0) >= 500
+                        ? '#4C5252' /* gray-700 */
+                        : '#929898' /* gray-500 */,
+                  }}
+                >
+                  {editingMemoCell.memo?.length ?? 0}/500
+                </Text>
+              </View>
+            </View>
+          </View>
+        </>
+      )}
 
       {/* Date picker sheet */}
       {datePickerCellId && (
