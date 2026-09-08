@@ -18,7 +18,10 @@ export const navigateToNotification = (type: string, targetId: string | null): b
   }
 
   if (
-    (type === 'team_joined' || type === 'team_finished' || type === 'team_cell_checked') &&
+    (type === 'team_joined' ||
+      type === 'team_finished' ||
+      type === 'team_cell_checked' ||
+      type === 'team_invite_declined') &&
     targetId
   ) {
     router.push({ pathname: '/bingo/team-status', params: { teamId: targetId } });

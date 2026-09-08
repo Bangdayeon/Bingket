@@ -31,6 +31,7 @@ interface WebhookPayload {
 const TITLES: Record<string, string> = {
   friend_request: '👋 친구 요청',
   team_invite: '🤝 팀 빙고 초대',
+  team_invite_declined: '🤝 함께하기 거절',
   team_joined: '🤝 팀에 합류했어요',
   team_finished: '🏁 팀 빙고 종료',
   team_cell_checked: '✅ 팀원이 칸을 채웠어요',
