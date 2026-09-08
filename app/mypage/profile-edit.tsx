@@ -19,9 +19,9 @@ import {
   DEFAULT_AVATAR_PREFIX,
 } from '@/components/ProfileAvatar';
 import { fetchMyProfile, updateMyProfile, uploadProfileImage } from '@/features/mypage/lib/mypage';
-import Loading from '@/components/Loading';
+import Button from '@/components/Button';
 
-const NAME_MAX = 20;
+const NAME_MAX = 12;
 const USER_ID_MAX = 20;
 const BIO_MAX = 50;
 
@@ -170,30 +170,24 @@ export default function ProfileEditPage() {
 
   return (
     <View className="flex-1 bg-white  " style={{ paddingTop: insets.top }}>
-      {/* Header */}
-      <View className="h-[60px] flex-row items-center px-4 border-b border-gray-300  ">
+      {/* Header — 화면 제목은 아래 본문 헤딩으로 뺀다 */}
+      <View className="h-[60px] flex-row items-center px-4">
         <IconButton
           variant="ghost"
           size={32}
           icon={<BackArrowIcon width={20} height={20} />}
           onClick={handleBack}
         />
-        <Text className="flex-1 text-center text-title-sm font-pretendard-medium">프로필 편집</Text>
-        <Pressable onPress={handleSave} disabled={saving}>
-          {saving ? (
-            <Loading color="#6ADE50" variant="iconloading" size={5} />
-          ) : (
-            <Text className="text-title-sm">저장</Text>
-          )}
-        </Pressable>
       </View>
 
-      <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}>
+      <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 24 }}>
+        <Text className="text-title-lg font-pretendard-semibold px-5 mb-2">프로필 편집</Text>
+
         {/* 프로필 이미지 */}
-        <View className="items-center pt-8 pb-6">
+        <View className="items-center pt-6 pb-6">
           <View className="relative">
-            <ProfileAvatar avatarUrl={avatarUri} />
-            <View className="absolute -bottom-3 -right-3">
+            <ProfileAvatar avatarUrl={avatarUri} size={120} />
+            <View className="absolute bottom-0 -left-2">
               <IconButton
                 variant="secondary"
                 size={36}
@@ -207,54 +201,68 @@ export default function ProfileEditPage() {
         {/* 폼 */}
         <View className="px-5 gap-5">
           <View className="gap-2">
-            <Text className="text-title-sm">닉네임</Text>
+            <Text className="text-label-md">닉네임</Text>
             <TextInput
               value={name}
               onChangeText={handleNameChange}
-              placeholder="한글/영어/숫자, 20자 이내"
+              placeholder={`${NAME_MAX}자 이내로 입력해주세요.`}
+              rounded={12}
             />
             <Text
               className="text-caption-md text-right"
-              style={{ color: '#4C5252' /* gray-700 */ }}
+              style={{ color: '#929898' /* gray-500 */ }}
             >
               {name.length}/{NAME_MAX}
             </Text>
           </View>
 
           <View className="gap-2">
-            <Text className="text-title-sm">아이디</Text>
+            <Text className="text-label-md">아이디</Text>
             <TextInput
               value={userId}
               onChangeText={handleUserIdChange}
-              placeholder="영어/숫자/_ - 조합, 20자 이내"
+              placeholder={`영어, 언더바, 숫자로만 ${USER_ID_MAX}자 이내로 입력해주세요.`}
               autoCapitalize="none"
+              rounded={12}
             />
             <Text
               className="text-caption-md text-right"
-              style={{ color: '#4C5252' /* gray-700 */ }}
+              style={{ color: '#929898' /* gray-500 */ }}
             >
               {userId.length}/{USER_ID_MAX}
             </Text>
           </View>
 
           <View className="gap-2">
-            <Text className="text-title-sm">한 줄 다짐</Text>
+            <Text className="text-label-md">한 줄 다짐</Text>
             <TextInput
               value={bio}
               onChangeText={(v) => setBio(v.slice(0, BIO_MAX))}
-              placeholder="50자 이내로 입력해주세요."
+              placeholder={`${BIO_MAX}자 이내로 입력해주세요.`}
               maxLength={BIO_MAX}
               maxHeight={64}
+              rounded={12}
             />
             <Text
               className="text-caption-md text-right"
-              style={{ color: '#4C5252' /* gray-700 */ }}
+              style={{ color: '#929898' /* gray-500 */ }}
             >
               {bio.length}/{BIO_MAX}
             </Text>
           </View>
         </View>
       </ScrollView>
+
+      {/* 저장 */}
+      <View className="px-5" style={{ paddingBottom: insets.bottom + 16 }}>
+        <Button
+          label="저장하기"
+          onClick={handleSave}
+          disabled={saving}
+          loading={saving}
+          className="w-full"
+        />
+      </View>
 
       <Toast message={toast} visible={toastVisible} onDismiss={() => setToastVisible(false)} />
       <Modal

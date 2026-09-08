@@ -13,14 +13,6 @@ import * as WebBrowser from 'expo-web-browser';
 import * as Clipboard from 'expo-clipboard';
 import { Toast } from '@/components/Toast';
 
-import Profile from '@/assets/pngIcons/profile.png';
-import Account from '@/assets/pngIcons/account.png';
-import Notification from '@/assets/pngIcons/notification.png';
-import Review from '@/assets/pngIcons/review.png';
-import FAQ from '@/assets/pngIcons/faq.png';
-import Terms from '@/assets/pngIcons/terms.png';
-import Privacy from '@/assets/pngIcons/privacy.png';
-import Update from '@/assets/pngIcons/update.png';
 import { TextInput } from '@/components/TextInput';
 import { ANDROID_PACKAGE_NAME, IOS_APP_ID } from '@/constants/store';
 
@@ -98,86 +90,79 @@ export function SettingsMenu() {
 
   return (
     <>
-      <ScrollView className="flex-1 bg-white px-5 md:self-center md:w-full md:max-w-[600px]">
-        <View className="h-px bg-gray-200  " />
+      <ScrollView className="flex-1 bg-white md:self-center md:w-full md:max-w-[600px]">
+        <View className="px-5">
+          <Text className="text-title-lg font-pretendard-semibold mb-4">설정</Text>
+        </View>
 
-        <MenuItem
-          imgSrc={Profile}
-          label="프로필 편집"
-          onPress={() => navigate('/mypage/profile-edit')}
-          showArrow
-        />
-        <MenuItem
-          imgSrc={Account}
-          label="계정 관리"
-          onPress={() => navigate('/mypage/account')}
-          showArrow
-        />
-        <MenuItem
-          imgSrc={Notification}
-          label="알림 설정"
-          onPress={() => navigate('/mypage/alert-setting')}
-          showArrow
-        />
-        {/* <MenuItem imgSrc={Theme} label="앱 테마" onPress={() => router.push('/mypage/app-theme')} showArrow /> */}
+        <View className="px-5">
+          <MenuItem
+            label="프로필 편집"
+            onPress={() => navigate('/mypage/profile-edit')}
+            showArrow
+          />
+          <MenuItem label="계정 관리" onPress={() => navigate('/mypage/account')} showArrow />
+          <MenuItem label="알림 설정" onPress={() => navigate('/mypage/alert-setting')} showArrow />
+          <MenuItem label="앱 테마" onPress={() => navigate('/mypage/app-theme')} showArrow />
+        </View>
 
-        <View className="h-px bg-gray-200  " />
+        <View className="h-2 bg-gray-100  " />
 
-        <MenuItem imgSrc={Review} label="앱 리뷰하러 하기" onPress={openReviewPage} />
-        <MenuItem
-          imgSrc={FAQ}
-          label="자주 묻는 질문"
-          onPress={() =>
-            openUrl(
-              'https://aback-shirt-867.notion.site/32eadd99c04280feb05bd33b3e011d0f?source=copy_link',
-            )
-          }
-        />
-        <MenuItem
-          imgSrc={Terms}
-          label="이용 약관"
-          onPress={() =>
-            openUrl(
-              'https://aback-shirt-867.notion.site/32eadd99c0428005b2e0e2437d6cd91a?source=copy_link',
-            )
-          }
-        />
-        <MenuItem
-          imgSrc={Privacy}
-          label="개인정보 처리방침"
-          onPress={() =>
-            openUrl(
-              'https://aback-shirt-867.notion.site/32eadd99c04280558920e3c684d4bd9a?source=copy_link',
-            )
-          }
-        />
-        <MenuItem
-          imgSrc={Update}
-          label="업데이트 내역"
-          onPress={() =>
-            openUrl(
-              'https://aback-shirt-867.notion.site/32eadd99c04280b9843ded4a5c8f3fff?source=copy_link',
-            )
-          }
-        />
-        <MenuItem label="빠른 문의" onPress={() => setShowAskModal(true)} showArrow />
-        <MenuItem
-          label="버전 정보"
-          onPress={() => {}}
-          rightText={`v ${Constants.expoConfig?.version}`}
-        />
-        <MenuItem
-          label="개발자 이메일"
-          onPress={async () => {
-            await Clipboard.setStringAsync('dybang00@gmail.com');
-            setEmailToastVisible(true);
-          }}
-          rightText="dybang00@gmail.com"
-        />
+        <View className="px-5 md:self-center md:w-full md:max-w-[600px]">
+          <MenuItem label="앱 리뷰 남기기" onPress={openReviewPage} />
+          <MenuItem
+            label="자주 묻는 질문"
+            onPress={() =>
+              openUrl(
+                'https://aback-shirt-867.notion.site/32eadd99c04280feb05bd33b3e011d0f?source=copy_link',
+              )
+            }
+          />
+          <MenuItem
+            label="이용 약관"
+            onPress={() =>
+              openUrl(
+                'https://aback-shirt-867.notion.site/32eadd99c0428005b2e0e2437d6cd91a?source=copy_link',
+              )
+            }
+          />
+          <MenuItem
+            label="개인정보 처리방침"
+            onPress={() =>
+              openUrl(
+                'https://aback-shirt-867.notion.site/32eadd99c04280558920e3c684d4bd9a?source=copy_link',
+              )
+            }
+          />
+          <MenuItem
+            label="업데이트 내역"
+            onPress={() =>
+              openUrl(
+                'https://aback-shirt-867.notion.site/32eadd99c04280b9843ded4a5c8f3fff?source=copy_link',
+              )
+            }
+          />
+          <MenuItem label="빠른 문의" onPress={() => setShowAskModal(true)} showArrow />
+          <MenuItem
+            label="버전 정보"
+            onPress={() => {}}
+            rightText={`v ${Constants.expoConfig?.version}`}
+          />
+          <MenuItem
+            label="개발자 이메일"
+            onPress={async () => {
+              await Clipboard.setStringAsync('dybang00@gmail.com');
+              setEmailToastVisible(true);
+            }}
+            rightText="dybang00@gmail.com"
+          />
+        </View>
 
-        <View className="h-px bg-gray-200  " />
+        <View className="h-2 bg-gray-100  " />
 
-        <MenuItem label="로그아웃" onPress={() => setShowLogoutModal(true)} />
+        <View className="px-5">
+          <MenuItem label="로그아웃" onPress={() => setShowLogoutModal(true)} />
+        </View>
         <View className="h-40" />
 
         <Modal
