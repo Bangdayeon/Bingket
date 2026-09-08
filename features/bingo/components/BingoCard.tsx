@@ -5,7 +5,7 @@ import { useResponsive } from '@/lib/use-responsive';
 import EditIcon from '@/assets/icons/ic_edit.svg';
 import BattleIcon from '@/assets/icons/ic_battle.svg';
 import { BingoData } from '@/types/bingo';
-import { DonutStat } from './DonutStat';
+import { BingoStat } from './BingoStat';
 import { TeamAvatars, type TeamAvatarMember } from '@/features/team/components/TeamAvatars';
 import { calcMaxBingo } from '@/lib/calcMaxBingo';
 import { useEffect, useState } from 'react';
@@ -163,10 +163,10 @@ export function BingoCard({
       <View className="mt-8" style={isTablet ? { width: screenWidth } : undefined}>
         <View className="flex-row">
           <View className="flex-1 items-center">
-            <DonutStat label="달성" current={bingo.achievedCount} total={cols * rows} />
+            <BingoStat label="달성" current={bingo.achievedCount} total={cols * rows} />
           </View>
           <View className="flex-1 items-center">
-            <DonutStat
+            <BingoStat
               label="빙고"
               current={bingo.bingoCount}
               total={calcMaxBingo(cols, rows)}
@@ -174,12 +174,11 @@ export function BingoCard({
             />
           </View>
           <View className="flex-1 items-center">
-            <DonutStat
+            <BingoStat
               label="종료일"
               current={dayElapsed}
               total={dayTotal}
-              centerText={dayTotal >= 1000 ? `D-${bingo.dday}` : undefined}
-              centerFontSize={dayTotal >= 1000 ? 14 : dayTotal >= 100 ? 12 : undefined}
+              valueText={dayTotal >= 1000 ? `D-${bingo.dday}` : undefined}
             />
           </View>
         </View>

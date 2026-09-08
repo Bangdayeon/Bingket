@@ -14,7 +14,7 @@ import Loading from '@/components/Loading';
 import BackArrowIcon from '@/assets/icons/ic_arrow_back.svg';
 import MenuIcon from '@/assets/icons/ic_more_vert.svg';
 import InfoIcon from '@/assets/icons/ic_info.svg';
-import { DonutStat } from '@/features/bingo/components/DonutStat';
+import { BingoStat } from '@/features/bingo/components/BingoStat';
 import { WinnerCrown } from '@/features/team/components/WinnerCrown';
 import {
   fetchTeamDetail,
@@ -98,7 +98,7 @@ export default function TeamStatusScreen() {
   const insets = useSafeAreaInsets();
   const { teamId } = useLocalSearchParams<{ teamId: string }>();
   const { isTablet } = useResponsive();
-  const donutSize = isTablet ? 'md' : 'sm';
+  const statSize = isTablet ? 'md' : 'sm';
 
   const [detail, setDetail] = useState<TeamDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -248,17 +248,17 @@ export default function TeamStatusScreen() {
           {isShared && sharedBoard && (
             <View className="mx-5 mb-8 items-center gap-4">
               <View className="flex-row gap-2">
-                <DonutStat
+                <BingoStat
                   label="팀 달성"
                   current={sharedBoard.checkedCount}
                   total={sharedBoard.totalCells}
-                  size={donutSize}
+                  size={statSize}
                 />
-                <DonutStat
+                <BingoStat
                   label="빙고"
                   current={sharedBoard.bingoCount}
                   total={calcMaxBingo(sharedCols, sharedRows)}
-                  size={donutSize}
+                  size={statSize}
                 />
               </View>
               <Text className="text-title-lg">
@@ -326,17 +326,17 @@ export default function TeamStatusScreen() {
                         />
                       </View>
                       <View className="flex-row gap-2">
-                        <DonutStat
+                        <BingoStat
                           label="달성"
                           current={board.checkedCount}
                           total={board.totalCells}
-                          size={donutSize}
+                          size={statSize}
                         />
-                        <DonutStat
+                        <BingoStat
                           label="빙고"
                           current={board.bingoCount}
                           total={calcMaxBingo(cols, rows)}
-                          size={donutSize}
+                          size={statSize}
                         />
                       </View>
                     </View>
