@@ -26,6 +26,19 @@ import type { BingoData } from '@/types/bingo';
 const editCountKey = (maxEdits: number): string =>
   maxEdits === 9999 || maxEdits === -1 ? '무제한' : String(maxEdits);
 
+/**
+ * DB 트리거가 던지는 문구를 그대로 모달 제목에 띄우면 무엇을 해야 할지 알 수 없다.
+ * 사용자가 조치할 수 있는 경우만 골라 다시 쓴다.
+ */
+const acceptErrorMessage = (e: unknown): string => {
+  const raw = e instanceof Error ? e.message : '';
+  if (raw.includes('최대 3개')) {
+    return '진행 중인 빙고를 마치면 함께할 수 있어요. 빙고는 한 번에 3개까지 진행할 수 있어요.';
+  }
+  if (raw.includes('종료된 팀')) return '이미 종료된 빙고예요.';
+  return '수락에 실패했어요.';
+};
+
 export default function TeamInviteScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -120,7 +133,7 @@ export default function TeamInviteScreen() {
       router.replace({ pathname: '/bingo/team-status', params: { teamId } });
     } catch (e) {
       Sentry.captureException(e);
-      setAlertMessage(e instanceof Error ? e.message : '수락에 실패했어요.');
+      setAlertMessage(acceptErrorMessage(e));
     } finally {
       setActing(false);
     }
