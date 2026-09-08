@@ -10,21 +10,12 @@ import { fetchMyPosts, MyPost } from '@/features/mypage/lib/mypage';
 import FavoriteOffIcon from '@/assets/icons/ic_favorite_off.svg';
 import Loading from '@/components/Loading';
 
-const CATEGORY_LABEL: Record<MyPost['category'], string> = {
-  bingo_board: '빙고판',
-  bingo_achieve: '빙고달성',
-  free: '자유',
-};
-
 function PostItem({ post, onPress }: { post: MyPost; onPress: () => void }) {
   const iconColor = '#4C5252'; /* gray-700 */
 
   return (
     <Pressable onPress={onPress} className="px-5 pt-4 pb-4">
       <View className="flex-row items-center gap-2 mb-2">
-        <View className="bg-sky-100   rounded-full px-2 py-0.5">
-          <Text className="text-caption-sm text-sky-600  ">{CATEGORY_LABEL[post.category]}</Text>
-        </View>
         <Text className="text-caption-sm text-gray-500  ">{post.createdAt}</Text>
       </View>
 

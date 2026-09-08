@@ -1,7 +1,5 @@
 import type { BingoData, BingoTheme } from './bingo';
 
-export type PostCategory = 'bingo_board' | 'bingo_achieve' | 'free';
-
 /** 게시글 작성/수정 에디터 블록 타입 */
 export type EditorBlock =
   | { id: string; type: 'text'; value: string }
@@ -59,7 +57,6 @@ export interface CommunityPost {
   likeCount: number;
   likedByMe: boolean;
   commentCount: number;
-  category: PostCategory;
   bingo?: {
     /** bingo_board row id (snapshot 빙고엔 없음) */
     id?: string;

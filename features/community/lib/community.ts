@@ -3,7 +3,6 @@ import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
 import { supabase } from '@/lib/supabase';
 import type {
   CommunityPost,
-  PostCategory,
   Comment,
   CommentReply,
   EditorBlock,
@@ -80,7 +79,6 @@ function mapPost(
     id: string;
     title: string;
     content: string;
-    category: string;
     like_count: number;
     comment_count: number;
     created_at: string;
@@ -110,7 +108,6 @@ function mapPost(
     likeCount: p.like_count,
     likedByMe,
     commentCount: p.comment_count,
-    category: p.category as PostCategory,
     imageUrls: (p.image_urls as string[] | null) ?? [],
     bingo: board
       ? {
@@ -132,16 +129,13 @@ function mapPost(
 }
 
 const POST_SELECT = `
-  id, title, content, category, like_count, comment_count, created_at, user_id, image_urls, is_anonymous, bingo_snapshot,
+  id, title, content, like_count, comment_count, created_at, user_id, image_urls, is_anonymous, bingo_snapshot,
   users ( display_name, avatar_url ),
   bingo_boards ( id, title, grid, theme, bingo_cells ( position, content ) )
 `;
 
 // ── 게시글 목록 조회 (페이지네이션) ──────────────────────────
-export const fetchPosts = async (
-  page: number,
-  category: PostCategory | null,
-): Promise<CommunityPost[]> => {
+export const fetchPosts = async (page: number): Promise<CommunityPost[]> => {
   const blockedIds = await fetchBlockedUserIds();
 
   let query = supabase
@@ -151,7 +145,6 @@ export const fetchPosts = async (
     .order('created_at', { ascending: false })
     .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
 
-  if (category) query = query.eq('category', category);
   if (blockedIds.length > 0) query = query.not('user_id', 'in', `(${blockedIds.join(',')})`);
 
   const { data, error } = await query;
@@ -350,7 +343,6 @@ async function processBlocks(blocks: EditorBlock[]): Promise<{
 
 // ── 게시글 작성 ──────────────────────────────────────────────────
 export interface CreatePostRequest {
-  category: PostCategory;
   title: string;
   isAnonymous: boolean;
   blocks: EditorBlock[];
@@ -365,7 +357,6 @@ export const createPost = async (req: CreatePostRequest): Promise<string> => {
   const { data, error } = await supabase
     .from('posts')
     .insert({
-      category: req.category,
       title: req.title.trim(),
       content: JSON.stringify(storedBlocks),
       is_anonymous: req.isAnonymous,
@@ -384,7 +375,6 @@ export const createPost = async (req: CreatePostRequest): Promise<string> => {
 // ── 게시글 수정 ──────────────────────────────────────────────────
 export interface UpdatePostRequest {
   postId: string;
-  category: PostCategory;
   title: string;
   isAnonymous: boolean;
   blocks: EditorBlock[];
@@ -402,7 +392,6 @@ export const updatePost = async (req: UpdatePostRequest): Promise<void> => {
   const { error } = await supabase
     .from('posts')
     .update({
-      category: req.category,
       title: req.title.trim(),
       content: JSON.stringify(storedBlocks),
       is_anonymous: req.isAnonymous,

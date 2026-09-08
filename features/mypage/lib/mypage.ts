@@ -182,7 +182,6 @@ export interface MyPost {
   id: string;
   title: string;
   content: string;
-  category: 'bingo_board' | 'bingo_achieve' | 'free';
   likeCount: number;
   commentCount: number;
   createdAt: string;
@@ -226,7 +225,7 @@ export const fetchMyPosts = async (): Promise<MyPost[]> => {
 
   const { data, error } = await supabase
     .from('posts')
-    .select('id, title, content, category, like_count, comment_count, created_at')
+    .select('id, title, content, like_count, comment_count, created_at')
     .eq('user_id', user.id)
     .eq('is_deleted', false)
     .order('created_at', { ascending: false });
@@ -237,7 +236,6 @@ export const fetchMyPosts = async (): Promise<MyPost[]> => {
     id: p.id,
     title: p.title,
     content: extractTextPreview(p.content as string),
-    category: p.category as MyPost['category'],
     likeCount: p.like_count,
     commentCount: p.comment_count,
     createdAt: timeAgo(p.created_at),

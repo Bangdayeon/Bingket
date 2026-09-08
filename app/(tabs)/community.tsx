@@ -1,15 +1,12 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { CommunityHeader } from '@/features/community/components/Header';
-import { CommunityFilter } from '@/features/community/components/Filter';
 import { PostList } from '@/features/community/components/PostList';
 import EditIcon from '@/assets/icons/ic_edit.svg';
-import { CommunityPost, PostCategory } from '@/types/community';
+import { CommunityPost } from '@/types/community';
 import { fetchPosts, PAGE_SIZE } from '@/features/community/lib/community';
-
-const FILTER_CATEGORIES: (PostCategory | null)[] = [null, 'bingo_board', 'bingo_achieve', 'free'];
 
 const TAB_BAR_CONTENT_HEIGHT = 72; // icon(36) + label(20) + paddingVertical(8*2)
 
@@ -17,7 +14,6 @@ export default function CommunityScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const fabBottom = TAB_BAR_CONTENT_HEIGHT + insets.bottom + 16;
-  const [filterIndex, setFilterIndex] = useState(0);
   const [posts, setPosts] = useState<CommunityPost[]>([]);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
@@ -25,78 +21,48 @@ export default function CommunityScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const loadingRef = useRef(false);
   const isFocused = useRef(false); // 현재 포커스 상태
-  const filterIndexRef = useRef(filterIndex); // 최신 filterIndex를 ref로 추적
 
-  const category = FILTER_CATEGORIES[filterIndex];
-  const categoryRef = useRef(category);
+  const loadPosts = useCallback(async (pageNum: number, reset: boolean) => {
+    if (loadingRef.current) return;
+    loadingRef.current = true;
+    setLoading(true);
 
-  // ref 최신값 유지
-  useEffect(() => {
-    filterIndexRef.current = filterIndex;
-    categoryRef.current = FILTER_CATEGORIES[filterIndex];
-  }, [filterIndex]);
+    const fetched = await fetchPosts(pageNum);
 
-  const loadPosts = useCallback(
-    async (pageNum: number, cat: PostCategory | null, reset: boolean) => {
-      if (loadingRef.current) return;
-      loadingRef.current = true;
-      setLoading(true);
+    setPosts((prev) => (reset ? fetched : [...prev, ...fetched]));
+    setHasMore(fetched.length === PAGE_SIZE);
+    setLoading(false);
+    loadingRef.current = false;
+  }, []);
 
-      const fetched = await fetchPosts(pageNum, cat);
-
-      setPosts((prev) => (reset ? fetched : [...prev, ...fetched]));
-      setHasMore(fetched.length === PAGE_SIZE);
-      setLoading(false);
-      loadingRef.current = false;
-    },
-    [],
-  );
-
-  // 포커스 진입 시 1회만 호출 (필터 변경은 별도 처리)
   useFocusEffect(
     useCallback(() => {
       isFocused.current = true;
       setPage(0);
       setHasMore(true);
-      loadPosts(0, categoryRef.current, true);
+      loadPosts(0, true);
 
       return () => {
         isFocused.current = false;
       };
-    }, [loadPosts]), // loadPosts만 의존 → category 변경으로 재실행 안됨
+    }, [loadPosts]),
   );
-
-  // 필터 변경 시에만 호출 (포커스 진입은 useFocusEffect가 처리)
-  const isFirstMount = useRef(true);
-  useEffect(() => {
-    if (isFirstMount.current) {
-      isFirstMount.current = false;
-      return;
-    }
-    setPage(0);
-    setHasMore(true);
-    loadPosts(0, category, true);
-  }, [filterIndex]); // filterIndex만 의존
 
   const handleLoadMore = useCallback(() => {
     if (!hasMore || loadingRef.current) return;
     const next = page + 1;
     setPage(next);
-    loadPosts(next, categoryRef.current, false);
+    loadPosts(next, false);
   }, [hasMore, page, loadPosts]);
 
   const handleRefresh = useCallback(async () => {
     if (loadingRef.current) return;
     setRefreshing(true);
-    const fetched = await fetchPosts(0, categoryRef.current);
+    const fetched = await fetchPosts(0);
     setPosts(fetched);
     setPage(0);
     setHasMore(fetched.length === PAGE_SIZE);
     setRefreshing(false);
-  }, [loadPosts]);
-
-  const handleFilterSelect = useCallback((index: number) => {
-    setFilterIndex(index);
   }, []);
 
   const handleBlock = useCallback((userId: string) => {
@@ -107,7 +73,6 @@ export default function CommunityScreen() {
     <SafeAreaView className="flex-1 bg-white" edges={['top']}>
       <View className="flex-1 md:self-center md:w-full md:max-w-[600px]">
         <CommunityHeader />
-        <CommunityFilter selectedIndex={filterIndex} onSelect={handleFilterSelect} color="blue" />
         <PostList
           posts={posts}
           onLoadMore={handleLoadMore}
@@ -115,7 +80,6 @@ export default function CommunityScreen() {
           onBlock={handleBlock}
           isLoading={loading}
           isRefreshing={refreshing}
-          filterIndex={filterIndex}
         />
       </View>
       <Pressable

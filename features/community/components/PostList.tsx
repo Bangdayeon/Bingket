@@ -13,7 +13,6 @@ interface PostListProps {
   onBlock?: (userId: string) => void;
   isLoading: boolean;
   isRefreshing: boolean;
-  filterIndex: number;
 }
 
 const Separator = () => <View className="h-px bg-gray-300  " />;
@@ -25,7 +24,6 @@ export function PostList({
   onBlock,
   isLoading,
   isRefreshing,
-  filterIndex,
 }: PostListProps) {
   const router = useRouter();
   const flatListRef = useRef<FlatList<CommunityPost>>(null);
@@ -37,10 +35,6 @@ export function PostList({
       setCurrentUserId(data.session?.user.id ?? null);
     });
   }, []);
-
-  useEffect(() => {
-    flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
-  }, [filterIndex]);
 
   const renderItem = useCallback(
     ({ item }: { item: CommunityPost }) => (

@@ -277,7 +277,6 @@ export default function CommunityDetailScreen() {
                 postId: post.id,
                 initTitle: post.title,
                 initContent: post.body,
-                initCategory: post.category,
                 initImageUrls: JSON.stringify(post.imageUrls ?? []),
                 initBingo: post.bingo ? JSON.stringify(post.bingo) : undefined,
                 initIsAnonymous: post.isAnonymous ? '1' : '0',
@@ -359,7 +358,6 @@ export default function CommunityDetailScreen() {
   return (
     <SafeAreaView className="flex-1 bg-white  " edges={['top']}>
       <PostHeader
-        type={post.category}
         iconColor={iconColor}
         onBack={() => router.back()}
         onMenuPress={() => setShowPostMenu((v) => !v)}
