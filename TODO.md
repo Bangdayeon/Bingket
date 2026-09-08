@@ -93,13 +93,14 @@ Supabase Dashboard → Edge Functions → `notify-generic` → Logs 에 **401** 
 
 ---
 
-## 2. iOS 빌드 배포 (지금 바로 가능)
+## 2. iOS 빌드 배포
 
-막혀 있는 것이 없다. `app.json` 의 `googleServicesFile` 은 Android 전용이라 iOS 에 영향 없고,
-JS 수정은 빌드 시 번들되므로 prebuild 도 필요 없다. 기존 `ios/` 폴더 그대로 쓰면 된다.
+> ~~`googleServicesFile` 은 Android 전용이라 iOS 에 영향 없다~~ — **틀렸다.**
+> Firebase Analytics 를 넣으면서 `ios.googleServicesFile` 도 생겼고,
+> 루트에 `GoogleService-Info.plist` 가 없으면 iOS prebuild 가 `ENOENT` 로 죽는다.
+> 2026-09-08 에 두 파일을 받아 넣고 `ios/`·`android/` 를 새로 뽑아 양쪽 빌드까지 확인했다.
 
-- [ ] `ios/` 의 버전을 **1.1.0** 으로 맞추기 (`npx expo prebuild --platform ios` 또는 Xcode 에서 직접).
-      `app.json` 은 이미 1.1.0 인데 기존 `ios/Info.plist` 는 아직 1.0.7 이다
+- [x] `ios/` 재생성 — `npx expo prebuild -p ios --clean` (버전 1.1.0 반영됨)
 - [ ] build 번호는 **1 그대로 둬도 된다** — Apple 은 같은 버전 문자열 안에서만 유일성을 요구한다
 - [ ] 평소대로 Archive → Organizer → App Store 업로드
 
@@ -115,11 +116,13 @@ JS 수정은 빌드 시 번들되므로 prebuild 도 필요 없다. 기존 `ios/
 > ⚠️ **`google-services.json` 이 레포 루트에 없으면 `expo prebuild --platform android` 가 실패한다.**
 > `app.json` 에 `android.googleServicesFile` 을 이미 넣어뒀기 때문이다.
 
-- [ ] [Firebase 콘솔](https://console.firebase.google.com) → 프로젝트 → **Android 앱 추가**
-      (패키지명 `com.day.bingket.app`) → `google-services.json` 다운로드 → **레포 루트에 저장** - 클라이언트 설정 파일이라 비밀값이 아니다. 커밋해도 된다.
+- [x] [Firebase 콘솔](https://console.firebase.google.com) → 프로젝트 → **Android 앱 추가**
+      (패키지명 `com.day.bingket.app`) → `google-services.json` 다운로드 → **레포 루트에 저장** (2026-09-08 완료. iOS 용 `GoogleService-Info.plist` 도 같이 받아 넣었다)
 - [ ] Firebase 콘솔 → 프로젝트 설정 → **서비스 계정** → 새 비공개 키 생성(JSON)
 - [ ] [expo.dev](https://expo.dev) → 프로젝트 → Credentials → Android → **FCM V1 service account key** 업로드 - 이것 없이는 파일을 넣고 빌드해도 Android 푸시는 오지 않는다
-- [ ] `npx expo prebuild --platform android` 로 `android/` 갱신 - `POST_NOTIFICATIONS` 권한도 이때 정식 반영된다 (지금은 로컬 매니페스트에 수동 추가해둔 상태)
+- [x] `npx expo prebuild -p android --clean` 로 `android/` 갱신 (2026-09-08 완료) -
+      `POST_NOTIFICATIONS` 매니페스트 반영, `google-services` gradle 플러그인 적용,
+      `versionCode 31 / versionName 1.1.0` 확인. `assembleDebug` 통과
 - [ ] AAB 빌드 → Play Console 업로드.
       `versionCode` 는 `app.json` 에 **31** 로 박아뒀으므로 prebuild 가 알아서 넣는다.
       (예전에는 `app.json` 에 이 값이 없어서 prebuild 가 `1` 로 리셋했다 — Play 가 거부한다)
@@ -150,6 +153,27 @@ JS 수정은 빌드 시 번들되므로 prebuild 도 필요 없다. 기존 `ios/
 ---
 
 ## 나중에 (이번 범위 밖)
+
+- **EAS 빌드 전에 Firebase 설정 파일 2개를 어떻게 올릴지 정해야 한다.**
+  `GoogleService-Info.plist` / `google-services.json` 은 `.gitignore:51-52` 로 빠져 있는데,
+  EAS 는 기본적으로 git 에 없는 파일을 업로드하지 않는다 → 로컬에서 겪은 것과 **똑같은
+  `ENOENT` 로 클라우드 prebuild 가 죽는다.** 둘 중 하나:
+  (a) 두 파일을 커밋한다 — 클라이언트 설정 파일이라 비밀값이 아니다 (Google 문서 기준),
+  (b) EAS file 타입 환경 변수로 올린다. 현재 `eas env:list production` 에는 없다.
+- **iOS Firebase 를 CocoaPods 로 내려둔 상태다. 2026-10 에 만료된다.**
+  `app.json` 에 `@react-native-firebase/app` → `ios.disableSPM: true` +
+  `expo-build-properties` → `ios.useFrameworks: "static"` 로 박아뒀다. 이유:
+  - SPM(기본값) + `useFrameworks: dynamic` → `react-native-kakao-share-link` 가
+    `_RCTRegisterModule` undefined 로 링크 실패. dynamic framework 는 자기 심볼을
+    그 시점에 다 풀어야 하는데 해당 podspec 이 React-Core 를 안 걸고 있다.
+  - `disableSPM` + linkage 미지정(static library) → `FirebaseCoreInternal`(Swift) 이
+    module map 없는 `GoogleUtilities` 에 의존해 `pod install` 이 거부한다.
+  - `disableSPM` + `static` framework 가 유일하게 통과. 심볼 해석이 최종 앱 링크로 밀린다.
+
+  `pod install` 이 경고한다: **FirebaseCore 는 2026-10 이후 CocoaPods 에 신규 버전이
+  올라오지 않는다.** 그 전에 SPM 으로 되돌리려면 Kakao pod 쪽을 먼저 손봐야 한다 —
+  podspec 에 React-Core 의존을 추가하거나, config plugin 의 post_install 에서
+  그 타겟에만 `-undefined dynamic_lookup` 을 준다.
 
 - **1.1.0 이 충분히 퍼진 뒤** `app_config.min_version` 을 `1.1.0` 으로 올리고,
   그 다음에야 `bingo_boards` 레거시 RLS 정책을 조인다.
