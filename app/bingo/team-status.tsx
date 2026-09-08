@@ -239,7 +239,7 @@ export default function TeamStatusScreen() {
             <View className="mx-5 mb-8">
               <Text className="text-title-md mb-3 font-pretendard-semibold">내기 내용</Text>
               <View className="p-4 bg-gray-100 rounded-2xl">
-                <Text className="text-body-md md:text-body-lg">{detail.betText}</Text>
+                <Text className="text-body-md">{detail.betText}</Text>
               </View>
             </View>
           )}

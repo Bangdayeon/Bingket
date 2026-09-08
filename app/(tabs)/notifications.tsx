@@ -63,7 +63,7 @@ function NotificationItem({ item, onRead, onAction, onFriendResponse }: Notifica
         </View>
       )}
 
-      <Text className="text-body-lg mb-3">{item.message}</Text>
+      <Text className="text-body-md mb-3">{item.message}</Text>
 
       {/* 친구 요청: 수락/거절 버튼 */}
       {isFriendRequest && item.target_id ? (

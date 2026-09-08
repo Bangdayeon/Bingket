@@ -535,10 +535,10 @@ export default function CommunityWriteScreen() {
             <View className="w-10 h-1 rounded-full bg-gray-300  " />
           </View>
           <Pressable onPress={handleCameraCapture} className="px-6 py-4 border-b border-gray-100  ">
-            <Text className="text-body-lg">카메라로 촬영하기</Text>
+            <Text className="text-body-md">카메라로 촬영하기</Text>
           </Pressable>
           <Pressable onPress={handleGalleryPick} className="px-6 py-4">
-            <Text className="text-body-lg">앨범에서 선택하기</Text>
+            <Text className="text-body-md">앨범에서 선택하기</Text>
           </Pressable>
         </View>
       </Modal>

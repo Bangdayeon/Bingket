@@ -28,7 +28,7 @@ function ToggleRow({ label, description, value, onValueChange }: ToggleRowProps)
   return (
     <View className="flex-row items-center justify-between px-5 py-3">
       <View className="flex-1 mr-4">
-        <Text className="text-body-lg">{label}</Text>
+        <Text className="text-body-md">{label}</Text>
         {description ? (
           <Text className="text-caption-sm" style={{ color: '#929898' /* gray-500 */ }}>
             {description}

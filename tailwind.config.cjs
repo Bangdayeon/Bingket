@@ -102,16 +102,15 @@ module.exports = {
       },
       fontSize: {
         // title
-        'title-lg': ['24px', { lineHeight: '30px', fontWeight: '500' }],
-        'title-md': ['20px', { lineHeight: '24px', fontWeight: '500' }],
-        'title-sm': ['18px', { lineHeight: '24px', fontWeight: '500' }],
+        'title-lg': ['24px', { lineHeight: '30px', letterSpacing: '1.68px', fontWeight: '500' }], // 7%
+        'title-md': ['20px', { lineHeight: '24px', letterSpacing: '1.4px', fontWeight: '500' }], // 7%
+        'title-sm': ['18px', { lineHeight: '24px', letterSpacing: '1.26px', fontWeight: '500' }], // 7%
         // body
-        'body-lg': ['16px', { lineHeight: '20px', fontWeight: '400' }],
-        'body-md': ['15px', { lineHeight: '18px', fontWeight: '400' }],
+        'body-md': ['16px', { lineHeight: '18px', letterSpacing: '1.12px', fontWeight: '400' }], // 7%
         'body-sm': ['14px', { lineHeight: '18px', fontWeight: '400' }],
         // caption
         'caption-md': ['12px', { lineHeight: '20px', fontWeight: '400' }],
-        'caption-sm': ['10px', { lineHeight: '18px', fontWeight: '400' }],
+        'caption-sm': ['8px', { lineHeight: '10px', letterSpacing: '0.32px', fontWeight: '400' }], // 4%
         // label
         'label-sm': ['14px', { lineHeight: '18px', fontWeight: '600' }],
         'label-md': ['16px', { lineHeight: '20px', fontWeight: '600' }],

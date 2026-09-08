@@ -160,7 +160,7 @@ export default function CommunityDetailScreen() {
           </View>
         </View>
         <View className="flex-1 items-center justify-center">
-          <Text className="text-body-lg" style={{ color: '#929898' /* gray-500 */ }}>
+          <Text className="text-body-md" style={{ color: '#929898' /* gray-500 */ }}>
             게시글을 찾을 수 없습니다.
           </Text>
         </View>
