@@ -12,6 +12,7 @@ import {
   type Notification,
 } from '@/features/notifications/lib/notifications';
 import { navigateToNotification } from '@/features/notifications/lib/notification-route';
+import { useUnreadNotifications } from '@/features/notifications/unread-context';
 import { supabase } from '@/lib/supabase';
 import Loading from '@/components/Loading';
 import { ProfileAvatar } from '@/components/ProfileAvatar';
@@ -120,6 +121,7 @@ export default function NotificationsScreen() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
+  const { refresh: refreshUnread } = useUnreadNotifications();
 
   const loadData = useCallback(() => {
     setLoading(true);
@@ -135,6 +137,7 @@ export default function NotificationsScreen() {
   const markAllRead = async () => {
     await markAllNotificationsRead();
     setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
+    refreshUnread();
   };
 
   const handleAction = (type: string, targetId: string | null) => {
@@ -156,6 +159,7 @@ export default function NotificationsScreen() {
     await deleteNotificationByTarget('friend_request', requestId);
 
     setNotifications((prev) => prev.filter((n) => n.target_id !== requestId));
+    refreshUnread();
   };
 
   if (loading) {
@@ -195,6 +199,7 @@ export default function NotificationsScreen() {
               setNotifications((prev) =>
                 prev.map((n) => (n.id === item.id ? { ...n, is_read: true } : n)),
               );
+              refreshUnread();
             }}
             onAction={handleAction}
             onFriendResponse={handleFriendResponse}

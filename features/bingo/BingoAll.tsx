@@ -36,6 +36,7 @@ import {
   type Notification,
 } from '@/features/notifications/lib/notifications';
 import { NotificationStrip } from '@/features/notifications/components/NotificationStrip';
+import { useUnreadNotifications } from '@/features/notifications/unread-context';
 
 const DRAFT_ID = 'draft_0';
 
@@ -121,6 +122,7 @@ export function BingoAll() {
   const isNavigatingRef = useRef(false);
   const [stripNotifications, setStripNotifications] = useState<Notification[]>([]);
   const [stripPendingId, setStripPendingId] = useState<string | null>(null);
+  const { refresh: refreshUnread } = useUnreadNotifications();
 
   const loadData = useCallback(() => {
     Promise.all([fetchMyBingos(), fetchJoinedSharedBoards(), loadDraftBingo()]).then(
@@ -362,6 +364,8 @@ export function BingoAll() {
   /** 스트립에서 지우고 화면에서도 즉시 뺀다. loadData는 쿼리가 깊어 느리다 */
   const dismissStrip = (item: Notification) => {
     setStripNotifications((prev) => prev.filter((n) => n.id !== item.id));
+    // 알림이 하나 사라졌으니 하단 탭의 빨간 점도 다시 센다
+    refreshUnread();
   };
 
   const handleStripAccept = async (item: Notification) => {

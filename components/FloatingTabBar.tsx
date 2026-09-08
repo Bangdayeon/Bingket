@@ -1,9 +1,9 @@
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import { AppState, Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SvgProps } from 'react-native-svg';
-import { useEffect, useRef, useState } from 'react';
-import { supabase } from '@/lib/supabase';
+import { useEffect } from 'react';
+import { useUnreadNotifications } from '@/features/notifications/unread-context';
 
 import HomeOff from '@/assets/icons/home_off.svg';
 import HomeOn from '@/assets/icons/home_on.svg';
@@ -24,51 +24,15 @@ const TAB_ICONS: Record<
   mypage: { on: MypageOn, off: MypageOff, label: '내 공간' },
 };
 
-function useUnreadNotifications(activeTabName: string) {
-  const [hasUnread, setHasUnread] = useState(false);
-  const userIdRef = useRef<string | null>(null);
-
-  const fetchUnread = async () => {
-    if (!userIdRef.current) {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) return;
-      userIdRef.current = user.id;
-    }
-    const { count } = await supabase
-      .from('notifications')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', userIdRef.current)
-      .eq('is_read', false);
-    setHasUnread((count ?? 0) > 0);
-  };
-
-  // 앱 시작 시 1회
-  useEffect(() => {
-    fetchUnread();
-  }, []);
+export function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
+  const activeTabName = state.routes[state.index].name;
+  const { hasUnread, refresh } = useUnreadNotifications();
+  const insets = useSafeAreaInsets();
 
   // 탭 전환 시마다 재조회
   useEffect(() => {
-    fetchUnread();
-  }, [activeTabName]);
-
-  // 앱 포그라운드 복귀 시 재조회
-  useEffect(() => {
-    const sub = AppState.addEventListener('change', (state) => {
-      if (state === 'active') fetchUnread();
-    });
-    return () => sub.remove();
-  }, []);
-
-  return hasUnread;
-}
-
-export function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
-  const activeTabName = state.routes[state.index].name;
-  const hasUnread = useUnreadNotifications(activeTabName);
-  const insets = useSafeAreaInsets();
+    refresh();
+  }, [activeTabName, refresh]);
 
   return (
     <View
