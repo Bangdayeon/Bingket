@@ -168,8 +168,11 @@ export default function CommunityWriteScreen() {
   const canSubmit = title.trim().length > 0 && textValue.trim().length > 0 && !isSubmitting;
 
   /**
-   * 하단 툴바는 키보드 위로 따라 올라간다. 그때는 홈 인디케이터 여백까지 함께 밀려
-   * 툴바와 키보드 사이가 뜨므로, 키보드가 올라와 있는 동안에는 그 여백을 뺀다.
+   * 키보드가 올라오면 하단 툴바를 감춘다. 글을 쓰는 동안에는 본문에 집중하고,
+   * 이미지·빙고를 붙일 때만 키보드를 내려 툴바를 쓰는 흐름이다.
+   *
+   * 안드로이드는 adjustResize로 창 자체가 줄어 툴바가 키보드 위로 밀려 올라오므로,
+   * 위치를 조정하는 대신 아예 렌더에서 빼야 양쪽 플랫폼이 같게 동작한다.
    */
   const [keyboardShown, setKeyboardShown] = useState(false);
   useEffect(() => {
@@ -399,76 +402,78 @@ export default function CommunityWriteScreen() {
           <View style={{ height: 40 }} />
         </ScrollView>
 
-        {/* 하단 툴바 */}
-        <View
-          className="flex-row items-center gap-2 px-5 border-t border-gray-200  "
-          style={{ height: TOOLBAR_H, marginBottom: keyboardShown ? 0 : insets.bottom }}
-        >
-          {/* 이미지 */}
-          <Pressable
-            onPress={() => {
-              if (imageBlockCount < MAX_IMAGES) setShowCameraMenu(true);
-            }}
-            hitSlop={8}
-            className="p-1"
+        {/* 하단 툴바 — 키보드가 올라오면 감춘다 */}
+        {!keyboardShown && (
+          <View
+            className="flex-row items-center gap-2 px-5 border-t border-gray-200  "
+            style={{ height: TOOLBAR_H, marginBottom: insets.bottom }}
           >
-            <CameraIcon
-              width={24}
-              height={24}
-              color={imageBlockCount >= MAX_IMAGES ? '#B4BBBB' : iconColor}
-            />
-            {imageBlockCount > 0 && (
-              <View
-                style={{
-                  position: 'absolute',
-                  top: -2,
-                  right: -2,
-                  backgroundColor: '#28C8DE' /* sky-500 */,
-                  borderRadius: 8,
-                  minWidth: 14,
-                  height: 14,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  paddingHorizontal: 2,
-                }}
-              >
-                <Text style={{ color: '#FDFDFD', fontSize: 9, lineHeight: 12 }}>
-                  {imageBlockCount}
-                </Text>
-              </View>
-            )}
-          </Pressable>
+            {/* 이미지 */}
+            <Pressable
+              onPress={() => {
+                if (imageBlockCount < MAX_IMAGES) setShowCameraMenu(true);
+              }}
+              hitSlop={8}
+              className="p-1"
+            >
+              <CameraIcon
+                width={24}
+                height={24}
+                color={imageBlockCount >= MAX_IMAGES ? '#B4BBBB' : iconColor}
+              />
+              {imageBlockCount > 0 && (
+                <View
+                  style={{
+                    position: 'absolute',
+                    top: -2,
+                    right: -2,
+                    backgroundColor: '#28C8DE' /* sky-500 */,
+                    borderRadius: 8,
+                    minWidth: 14,
+                    height: 14,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    paddingHorizontal: 2,
+                  }}
+                >
+                  <Text style={{ color: '#FDFDFD', fontSize: 9, lineHeight: 12 }}>
+                    {imageBlockCount}
+                  </Text>
+                </View>
+              )}
+            </Pressable>
 
-          {/* 빙고 불러오기 — 누르는 동안, 그리고 빙고를 붙인 뒤에는 알약 배경 */}
-          <Pressable onPress={handleOpenBingoModal} hitSlop={8}>
-            {({ pressed }) => (
-              <View
-                className={`flex-row items-center gap-2 rounded-full px-3 py-2${
-                  pressed || bingoBlock ? ' bg-gray-100  ' : ''
-                }`}
-              >
-                <GridIcon color={bingoBlock ? '#28C8DE' : iconColor} />
-                <Text className="text-body-md" style={{ color: '#181C1C' /* gray-900 */ }}>
-                  빙고 불러오기
-                </Text>
-              </View>
-            )}
-          </Pressable>
+            {/* 빙고 불러오기 — 누르는 동안, 그리고 빙고를 붙인 뒤에는 알약 배경 */}
+            <Pressable onPress={handleOpenBingoModal} hitSlop={8}>
+              {({ pressed }) => (
+                <View
+                  className={`flex-row items-center gap-2 rounded-full px-3 py-2${
+                    pressed || bingoBlock ? ' bg-gray-100  ' : ''
+                  }`}
+                >
+                  <GridIcon color={bingoBlock ? '#28C8DE' : iconColor} />
+                  <Text className="text-body-md" style={{ color: '#181C1C' /* gray-900 */ }}>
+                    빙고 불러오기
+                  </Text>
+                </View>
+              )}
+            </Pressable>
 
-          <View style={{ flex: 1 }} />
+            <View style={{ flex: 1 }} />
 
-          {/* 익명 */}
-          <Pressable
-            onPress={() => setIsAnonymous((v) => !v)}
-            className="flex-row items-center gap-1"
-            hitSlop={8}
-          >
-            <Text className="text-body-sm" style={{ color: isAnonymous ? '#28C8DE' : '#B4BBBB' }}>
-              익명
-            </Text>
-            <CheckIcon width={18} height={18} color={isAnonymous ? '#28C8DE' : '#B4BBBB'} />
-          </Pressable>
-        </View>
+            {/* 익명 */}
+            <Pressable
+              onPress={() => setIsAnonymous((v) => !v)}
+              className="flex-row items-center gap-1"
+              hitSlop={8}
+            >
+              <Text className="text-body-sm" style={{ color: isAnonymous ? '#28C8DE' : '#B4BBBB' }}>
+                익명
+              </Text>
+              <CheckIcon width={18} height={18} color={isAnonymous ? '#28C8DE' : '#B4BBBB'} />
+            </Pressable>
+          </View>
+        )}
       </KeyboardAvoidingView>
 
       {/* 카메라 메뉴 */}
