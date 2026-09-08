@@ -379,6 +379,10 @@ verify_jwt = false
 [functions.notify-generic]
 verify_jwt = false
 
+# 죽은 토큰 정리. Cron 이 30분마다 호출한다 (20260830000003)
+[functions.check-push-receipts]
+verify_jwt = false
+
 [edge_runtime]
 enabled = true
 # Supported request policies: `oneshot`, `per_worker`.

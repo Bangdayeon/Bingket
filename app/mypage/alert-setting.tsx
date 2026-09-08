@@ -89,7 +89,6 @@ export default function AlertSettingScreen() {
       communityPopular: v,
       communityComment: v,
       communityLike: v,
-      eventPush: v,
       teamActivity: v,
     });
   };
@@ -172,19 +171,6 @@ export default function AlertSettingScreen() {
           description="내 게시글에 좋아요가 달렸을 때"
           value={settings.communityLike}
           onValueChange={(v) => update({ communityLike: v })}
-        />
-
-        <View className="h-px bg-gray-200   mx-5 my-2" />
-
-        {/* 이벤트 및 혜택 알림 */}
-        <View className="px-5 pt-3 pb-1">
-          <Text className="text-title-md font-pretendard-medium">이벤트 및 혜택 알림</Text>
-        </View>
-        <ToggleRow
-          label="앱 푸시"
-          description="새로운 이벤트 및 혜택 소식"
-          value={settings.eventPush}
-          onValueChange={(v) => update({ eventPush: v })}
         />
       </ScrollView>
 

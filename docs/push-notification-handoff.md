@@ -216,19 +216,59 @@ eas build --profile production --platform ios
 
 ---
 
-## 아직 손대지 않은 것
+## 2026-08-30 후속 작업
 
-- **안드로이드 푸시는 여전히 동작하지 않는다.**
-  `google-services.json` 도 `app.json` 의 `android.googleServicesFile` 설정도 없다.
-  EAS 에 FCM v1 서비스 계정 키 업로드도 필요하다. 테스트 기기가 없어 후순위로 뺐다.
-- `notify-bingo-deadline` 의 **Cron 스케줄이 레포에 없다.** 대시보드에는 등록돼 있지만
-  코드로는 검증할 수 없다. `pg_cron` 마이그레이션으로 코드화하는 게 낫다.
-  (웹훅 3개도 마찬가지로 대시보드에만 있다)
-- `notification_settings.event_push` 는 **읽는 서버 코드가 없는 설정**이다. UI 행은 있다.
-  (`bingo_daily` 는 2026-08-28 에 클라이언트 모델에서 제거했다 — DB 컬럼만 DEFAULT 로 남아 있다)
-- `push_tokens.user_id` 가 단독 PK라 **유저당 기기 1대**만 가능하다. 두 번째 기기가 첫 기기를
-  덮어쓴다. 다기기 지원이 필요하면 `(user_id, token)` 복합 PK로 바꿔야 한다.
-- Expo **push receipt** 조회와 `DeviceNotRegistered` 토큰 정리 로직이 없다. 죽은 토큰이 계속
-  쌓인다.
-- `types/notifications.ts` 는 DB·`features/notifications/lib/notifications.ts` 와 맞지 않는
-  **낡은 타입**이다. 쓰이는 곳이 없으면 지우는 게 낫다.
+이 문서에 "아직 손대지 않은 것" 으로 적어뒀던 항목 대부분을 처리했다. **코드만 됐고 아직
+DB 에 적용하지 않았다** — 절차는 [`../supabase/functions/README.md`](../supabase/functions/README.md)
+의 "3-2. 최초 적용 순서".
+
+| 항목                            | 처리                                                                                                    |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `notifications` INSERT RLS 구멍 | `20260830000001` — 타인 알림을 SECURITY DEFINER 트리거로 이관하고 정책을 `auth.uid() = user_id` 로 조임 |
+| 유저당 기기 1대                 | `20260830000002` — `(user_id, token)` 복합 PK                                                           |
+| 죽은 토큰 미정리                | 티켓의 `DeviceNotRegistered` 즉시 삭제 + `check-push-receipts` Cron 이 receipt 조회                     |
+| 웹훅·Cron 이 대시보드에만 있음  | `20260830000003` — pg_net 트리거 3개 + pg_cron 잡 2개                                                   |
+| `event_push`                    | 클라이언트 모델·UI 에서 제거 (DB 컬럼은 DEFAULT 로 유지)                                                |
+| `types/notifications.ts`        | 삭제                                                                                                    |
+
+### 서버 쪽 진짜 원인 2가지 (배포하면서 드러났다)
+
+이 문서는 "배포된 앱이 낡아서" 를 단독 원인으로 지목했지만, 서버에도 두 개가 더 있었다.
+둘 다 배포 과정에서 처음 드러났다.
+
+**(1) `notify_generic` 웹훅은 등록된 적이 없다.**
+`20260830000003` 의 정리 로직이 실제로 찾아 지운 것은 `notify-comment`, `notify-like`
+둘뿐이었다. `public.notifications` 위의 웹훅은 존재하지 않았다.
+이 문서와 `supabase/functions/README.md` 에 "✅ 완료" 로 적혀 있던 것이 사실이 아니었다.
+→ **친구 요청 · 뱃지 · 팀 알림 · 빙고 마감 · 인기글은 전송 경로 자체가 없었다.**
+
+**(2) 엣지 함수가 올바른 키로 호출해도 401 을 냈다.**
+각 함수가 `Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')` 와 문자열 비교를 했는데,
+이 프로젝트 런타임에 주입된 값이 Management API 가 돌려주는 service_role 키와
+**일치하지 않는다.** (2026-08-30 실측: 올바른 service_role 키로 호출 → 401)
+웹훅이 제대로 걸려 있었더라도 댓글·좋아요 푸시는 401 로 끝났을 것이다.
+호출자가 DB 트리거라 이 401 은 어디에도 드러나지 않는다 -- 이 문서가 "층위 0: 전 구간 무음"
+이라고 부른 것과 정확히 같은 병이 인증 계층에도 있었다.
+
+→ 전용 `PUSH_DISPATCH_KEY` 로 바꿨다. 401 본문이 이제 사유를 구분한다
+(`missing bearer token` / `no dispatch key configured` / `key mismatch`).
+자세한 절차는 `supabase/functions/README.md` "2. 디스패치 키".
+
+**아직 확인 안 된 것:** DB 트리거의 `pg_net` 호출이 실제로 함수에 도달하는지.
+확인하려면 실제 사용자 기기로 푸시가 나가야 해서 보류했다.
+
+### 왜 RPC 가 아니라 트리거였나
+
+친구 요청·팀 알림을 새 RPC 로 옮기면 **구버전 앱이 그 RPC 를 모른다.** 그러면 스토어에 있는
+1.0.7 사용자끼리는 친구 요청 알림이 통째로 사라진다. 트리거는 원본 테이블
+(`friend_requests` / `team_members` / `team_bingos` / `bingo_cells`)에 대한 쓰기에 반응하므로
+구버전 앱도 그대로 동작한다. 구버전의 중복 INSERT 는 RLS 위반으로 실패하지만 호출부가
+`throw` 하지 않고 Sentry 로그만 남기므로 화면은 멀쩡하다.
+
+### 아직 손대지 않은 것
+
+- **안드로이드 푸시는 여전히 동작하지 않는다.** `google-services.json` 이 레포에 없다.
+  (`app.json` 의 `android.googleServicesFile` 설정과 `POST_NOTIFICATIONS` 권한은 넣어뒀다)
+  expo.dev 에 FCM v1 서비스 계정 키 업로드도 필요하다.
+- `bingo_boards` 레거시 RLS 조이기 — 강제 업데이트 게이트가 이걸 위해 만들어졌다.
+  1.1.0 스토어 배포 → `app_config.min_version` 상향 → 그 다음이다.

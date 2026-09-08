@@ -1,4 +1,5 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
+import { serviceKey, verifyServiceRole } from '../_shared/auth.ts';
 
 /**
  * 빙고 마감 임박 알림 (Cron, 하루 1회).
@@ -30,13 +31,11 @@ const DAY_MS = 86_400_000;
 
 Deno.serve(async (req) => {
   // Supabase Cron은 Authorization: Bearer {service_role_key} 로 호출
-  const authHeader = req.headers.get('Authorization');
-  const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
-  if (!authHeader || authHeader !== `Bearer ${serviceKey}`) {
-    return new Response('Unauthorized', { status: 401 });
-  }
+  // 호출자는 DB 트리거(pg_net) 또는 Cron 이다. 검증은 _shared/auth.ts 로 일원화했다
+  const denied = verifyServiceRole(req);
+  if (denied) return denied;
 
-  const supabase = createClient(Deno.env.get('SUPABASE_URL') ?? '', serviceKey);
+  const supabase = createClient(Deno.env.get('SUPABASE_URL') ?? '', serviceKey());
 
   const today = new Date();
   today.setUTCHours(0, 0, 0, 0);

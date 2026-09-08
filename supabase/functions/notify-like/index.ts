@@ -1,5 +1,6 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
-import { sendExpoPush } from '../_shared/expo-push.ts';
+import { serviceKey, verifyServiceRole } from '../_shared/auth.ts';
+import { sendExpoPushToUser } from '../_shared/expo-push.ts';
 
 /**
  * public.likes INSERT 웹훅을 받아 "좋아요" 푸시만 전송한다.
@@ -21,18 +22,16 @@ interface WebhookPayload {
 }
 
 Deno.serve(async (req) => {
-  const authHeader = req.headers.get('Authorization');
-  const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
-  if (!authHeader || authHeader !== `Bearer ${serviceKey}`) {
-    return new Response('Unauthorized', { status: 401 });
-  }
+  // 호출자는 DB 트리거(pg_net) 또는 Cron 이다. 검증은 _shared/auth.ts 로 일원화했다
+  const denied = verifyServiceRole(req);
+  if (denied) return denied;
 
   const payload = (await req.json()) as WebhookPayload;
   if (payload.type !== 'INSERT') return new Response('ok');
 
   const like = payload.record;
 
-  const supabase = createClient(Deno.env.get('SUPABASE_URL') ?? '', serviceKey);
+  const supabase = createClient(Deno.env.get('SUPABASE_URL') ?? '', serviceKey());
 
   const { data: post } = await supabase
     .from('posts')
@@ -45,24 +44,19 @@ Deno.serve(async (req) => {
   // 자기 글에 자기 좋아요 → 알림 없음
   if (post.user_id === like.user_id) return new Response('ok');
 
-  // 알림 설정 + 푸시 토큰 병렬 조회
-  const [{ data: settings }, { data: tokenRow }] = await Promise.all([
-    supabase
-      .from('notification_settings')
-      .select('community_like')
-      .eq('user_id', post.user_id)
-      .single(),
-    supabase.from('push_tokens').select('token').eq('user_id', post.user_id).single(),
-  ]);
-
-  if (!tokenRow?.token) return new Response('ok');
+  const { data: settings } = await supabase
+    .from('notification_settings')
+    .select('community_like')
+    .eq('user_id', post.user_id)
+    .single();
 
   // 설정 행이 없으면 허용 (다른 notify-* 함수와 동일한 정책)
   if (settings && !settings.community_like) return new Response('ok');
 
   // 알림 DB 삽입은 DB 트리거(trg_notify_like)가 처리 — 여기서는 푸시만 전송
-  const sent = await sendExpoPush(
-    tokenRow.token,
+  const sent = await sendExpoPushToUser(
+    supabase,
+    post.user_id as string,
     '❤️ 좋아요',
     `내 게시글에 좋아요가 달렸어요: ${(post.title as string).slice(0, 40)}`,
     { type: 'like', targetId: like.post_id, postId: like.post_id },

@@ -7,8 +7,6 @@ export interface NotificationSettings {
   communityPopular: boolean;
   communityComment: boolean;
   communityLike: boolean;
-  /** 아직 이 값을 읽는 서버 코드가 없다. 이벤트 발송 기능이 생기면 연결할 것 */
-  eventPush: boolean;
   /** 팀원이 칸을 채우거나 팀에 합류했을 때 */
   teamActivity: boolean;
 }
@@ -19,7 +17,6 @@ export const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = {
   communityPopular: true,
   communityComment: true,
   communityLike: true,
-  eventPush: true,
   teamActivity: true,
 };
 
@@ -43,7 +40,6 @@ export const fetchNotificationSettings = async (): Promise<NotificationSettings>
     communityPopular: data.community_popular as boolean,
     communityComment: data.community_comment as boolean,
     communityLike: data.community_like as boolean,
-    eventPush: data.event_push as boolean,
     teamActivity: data.team_activity as boolean,
   };
 
@@ -54,7 +50,8 @@ export const fetchNotificationSettings = async (): Promise<NotificationSettings>
 };
 
 // 설정 저장: AsyncStorage(즉시) + Supabase(백엔드 동기화)
-// bingo_daily 컬럼은 읽는 곳도 UI 행도 없어 여기서 건드리지 않는다 (DB DEFAULT 유지)
+// bingo_daily / event_push 컬럼은 읽는 서버 코드도 UI 행도 없어 여기서 건드리지 않는다.
+// (DB 컬럼은 DEFAULT true 로 남겨둔다 -- 이벤트 발송 기능이 생기면 그때 다시 연결)
 export const saveNotificationSettings = async (settings: NotificationSettings): Promise<void> => {
   await AsyncStorage.setItem(CACHE_KEY_ALERT_SETTINGS, JSON.stringify(settings));
 
@@ -70,7 +67,6 @@ export const saveNotificationSettings = async (settings: NotificationSettings): 
       community_popular: settings.communityPopular,
       community_comment: settings.communityComment,
       community_like: settings.communityLike,
-      event_push: settings.eventPush,
       team_activity: settings.teamActivity,
       updated_at: new Date().toISOString(),
     },
@@ -86,7 +82,7 @@ export const loadCachedNotificationSettings = async (): Promise<NotificationSett
   if (!raw) return null;
   try {
     const cached = JSON.parse(raw) as Partial<NotificationSettings>;
-    // 스프레드로 통째로 합치면 예전 버전이 저장해둔 키(bingoDaily 등)가 그대로 살아남아
+    // 스프레드로 통째로 합치면 예전 버전이 저장해둔 키(bingoDaily, eventPush 등)가 그대로 살아남아
     // 화면의 "전체 알림" 계산을 다시 망가뜨린다. 아는 키만 골라 담는다.
     const pick = (key: keyof NotificationSettings): boolean =>
       typeof cached[key] === 'boolean' ? cached[key] : DEFAULT_NOTIFICATION_SETTINGS[key];
@@ -96,7 +92,6 @@ export const loadCachedNotificationSettings = async (): Promise<NotificationSett
       communityPopular: pick('communityPopular'),
       communityComment: pick('communityComment'),
       communityLike: pick('communityLike'),
-      eventPush: pick('eventPush'),
       teamActivity: pick('teamActivity'),
     };
   } catch {

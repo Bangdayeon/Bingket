@@ -2,7 +2,7 @@
   "expo": {
     "name": "빙킷",
     "slug": "bingkit",
-    "version": "1.0.8",
+    "version": "1.1.0",
     "scheme": "bingket",
     "orientation": "portrait",
     "icon": "./assets/app_icon.png",
@@ -26,6 +26,7 @@
     },
     "android": {
       "package": "com.day.bingket.app",
+      "versionCode": 31,
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
@@ -40,8 +41,7 @@
         "android.permission.READ_MEDIA_VISUAL_USER_SELECTED",
         "com.google.android.gms.permission.AD_ID",
         "android.permission.SYSTEM_ALERT_WINDOW"
-      ],
-      "googleServicesFile": "./google-services.json"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"

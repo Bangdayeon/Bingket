@@ -108,11 +108,12 @@ export async function savePushToken(token: string): Promise<void> {
   if (!user) return;
 
   const platform = Platform.OS === 'ios' ? 'ios' : 'android';
+  // (user_id, token) 복합 PK -- 유저당 기기 여러 대를 허용한다 (20260830000002)
   const { error } = await supabase
     .from('push_tokens')
     .upsert(
       { user_id: user.id, token, platform, updated_at: new Date().toISOString() },
-      { onConflict: 'user_id' },
+      { onConflict: 'user_id,token' },
     );
 
   if (error) reportPushFailure('push_tokens upsert 실패', error);
@@ -133,9 +134,37 @@ export async function syncPushToken(): Promise<PushRegistrationResult> {
 }
 
 /**
+ * 이미 권한이 있을 때만 현재 기기의 토큰을 돌려준다.
+ * registerForPushNotifications 와 달리 **권한을 요청하지 않는다** --
+ * 로그아웃 도중에 권한 팝업이 뜨면 안 되기 때문이다.
+ */
+const currentDeviceToken = async (): Promise<string | null> => {
+  if (!Device.isDevice) return null;
+
+  const projectId = getProjectId();
+  if (!projectId) return null;
+
+  try {
+    const { status } = await Notifications.getPermissionsAsync();
+    if (status !== 'granted') return null;
+
+    const { data: token } = await Notifications.getExpoPushTokenAsync({ projectId });
+    return token;
+  } catch (error) {
+    reportPushFailure('현재 기기 토큰 조회 실패', error);
+    return null;
+  }
+};
+
+/**
  * 로그아웃 직전에 호출해야 한다.
  * push_tokens RLS가 auth.uid() = user_id이므로 세션이 끊긴 뒤에는 0행만 삭제된다.
  * 정리하지 않으면 같은 기기에 다른 계정이 로그인했을 때 이전 계정 알림이 이 기기로 온다.
+ *
+ * 다기기를 지원하므로 **이 기기의 토큰만** 지운다. 전부 지우면 로그아웃한 적도 없는
+ * 다른 기기가 알림을 못 받는다.
+ * 토큰을 못 구하면(권한 거부, 시뮬레이터 등) 이 유저의 행을 전부 지운다 --
+ * 그 기기에 남은 낡은 토큰을 치울 다른 방법이 없고, 남의 알림이 새는 쪽이 더 나쁘다.
  */
 export async function deletePushToken(): Promise<void> {
   const {
@@ -143,7 +172,12 @@ export async function deletePushToken(): Promise<void> {
   } = await supabase.auth.getUser();
   if (!user) return;
 
-  const { error } = await supabase.from('push_tokens').delete().eq('user_id', user.id);
+  const token = await currentDeviceToken();
+
+  let query = supabase.from('push_tokens').delete().eq('user_id', user.id);
+  if (token) query = query.eq('token', token);
+
+  const { error } = await query;
   if (error) reportPushFailure('push_tokens 삭제 실패', error);
 }
 
