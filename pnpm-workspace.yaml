@@ -1,3 +1,0 @@
-allowBuilds:
-  '@sentry/cli': false
-  dtrace-provider: false
