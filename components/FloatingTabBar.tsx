@@ -38,10 +38,17 @@ export function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarP
     <View
       style={{
         flexDirection: 'row',
-        backgroundColor: '#ffffff',
+        backgroundColor: '#FDFDFD', // white
+        // 상단 모서리가 둥글어서 테두리를 위/좌/우에 둘러야 곡선을 따라간다.
+        // borderTopWidth만 주면 곡선 구간에서 선이 끊긴다.
         borderTopWidth: 1,
-        borderTopColor: '#D2D6D6', // gray-300
-        paddingBottom: insets.bottom,
+        borderLeftWidth: 1,
+        borderRightWidth: 1,
+        borderColor: '#E8EAEA', // gray-200
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        paddingTop: 10,
+        paddingBottom: insets.bottom + 6,
       }}
     >
       {state.routes.map((route, index) => {
@@ -66,7 +73,7 @@ export function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarP
         return (
           <TouchableOpacity
             key={route.key}
-            style={{ flex: 1, alignItems: 'center', paddingVertical: 8 }}
+            style={{ flex: 1, alignItems: 'center', gap: 6 }}
             onPress={onPress}
             activeOpacity={0.7}
             accessibilityRole="button"
@@ -75,14 +82,14 @@ export function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarP
           >
             <View
               style={{
-                width: 36,
-                height: 36,
+                width: 28,
+                height: 28,
                 alignItems: 'center',
                 justifyContent: 'center',
                 position: 'relative',
               }}
             >
-              {Icon && <Icon width={24} height={24} color={color} />}
+              {Icon && <Icon width={28} height={28} color={color} />}
               {isNotifications && hasUnread && (
                 <View
                   style={{
@@ -97,7 +104,9 @@ export function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarP
                 />
               )}
             </View>
-            <Text style={{ fontSize: 12, lineHeight: 20, color, fontFamily: 'pretendard' }}>
+            {/* lineHeight를 폰트 크기에 붙여 아이콘과의 간격을 gap으로만 통제한다.
+                20을 주면 글자 위아래로 4px씩 빈 공간이 더 생겨 간격이 흐려진다. */}
+            <Text style={{ fontSize: 12, lineHeight: 14, color, fontFamily: 'pretendard' }}>
               {tab?.label}
             </Text>
           </TouchableOpacity>

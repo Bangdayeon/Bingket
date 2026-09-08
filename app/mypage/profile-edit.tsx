@@ -221,7 +221,7 @@ export default function ProfileEditPage() {
             <TextInput
               value={userId}
               onChangeText={handleUserIdChange}
-              placeholder={`영어, 언더바, 숫자로만 ${USER_ID_MAX}자 이내로 입력해주세요.`}
+              placeholder={`영어, 언더바, 하이픈, 숫자로만 ${USER_ID_MAX}자 이내로 입력해주세요.`}
               autoCapitalize="none"
               rounded={12}
             />
