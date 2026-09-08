@@ -209,25 +209,9 @@ const currentUserId = async (): Promise<string | null> => {
   return user?.id ?? null;
 };
 
-const notify = async (
-  rows: { userId: string; type: string; message: string; targetId: string }[],
-): Promise<void> => {
-  if (rows.length === 0) return;
-  await supabase.from('notifications').insert(
-    rows.map((r) => ({
-      user_id: r.userId,
-      type: r.type,
-      message: r.message,
-      target_id: r.targetId,
-      target_type: null,
-    })),
-  );
-};
-
-const displayNameOf = async (userId: string): Promise<string> => {
-  const { data } = await supabase.from('users').select('display_name').eq('id', userId).single();
-  return (data?.display_name as string | undefined) ?? '누군가';
-};
+// 팀 알림(초대·합류·거절·종료·칸 체크)은 전부 DB 트리거가 만든다.
+// 20260830000001 이후 notifications의 INSERT 정책이 본인 행만 허용하므로
+// 클라이언트에서는 남에게 알림을 넣을 수 없다.
 
 // ============================================================
 // 생성 · 초대
@@ -551,15 +535,8 @@ const finalizeTeam = async (teamId: string): Promise<boolean> => {
       return false;
     }
 
+    // 종료 알림은 team_bingos UPDATE 트리거(notify_on_team_finished)가 만든다
     if (updated && updated.length > 0) {
-      await notify(
-        results.map((r) => ({
-          userId: r.userId,
-          type: 'team_finished',
-          message: '팀 빙고가 끝났어요. 결과를 확인해 보세요',
-          targetId: teamId,
-        })),
-      );
       return true;
     }
 
@@ -882,50 +859,6 @@ export const saveMyRetrospective = async (teamId: string, content: string): Prom
 // ============================================================
 // 활동 알림
 // ============================================================
-
-/**
- * 칸을 채웠을 때 같은 팀의 다른 멤버에게 알린다.
- * 자극이 동기부여가 되도록 전 모드에서 보낸다. 설정에서 끌 수 있다.
- */
-export const notifyTeamCellChecked = async (
-  boardId: string,
-  cellContent: string,
-): Promise<void> => {
-  const userId = await currentUserId();
-  if (!userId) return;
-
-  const { data: myRow } = await supabase
-    .from('team_members')
-    .select('team_id')
-    .eq('board_id', boardId)
-    .eq('user_id', userId)
-    .eq('status', 'joined')
-    .maybeSingle();
-
-  const teamId = myRow?.team_id as string | undefined;
-  if (!teamId) return;
-
-  const { data: others } = await supabase
-    .from('team_members')
-    .select('user_id')
-    .eq('team_id', teamId)
-    .eq('status', 'joined')
-    .neq('user_id', userId);
-
-  if (!others || others.length === 0) return;
-
-  const name = await displayNameOf(userId);
-  const trimmed = cellContent.length > 12 ? `${cellContent.slice(0, 12)}…` : cellContent;
-
-  await notify(
-    others.map((row) => ({
-      userId: row.user_id as string,
-      type: 'team_cell_checked',
-      message: `${name}님이 '${trimmed}'을(를) 달성했어요`,
-      targetId: teamId,
-    })),
-  );
-};
 
 /**
  * 같이 채우기 공유판 중 내가 만들지 않은 판.

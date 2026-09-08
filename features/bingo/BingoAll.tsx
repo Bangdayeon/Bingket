@@ -20,7 +20,6 @@ import {
   fetchTeamInvite,
   rejectTeamInvite,
   fetchMyTeams,
-  notifyTeamCellChecked,
 } from '@/features/team/lib/team';
 import type { TeamAvatarMember } from '@/features/team/components/TeamAvatars';
 import { supabase } from '@/lib/supabase';
@@ -311,10 +310,8 @@ export function BingoAll() {
             loadData();
             return;
           }
-          if (!isChecking || !isTeamBoard) return;
-          const cell = updatedCells.find((c) => c.id === cellId);
-          // 알림 전송 실패로 칸 체크까지 되돌리지는 않는다
-          return notifyTeamCellChecked(bingoId, cell?.title ?? '').catch(Sentry.captureException);
+          // 팀원에게 가는 칸 체크 알림은 bingo_cells UPDATE 트리거
+          // (notify_on_team_cell_checked)가 만든다
         })
         .catch((error) => handleSaveFailure(error, true));
     }
