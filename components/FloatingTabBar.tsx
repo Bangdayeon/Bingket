@@ -1,9 +1,10 @@
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SvgProps } from 'react-native-svg';
 import { useEffect } from 'react';
 import { useUnreadNotifications } from '@/features/notifications/unread-context';
+import { TABLET_MAX_CONTENT_WIDTH } from '@/lib/use-responsive';
 
 import HomeOff from '@/assets/icons/home_off.svg';
 import HomeOn from '@/assets/icons/home_on.svg';
@@ -24,10 +25,23 @@ const TAB_ICONS: Record<
   mypage: { on: MypageOn, off: MypageOff, label: '내 공간' },
 };
 
+/** 시안이 그려진 화면 폭. 좌우 여백을 이 비율로 환산한다 */
+const DESIGN_WIDTH = 390;
+const DESIGN_H_PADDING = 60;
+
 export function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const activeTabName = state.routes[state.index].name;
   const { hasUnread, refresh } = useUnreadNotifications();
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+
+  /**
+   * 좌우 여백을 60으로 고정하면 좁은 기기(320pt)에서 남는 폭이 200pt뿐이라
+   * '내 공간' 라벨이 밀린다. 화면 폭에 비례해 줄인다.
+   * 태블릿에서는 콘텐츠 최대 폭 기준으로 잘라 아이콘이 양끝으로 벌어지지 않게 한다.
+   */
+  const horizontalPadding =
+    (Math.min(width, TABLET_MAX_CONTENT_WIDTH) * DESIGN_H_PADDING) / DESIGN_WIDTH;
 
   // 탭 전환 시마다 재조회
   useEffect(() => {
@@ -47,10 +61,10 @@ export function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarP
         borderColor: '#E8EAEA', // gray-200
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
-        // 탭을 flex로 균등 분배하지 않는다. 좌우 60을 비우고 나머지를 space-between으로
+        // 탭을 flex로 균등 분배하지 않는다. 좌우를 비우고 나머지를 space-between으로
         // 벌린다 — 시안의 아이콘 위치가 이 방식이라야 맞는다.
         justifyContent: 'space-between',
-        paddingHorizontal: 60,
+        paddingHorizontal: horizontalPadding,
         paddingTop: 10,
         paddingBottom: insets.bottom + 6,
       }}
