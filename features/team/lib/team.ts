@@ -229,15 +229,6 @@ const displayNameOf = async (userId: string): Promise<string> => {
   return (data?.display_name as string | undefined) ?? '누군가';
 };
 
-const teamOwnerId = async (teamId: string): Promise<string | null> => {
-  const { data } = await supabase
-    .from('team_bingos')
-    .select('owner_id')
-    .eq('id', teamId)
-    .maybeSingle();
-  return (data?.owner_id as string | undefined) ?? null;
-};
-
 // ============================================================
 // 생성 · 초대
 // ============================================================
@@ -305,16 +296,8 @@ export const createTeam = async (params: CreateTeamParams): Promise<{ teamId: st
       })),
     );
     if (inviteError) throw new Error(inviteError.message);
-
-    const name = await displayNameOf(userId);
-    await notify(
-      params.friendIds.map((friendId) => ({
-        userId: friendId,
-        type: 'team_invite',
-        message: `${name}님이 빙고를 함께하고 싶어해요`,
-        targetId: teamId,
-      })),
-    );
+    // 초대 알림은 team_members INSERT 트리거(notify_on_team_invite)가 만든다.
+    // notifications의 INSERT 정책이 본인 행만 허용하므로 여기서는 넣을 수 없다.
   }
 
   return { teamId };
@@ -405,15 +388,7 @@ export const acceptTeamInvite = async (params: {
 
   if (error) throw new Error(error.message);
 
-  const name = await displayNameOf(userId);
-  await notify([
-    {
-      userId: invite.ownerId,
-      type: 'team_joined',
-      message: `${name}님이 팀에 합류했어요`,
-      targetId: params.teamId,
-    },
-  ]);
+  // 합류 알림은 team_members UPDATE 트리거(notify_on_team_joined)가 만든다.
 
   // 처리한 초대 알림은 지운다. 남겨두면 다시 눌러 수락할 수 있고, 그러면 빙고판이 하나 더 생긴다
   await deleteNotificationByTarget('team_invite', params.teamId).catch(Sentry.captureException);
@@ -423,20 +398,9 @@ export const rejectTeamInvite = async (teamId: string): Promise<void> => {
   const userId = await currentUserId();
   if (!userId) throw new Error('로그인이 필요합니다.');
 
-  // 멤버 행을 지우기 전에 처리한다. 삭제 뒤에는 RLS가 이 팀에 대한 읽기 권한을 회수해
-  // 방장 조회도, 알림 삭제도 할 수 없다.
-  const ownerId = await teamOwnerId(teamId);
-  if (ownerId) {
-    const name = await displayNameOf(userId);
-    await notify([
-      {
-        userId: ownerId,
-        type: 'team_invite_declined',
-        message: `${name}님이 빙고 함께하기를 거절했어요`,
-        targetId: teamId,
-      },
-    ]).catch(Sentry.captureException);
-  }
+  // 거절 알림은 team_members DELETE 트리거(notify_on_team_invite_declined)가 만든다.
+  // 내 초대 알림은 멤버 행을 지우기 전에 지운다 — 삭제 뒤에는 RLS가 이 팀에 대한
+  // 읽기 권한을 회수한다.
   await deleteNotificationByTarget('team_invite', teamId).catch(Sentry.captureException);
 
   const { error } = await supabase
