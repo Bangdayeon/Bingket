@@ -19,9 +19,9 @@ const TAB_ICONS: Record<
   { on: React.FC<SvgProps>; off: React.FC<SvgProps>; label: string }
 > = {
   index: { on: HomeOn, off: HomeOff, label: '홈' },
-  community: { on: CommunityOn, off: CommunityOff, label: '라운지' },
+  community: { on: CommunityOn, off: CommunityOff, label: '게시판' },
   notifications: { on: BellOn, off: BellOff, label: '알림' },
-  mypage: { on: MypageOn, off: MypageOff, label: '내 정보' },
+  mypage: { on: MypageOn, off: MypageOff, label: '내 공간' },
 };
 
 function useUnreadNotifications(activeTabName: string) {
