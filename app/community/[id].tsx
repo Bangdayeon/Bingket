@@ -322,7 +322,7 @@ export default function CommunityDetailScreen() {
           },
         },
         {
-          label: '삭제',
+          label: '삭제하기',
           danger: true as const,
           onPress: () => {
             setShowPostMenu(false);
@@ -452,28 +452,32 @@ export default function CommunityDetailScreen() {
             <Text className="text-body-sm text-gray-700">
               누적 신고 횟수가 3회 이상인 유저는 커뮤니티 이용 제한이 있을 수 있습니다.
             </Text>
-            {REPORT_REASONS.map((reason) => (
-              <Pressable
-                key={reason}
-                onPress={() => setSelectedReason(reason)}
-                className="flex-row items-center gap-3 py-2"
-              >
-                <View
-                  className={`h-4 w-4 items-center justify-center rounded-full ${
-                    selectedReason === reason ? 'border-green-400' : 'border-gray-300'
-                  }`}
-                  style={{ borderWidth: 1.5 }}
+            {/* 선택지끼리는 바깥 gap-3을 받지 않는다. 줄마다 py-1.5만 줘서 간격 12,
+                터치 영역은 32를 유지한다. */}
+            <View>
+              {REPORT_REASONS.map((reason) => (
+                <Pressable
+                  key={reason}
+                  onPress={() => setSelectedReason(reason)}
+                  className="flex-row items-center gap-3 py-1.5"
                 >
-                  {selectedReason === reason && (
-                    <View className="h-2 w-2 rounded-full bg-green-400" />
-                  )}
-                </View>
-                <Text className="text-body-md">{reason}</Text>
-              </Pressable>
-            ))}
+                  <View
+                    className={`h-4 w-4 items-center justify-center rounded-full ${
+                      selectedReason === reason ? 'border-green-400' : 'border-gray-300'
+                    }`}
+                    style={{ borderWidth: 1.5 }}
+                  >
+                    {selectedReason === reason && (
+                      <View className="h-2 w-2 rounded-full bg-green-400" />
+                    )}
+                  </View>
+                  <Text className="text-body-md">{reason}</Text>
+                </Pressable>
+              ))}
+            </View>
           </View>
         }
-        variant="default" // 확인 + 취소 버튼 둘 다 사용
+        variant="warning" // danger 확인 + 취소 버튼 둘 다 사용
         confirmLabel="신고하기"
         cancelLabel="취소"
         onConfirm={async () => {
@@ -553,8 +557,8 @@ export default function CommunityDetailScreen() {
             </Text>
           </>
         }
-        variant="single"
-        confirmLabel="차단하기"
+        variant="error" // danger 단일 버튼
+        confirmLabel="차단"
         onConfirm={confirmBlockUser}
         onDismiss={() => !isBlocking && setShowBlockModal(false)}
       />

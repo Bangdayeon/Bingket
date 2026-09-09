@@ -37,14 +37,14 @@ const variantStyles: Record<Variant, { container: string; text: string }> = {
 
 const DISABLED_FILLED = { container: 'bg-gray-400', text: 'text-gray-700' };
 
-// sm은 항상 SemiBold, lg는 항상 Bold, md는 채움 여부에 따라 갈린다.
-const fontFor = (size: Size, variant: Variant) => {
-  if (size === 'sm') return 'font-pretendard-semibold';
-  if (size === 'lg') return 'font-pretendard-bold';
-  return variant === 'ghost' || variant === 'secondary'
-    ? 'font-pretendard-bold'
-    : 'font-pretendard-medium';
-};
+/**
+ * 라벨 두께는 크기·변형과 무관하게 Medium 하나다.
+ *
+ * 예전에는 sm=SemiBold / lg=Bold / md는 채움 여부로 Medium·Bold가 갈렸는데,
+ * 화면에서 보면 버튼 글자만 유독 굵어 보였다. 굵기로 위계를 만들 이유도 없다 —
+ * 버튼은 이미 배경색과 테두리로 충분히 구분된다.
+ */
+const BUTTON_FONT = 'font-pretendard-medium';
 
 const LOADING_CLASS: Record<Variant, string> = {
   primary: 'text-on-brand',
@@ -84,9 +84,7 @@ export default function Button({
     >
       {!loading && (
         <Text
-          className={`text-center ${sizeText} ${fontFor(size, variant)} ${
-            isDisabled ? disabledText : text
-          }`}
+          className={`text-center ${sizeText} ${BUTTON_FONT} ${isDisabled ? disabledText : text}`}
         >
           {label}
         </Text>

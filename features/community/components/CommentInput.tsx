@@ -68,22 +68,29 @@ export function CommentInput({
           maxLength={LIMITS.comment}
           className="flex-1"
           style={{ flex: 1 }}
-        />
-
-        <IconButton
-          icon={
-            <ArrowUpwardIcon
-              width={24}
-              height={24}
-              className={pressed ? 'text-gray-500' : 'text-gray-400'}
+          rightIcon={
+            // 입력창 안 오른쪽에 붙인다. 입력창 높이가 48이라 버튼은 32로 줄이고,
+            // px-4로 잡힌 우측 여백을 -mr-2로 당겨 가장자리에서 8만 띄운다.
+            // 줄어든 만큼은 hitSlop으로 메워 터치 영역은 48을 유지한다.
+            <IconButton
+              size={32}
+              className="-mr-2"
+              hitSlop={8}
+              icon={
+                <ArrowUpwardIcon
+                  width={24}
+                  height={24}
+                  className={pressed ? 'text-gray-500' : 'text-gray-400'}
+                />
+              }
+              onClick={onSubmit}
+              variant="ghost"
+              loading={isSubmitting}
+              disabled={isSubmitting}
+              onPressIn={() => setPressed(true)}
+              onPressOut={() => setPressed(false)}
             />
           }
-          onClick={onSubmit}
-          variant="ghost"
-          loading={isSubmitting}
-          disabled={isSubmitting}
-          onPressIn={() => setPressed(true)}
-          onPressOut={() => setPressed(false)}
         />
       </View>
     </View>
