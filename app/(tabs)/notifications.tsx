@@ -218,6 +218,8 @@ export default function NotificationsScreen() {
           <Text className="text-body-md text-gray-800">모두 읽음 처리</Text>
         </Pressable>
       </View>
+      {/* 설정 화면과 같은 구분선 규격 — 화면 끝까지 닿는 풀블리드 */}
+      <View className="h-px bg-gray-300" />
 
       <ScrollView className="flex-1">
         {fetchError ? (

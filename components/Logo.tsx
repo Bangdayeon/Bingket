@@ -16,9 +16,9 @@ export function Logo({ size = 150, className = '' }: LogoProps) {
       style={{ width: size, height: size, borderRadius: size * RADIUS_RATIO, overflow: 'hidden' }}
     >
       <Image
-        source={require('@/assets/logo_mark.png')}
+        source={require('@/assets/logo.png')}
         style={{ width: size, height: size }}
-        resizeMode="contain"
+        resizeMode="cover"
       />
     </View>
   );
