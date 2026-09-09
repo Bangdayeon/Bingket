@@ -90,8 +90,10 @@ export function PostList({
             progressBackgroundColor="transparent"
           />
         }
+        // 탭바는 flex 형제라 화면이 이미 그 위에서 끝난다. 피해야 할 건 FAB뿐이다
+        // (52 + bottom 16 = 68). 120은 탭바가 플로팅이던 시절 수치다.
         contentContainerStyle={
-          posts.length === 0 ? { flexGrow: 1, paddingBottom: 120 } : { paddingBottom: 120 }
+          posts.length === 0 ? { flexGrow: 1, paddingBottom: 68 } : { paddingBottom: 68 }
         }
         // 목록이 비었을 때 백지로 두지 않는다. 에러와 빈 값은 다른 화면을 보여준다.
         ListEmptyComponent={

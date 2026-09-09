@@ -353,7 +353,7 @@ export function BingoCellModal({
                 />
               </View>
 
-              <Text className="text-body-sm mb-3 text-gray-500 placeholder:text-gray-500">
+              <Text className="text-body-sm mb-3 text-gray-500">
                 {normalizeTitle(editingMemoCell.title)}
               </Text>
 

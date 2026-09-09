@@ -188,6 +188,9 @@ export default function BingoModifyScreen() {
         className="flex-1"
         // 섹션 간격은 여기 한 곳에서 준다. 섹션마다 자기 패딩을 들면 제각각이 된다.
         contentContainerStyle={{ gap: 32, paddingBottom: insets.bottom + 32 }}
+        // 저장 버튼이 스크롤 안에 있다. 이게 없으면 제목 입력 중 저장하기를 누를 때
+        // 첫 탭이 키보드 dismiss에 먹혀 두 번 눌러야 한다.
+        keyboardShouldPersistTaps="handled"
       >
         <View className="px-4 pb-2 pt-7">
           <Text className="text-title-lg font-pretendard-medium text-gray-900">빙고 수정하기</Text>
@@ -201,7 +204,8 @@ export default function BingoModifyScreen() {
           }}
         />
 
-        <View className="gap-8">
+        {/* gap-8은 rem 기반이라 28로 인라인된다. 바깥과 맞추려면 숫자로 준다. */}
+        <View style={{ gap: 32 }}>
           <View>
             <View className="px-4">
               <SectionLabel label="테마 선택" />

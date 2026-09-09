@@ -178,7 +178,9 @@ export default function BingoAddScreen() {
         // 섹션 간격은 여기 한 곳에서 준다. 섹션마다 자기 패딩을 들면 제각각이 된다.
         contentContainerStyle={{ gap: 32, paddingBottom: insets.bottom + 32 }}
         keyboardShouldPersistTaps="handled"
-        automaticallyAdjustKeyboardInsets={false}
+        // 저장 버튼이 하단 고정 바였을 땐 false가 맞았다(고정 바가 키보드에 밀려 튐).
+        // 버튼이 스크롤 안으로 들어온 지금은 반대로, 키보드 위로 올릴 수 없게 막는다.
+        automaticallyAdjustKeyboardInsets
       >
         {/* 제목은 내용과 함께 스크롤된다. 화면 위에 고정되는 건 뒤로가기 줄뿐이다. */}
         <View className="px-4 pb-2 pt-7">

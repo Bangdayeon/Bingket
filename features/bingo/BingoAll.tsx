@@ -553,7 +553,7 @@ export function BingoAll() {
         {/* 빙고가 있을 때: 목록 아래에 추가 카드, 상한에 닿으면 안내 문구 */}
         {bingos.length > 0 &&
           (myBingoCount < MAX_BINGOS ? (
-            <View className="mt-6 px-4">
+            <View className="px-4">
               <View className="items-center rounded-[20px] bg-white px-5 py-6">
                 <Text className="mb-5 text-body-md text-gray-800">
                   빙고 추가하기 ({myBingoCount}/{MAX_BINGOS})
@@ -562,13 +562,12 @@ export function BingoAll() {
               </View>
             </View>
           ) : (
-            <View className="mt-10 items-center px-4">
+            <View className="items-center px-4">
               <Text className="text-body-md text-gray-700">
                 빙고는 한 번에 {MAX_BINGOS}개까지 진행할 수 있어요
               </Text>
             </View>
           ))}
-        <View className="h-24" />
 
         <BingoCellModal
           visible={!!modalTarget}

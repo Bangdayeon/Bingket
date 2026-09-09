@@ -58,7 +58,9 @@ export function WriteBingo({
   return (
     // 내부 블록도 바깥 섹션과 같은 32px로 벌린다. 블록마다 자기 패딩을 들고 있으면
     // 반드시 제각각이 된다 — 실제로 pt-5 / pb-5 pt-2 로 섞여 있었다.
-    <View className="gap-8">
+    // gap을 숫자로 준다. tailwind의 gap-8은 rem 기반이라 metro의 inlineRem(기본 14)
+    // 때문에 32가 아니라 28로 인라인되고, 바깥 섹션(인라인 32)과 어긋난다.
+    <View style={{ gap: 32 }}>
       {/* 빙고 칸 수 */}
       <View>
         <View className="px-4">
