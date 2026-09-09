@@ -1,4 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
+import * as Sentry from '@sentry/react-native';
 import { Pressable, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect, useRouter } from 'expo-router';
@@ -7,6 +8,7 @@ import { PostList } from '@/features/community/components/PostList';
 import EditIcon from '@/assets/icons/ic_edit.svg';
 import { CommunityPost } from '@/types/community';
 import { fetchPosts, PAGE_SIZE } from '@/features/community/lib/community';
+import { useOnlineRestore } from '@/lib/use-online';
 
 const TAB_BAR_CONTENT_HEIGHT = 72; // icon(36) + label(20) + paddingVertical(8*2)
 
@@ -19,6 +21,7 @@ export default function CommunityScreen() {
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [loadFailed, setLoadFailed] = useState(false);
   const loadingRef = useRef(false);
   const isFocused = useRef(false); // 현재 포커스 상태
 
@@ -27,12 +30,21 @@ export default function CommunityScreen() {
     loadingRef.current = true;
     setLoading(true);
 
-    const fetched = await fetchPosts(pageNum);
-
-    setPosts((prev) => (reset ? fetched : [...prev, ...fetched]));
-    setHasMore(fetched.length === PAGE_SIZE);
-    setLoading(false);
-    loadingRef.current = false;
+    // 조회가 throw하면 loadingRef가 true로 잠겨 이후 새로고침·무한스크롤이
+    // 통째로 무시된다. 해제는 반드시 finally에서 한다.
+    try {
+      const fetched = await fetchPosts(pageNum);
+      setPosts((prev) => (reset ? fetched : [...prev, ...fetched]));
+      setHasMore(fetched.length === PAGE_SIZE);
+      setLoadFailed(false);
+    } catch (e) {
+      Sentry.captureException(e);
+      if (reset) setPosts([]);
+      setLoadFailed(true);
+    } finally {
+      setLoading(false);
+      loadingRef.current = false;
+    }
   }, []);
 
   useFocusEffect(
@@ -58,12 +70,24 @@ export default function CommunityScreen() {
   const handleRefresh = useCallback(async () => {
     if (loadingRef.current) return;
     setRefreshing(true);
-    const fetched = await fetchPosts(0);
-    setPosts(fetched);
-    setPage(0);
-    setHasMore(fetched.length === PAGE_SIZE);
-    setRefreshing(false);
+    try {
+      const fetched = await fetchPosts(0);
+      setPosts(fetched);
+      setPage(0);
+      setHasMore(fetched.length === PAGE_SIZE);
+      setLoadFailed(false);
+    } catch (e) {
+      Sentry.captureException(e);
+      setLoadFailed(true);
+    } finally {
+      setRefreshing(false);
+    }
   }, []);
+
+  // 연결이 돌아오면 실패했던 첫 페이지를 자동으로 다시 받는다.
+  useOnlineRestore(() => {
+    if (loadFailed) loadPosts(0, true);
+  });
 
   const handleBlock = useCallback((userId: string) => {
     setPosts((prev) => prev.filter((p) => p.userId !== userId));
@@ -80,6 +104,8 @@ export default function CommunityScreen() {
           onBlock={handleBlock}
           isLoading={loading}
           isRefreshing={refreshing}
+          hasError={loadFailed}
+          onRetry={() => loadPosts(0, true)}
         />
       </View>
       <Pressable

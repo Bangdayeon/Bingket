@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Sentry from '@sentry/react-native';
 import { supabase } from '@/lib/supabase';
 import { router } from 'expo-router';
 import { useEffect, useRef } from 'react';
@@ -17,21 +18,28 @@ export default function SplashScreen() {
     }).start();
 
     const timer = setTimeout(async () => {
-      const [
-        {
-          data: { session },
-        },
-        onboardingSeen,
-      ] = await Promise.all([
-        supabase.auth.getSession(),
-        AsyncStorage.getItem('@bingket/onboarding-seen'),
-      ]);
+      // 여기서 throw하면 어떤 라우팅도 일어나지 않아 스플래시에 영영 갇힌다.
+      // 세션을 못 읽으면 비로그인으로 보고 로그인 화면으로 보낸다.
+      try {
+        const [
+          {
+            data: { session },
+          },
+          onboardingSeen,
+        ] = await Promise.all([
+          supabase.auth.getSession(),
+          AsyncStorage.getItem('@bingket/onboarding-seen'),
+        ]);
 
-      if (session) {
-        router.replace('/(tabs)');
-      } else if (!onboardingSeen) {
-        router.replace('/(auth)/onboarding');
-      } else {
+        if (session) {
+          router.replace('/(tabs)');
+        } else if (!onboardingSeen) {
+          router.replace('/(auth)/onboarding');
+        } else {
+          router.replace('/(auth)/login');
+        }
+      } catch (e) {
+        Sentry.captureException(e);
         router.replace('/(auth)/login');
       }
     }, 2000);

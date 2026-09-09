@@ -4,7 +4,8 @@ import { ImageSourcePropType, Image, Pressable, View } from 'react-native';
 import { Text } from '@/components/Text';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Modal } from '@/components/Modal';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import * as Sentry from '@sentry/react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   fetchLinkedAccounts,
@@ -13,6 +14,7 @@ import {
   deleteAccount,
 } from '@/features/mypage/lib/mypage';
 import Loading from '@/components/Loading';
+import { ErrorState } from '@/components/ErrorState';
 
 const PROVIDER_CONFIG: Record<
   string,
@@ -63,10 +65,24 @@ export default function AccountScreen() {
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  // 목록이 비었다는 것과 아직 못 받았다는 것은 다르다. 예전에는 둘 다
+  // accounts.length === 0 으로 판단해서, 연동 계정이 없으면 스피너가 영영 돌았다.
+  const [accountsLoading, setAccountsLoading] = useState(true);
+  const [accountsFailed, setAccountsFailed] = useState(false);
 
-  useEffect(() => {
-    fetchLinkedAccounts().then(setAccounts);
+  const loadAccounts = useCallback(() => {
+    setAccountsLoading(true);
+    setAccountsFailed(false);
+    fetchLinkedAccounts()
+      .then(setAccounts)
+      .catch((e: unknown) => {
+        Sentry.captureException(e);
+        setAccountsFailed(true);
+      })
+      .finally(() => setAccountsLoading(false));
   }, []);
+
+  useEffect(loadAccounts, [loadAccounts]);
 
   const handleResetBingos = async () => {
     setShowResetModal(false);
@@ -103,8 +119,12 @@ export default function AccountScreen() {
       {/* 연동 계정 정보 */}
       <View className="px-4 pt-6 pb-4">
         <Text className="mb-4 text-caption-md text-gray-500">연동 계정 정보</Text>
-        {accounts.length === 0 ? (
+        {accountsLoading ? (
           <Loading />
+        ) : accountsFailed ? (
+          <ErrorState message="연동 계정을 불러오지 못했어요" onRetry={loadAccounts} />
+        ) : accounts.length === 0 ? (
+          <Text className="text-body-md text-gray-500">연동된 계정이 없어요</Text>
         ) : (
           accounts.map((account) => {
             const cfg = PROVIDER_CONFIG[account.provider];

@@ -2,6 +2,7 @@ import * as Sentry from '@sentry/react-native';
 import Button from '@/components/Button';
 import { Modal } from '@/components/Modal';
 import { PageHeader } from '@/components/PageHeader';
+import { ErrorState } from '@/components/ErrorState';
 import { SectionLabel } from '@/features/bingo/bingo-edit/SectionLabel';
 import DeleteIcon from '@/assets/icons/ic_delete.svg';
 import { BingoTitle } from '@/features/bingo/bingo-edit/BingoTitle';
@@ -12,7 +13,7 @@ import type { BoardVisibility } from '@/features/profile/lib/profile';
 import { fetchTeamByBoardId, leaveTeam } from '@/features/team/lib/team';
 import { fetchThemes } from '@/features/bingo/lib/theme';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 import { Text } from '@/components/Text';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -36,39 +37,50 @@ export default function BingoModifyScreen() {
   const [visibility, setVisibility] = useState<BoardVisibility>('friends');
   const [themes, setThemes] = useState<{ id: string; displayName: string }[]>([]);
 
-  useEffect(() => {
-    const init = async () => {
-      try {
-        const themeMap = await fetchThemes();
-        const uniqueThemes = Object.values(themeMap).filter(
-          (v, i, arr) => arr.findIndex((t) => t.id === v.id) === i,
-        );
-        setThemes(uniqueThemes.map((t) => ({ id: t.id, displayName: t.displayName })));
+  const [loadFailed, setLoadFailed] = useState(false);
 
-        if (!bingoId) return;
-        const data = await fetchBingoForEdit(bingoId);
-        if (!data) {
-          router.back();
-          return;
-        }
+  const init = useCallback(async () => {
+    setLoading(true);
+    setLoadFailed(false);
+    try {
+      const themeMap = await fetchThemes();
+      const uniqueThemes = Object.values(themeMap).filter(
+        (v, i, arr) => arr.findIndex((t) => t.id === v.id) === i,
+      );
+      setThemes(uniqueThemes.map((t) => ({ id: t.id, displayName: t.displayName })));
 
-        setGrid(data.grid);
-        setMaxEdits(data.maxEdits);
-        setTitle(data.title);
-        setCells(data.cells);
-        setCellIds(data.cellIds);
-        setCellOriginalEditCounts(data.cellEditCounts);
-        setCellEdits(Array(data.cells.length).fill(0));
-        setSelectedTheme(data.theme);
-        setVisibility(data.visibility);
-        setLoading(false);
-      } catch (e) {
-        Sentry.captureException(e);
-        router.back();
+      // bingoId 없이 들어오거나 판을 못 찾으면, 예전에는 로딩 해제도 안 하고
+      // 말없이 뒤로 튕겼다. 이유를 보여주고 돌아갈 수단을 남긴다.
+      if (!bingoId) {
+        setLoadFailed(true);
+        return;
       }
-    };
-    init();
+      const data = await fetchBingoForEdit(bingoId);
+      if (!data) {
+        setLoadFailed(true);
+        return;
+      }
+
+      setGrid(data.grid);
+      setMaxEdits(data.maxEdits);
+      setTitle(data.title);
+      setCells(data.cells);
+      setCellIds(data.cellIds);
+      setCellOriginalEditCounts(data.cellEditCounts);
+      setCellEdits(Array(data.cells.length).fill(0));
+      setSelectedTheme(data.theme);
+      setVisibility(data.visibility);
+    } catch (e) {
+      Sentry.captureException(e);
+      setLoadFailed(true);
+    } finally {
+      setLoading(false);
+    }
   }, [bingoId]);
+
+  useEffect(() => {
+    void init();
+  }, [init]);
 
   const isDirty = useRef(false);
   const markDirty = () => {
@@ -135,6 +147,15 @@ export default function BingoModifyScreen() {
     return (
       <View className="flex-1 items-center justify-center bg-surface">
         <Loading />
+      </View>
+    );
+  }
+
+  if (loadFailed) {
+    return (
+      <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
+        <PageHeader title="빙고 수정하기" />
+        <ErrorState message="빙고를 불러오지 못했어요" onRetry={() => void init()} />
       </View>
     );
   }

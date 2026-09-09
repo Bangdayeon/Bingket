@@ -25,6 +25,7 @@ import { Appearance } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ForceUpdateGate } from '@/features/app-update/ForceUpdateGate';
 import { PortalHost } from '@/components/PortalHost';
+import { OfflineBanner } from '@/components/OfflineBanner';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 
@@ -132,6 +133,7 @@ function RootLayout() {
         <Stack.Screen name="community/write" options={{ headerShown: false }} />
         <Stack.Screen name="community/[id]" options={{ headerShown: false }} />
       </Stack>
+      <OfflineBanner />
       <ForceUpdateGate />
       {/* 다이얼로그 오버레이가 Stack 위에 그려지도록 마지막에 둔다 */}
       <PortalHost />

@@ -4,6 +4,8 @@ import { useRouter } from 'expo-router';
 import { CommunityPost } from '@/types/community';
 import { PostCard } from './PostCard';
 import Loading from '@/components/Loading';
+import { EmptyState } from '@/components/EmptyState';
+import { ErrorState } from '@/components/ErrorState';
 import { supabase } from '@/lib/supabase';
 
 interface PostListProps {
@@ -13,6 +15,9 @@ interface PostListProps {
   onBlock?: (userId: string) => void;
   isLoading: boolean;
   isRefreshing: boolean;
+  /** 조회가 실패했는지. 빈 목록과 구분해서 그려야 한다. */
+  hasError?: boolean;
+  onRetry?: () => void;
 }
 
 const Separator = () => <View className="h-px bg-gray-300" />;
@@ -24,6 +29,8 @@ export function PostList({
   onBlock,
   isLoading,
   isRefreshing,
+  hasError = false,
+  onRetry,
 }: PostListProps) {
   const router = useRouter();
   const flatListRef = useRef<FlatList<CommunityPost>>(null);
@@ -83,7 +90,17 @@ export function PostList({
             progressBackgroundColor="transparent"
           />
         }
-        contentContainerStyle={{ paddingBottom: 120 }}
+        contentContainerStyle={
+          posts.length === 0 ? { flexGrow: 1, paddingBottom: 120 } : { paddingBottom: 120 }
+        }
+        // 목록이 비었을 때 백지로 두지 않는다. 에러와 빈 값은 다른 화면을 보여준다.
+        ListEmptyComponent={
+          isLoading || isRefreshing ? null : hasError ? (
+            <ErrorState onRetry={onRetry} />
+          ) : (
+            <EmptyState message={'아직 게시글이 없어요\n첫 글을 남겨보세요'} />
+          )
+        }
         // 하단 로딩
         ListFooterComponent={
           isLoading ? (

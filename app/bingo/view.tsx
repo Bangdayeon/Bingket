@@ -1,5 +1,6 @@
 import * as Sentry from '@sentry/react-native';
 import { PageHeader } from '@/components/PageHeader';
+import { ErrorState } from '@/components/ErrorState';
 import { BingoCard } from '@/features/bingo/components/BingoCard';
 import { BingoCellModal, type MemoSaveState } from '@/features/bingo/BingoCellModal';
 import {
@@ -9,7 +10,7 @@ import {
   calcBingoCount,
 } from '@/features/bingo/lib/bingo';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ScrollView, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/Text';
@@ -41,19 +42,40 @@ export default function BingoViewScreen() {
   const [memoSaveState, setMemoSaveState] = useState<Record<string, MemoSaveState | undefined>>({});
   const retroDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => {
-    if (!bingoId) return;
+  const [loadFailed, setLoadFailed] = useState(false);
+
+  const loadBoard = useCallback(() => {
+    if (!bingoId) {
+      setLoading(false);
+      setLoadFailed(true);
+      return;
+    }
+    setLoading(true);
+    setLoadFailed(false);
     fetchBingoForView(bingoId)
       .then((result) => {
         setData(result);
         if (result) {
           setCellDetails(result.cellDetails);
           setRetrospective(result.bingo.retrospective ?? '');
+        } else {
+          setLoadFailed(true);
         }
       })
       // 연결이 끊겨 조회에 실패해도 로딩 스피너에 갇히지 않게 한다
-      .catch(Sentry.captureException)
+      .catch((e: unknown) => {
+        Sentry.captureException(e);
+        setLoadFailed(true);
+      })
       .finally(() => setLoading(false));
+  }, [bingoId]);
+
+  useEffect(() => {
+    loadBoard();
+  }, [loadBoard]);
+
+  useEffect(() => {
+    if (!bingoId) return;
     fetchMyTeams()
       .then((teams) => {
         const found = teams.find((t) => t.myBoardId === bingoId && !t.isInvite);
@@ -135,7 +157,15 @@ export default function BingoViewScreen() {
     );
   }
 
-  if (!data) return null;
+  // 예전에는 여기서 null을 돌려줘 헤더도 없는 백지가 됐다. 뒤로 갈 수단조차 없었다.
+  if (!data || loadFailed) {
+    return (
+      <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
+        <PageHeader />
+        <ErrorState message="빙고를 불러오지 못했어요" onRetry={loadBoard} />
+      </View>
+    );
+  }
 
   const { bingo } = data;
   const isDone = bingo.state === 'done';

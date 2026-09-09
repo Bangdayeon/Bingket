@@ -27,6 +27,7 @@ import { getCache, setCache } from '@/lib/cache';
 import { MAX_BINGOS } from '@/constants/bingo';
 import { CACHE_KEY_ALL } from '@/constants/cache_key';
 import Loading from '@/components/Loading';
+import { ErrorState } from '@/components/ErrorState';
 import Button from '@/components/Button';
 import { Modal } from '@/components/Modal';
 import {
@@ -124,6 +125,7 @@ export function BingoAll() {
   const [notice, setNotice] = useState<{ title: string; body: string } | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [loadFailed, setLoadFailed] = useState(false);
   const [modalTarget, setModalTarget] = useState<{ bingoId: string; cellIndex: number } | null>(
     null,
   );
@@ -137,8 +139,10 @@ export function BingoAll() {
   const { refresh: refreshUnread } = useUnreadNotifications();
 
   const loadData = useCallback(() => {
-    Promise.all([fetchMyBingos(), fetchJoinedSharedBoards(), loadDraftBingo()]).then(
-      async ([fetched, sharedFetched, draft]) => {
+    // .catch가 없으면 조회 실패 시 setLoading(false)에 영영 도달하지 못해
+    // 홈 화면이 스피너로 굳는다. 해제는 finally에서 한다.
+    Promise.all([fetchMyBingos(), fetchJoinedSharedBoards(), loadDraftBingo()])
+      .then(async ([fetched, sharedFetched, draft]) => {
         const details: Record<string, BingoCellDetail[]> = {};
         const collect = ({ bingo, cellDetails: cd }: (typeof fetched)[number]) => {
           details[bingo.id] = cd;
@@ -171,7 +175,6 @@ export function BingoAll() {
         ];
         setBingos(sliced);
         setCellDetails(details);
-        setLoading(false);
         setCache(CACHE_KEY_ALL, { bingos: sliced, cellDetails: details });
 
         // 각 빙고가 팀에 속해 있는지 조회. 종료된 팀은 카드에 표시하지 않는다.
@@ -193,8 +196,13 @@ export function BingoAll() {
           setTeamsByBoard(byBoard);
           setCurrentUserId(auth.user?.id ?? null);
         });
-      },
-    );
+        setLoadFailed(false);
+      })
+      .catch((e: unknown) => {
+        Sentry.captureException(e);
+        setLoadFailed(true);
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   /**
@@ -462,6 +470,15 @@ export function BingoAll() {
         <View className="flex-1 items-center justify-center">
           <Loading />
         </View>
+      </View>
+    );
+  }
+
+  if (loadFailed && bingos.length === 0) {
+    return (
+      <View className="flex-1 bg-white  ">
+        {strip}
+        <ErrorState onRetry={loadData} />
       </View>
     );
   }
