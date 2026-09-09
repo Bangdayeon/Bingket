@@ -1,8 +1,7 @@
-import { Pressable, View } from 'react-native';
+import { Image, Pressable, View } from 'react-native';
 import { Text } from '@/components/Text';
 import { CommentItem } from './CommentItem';
 import { Comment } from '@/types/community';
-import MascotImage from '@/assets/mascots/mascot_hey_gray.svg';
 import Loading from '@/components/Loading';
 import { ErrorState } from '@/components/ErrorState';
 
@@ -41,7 +40,12 @@ export function CommentSection({
         <ErrorState message="댓글을 불러오지 못했어요" onRetry={onRetry} />
       ) : comments.length === 0 ? (
         <View className="items-center py-12 gap-5">
-          <MascotImage width={130} height={100} className="" />
+          {/* 원본 757×638. 기존 SVG(130×100)와 폭을 맞추고 높이는 비율대로 잡는다 */}
+          <Image
+            source={require('@/assets/mascots/3D_01.png')}
+            style={{ width: 130, height: 110 }}
+            resizeMode="contain"
+          />
           <Text className="text-body-md text-gray-500">첫 댓글을 남겨주세요.</Text>
           <Text className="text-body-md text-gray-500">부적절한 내용은 제재를 받을 수 있어요.</Text>
         </View>

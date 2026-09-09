@@ -1,7 +1,9 @@
 import * as Sentry from '@sentry/react-native';
 import { useColors } from '@/lib/use-colors';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { InteractionManager, RefreshControl, ScrollView, View } from 'react-native';
+import { Image, InteractionManager, RefreshControl, ScrollView, View } from 'react-native';
+import { CoachMarkTarget } from '@/features/coachmark/CoachMarkTarget';
+import { useCoachMarkScrollIntoView } from '@/features/coachmark/use-coach-mark-scroll';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { startTransition, useState, useCallback, useRef } from 'react';
 import { BingoCard } from './components/BingoCard';
@@ -104,12 +106,21 @@ function CreateBingoButtons({
 }) {
   return (
     <View className="w-full max-w-[282px] gap-4 self-center">
-      <Button
-        label={hasFriends ? '혼자 할래요' : '빙고 추가하기'}
-        size="md"
-        onClick={() => onCreate('/bingo/add')}
-        className="w-full"
-      />
+      {/*
+        첫 실행 안내가 가리키는 버튼. 빈 화면과 목록 아래 두 곳에서 쓰이지만 두 분기가
+        배타적이라 같은 id가 동시에 두 번 뜨지 않는다.
+        「친구와 할래요」까지 함께 감싸지 않는 이유: 안내 4단계는 구멍으로 터치를
+        통과시키는데, 그 버튼을 누르면 /bingo/team-mode로 빠져 투어가 멎는다.
+        이 버튼은 라벨이 바뀌어도 목적지가 늘 /bingo/add다.
+      */}
+      <CoachMarkTarget id="home-create-bingo" className="w-full">
+        <Button
+          label={hasFriends ? '혼자 할래요' : '빙고 추가하기'}
+          size="md"
+          onClick={() => onCreate('/bingo/add')}
+          className="w-full"
+        />
+      </CoachMarkTarget>
       {hasFriends && (
         <Button
           label="친구와 할래요"
@@ -127,6 +138,9 @@ export function BingoAll() {
   const colors = useColors();
   const router = useRouter();
   const [bingos, setBingos] = useState<BingoData[]>([]);
+  const scrollRef = useRef<ScrollView>(null);
+  // 빙고가 이미 있으면 추가 버튼이 목록 맨 아래라, 안내 4단계에서 끌어와야 한다.
+  const coachScroll = useCoachMarkScrollIntoView(scrollRef, { 'home-create-bingo': 'end' });
   const [cellDetails, setCellDetails] = useState<Record<string, BingoCellDetail[]>>({});
   /** 빙고판 id → 그 판이 속한 팀 (없으면 개인 빙고) */
   const [teamsByBoard, setTeamsByBoard] = useState<
@@ -530,9 +544,13 @@ export function BingoAll() {
     <View className="flex-1">
       {strip}
       <ScrollView
+        ref={scrollRef}
         className="flex-1"
         // 판 사이 간격. 카드가 아니라 여기서 준다 — 같은 카드를 상세 화면도 쓴다.
         contentContainerStyle={{ gap: 40 }}
+        // 안내 4단계는 구멍으로 터치가 통과해 드래그가 그대로 스크롤이 된다.
+        // 멎을 때마다 다시 재야 구멍이 버튼을 따라간다.
+        {...coachScroll}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -573,6 +591,12 @@ export function BingoAll() {
             </Text>
             <View className="h-10" />
             <CreateBingoButtons onCreate={navigateOnce} hasFriends={hasFriends} />
+            {/* 원본 757×638. contain 으로 비율을 지킨다 */}
+            <Image
+              source={require('@/assets/mascots/3D_01.png')}
+              style={{ width: 160, height: 135, marginTop: 32 }}
+              resizeMode="contain"
+            />
           </View>
         )}
 
