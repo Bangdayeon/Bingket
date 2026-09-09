@@ -27,11 +27,14 @@ import {
   blockUser,
 } from '@/features/community/lib/community';
 import { checkAndAwardBadges } from '@/lib/badge-checker';
+import * as Sentry from '@sentry/react-native';
 import { supabase } from '@/lib/supabase';
 import { Modal } from '@/components/Modal';
 import { Toast } from '@/components/Toast';
 import { containsBadWord } from '@/constants/bad-words';
 import Loading from '@/components/Loading';
+import { ErrorState } from '@/components/ErrorState';
+import { EmptyState } from '@/components/EmptyState';
 
 const REPORT_REASONS = [
   '상업적 광고 및 판매',
@@ -52,7 +55,7 @@ export default function CommunityDetailScreen() {
   const [post, setPost] = useState<CommunityPost | null>(null);
   const [postLoading, setPostLoading] = useState(true);
   const [localComments, setLocalComments] = useState<Comment[]>([]);
-  const [, setCommentsLoading] = useState(false);
+  const [commentsLoading, setCommentsLoading] = useState(false);
   const [comment, setComment] = useState('');
   const [commentAnonymous, setCommentAnonymous] = useState(true);
   const [commentSubmitting, setCommentSubmitting] = useState(false);
@@ -96,24 +99,38 @@ export default function CommunityDetailScreen() {
     });
   }, []);
 
-  useFocusEffect(
-    useCallback(() => {
-      if (!id) return;
-      fetchPost(id).then((data) => {
-        setPost(data);
-        setPostLoading(false);
-      });
-    }, [id]),
-  );
+  const [postFailed, setPostFailed] = useState(false);
+  const [commentsFailed, setCommentsFailed] = useState(false);
 
-  useEffect(() => {
+  const loadPost = useCallback(() => {
+    if (!id) return;
+    setPostLoading(true);
+    setPostFailed(false);
+    fetchPost(id)
+      .then(setPost)
+      .catch((e: unknown) => {
+        Sentry.captureException(e);
+        setPostFailed(true);
+      })
+      .finally(() => setPostLoading(false));
+  }, [id]);
+
+  useFocusEffect(loadPost);
+
+  const loadComments = useCallback(() => {
     if (!id) return;
     setCommentsLoading(true);
-    fetchComments(id).then((data) => {
-      setLocalComments(data);
-      setCommentsLoading(false);
-    });
+    setCommentsFailed(false);
+    fetchComments(id)
+      .then(setLocalComments)
+      .catch((e: unknown) => {
+        Sentry.captureException(e);
+        setCommentsFailed(true);
+      })
+      .finally(() => setCommentsLoading(false));
   }, [id]);
+
+  useEffect(loadComments, [loadComments]);
 
   const refreshComments = useCallback(async () => {
     if (!id) return;
@@ -159,11 +176,11 @@ export default function CommunityDetailScreen() {
             </Pressable>
           </View>
         </View>
-        <View className="flex-1 items-center justify-center">
-          <Text className="text-body-md" style={{ color: '#929898' /* gray-500 */ }}>
-            게시글을 찾을 수 없습니다.
-          </Text>
-        </View>
+        {postFailed ? (
+          <ErrorState onRetry={loadPost} />
+        ) : (
+          <EmptyState message="게시글을 찾을 수 없습니다." />
+        )}
       </SafeAreaView>
     );
   }
@@ -389,6 +406,9 @@ export default function CommunityDetailScreen() {
             iconColor={iconColor}
             onMenuPress={handleCommentMenuPress}
             onReplyPress={(replyId, author) => setReplyTo({ id: replyId, author })}
+            isLoading={commentsLoading}
+            hasError={commentsFailed}
+            onRetry={loadComments}
           />
         </ScrollView>
 

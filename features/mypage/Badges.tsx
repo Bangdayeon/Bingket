@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Image, Pressable, ScrollView, View } from 'react-native';
 import { Text } from '@/components/Text';
 import { supabase } from '@/lib/supabase';
 import { BadgeModal } from './components/BadgeModal';
 import Loading from '@/components/Loading';
+import { ErrorState } from '@/components/ErrorState';
+import * as Sentry from '@sentry/react-native';
 import { useResponsive } from '@/lib/use-responsive';
 
 interface EarnedBadge {
@@ -25,11 +27,14 @@ async function fetchMyBadges(): Promise<EarnedBadge[]> {
   } = await supabase.auth.getUser();
   if (!user) return [];
 
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('user_badges')
     .select('badge_id, earned_at, badges ( name, icon_url )')
     .eq('user_id', user.id)
     .order('earned_at', { ascending: true });
+
+  // 조회 실패를 빈 배열로 돌려주면 뱃지가 하나도 없는 것처럼 보인다.
+  if (error) throw error;
 
   return (data ?? []).map((row) => {
     const badgeRaw = row.badges as unknown;
@@ -48,16 +53,24 @@ async function fetchMyBadges(): Promise<EarnedBadge[]> {
 export function BadgesPage() {
   const [earned, setEarned] = useState<EarnedBadge[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadFailed, setLoadFailed] = useState(false);
   const [showBadgeModal, setShowBadgeModal] = useState<EarnedBadge | null>(null);
   const { contentWidth } = useResponsive();
   const badgeSize = (contentWidth - H_PADDING * 2 - GAP * (COLUMNS - 1)) / COLUMNS;
 
-  useEffect(() => {
-    fetchMyBadges().then((data) => {
-      setEarned(data);
-      setLoading(false);
-    });
+  const load = useCallback(() => {
+    setLoading(true);
+    setLoadFailed(false);
+    fetchMyBadges()
+      .then(setEarned)
+      .catch((e: unknown) => {
+        Sentry.captureException(e);
+        setLoadFailed(true);
+      })
+      .finally(() => setLoading(false));
   }, []);
+
+  useEffect(load, [load]);
 
   const slots: (EarnedBadge | null)[] = [
     ...earned,
@@ -78,8 +91,15 @@ export function BadgesPage() {
           <View className="flex-1 items-center justify-center py-20">
             <Loading />
           </View>
+        ) : loadFailed ? (
+          <ErrorState message="뱃지를 불러오지 못했어요" onRetry={load} />
         ) : (
           <View className="py-4">
+            {earned.length === 0 && (
+              <Text className="mb-6 text-center text-body-md text-gray-500">
+                아직 획득한 뱃지가 없어요
+              </Text>
+            )}
             <View style={{ gap: GAP, paddingHorizontal: H_PADDING }}>
               {rows.map((row, rowIndex) => (
                 <View key={rowIndex} style={{ flexDirection: 'row', gap: GAP }}>

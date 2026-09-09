@@ -230,7 +230,9 @@ export const fetchMyPosts = async (): Promise<MyPost[]> => {
     .eq('is_deleted', false)
     .order('created_at', { ascending: false });
 
-  if (error || !data) return [];
+  // 조회 실패가 "아직 작성한 글이 없습니다"로 보이면 안 된다.
+  if (error) throw error;
+  if (!data) return [];
 
   return data.map((p) => ({
     id: p.id,

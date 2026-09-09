@@ -11,6 +11,9 @@ import ArrowBackIcon from '@/assets/icons/ic_arrow_back.svg';
 import { searchPosts } from '@/features/community/lib/community';
 import type { CommunityPost } from '@/types/community';
 import Loading from '@/components/Loading';
+import { ErrorState } from '@/components/ErrorState';
+import { EmptyState } from '@/components/EmptyState';
+import * as Sentry from '@sentry/react-native';
 
 const MAX_RECENT = 10;
 const RECENT_SEARCHES_KEY = '@bingket/recent-searches';
@@ -26,6 +29,7 @@ export default function CommunitySearchScreen() {
   const [searches, setSearches] = useState<string[]>([]);
   const [results, setResults] = useState<CommunityPost[] | null>(null);
   const [loading, setLoading] = useState(false);
+  const [searchFailed, setSearchFailed] = useState(false);
 
   useEffect(() => {
     AsyncStorage.getItem(RECENT_SEARCHES_KEY).then((raw) => {
@@ -48,9 +52,16 @@ export default function CommunitySearchScreen() {
       persistSearches(updated);
 
       setLoading(true);
-      const data = await searchPosts(trimmed);
-      setResults(data);
-      setLoading(false);
+      setSearchFailed(false);
+      try {
+        setResults(await searchPosts(trimmed));
+      } catch (e) {
+        Sentry.captureException(e);
+        setResults([]);
+        setSearchFailed(true);
+      } finally {
+        setLoading(false);
+      }
     },
     [searches, persistSearches],
   );
@@ -103,12 +114,10 @@ export default function CommunitySearchScreen() {
       {/* 검색 결과 */}
       {!loading &&
         results !== null &&
-        (results.length === 0 ? (
-          <View className="flex-1 items-center justify-center">
-            <Text className="text-body-sm" style={{ color: '#929898' /* gray-500 */ }}>
-              검색 결과가 없습니다.
-            </Text>
-          </View>
+        (searchFailed ? (
+          <ErrorState message="검색하지 못했어요" onRetry={() => void runSearch(value)} />
+        ) : results.length === 0 ? (
+          <EmptyState message="검색 결과가 없습니다." />
         ) : (
           <FlatList
             data={results}

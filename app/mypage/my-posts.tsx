@@ -1,5 +1,4 @@
 import { PageHeader } from '@/components/PageHeader';
-import Button from '@/components/Button';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
@@ -7,6 +6,9 @@ import { Text } from '@/components/Text';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { fetchMyPosts, MyPost } from '@/features/mypage/lib/mypage';
 import Loading from '@/components/Loading';
+import { ErrorState } from '@/components/ErrorState';
+import { EmptyState } from '@/components/EmptyState';
+import * as Sentry from '@sentry/react-native';
 
 function PostItem({ post, onPress }: { post: MyPost; onPress: () => void }) {
   return (
@@ -30,16 +32,21 @@ export default function MyPostsScreen() {
   const insets = useSafeAreaInsets();
   const [posts, setPosts] = useState<MyPost[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadFailed, setLoadFailed] = useState(false);
 
-  useFocusEffect(
-    useCallback(() => {
-      setLoading(true);
-      fetchMyPosts().then((data) => {
-        setPosts(data);
-        setLoading(false);
-      });
-    }, []),
-  );
+  const load = useCallback(() => {
+    setLoading(true);
+    setLoadFailed(false);
+    fetchMyPosts()
+      .then(setPosts)
+      .catch((e: unknown) => {
+        Sentry.captureException(e);
+        setLoadFailed(true);
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  useFocusEffect(load);
 
   return (
     <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
@@ -49,16 +56,14 @@ export default function MyPostsScreen() {
         <View className="flex-1 items-center justify-center">
           <Loading />
         </View>
+      ) : loadFailed ? (
+        <ErrorState onRetry={load} />
       ) : posts.length === 0 ? (
-        <View className="flex-1 items-center justify-center gap-6 px-4">
-          <Text className="text-body-md text-gray-500">아직 작성한 글이 없습니다</Text>
-          <Button
-            label="게시판 둘러보기"
-            size="md"
-            onClick={() => router.replace('/(tabs)/community')}
-            className="px-6"
-          />
-        </View>
+        <EmptyState
+          message="아직 작성한 글이 없습니다"
+          actionLabel="게시판 둘러보기"
+          onAction={() => router.replace('/(tabs)/community')}
+        />
       ) : (
         <ScrollView
           className="flex-1"

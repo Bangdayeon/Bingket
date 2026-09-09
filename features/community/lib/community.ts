@@ -148,7 +148,9 @@ export const fetchPosts = async (page: number): Promise<CommunityPost[]> => {
   if (blockedIds.length > 0) query = query.not('user_id', 'in', `(${blockedIds.join(',')})`);
 
   const { data, error } = await query;
-  if (error || !data) return [];
+  // 에러를 빈 배열로 삼키면 조회 실패가 "글이 없음"으로 보인다. 화면이 구분할 수 있게 던진다.
+  if (error) throw error;
+  if (!data) return [];
 
   const likedSet = await fetchLikedSet(data.map((p) => p.id as string));
   return data.map((p) => mapPost(p as Parameters<typeof mapPost>[0], likedSet.has(p.id as string)));
@@ -163,6 +165,8 @@ export const fetchPost = async (id: string): Promise<CommunityPost | null> => {
     .eq('is_deleted', false)
     .single();
 
+  // PGRST116은 .single()이 행을 못 찾은 경우다. 이것만 "없는 글"이고 나머지는 실패다.
+  if (error && error.code !== 'PGRST116') throw error;
   if (error || !data) return null;
   const likedSet = await fetchLikedSet([data.id as string]);
   return mapPost(data as Parameters<typeof mapPost>[0], likedSet.has(data.id as string));
@@ -470,7 +474,8 @@ export const fetchComments = async (postId: string): Promise<Comment[]> => {
     .eq('is_deleted', false)
     .order('created_at', { ascending: true });
 
-  if (error || !data) return [];
+  if (error) throw error;
+  if (!data) return [];
 
   const blockedIds = await fetchBlockedUserIds();
   const rows = (data as RawCommentRow[]).filter(
@@ -680,7 +685,8 @@ export const searchPosts = async (query: string): Promise<CommunityPost[]> => {
   if (blockedIds.length > 0) q = q.not('user_id', 'in', `(${blockedIds.join(',')})`);
 
   const { data, error } = await q;
-  if (error || !data) return [];
+  if (error) throw error;
+  if (!data) return [];
 
   const likedSet = await fetchLikedSet(data.map((p) => p.id as string));
   return data.map((p) => mapPost(p as Parameters<typeof mapPost>[0], likedSet.has(p.id as string)));

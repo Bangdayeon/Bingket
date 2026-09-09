@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import * as Sentry from '@sentry/react-native';
 import { Pressable, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Text } from '@/components/Text';
 import { ProfileAvatar } from '@/components/ProfileAvatar';
 import Loading from '@/components/Loading';
+import { ErrorState } from '@/components/ErrorState';
 import CloseIcon from '@/assets/icons/ic_close.svg';
 import ArrowForwardIcon from '@/assets/icons/ic_arrow_forward.svg';
 import { fetchFriends } from '@/features/friend/lib/friend';
@@ -28,12 +30,22 @@ export function FriendPicker({ selectedIds, onChange, maxCount }: FriendPickerPr
   const router = useRouter();
   const [friends, setFriends] = useState<Friend[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadFailed, setLoadFailed] = useState(false);
 
-  useEffect(() => {
+  const load = useCallback(() => {
+    setLoading(true);
+    setLoadFailed(false);
     fetchFriends()
       .then(setFriends)
+      .catch((e: unknown) => {
+        // catch가 없으면 조회 실패가 "아직 친구가 없어요"로 보인다.
+        Sentry.captureException(e);
+        setLoadFailed(true);
+      })
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(load, [load]);
 
   const selected = selectedIds
     .map((id) => friends.find((f) => f.friendId === id))
@@ -50,6 +62,10 @@ export function FriendPicker({ selectedIds, onChange, maxCount }: FriendPickerPr
         <Loading />
       </View>
     );
+  }
+
+  if (loadFailed) {
+    return <ErrorState message="친구 목록을 불러오지 못했어요" onRetry={load} />;
   }
 
   if (friends.length === 0) {

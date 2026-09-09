@@ -42,17 +42,23 @@ export default function AlertSettingScreen() {
   const [settings, setSettings] = useState<NotificationSettings>(DEFAULT_NOTIFICATION_SETTINGS);
   const [loading, setLoading] = useState(true);
   const [saveFailed, setSaveFailed] = useState(false);
+  const [loadFailed, setLoadFailed] = useState(false);
 
   useEffect(() => {
     // 1. AsyncStorage 캐시 → 즉시 표시
     loadCachedNotificationSettings().then((cached) => {
       if (cached) setSettings(cached);
     });
-    // 2. Supabase → 최신값으로 업데이트
-    fetchNotificationSettings().then((data) => {
-      setSettings(data);
-      setLoading(false);
-    });
+    // 2. Supabase → 최신값으로 업데이트.
+    //    실패하면 헤더 스피너가 영영 돌고, 토글은 서버값이 아닌 기본값으로 굳어
+    //    실제 설정과 화면이 달라진다.
+    fetchNotificationSettings()
+      .then(setSettings)
+      .catch((error: unknown) => {
+        Sentry.captureException(error);
+        setLoadFailed(true);
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   const update = (patch: Partial<NotificationSettings>) => {
@@ -127,6 +133,12 @@ export default function AlertSettingScreen() {
         message="알림 설정 저장에 실패했어요. 잠시 후 다시 시도해주세요."
         visible={saveFailed}
         onDismiss={() => setSaveFailed(false)}
+      />
+      {/* 조회 실패는 화면의 토글이 실제 설정과 다르다는 뜻이라 반드시 알려야 한다. */}
+      <Toast
+        message="알림 설정을 불러오지 못했어요. 화면의 값이 실제와 다를 수 있어요."
+        visible={loadFailed}
+        onDismiss={() => setLoadFailed(false)}
       />
     </View>
   );
