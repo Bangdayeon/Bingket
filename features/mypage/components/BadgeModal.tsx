@@ -37,6 +37,9 @@ export function BadgeModal({ visible, badge, onClose }: BadgeModalProps) {
         pointerEvents="box-none"
       >
         <View
+          // components/Modal.tsx의 카드와 같은 규격. 배경이 없으면 내용이
+          // scrim 위에 그대로 떠서 카드로 읽히지 않는다.
+          className="bg-white"
           style={{
             width: 280,
             borderRadius: 30,
@@ -54,6 +57,7 @@ export function BadgeModal({ visible, badge, onClose }: BadgeModalProps) {
             />
           ) : (
             <View
+              className="bg-gray-200"
               style={{
                 width: 120,
                 height: 120,
@@ -72,6 +76,7 @@ export function BadgeModal({ visible, badge, onClose }: BadgeModalProps) {
 
           {/* 획득일 */}
           <View
+            className="bg-gray-200"
             style={{
               borderRadius: 9999,
               paddingHorizontal: 16,
