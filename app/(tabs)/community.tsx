@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from 'react';
 import * as Sentry from '@sentry/react-native';
 import { Pressable, View } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { CommunityHeader } from '@/features/community/components/Header';
 import { PostList } from '@/features/community/components/PostList';
@@ -9,14 +9,15 @@ import EditIcon from '@/assets/icons/ic_edit.svg';
 import { CommunityPost } from '@/types/community';
 import { fetchPosts, PAGE_SIZE } from '@/features/community/lib/community';
 import { useOnlineRestore } from '@/lib/use-online';
-import { TAB_BAR_CONTENT_HEIGHT } from '@/components/FloatingTabBar';
-
-// 탭바 높이는 FloatingTabBar가 내보낸다. 여기서 따로 적으면 반드시 어긋난다.
 
 export default function CommunityScreen() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
-  const fabBottom = TAB_BAR_CONTENT_HEIGHT + insets.bottom + 8;
+  /**
+   * 탭바는 absolute가 아니라 화면과 나란한 flex 형제다(BottomTabView가 column으로
+   * [화면, 탭바]를 쌓는다). 그래서 이 화면의 bottom: 0 이 이미 탭바 바로 위다.
+   * 탭바 높이나 safe-area를 더하면 그만큼 공중에 뜬다 — 실제로 그랬다.
+   */
+  const fabBottom = 16;
   const [posts, setPosts] = useState<CommunityPost[]>([]);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
