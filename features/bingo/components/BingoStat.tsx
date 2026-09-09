@@ -12,12 +12,6 @@ interface BingoStatProps {
   valueText?: string;
 }
 
-/**
- * 빙고 진행 상황을 라벨 + 값 두 줄로 보여준다.
- *
- * 이전에는 도넛 게이지 안에 값을 넣었지만, 원 안에 글자를 욱여넣느라 값이 작아지고
- * 자릿수에 따라 폰트 크기를 따로 넘겨야 했다. 게이지를 걷어내고 값을 그대로 읽히게 한다.
- */
 export function BingoStat({
   label,
   current,
@@ -34,7 +28,7 @@ export function BingoStat({
         {label}
       </Text>
       <Text
-        className={`${size === 'sm' ? 'text-caption-sm' : 'text-caption-sm md:text-body-sm'} ${isOver ? 'text-danger' : 'text-gray-800'}`}
+        className={`${size === 'sm' ? 'text-caption-sm' : 'text-caption-sm md:text-body-sm'} ${isOver ? 'text-danger' : 'text-gray-700'}`}
       >
         {valueText ?? `${current}/${total}`}
       </Text>

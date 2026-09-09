@@ -1,5 +1,10 @@
 <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-<rect x="2.75" y="4.93164" width="22.5" height="18.1364" rx="5.25" fill="#2E3333" stroke="#2E3333" stroke-width="1.5"/>
-<line x1="7.75" y1="11.25" x2="20.25" y2="11.25" stroke="#FDFDFD" stroke-width="1.5" stroke-linecap="round"/>
-<line x1="7.75" y1="16.25" x2="16.25" y2="16.25" stroke="#FDFDFD" stroke-width="1.5" stroke-linecap="round"/>
+<mask id="mask0_community_on" maskUnits="userSpaceOnUse" x="0" y="0" width="28" height="28">
+<rect width="28" height="28" fill="white"/>
+<line x1="7.75" y1="11.25" x2="20.25" y2="11.25" stroke="black" stroke-width="1.5" stroke-linecap="round"/>
+<line x1="7.75" y1="16.25" x2="16.25" y2="16.25" stroke="black" stroke-width="1.5" stroke-linecap="round"/>
+</mask>
+<g mask="url(#mask0_community_on)">
+<rect x="2.75" y="4.93164" width="22.5" height="18.1364" rx="5.25" fill="currentColor" stroke="currentColor" stroke-width="1.5"/>
+</g>
 </svg>

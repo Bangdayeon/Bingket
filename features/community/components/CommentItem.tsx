@@ -61,7 +61,7 @@ export function CommentItem({
             initialLiked={comment.likedByMe}
           />
           <Pressable hitSlop={8} onPress={() => onReplyPress(comment.id, comment.author)}>
-            <SMSIcon width={24} height={24} className="text-gray-400" />
+            <SMSIcon width={20} height={20} className="text-gray-400" />
           </Pressable>
           <Pressable hitSlop={8} onPress={(e) => onMenuPress(comment.id, e.nativeEvent.pageY)}>
             <MoreVertIcon width={24} height={24} className="text-gray-700" />

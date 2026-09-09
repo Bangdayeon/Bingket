@@ -79,9 +79,9 @@ export default function MyPageScreen() {
         onPostsPress={() => router.push('/mypage/my-posts')}
       />
 
-      <View className="flex-row border-b border-gray-300 px-4">
+      <View className="flex-row gap-6 border-b border-gray-300 px-4">
         {TABS.map((tab, index) => (
-          <Pressable key={tab} onPress={() => setTabIndex(index)} className="items-center py-3">
+          <Pressable key={tab} onPress={() => setTabIndex(index)} className="items-center pt-3">
             <Text
               className={
                 tabIndex === index
@@ -91,9 +91,11 @@ export default function MyPageScreen() {
             >
               {tab}
             </Text>
-            {/* 시안: 밑줄은 44×1.5 */}
+            {/* 시안: 밑줄은 44×1.5.
+                하단 패딩을 두지 않고 -mb-px로 내려, 아래 구분선 위에 겹쳐 앉게 한다.
+                패딩이 있으면 밑줄만 공중에 뜬 줄로 보인다. */}
             <View
-              className={`mt-2 h-[1.5px] w-11 ${tabIndex === index ? 'bg-gray-800' : 'bg-transparent'}`}
+              className={`-mb-px mt-2 h-[1.5px] w-11 ${tabIndex === index ? 'bg-gray-800' : 'bg-transparent'}`}
             />
           </Pressable>
         ))}

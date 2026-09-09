@@ -16,8 +16,6 @@ import { Popover } from '@/components/Popover';
 import { Modal } from '@/components/Modal';
 import { submitReport, blockUser } from '@/features/community/lib/community';
 
-const ICON_SIZE = 24;
-
 const REPORT_REASONS = [
   '상업적 광고 및 판매',
   '욕설/비하',
@@ -189,7 +187,7 @@ export function PostCard({ post, currentUserId, onBlock }: PostCardProps) {
       <View className="flex-row items-center gap-4 mt-3">
         <LikeButton count={post.likeCount} postId={post.id} initialLiked={post.likedByMe} />
         <View className="flex-row items-center gap-1">
-          <SMSIcon width={ICON_SIZE} height={ICON_SIZE} className="text-gray-400" />
+          <SMSIcon width={20} height={20} className="text-gray-400" />
           <Text className="text-body-sm text-gray-700">{post.commentCount}</Text>
         </View>
       </View>
