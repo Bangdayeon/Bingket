@@ -1,6 +1,7 @@
 import { ScrollView, View } from 'react-native';
 import { Chip } from '@/components/Chip';
 import { DateInput } from '@/components/DateInput';
+import { Text } from '@/components/Text';
 import { SectionLabel } from './SectionLabel';
 
 // 시안은 '직접 지정'이 맨 앞이다.
@@ -34,7 +35,7 @@ export function BingoGoal({
   hint = '저장 후 변경 불가',
 }: BingoGoalProps) {
   return (
-    <View className="px-4 py-6">
+    <View className="px-4 py-8">
       <SectionLabel label="목표 기간" hint={hint} />
 
       <ScrollView
@@ -52,9 +53,11 @@ export function BingoGoal({
         ))}
       </ScrollView>
 
-      {/* 시안: 시작일 · 종료일 라벨 없이 date input 두 개를 간격 31로만 벌린다 */}
-      <View className="flex-row items-center" style={{ gap: 31 }}>
+      {/* 시안은 date input 두 개를 간격 31로만 벌렸는데, 둘이 기간의 시작과 끝이라는 게
+          드러나지 않아 물결표를 넣었다. 간격은 좌우로 나눠 총 폭을 유지한다. */}
+      <View className="flex-row items-center" style={{ gap: 12 }}>
         <DateInput value={formatDate(startDate) || 'yyyy.mm.dd'} onPress={onOpenStartPicker} />
+        <Text className="text-body-md text-gray-600">~</Text>
         <DateInput
           value={formatDate(endDate) || 'yyyy.mm.dd'}
           onPress={onOpenEndPicker}

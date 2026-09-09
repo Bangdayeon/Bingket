@@ -16,6 +16,12 @@ import {
 } from '@/features/mypage/lib/mypage';
 import Loading from '@/components/Loading';
 import { ErrorState } from '@/components/ErrorState';
+import { AccountVisibilitySelector } from '@/features/mypage/components/AccountVisibilitySelector';
+import {
+  fetchMyProfileSummary,
+  updateAccountVisibility,
+  type AccountVisibility,
+} from '@/features/profile/lib/profile';
 
 const PROVIDER_CONFIG: Record<
   string,
@@ -86,6 +92,31 @@ export default function AccountScreen() {
 
   useEffect(loadAccounts, [loadAccounts]);
 
+  // 읽기 전에는 null이라 셀렉터를 그리지 않는다. 기본값으로 먼저 그리면
+  // 사용자가 고르지도 않은 값이 선택된 것처럼 보인다.
+  const [visibility, setVisibility] = useState<AccountVisibility | null>(null);
+
+  useEffect(() => {
+    void fetchMyProfileSummary()
+      .then((summary) => {
+        if (summary) setVisibility(summary.accountVisibility);
+      })
+      .catch(Sentry.captureException);
+  }, []);
+
+  const handleVisibilityChange = (next: AccountVisibility) => {
+    const previous = visibility;
+    // 즉시 반영하고 실패하면 되돌린다. 저장 버튼이 없는 화면이라
+    // 응답을 기다리면 탭이 먹통처럼 느껴진다.
+    setVisibility(next);
+    updateAccountVisibility(next).catch((e: unknown) => {
+      Sentry.captureException(e);
+      setVisibility(previous);
+      setErrorMessage('공개 범위를 바꾸지 못했어요. 잠시 후 다시 시도해주세요.');
+      setShowErrorModal(true);
+    });
+  };
+
   const handleResetBingos = async () => {
     setShowResetModal(false);
     setLoading(true);
@@ -153,6 +184,17 @@ export default function AccountScreen() {
               </View>
             );
           })
+        )}
+      </View>
+
+      <View className="h-px bg-gray-300" />
+
+      {/* 계정 공개 범위 — 프로필 편집에 있던 것을 옮겨 왔다.
+          저장 버튼이 따로 없는 화면이라 고르는 즉시 저장한다. */}
+      <View className="px-4 py-6">
+        <Text className="mb-4 text-caption-md text-gray-500">계정 공개 범위</Text>
+        {visibility && (
+          <AccountVisibilitySelector value={visibility} onChange={handleVisibilityChange} />
         )}
       </View>
 

@@ -110,7 +110,6 @@ export default function MyPageScreen() {
           <ScrollView className="flex-1" contentContainerStyle={{ paddingTop: 16 }}>
             <FeedGrid
               items={feed}
-              isMe
               teamBoardIds={teamBoardIds}
               onItemPress={(item) =>
                 router.push({ pathname: '/bingo/view', params: { bingoId: item.id } })

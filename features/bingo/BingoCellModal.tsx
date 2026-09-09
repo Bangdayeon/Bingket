@@ -58,12 +58,7 @@ interface BingoCellModalProps {
 function MemoFooter({ length, saveState }: { length: number; saveState?: MemoSaveState }) {
   return (
     <View className="flex-row items-center justify-end gap-2 mt-2">
-      {saveState === 'saved' && (
-        <View className="flex-row items-center gap-0.5">
-          <Text className="text-caption-md text-green-500">저장됨</Text>
-          <DoneIcon width={16} height={16} className="text-green-500" />
-        </View>
-      )}
+      {saveState === 'saved' && <Text className="text-caption-md text-green-500">저장됨</Text>}
       {saveState === 'error' && <Text className="text-caption-md text-danger">저장 실패</Text>}
       <Text
         className={`text-caption-md ${length >= MEMO_MAX_LENGTH ? 'text-gray-700' : 'text-gray-500'}`}
@@ -292,9 +287,7 @@ export function BingoCellModal({
               )}
 
               {/* 메모 */}
-              <Text className="mb-2 text-body-md text-gray-900 placeholder:text-gray-500">
-                메모
-              </Text>
+              <Text className="mb-2 text-body-md text-gray-900">메모</Text>
               {/* 여기서는 미리보기만 한다. 실제 입력은 아래 메모 편집 오버레이에서. */}
               <Pressable onPress={() => setEditingMemoCellId(item.id)}>
                 <RNTextInput
@@ -305,7 +298,7 @@ export function BingoCellModal({
                   editable={false}
                   pointerEvents="none"
                   textAlignVertical="top"
-                  className="h-[190px] rounded-2xl bg-gray-200 p-3 text-body-md text-gray-900"
+                  className="h-[190px] rounded-2xl bg-gray-200 p-3 text-body-md text-gray-900 placeholder:text-gray-500"
                 />
                 <MemoFooter length={item.memo?.length ?? 0} saveState={memoSaveState[item.id]} />
               </Pressable>
@@ -368,7 +361,7 @@ export function BingoCellModal({
                   scrollEnabled
                   textAlignVertical="top"
                   maxLength={MEMO_MAX_LENGTH}
-                  className="h-[298px] rounded-2xl bg-gray-200 p-3 text-body-md"
+                  className="h-[298px] rounded-2xl bg-gray-200 p-3 text-body-md text-gray-900 placeholder:text-gray-500"
                 />
                 <MemoFooter
                   length={editingMemoCell.memo?.length ?? 0}

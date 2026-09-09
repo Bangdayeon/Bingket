@@ -164,7 +164,13 @@ export function AddEachBingo({
                   padding: 4,
                 }}
               >
-                <Text className={`${textStyle} text-center`} numberOfLines={3}>
+                {/* 판 이미지 위라 앱 테마가 아니라 판의 전경색을 따라야 한다.
+                    아래 폴백 그리드는 앱 표면 위에 그리므로 기본 토큰 색이 맞다. */}
+                <Text
+                  className={`${textStyle} text-center`}
+                  style={{ color: fgColor }}
+                  numberOfLines={3}
+                >
                   {localCells[i] ?? ''}
                 </Text>
               </TouchableOpacity>

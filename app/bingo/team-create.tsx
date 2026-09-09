@@ -228,7 +228,7 @@ export default function TeamCreateScreen() {
 
         <View className="mt-8 px-4">
           <SectionLabel
-            label={mode === 'competition' ? '경쟁할 친구' : '초대할 친구'}
+            label={mode === 'competition' ? '친구 선택하기' : '초대할 친구'}
             hint={`(${friendIds.length}/${MAX_INVITES})`}
           />
           <FriendPicker

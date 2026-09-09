@@ -23,10 +23,10 @@ export const TextInput = forwardRef<RNTextInput, Props>(function TextInput(
       `}
       style={maxHeight !== undefined ? { maxHeight } : undefined}
     >
-      {leftIcon && <View className="mr-2 placeholder:text-gray-500">{leftIcon}</View>}
+      {leftIcon && <View className="mr-2">{leftIcon}</View>}
       <RNTextInput
         ref={ref}
-        className="flex-1 text-body-md text-gray-800"
+        className="flex-1 text-body-md text-gray-800 placeholder:text-gray-500"
         style={style}
         multiline={isMultiline}
         scrollEnabled={maxHeight !== undefined}

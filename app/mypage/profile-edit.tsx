@@ -1,10 +1,4 @@
 import IconButton from '@/components/IconButton';
-import { AccountVisibilitySelector } from '@/features/mypage/components/AccountVisibilitySelector';
-import {
-  fetchMyProfileSummary,
-  updateAccountVisibility,
-  type AccountVisibility,
-} from '@/features/profile/lib/profile';
 import { PageHeader } from '@/components/PageHeader';
 import { Modal } from '@/components/Modal';
 import { TextInput } from '@/components/TextInput';
@@ -46,13 +40,11 @@ export default function ProfileEditPage() {
   const [toastVisible, setToastVisible] = useState(false);
   const [showLeaveModal, setShowLeaveModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [visibility, setVisibility] = useState<AccountVisibility>('friends');
   const initialValues = useRef({
     name: '',
     userId: '',
     bio: '',
     avatarUri: null as string | null,
-    visibility: 'friends' as AccountVisibility,
   });
 
   useEffect(() => {
@@ -67,14 +59,7 @@ export default function ProfileEditPage() {
         userId: profile.username,
         bio: profile.bio,
         avatarUri: profile.avatarUrl,
-        visibility: initialValues.current.visibility,
       };
-    });
-
-    fetchMyProfileSummary().then((summary) => {
-      if (!summary) return;
-      setVisibility(summary.accountVisibility);
-      initialValues.current.visibility = summary.accountVisibility;
     });
   }, []);
 
@@ -179,9 +164,6 @@ export default function ProfileEditPage() {
         newAvatarUrl = await uploadProfileImage(avatarUri, filename);
       }
       await updateMyProfile({ displayName: name, username: userId, bio, avatarUrl: newAvatarUrl });
-      if (visibility !== initialValues.current.visibility) {
-        await updateAccountVisibility(visibility);
-      }
       await clearCache('@bingket/cache-my-profile');
       router.back();
     } catch (e) {
@@ -250,11 +232,6 @@ export default function ProfileEditPage() {
             <Text className="text-right text-caption-sm text-gray-500">
               {bio.length}/{BIO_MAX}
             </Text>
-          </View>
-
-          <View className="gap-2">
-            <Text className="text-body-md text-gray-900">계정 공개 범위</Text>
-            <AccountVisibilitySelector value={visibility} onChange={setVisibility} />
           </View>
         </View>
       </ScrollView>

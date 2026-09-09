@@ -56,7 +56,7 @@ export function WriteBingo({
   }, []);
 
   return (
-    <View className="py-6">
+    <View className="py-8">
       {/* 빙고 칸 수 */}
       <View className="px-4">
         <SectionLabel label="빙고 칸 수" hint="저장 후 변경 불가" />

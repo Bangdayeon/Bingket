@@ -42,6 +42,9 @@ import { useUnreadNotifications } from '@/features/notifications/unread-context'
 
 const DRAFT_ID = 'draft_0';
 
+/** '저장됨' 표시를 띄워 두는 시간 */
+const MEMO_SAVED_BADGE_MS = 2000;
+
 /** 홈 상단 스트립에 띄우는 알림 타입 */
 const STRIP_TYPES = new Set(['team_invite', 'team_invite_declined']);
 
@@ -357,7 +360,14 @@ export function BingoAll() {
     if (memo === undefined) return;
     delete pendingMemoRef.current[cellId];
     updateCell(cellId, { memo })
-      .then(() => setMemoSaveState((prev) => ({ ...prev, [cellId]: 'saved' })))
+      .then(() => {
+        setMemoSaveState((prev) => ({ ...prev, [cellId]: 'saved' }));
+        // 표시를 지워주지 않으면 "저장됨"이 세션 내내 붙어 있어 방금 저장한 것처럼 보인다.
+        setTimeout(
+          () => setMemoSaveState((prev) => ({ ...prev, [cellId]: undefined })),
+          MEMO_SAVED_BADGE_MS,
+        );
+      })
       .catch((error) => {
         // 실패한 텍스트를 되살릴 수 있게 다시 대기열에 넣는다
         pendingMemoRef.current[cellId] = memo;
@@ -495,6 +505,8 @@ export function BingoAll() {
       {strip}
       <ScrollView
         className="flex-1"
+        // 판 사이 간격. 카드가 아니라 여기서 준다 — 같은 카드를 상세 화면도 쓴다.
+        contentContainerStyle={{ gap: 40 }}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}

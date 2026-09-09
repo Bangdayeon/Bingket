@@ -9,8 +9,9 @@ import EditIcon from '@/assets/icons/ic_edit.svg';
 import { CommunityPost } from '@/types/community';
 import { fetchPosts, PAGE_SIZE } from '@/features/community/lib/community';
 import { useOnlineRestore } from '@/lib/use-online';
+import { TAB_BAR_CONTENT_HEIGHT } from '@/components/FloatingTabBar';
 
-const TAB_BAR_CONTENT_HEIGHT = 72; // icon(36) + label(20) + paddingVertical(8*2)
+// 탭바 높이는 FloatingTabBar가 내보낸다. 여기서 따로 적으면 반드시 어긋난다.
 
 export default function CommunityScreen() {
   const router = useRouter();

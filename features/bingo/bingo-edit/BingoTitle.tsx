@@ -26,7 +26,7 @@ export function BingoTitle({ value = '', onChange }: BingoTitleProps) {
   };
 
   return (
-    <View className="px-4 py-6">
+    <View className="px-4 py-8">
       <SectionLabel label="제목" />
       <TextInput
         value={title}

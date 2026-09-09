@@ -5,7 +5,7 @@ import * as Sentry from '@sentry/react-native';
 import { Text } from '@/components/Text';
 import { useResponsive } from '@/lib/use-responsive';
 import EditIcon from '@/assets/icons/ic_edit.svg';
-import SaveIcon from '@/assets/icons/ic_save.svg';
+import ShareIcon from '@/assets/icons/ic_share.svg';
 import { Toast } from '@/components/Toast';
 import { BingoData } from '@/types/bingo';
 import { BingoStat } from './BingoStat';
@@ -108,7 +108,7 @@ export function BingoCard({
   const gapX = cfg.gapX * scale;
   const gapY = cfg.gapY * scale;
 
-  const handleSavePress = () => {
+  const handleSharePress = () => {
     // 배경이 아직 안 왔으면 빈 판이 찍힌다. 버튼도 이때는 안 그리지만 한 번 더 막는다.
     if (!image) return;
     setCapturing(true);
@@ -130,7 +130,7 @@ export function BingoCard({
   };
 
   return (
-    <View className={`pb-6${isTablet ? ' items-center' : ''}`}>
+    <View className={isTablet ? 'items-center' : undefined}>
       <View ref={boardRef} collapsable={false} style={{ width: screenWidth, height: cardHeight }}>
         <Image
           source={{ uri: image }}
@@ -151,13 +151,13 @@ export function BingoCard({
           <View className="flex-row items-center gap-3" style={{ opacity: capturing ? 0 : 1 }}>
             {/* 테마 배경을 받기 전에는 캡처해봐야 빈 판이라 버튼을 내놓지 않는다 */}
             {image && (
-              <TouchableOpacity onPress={handleSavePress} hitSlop={8}>
-                <SaveIcon width={18} height={18} color={fgColor} />
+              <TouchableOpacity onPress={handleSharePress} hitSlop={8}>
+                <ShareIcon width={24} height={24} color={fgColor} />
               </TouchableOpacity>
             )}
             {onEditPress && (
               <TouchableOpacity onPress={onEditPress} hitSlop={8}>
-                <EditIcon width={18} height={18} color={fgColor} />
+                <EditIcon width={24} height={24} color={fgColor} />
               </TouchableOpacity>
             )}
           </View>
@@ -181,7 +181,13 @@ export function BingoCard({
                 padding: 8,
               }}
             >
-              <Text className={`${textStyle} text-center text-gray-900`} numberOfLines={3}>
+              {/* 판 배경은 앱 테마와 무관한 서버 이미지다. 토큰 색을 쓰면 다크에서
+                  글씨가 흰색으로 뒤집혀 밝은 판 위에서 사라진다. 제목과 같은 전경색을 쓴다. */}
+              <Text
+                className={`${textStyle} text-center`}
+                style={{ color: fgColor }}
+                numberOfLines={3}
+              >
                 {bingo.cells[i] ?? ''}
               </Text>
 

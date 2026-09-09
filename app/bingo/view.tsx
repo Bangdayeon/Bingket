@@ -202,7 +202,7 @@ export default function BingoViewScreen() {
         />
 
         {isDone && (
-          <View className="mt-2 px-4">
+          <View className="mt-8 px-4">
             <Text className="mb-2 text-body-md text-gray-900">메모</Text>
             <TextInput
               value={retrospective}

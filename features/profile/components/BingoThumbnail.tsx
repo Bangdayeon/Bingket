@@ -119,12 +119,15 @@ export function BingoThumbnail({ width, grid, theme, title, cells }: Props) {
               paddingHorizontal: 2,
             }}
           >
+            {/* 색을 안 주면 Text 기본값(text-gray-900)을 물려받아 다크에서 흰색이 된다.
+                판 배경은 서버 이미지라 늘 밝으므로 글씨가 사라진다. */}
             <Text
               numberOfLines={3}
               style={{
                 textAlign: 'center',
                 fontSize: cellFont,
                 lineHeight: cellFont * 1.25,
+                color: fgColor,
               }}
             >
               {cell?.content ?? ''}

@@ -113,8 +113,11 @@ export default function BingoPreview({
                   padding: 4,
                 }}
               >
+                {/* 판 배경은 앱 테마와 무관한 서버 이미지다. 토큰 색을 쓰면 다크에서
+                    흰색으로 뒤집혀 밝은 판 위에서 사라진다. 제목과 같은 전경색을 쓴다. */}
                 <Text
-                  className="text-caption-sm text-center md:text-body-md  text-gray-900"
+                  className="text-caption-sm text-center md:text-body-md"
+                  style={{ color: fgColor }}
                   numberOfLines={2}
                 >
                   {bingo.cells[i] ?? ''}

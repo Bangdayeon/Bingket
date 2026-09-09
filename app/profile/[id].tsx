@@ -131,7 +131,6 @@ export default function ProfileScreen() {
           ) : (
             <FeedGrid
               items={feed}
-              isMe={false}
               onItemPress={(item) =>
                 router.push({ pathname: '/bingo/friend-view', params: { boardId: item.id } })
               }

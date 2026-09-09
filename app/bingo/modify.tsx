@@ -193,7 +193,7 @@ export default function BingoModifyScreen() {
           }}
         />
 
-        <View className="py-6">
+        <View className="py-8">
           <View className="px-4">
             <SectionLabel label="테마 선택" />
           </View>

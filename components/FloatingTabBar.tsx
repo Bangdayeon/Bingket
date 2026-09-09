@@ -29,6 +29,13 @@ const TAB_ICONS: Record<
 const DESIGN_WIDTH = 390;
 const DESIGN_H_PADDING = 60;
 
+/**
+ * safe-area를 뺀 탭바 본체 높이.
+ * paddingTop 4 + 아이콘 28 + gap 6 + 라벨 lineHeight 12 + paddingBottom 6.
+ * 이 값을 화면 쪽에서 따로 적어 두면 반드시 어긋난다 — 실제로 FAB가 그래서 떠 있었다.
+ */
+export const TAB_BAR_CONTENT_HEIGHT = 56;
+
 export function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const activeTabName = state.routes[state.index].name;
   const { hasUnread, refresh } = useUnreadNotifications();
