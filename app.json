@@ -29,7 +29,7 @@
       "versionCode": 32,
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
-        "backgroundColor": "#759E38",
+        "backgroundColor": "#7CAF32",
         "foregroundImage": "./assets/android-icon-foreground.png"
       },
       "predictiveBackGestureEnabled": false,
@@ -87,7 +87,7 @@
         "expo-notifications",
         {
           "icon": "./assets/notification-icon.png",
-          "color": "#759E38",
+          "color": "#7CAF32",
           "defaultChannel": "default"
         }
       ],
