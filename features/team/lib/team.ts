@@ -88,6 +88,8 @@ export interface TeamDetail {
   boards: Record<string, TeamBoardSummary | undefined>;
   /** 같이 채우기 전용. 팀 전체 진행률 */
   sharedBoard: TeamBoardSummary | null;
+  /** 판 조회가 실패했다. 참여자는 있는데 판만 안 보이는 상황과 구분한다. */
+  boardsFailed: boolean;
 }
 
 export interface TeamInviteItem {
@@ -166,6 +168,8 @@ interface TeamBoards {
   /** 판 id → 판. 같은 판을 여러 멤버가 공유해도 한 번만 담긴다 */
   byBoard: Map<string, TeamBoardSummary>;
   maxEditsByBoard: Map<string, number>;
+  /** 조회 자체가 실패했다. "판이 없다"와 구분해야 한다 — 화면이 달라진다. */
+  failed: boolean;
 }
 
 /**
@@ -181,7 +185,12 @@ const fetchTeamBoards = async (teamId: string): Promise<TeamBoards> => {
   const maxEditsByBoard = new Map<string, number>();
 
   const { data, error } = await supabase.rpc('get_team_boards', { p_team_id: teamId });
-  if (error || !data) return { byMember, byBoard, maxEditsByBoard };
+  if (error || !data) {
+    // 예전에는 여기서 조용히 빈 결과를 돌려줬다. 그러면 팀 현황에 참여자만 뜨고
+    // 판은 전부 사라지는데, 화면 어디에도 실패했다는 표시가 없어 원인 규명이 막혔다.
+    if (error) Sentry.captureException(error, { extra: { rpc: 'get_team_boards', teamId } });
+    return { byMember, byBoard, maxEditsByBoard, failed: true };
+  }
 
   for (const row of data as RawTeamBoardRow[]) {
     const summary =
@@ -200,7 +209,7 @@ const fetchTeamBoards = async (teamId: string): Promise<TeamBoards> => {
     maxEditsByBoard.set(row.board_id, row.max_edits);
   }
 
-  return { byMember, byBoard, maxEditsByBoard };
+  return { byMember, byBoard, maxEditsByBoard, failed: false };
 };
 
 const currentUserId = async (): Promise<string | null> => {
@@ -771,6 +780,7 @@ export const fetchTeamDetail = async (teamId: string): Promise<TeamDetail | null
     members,
     boards,
     sharedBoard,
+    boardsFailed: teamBoards.failed,
   };
 };
 

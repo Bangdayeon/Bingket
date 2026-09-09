@@ -89,6 +89,10 @@ export default function BingoModifyScreen() {
 
   const [alertMessage, setAlertMessage] = useState<string | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  // 저장·삭제 모두 네트워크 왕복이 있고, 삭제는 최대 3번이다(팀 조회 → 탈퇴 → 삭제).
+  // 표시가 없으면 사용자는 눌린 줄 모르고 다시 누른다.
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [showLeaveModal, setShowLeaveModal] = useState(false);
 
   const handleBack = () => {
@@ -98,6 +102,8 @@ export default function BingoModifyScreen() {
 
   const handleSave = async () => {
     if (!title.trim()) return setAlertMessage('제목을 입력해주세요.');
+    if (saving) return;
+    setSaving(true);
     try {
       const changedCells = cellIds
         .map((id, i) => ({
@@ -111,10 +117,14 @@ export default function BingoModifyScreen() {
     } catch (e) {
       Sentry.captureException(e);
       setAlertMessage('저장에 실패했어요. 잠시 후 다시 시도해주세요.');
+      setSaving(false);
     }
+    // 성공하면 router.replace로 화면이 통째로 바뀌므로 해제하지 않는다.
   };
 
   const handleDelete = async () => {
+    if (deleting) return;
+    setDeleting(true);
     try {
       const team = await fetchTeamByBoardId(bingoId);
 
@@ -128,9 +138,11 @@ export default function BingoModifyScreen() {
       router.replace('/(tabs)');
     } catch (e) {
       Sentry.captureException(e);
+      setDeleting(false);
       setShowDeleteModal(false);
       setAlertMessage('삭제에 실패했어요. 잠시 후 다시 시도해주세요.');
     }
+    // 성공 경로는 router.replace로 화면이 사라지므로 해제하지 않는다.
   };
 
   const isUnlimited = maxEdits === 9999 || maxEdits === -1;
@@ -245,9 +257,11 @@ export default function BingoModifyScreen() {
         variant="warning"
         cancelLabel="취소하기"
         confirmLabel="삭제하기"
-        onCancel={() => setShowDeleteModal(false)}
+        confirmLoading={deleting}
+        // 삭제가 도는 중에 모달이 닫히면 사용자는 끝난 줄 알고 화면을 떠난다.
+        onCancel={deleting ? undefined : () => setShowDeleteModal(false)}
         onConfirm={handleDelete}
-        onDismiss={() => setShowDeleteModal(false)}
+        onDismiss={deleting ? undefined : () => setShowDeleteModal(false)}
       />
 
       <Modal
@@ -274,6 +288,7 @@ export default function BingoModifyScreen() {
           variant="primary"
           size="md"
           onClick={handleSave}
+          loading={saving}
           className="w-full"
         />
       </View>

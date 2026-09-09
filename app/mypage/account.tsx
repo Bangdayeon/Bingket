@@ -145,6 +145,8 @@ export default function AccountScreen() {
                   )}
                 </View>
                 <Text className="text-body-md text-gray-900">{cfg?.label ?? account.provider}</Text>
+                {/* 가짜 주소가 새어 나가는 걸 막는 마지막 방어선.
+                    카카오는 진짜 이메일(없으면 닉네임)이 여기로 온다. */}
                 <Text className="ml-auto shrink text-body-md text-gray-500" numberOfLines={1}>
                   {account.email?.endsWith('@kakao.bingket') ? '' : (account.email ?? '')}
                 </Text>

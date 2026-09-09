@@ -171,8 +171,14 @@ export function BingoCellModal({
       visible={visible}
       transparent
       animationType="fade"
-      // 안드로이드 백 버튼: 메모 편집 중이면 편집만 닫고 카드로 돌아간다
-      onRequestClose={editingMemoCell ? closeMemoEditor : onClose}
+      // 안드로이드 백 버튼: 위에 뜬 것부터 하나씩 닫는다. 날짜 시트 → 메모 편집 → 셀 모달.
+      onRequestClose={
+        datePickerCellId
+          ? () => setDatePickerCellId(null)
+          : editingMemoCell
+            ? closeMemoEditor
+            : onClose
+      }
     >
       {/* Backdrop — 뒤의 빙고판을 흐리게 깔아둔다 */}
       <BlurView
@@ -377,11 +383,17 @@ export function BingoCellModal({
       {/* Date picker sheet */}
       {datePickerCellId && (
         <>
-          <Pressable className="absolute z-10" onPress={() => setDatePickerCellId(null)} />
+          {/* 4방향을 다 줘야 실제로 눌린다. 크기가 없으면 이 backdrop을 그냥 통과해
+            아래 깔린 전체화면 Pressable이 먹고 셀 모달째 닫힌다.
+            날짜는 '확인'에서만 확정되므로 여기서 닫으면 고른 값은 버려진다. */}
+          <Pressable
+            className="absolute bottom-0 left-0 right-0 top-0 z-10"
+            onPress={() => setDatePickerCellId(null)}
+          />
           {/* 하단 여백은 인라인 스타일로 준다. `pb-[${'{'}...{'}'}px]` 같은 동적 클래스는
               NativeWind가 빌드 타임에 생성하지 못해 패딩이 조용히 사라진다. */}
           <View
-            className="absolute bottom-0 left-0 right-0 bg-white   rounded-t-[16px] px-4 pt-4 z-11"
+            className="absolute bottom-0 left-0 right-0 z-20 rounded-t-[16px] bg-white px-4 pt-4"
             style={{ paddingBottom: insets.bottom + 16 }}
           >
             <View className="flex-row justify-between items-center mb-2">

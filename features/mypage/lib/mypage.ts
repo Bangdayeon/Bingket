@@ -156,9 +156,12 @@ export const fetchLinkedAccounts = async (): Promise<LinkedAccount[]> => {
       identity.provider === 'kakao' ||
       (identity.provider === 'email' && !!user.user_metadata?.kakao_id);
     const provider = isKakao ? 'kakao' : identity.provider;
+    // 카카오는 identity_data.email이 로그인 식별용 가짜 주소(<id>@kakao.bingket)라
+    // 화면에 띄울 수 없다. 진짜 이메일은 kakao-callback이 kakao_email에 넣어 준다.
+    // 동의항목이 꺼져 있거나 사용자가 거부하면 없으므로 닉네임으로 내려간다.
     const email = isKakao
       ? ((user.user_metadata?.kakao_email as string | undefined) ??
-        (identity.identity_data?.email as string | undefined) ??
+        (user.user_metadata?.name as string | undefined) ??
         null)
       : ((identity.identity_data?.email as string | undefined) ?? null);
     return { provider, email };
