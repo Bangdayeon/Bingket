@@ -5,7 +5,6 @@ import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Animated, View } from 'react-native';
 import { Logo } from '@/components/Logo';
-import { Text } from '@/components/Text';
 
 export default function SplashScreen() {
   // useRef(...).current는 렌더 중 ref 읽기라 React 규칙 위반이다.
@@ -51,15 +50,9 @@ export default function SplashScreen() {
 
   return (
     <View className="h-full w-full flex-1 items-center justify-center bg-surface">
-      {/* 시안: 로고 150 + 20px 아래 워드마크. 워드마크는 경기천년제목이지만 Pretendard로 대체했다. */}
+      {/* 로고만 띄운다. 워드마크는 로고 안에 이미 브랜드가 담겨 중복이라 뺐다. */}
       <Animated.View style={{ opacity, alignItems: 'center' }}>
         <Logo size={150} />
-        <Text
-          className="mt-5 font-pretendard-bold text-green-500"
-          style={{ fontSize: 48, lineHeight: 48 }}
-        >
-          빙킷
-        </Text>
       </Animated.View>
     </View>
   );
