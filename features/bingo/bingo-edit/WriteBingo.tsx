@@ -2,12 +2,24 @@ import { Chip } from '@/components/Chip';
 import { AddEachBingo } from './AddEachBingo';
 import { ScrollView, View } from 'react-native';
 import { Text } from '@/components/Text';
-import { Information } from '@/components/Information';
+import { SectionLabel } from './SectionLabel';
 import { fetchThemes } from '@/features/bingo/lib/theme';
 import { useEffect, useState } from 'react';
 
-const GRID_OPTIONS = ['3x3', '4x3', '4x4'];
-const EDIT_COUNT_OPTIONS = ['0', '1', '2', '3', '무제한'];
+// 내부 키는 DB·GRID_CONFIGS와 맞춰 두고, 화면에는 시안 표기(3x4)로 보여준다.
+const GRID_OPTIONS: { value: string; label: string }[] = [
+  { value: '3x3', label: '3x3' },
+  { value: '4x3', label: '3x4' },
+  { value: '4x4', label: '4x4' },
+];
+
+const EDIT_COUNT_OPTIONS: { value: string; label: string }[] = [
+  { value: '0', label: '수정 불가' },
+  { value: '1', label: '1회' },
+  { value: '2', label: '2회' },
+  { value: '3', label: '3회' },
+  { value: '무제한', label: '무제한' },
+];
 
 interface WriteBingoProps {
   title?: string;
@@ -44,61 +56,56 @@ export function WriteBingo({
   }, []);
 
   return (
-    <View className="px-5 py-6 border-t border-gray-100  ">
-      <Text className="text-title-md font-pretendard-medium mb-4">빙고 작성</Text>
-
-      {/* 칸 개수 */}
-      <View className="flex-row items-center gap-2 mb-3">
-        <Text className="text-title-sm">칸 개수</Text>
-        <Information
-          content={`• 처음 지정 후 수정이 불가능해요.\n• 4x3 빙고는 대각선 3칸도 빙고로 인정이 돼요`}
-        />
+    <View className="py-6">
+      {/* 빙고 칸 수 */}
+      <View className="px-4">
+        <SectionLabel label="빙고 칸 수" hint="저장 후 변경 불가" />
       </View>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ gap: 8, paddingBottom: 20 }}
+        contentContainerStyle={{ gap: 8, paddingHorizontal: 16 }}
       >
         {GRID_OPTIONS.map((opt) => (
           <Chip
-            key={opt}
-            label={opt}
-            selected={selectedGrid === opt}
-            onPress={() => onGridSelect(opt)}
+            key={opt.value}
+            label={opt.label}
+            selected={selectedGrid === opt.value}
+            onPress={() => onGridSelect(opt.value)}
           />
         ))}
       </ScrollView>
-
-      {/* 수정 가능 횟수 */}
-      <View className="flex-row items-center gap-2 mb-2">
-        <Text className="text-title-sm">수정 가능 횟수</Text>
-        <Information content="처음 지정 후 수정이 불가능해요." />
-      </View>
-      <Text className="text-body-sm text-gray-500   mb-3">
-        빙고 항목을 수정할 수 있는 횟수를 선택해주세요.{'\n'}
-        선택한 횟수만큼 원하는 항목을 바꿀 수 있어요.
+      <Text className="px-4 pb-5 pt-2 text-caption-sm text-gray-600">
+        대각선 3칸도 빙고로 인정돼요
       </Text>
+
+      {/* 각 항목 수정 가능 횟수 */}
+      <View className="px-4">
+        <SectionLabel label="각 항목 수정 가능 횟수" hint="저장 후 변경 불가" />
+      </View>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ gap: 8, paddingBottom: 20 }}
+        contentContainerStyle={{ gap: 8, paddingHorizontal: 16 }}
       >
         {EDIT_COUNT_OPTIONS.map((opt) => (
           <Chip
-            key={opt}
-            label={opt}
-            selected={selectedEditCount === opt}
-            onPress={() => onEditCountSelect(opt)}
+            key={opt.value}
+            label={opt.label}
+            selected={selectedEditCount === opt.value}
+            onPress={() => onEditCountSelect(opt.value)}
           />
         ))}
       </ScrollView>
 
-      {/* 테마 */}
-      <Text className="text-title-sm mb-3">테마</Text>
+      {/* 테마 선택 */}
+      <View className="px-4 pt-5">
+        <SectionLabel label="테마 선택" />
+      </View>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ gap: 8, paddingBottom: 20 }}
+        contentContainerStyle={{ gap: 8, paddingHorizontal: 16 }}
       >
         {themes.map((theme) => (
           <Chip
@@ -110,11 +117,10 @@ export function WriteBingo({
         ))}
       </ScrollView>
 
-      {/* 빙고 그리드 */}
-      <Text className="text-title-sm mb-2">빙고 내용 작성하기</Text>
-      <Text className="text-body-sm text-gray-500   mb-3">
-        아래에서 각 칸을 선택해서 빙고 내용을 채워주세요.
-      </Text>
+      {/* 빙고 내용 작성 — 판은 화면 좌우 끝까지 */}
+      <View className="px-4 pt-5">
+        <SectionLabel label="빙고 내용 작성" hint="각 칸을 선택해서 빙고 내용을 채워주세요." />
+      </View>
       <AddEachBingo
         selectedGrid={selectedGrid}
         theme={selectedTheme}

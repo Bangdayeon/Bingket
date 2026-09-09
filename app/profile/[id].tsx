@@ -15,6 +15,13 @@ import { fetchProfile, fetchUserFeed } from '@/features/profile/lib/profile';
 import type { FeedItem, ProfileSummary } from '@/features/profile/lib/profile';
 import { sendFriendRequest } from '@/features/friend/lib/friend';
 
+/**
+ * 이 사람의 피드를 볼 수 있는지. 계정 축만 본다 — 빙고 축은 서버가 거른다.
+ * 'private'은 친구에게도 잠긴다.
+ */
+const canSeeFeed = (p: ProfileSummary): boolean =>
+  p.isMe || p.accountVisibility === 'public' || (p.accountVisibility === 'friends' && p.isFriend);
+
 export default function ProfileScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -38,7 +45,7 @@ export default function ProfileScreen() {
       }
       setProfile(p);
       // 잠긴 프로필은 피드를 요청해봐야 빈 배열이라 호출을 아낀다
-      setFeed(p.isMe || p.isFriend || !p.isPrivate ? await fetchUserFeed(id) : []);
+      setFeed(canSeeFeed(p) ? await fetchUserFeed(id) : []);
     } catch (e) {
       Sentry.captureException(e);
       setErrorMessage(e instanceof Error ? e.message : '프로필을 불러오지 못했어요.');
@@ -70,15 +77,15 @@ export default function ProfileScreen() {
     }
   };
 
-  const isLocked = !!profile && !profile.isMe && !profile.isFriend && profile.isPrivate;
+  const isLocked = !!profile && !canSeeFeed(profile);
 
   return (
-    <View className="flex-1 bg-white" style={{ paddingTop: insets.top }}>
+    <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
       <View className="h-[60px] flex-row items-center px-4 border-b border-gray-300">
         <IconButton
           variant="ghost"
           size={32}
-          icon={<BackArrowIcon width={20} height={20} />}
+          icon={<BackArrowIcon width={24} height={24} />}
           onClick={() => router.back()}
         />
         <Text className="flex-1 text-center text-title-sm" numberOfLines={1}>
@@ -89,7 +96,7 @@ export default function ProfileScreen() {
 
       {loading ? (
         <View className="flex-1 items-center justify-center">
-          <Loading color="#6ADE50" />
+          <Loading />
         </View>
       ) : notFound ? (
         <View className="flex-1 items-center justify-center px-8">
@@ -102,7 +109,7 @@ export default function ProfileScreen() {
           <ProfileHeader profile={profile} onFriendsPress={undefined} onPostsPress={undefined} />
 
           {!profile?.isFriend && !profile?.isMe && (
-            <View className="px-5 mb-4">
+            <View className="px-4 mb-4">
               <Button
                 label={profile?.hasPendingRequest ? '친구 요청 보냄' : '친구 추가'}
                 onClick={handleFriendRequest}

@@ -29,7 +29,7 @@ export function CommentItem({
     return (
       <View>
         <Text
-          className="text-body-sm pb-6 border-b px-5 border-gray-200"
+          className="text-body-sm pb-6 border-b px-4 border-gray-200"
           style={{ color: '#B4BBBB' /* gray-400 */ }}
         >
           (삭제된 댓글입니다.)
@@ -48,7 +48,7 @@ export function CommentItem({
   }
 
   return (
-    <View className="pb-1 border-b border-gray-200 px-5">
+    <View className="pb-1 border-b border-gray-200 px-4">
       <View className="flex-row items-center">
         {comment.isAnonymous ? (
           <AnonymousProfile seed={comment.userId} size="sm" />
@@ -59,9 +59,9 @@ export function CommentItem({
         {isPostAuthor && (
           <View
             className="ml-1.5 px-1.5 py-1 rounded-full"
-            style={{ backgroundColor: '#54DBED' /* sky-400 */ }}
+            style={{ backgroundColor: '#DCE5B0' /* green-200 */ }}
           >
-            <Text className="text-[10px]">작성자</Text>
+            <Text className="text-caption-sm text-green-800">작성자</Text>
           </View>
         )}
         <View style={{ flex: 1 }} />
@@ -74,10 +74,10 @@ export function CommentItem({
             initialLiked={comment.likedByMe}
           />
           <Pressable hitSlop={8} onPress={() => onReplyPress(comment.id, comment.author)}>
-            <SMSIcon width={18} height={18} color={iconColor} />
+            <SMSIcon width={24} height={24} color={iconColor} />
           </Pressable>
           <Pressable hitSlop={8} onPress={(e) => onMenuPress(comment.id, e.nativeEvent.pageY)}>
-            <MoreVertIcon width={18} height={18} color={iconColor} />
+            <MoreVertIcon width={24} height={24} color={iconColor} />
           </Pressable>
         </View>
       </View>

@@ -70,7 +70,7 @@ export default function CommunityScreen() {
   }, []);
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={['top']}>
+    <SafeAreaView className="flex-1 bg-surface" edges={['top']}>
       <View className="flex-1 md:self-center md:w-full md:max-w-[600px]">
         <CommunityHeader />
         <PostList
@@ -84,10 +84,10 @@ export default function CommunityScreen() {
       </View>
       <Pressable
         onPress={() => router.push('/community/write')}
-        style={{ position: 'absolute', bottom: fabBottom, right: 20 }}
-        className="shadow-gray-100 w-14 h-14 rounded-full bg-green-500   items-center justify-center"
+        style={{ position: 'absolute', bottom: fabBottom, right: 16 }}
+        className="h-[52px] w-[52px] items-center justify-center rounded-full bg-green-400 shadow-gray-100"
       >
-        <EditIcon width={28} height={28} color="#FDFDFD" /* white */ />
+        <EditIcon width={36} height={36} color="#FDFDFD" /* white */ />
       </Pressable>
     </SafeAreaView>
   );

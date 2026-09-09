@@ -4,8 +4,9 @@ import { useResponsive } from '@/lib/use-responsive';
 import { BingoThumbnail } from './BingoThumbnail';
 import type { FeedItem } from '@/features/profile/lib/profile';
 
-const H_PADDING = 20;
-const GAP = 12;
+const H_PADDING = 16;
+// 시안: 390 화면에서 172px 두 칸이 나오는 간격
+const GAP = 14;
 const COLUMNS = 2;
 
 const VISIBILITY_LABEL: Record<string, string> = {
@@ -73,8 +74,8 @@ export function FeedGrid({
             </View>
 
             {teamBoardIds?.has(item.id) && (
-              <View className="px-2 py-0.5 rounded-full bg-sky-100  ">
-                <Text className="text-caption-sm" style={{ color: '#088094' /* sky-700 */ }}>
+              <View className="px-2 py-0.5 rounded-full bg-green-50">
+                <Text className="text-caption-sm" style={{ color: '#3F5C1D' /* green-800 */ }}>
                   함께
                 </Text>
               </View>
@@ -87,7 +88,7 @@ export function FeedGrid({
             )}
           </View>
 
-          <Text className="text-caption-md text-gray-700" numberOfLines={1}>
+          <Text className="text-center text-body-sm text-gray-700" numberOfLines={1}>
             {item.title}
           </Text>
         </Pressable>

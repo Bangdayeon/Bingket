@@ -1,5 +1,5 @@
 import { View } from 'react-native';
-import { Text } from '@/components/Text';
+import { SectionLabel } from './SectionLabel';
 import { TextInput } from '@/components/TextInput';
 import { useEffect, useState } from 'react';
 
@@ -21,8 +21,8 @@ export function BingoTitle({ value = '', onChange }: BingoTitleProps) {
   };
 
   return (
-    <View className="px-5 py-6">
-      <Text className="text-title-md font-pretendard-medium mb-3">제목</Text>
+    <View className="px-4 py-6">
+      <SectionLabel label="제목" />
       <TextInput value={title} onChangeText={handleChange} placeholder="제목을 입력해주세요." />
     </View>
   );

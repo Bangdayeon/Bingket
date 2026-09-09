@@ -90,12 +90,8 @@ export function SettingsMenu() {
 
   return (
     <>
-      <ScrollView className="flex-1 bg-white md:self-center md:w-full md:max-w-[600px]">
-        <View className="px-5">
-          <Text className="text-title-lg font-pretendard-semibold mb-4">설정</Text>
-        </View>
-
-        <View className="px-5">
+      <ScrollView className="flex-1 bg-surface md:w-full md:max-w-[600px] md:self-center">
+        <View className="px-4">
           <MenuItem
             label="프로필 편집"
             onPress={() => navigate('/mypage/profile-edit')}
@@ -106,9 +102,9 @@ export function SettingsMenu() {
           <MenuItem label="앱 테마" onPress={() => navigate('/mypage/app-theme')} showArrow />
         </View>
 
-        <View className="h-2 bg-gray-100  " />
+        <View className="h-px bg-gray-300" />
 
-        <View className="px-5 md:self-center md:w-full md:max-w-[600px]">
+        <View className="px-4 md:w-full md:max-w-[600px] md:self-center">
           <MenuItem label="앱 리뷰 남기기" onPress={openReviewPage} />
           <MenuItem
             label="자주 묻는 질문"
@@ -143,11 +139,12 @@ export function SettingsMenu() {
             }
           />
           <MenuItem label="빠른 문의" onPress={() => setShowAskModal(true)} showArrow />
-          <MenuItem
-            label="버전 정보"
-            onPress={() => {}}
-            rightText={`v ${Constants.expoConfig?.version}`}
-          />
+        </View>
+
+        <View className="h-px bg-gray-300" />
+
+        {/* 시안: 개발자 이메일이 버전 정보보다 위이고, 둘은 별도 구획이다 */}
+        <View className="px-4">
           <MenuItem
             label="개발자 이메일"
             onPress={async () => {
@@ -156,12 +153,17 @@ export function SettingsMenu() {
             }}
             rightText="dybang00@gmail.com"
           />
+          <MenuItem
+            label="버전 정보"
+            onPress={() => {}}
+            rightText={`v ${Constants.expoConfig?.version}`}
+          />
         </View>
 
-        <View className="h-2 bg-gray-100  " />
+        <View className="h-px bg-gray-300" />
 
-        <View className="px-5">
-          <MenuItem label="로그아웃" onPress={() => setShowLogoutModal(true)} />
+        <View className="px-4">
+          <MenuItem label="로그아웃" muted onPress={() => setShowLogoutModal(true)} />
         </View>
         <View className="h-40" />
 

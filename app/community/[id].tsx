@@ -134,16 +134,16 @@ export default function CommunityDetailScreen() {
 
   if (postLoading) {
     return (
-      <SafeAreaView className="flex-1 bg-white  " edges={['top']}>
+      <SafeAreaView className="flex-1 bg-surface" edges={['top']}>
         <View className="flex-row items-center border-b border-gray-300  " style={{ height: 60 }}>
           <View style={{ width: 56 }} className="pl-4">
             <Pressable onPress={() => router.back()} hitSlop={8}>
-              <ArrowBackIcon width={20} height={20} color={iconColor} />
+              <ArrowBackIcon width={24} height={24} color={iconColor} />
             </Pressable>
           </View>
         </View>
         <View className="flex-1 items-center justify-center">
-          <Loading color="#6ADE50" />
+          <Loading />
         </View>
       </SafeAreaView>
     );
@@ -151,11 +151,11 @@ export default function CommunityDetailScreen() {
 
   if (!post) {
     return (
-      <SafeAreaView className="flex-1 bg-white  " edges={['top']}>
+      <SafeAreaView className="flex-1 bg-surface" edges={['top']}>
         <View className="flex-row items-center border-b border-gray-300  " style={{ height: 60 }}>
           <View style={{ width: 56 }} className="pl-4">
             <Pressable onPress={() => router.back()} hitSlop={8}>
-              <ArrowBackIcon width={20} height={20} color={iconColor} />
+              <ArrowBackIcon width={24} height={24} color={iconColor} />
             </Pressable>
           </View>
         </View>
@@ -356,7 +356,7 @@ export default function CommunityDetailScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white  " edges={['top']}>
+    <SafeAreaView className="flex-1 bg-surface" edges={['top']}>
       <PostHeader
         iconColor={iconColor}
         onBack={() => router.back()}
@@ -427,7 +427,7 @@ export default function CommunityDetailScreen() {
                     height: 16,
                     borderRadius: 8,
                     borderWidth: 1.5,
-                    borderColor: selectedReason === reason ? '#28C8DE' : '#D2D6D6',
+                    borderColor: selectedReason === reason ? '#94BD52' : '#D2D6D6',
                     alignItems: 'center',
                     justifyContent: 'center',
                   }}
@@ -438,7 +438,7 @@ export default function CommunityDetailScreen() {
                         width: 8,
                         height: 8,
                         borderRadius: 4,
-                        backgroundColor: '#28C8DE',
+                        backgroundColor: '#94BD52',
                       }}
                     />
                   )}

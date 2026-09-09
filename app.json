@@ -10,7 +10,7 @@
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#FAFAFA"
     },
     "ios": {
       "supportsTablet": true,
@@ -27,7 +27,7 @@
     "android": {
       "package": "com.day.bingket.app",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#759E38",
         "foregroundImage": "./assets/android-icon-foreground.png"
       },
       "predictiveBackGestureEnabled": false,
@@ -69,7 +69,7 @@
         {
           "image": "./assets/splash-icon.png",
           "imageWidth": 200,
-          "backgroundColor": "#ffffff"
+          "backgroundColor": "#FAFAFA"
         }
       ],
       "expo-apple-authentication",
@@ -78,8 +78,8 @@
       [
         "expo-notifications",
         {
-          "icon": "./assets/app_icon.png",
-          "color": "#F07840",
+          "icon": "./assets/notification-icon.png",
+          "color": "#759E38",
           "defaultChannel": "default"
         }
       ],

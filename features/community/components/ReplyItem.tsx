@@ -21,7 +21,7 @@ export function ReplyItem({ reply, postAuthorId, iconColor, onMenuPress }: Reply
       <SubIcon color="#929898" /* gray-500 */ style={{ marginRight: 4 }} />
       <View
         className="flex-1 rounded-lg px-3 pt-2 pb-2"
-        style={{ backgroundColor: '#E8FAFE' /* sky-100 */ }}
+        style={{ backgroundColor: '#F5F8ED' /* green-50 */ }}
       >
         <View className="flex-row items-center">
           {reply.isAnonymous ? (
@@ -33,9 +33,9 @@ export function ReplyItem({ reply, postAuthorId, iconColor, onMenuPress }: Reply
           {isPostAuthor && (
             <View
               className="ml-1.5 px-1.5 py-1 rounded-full"
-              style={{ backgroundColor: '#54DBED' /* sky-400 */ }}
+              style={{ backgroundColor: '#DCE5B0' /* green-200 */ }}
             >
-              <Text className="text-[10px]">작성자</Text>
+              <Text className="text-caption-sm text-green-800">작성자</Text>
             </View>
           )}
           <View style={{ flex: 1 }} />
@@ -48,7 +48,7 @@ export function ReplyItem({ reply, postAuthorId, iconColor, onMenuPress }: Reply
               initialLiked={reply.likedByMe}
             />
             <Pressable hitSlop={8} onPress={(e) => onMenuPress(reply.id, e.nativeEvent.pageY)}>
-              <MoreVertIcon width={18} height={18} color={iconColor} />
+              <MoreVertIcon width={24} height={24} color={iconColor} />
             </Pressable>
           </View>
         </View>

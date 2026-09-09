@@ -7,13 +7,21 @@ import type { BingoTheme } from '@/types/bingo';
 
 export type BoardVisibility = 'private' | 'friends' | 'public';
 
+/**
+ * 계정 공개 범위. 빙고 축(BoardVisibility)과 값이 같지만 축이 다르다 —
+ * 둘 중 더 엄격한 쪽이 적용된다.
+ */
+export type AccountVisibility = 'private' | 'friends' | 'public';
+
 export interface ProfileSummary {
   id: string;
   username: string;
   displayName: string;
   avatarUrl: string | null;
   bio: string | null;
+  /** @deprecated accountVisibility에서 파생된다. 기존 화면 호환용. */
   isPrivate: boolean;
+  accountVisibility: AccountVisibility;
   isMe: boolean;
   isFriend: boolean;
   hasPendingRequest: boolean;
@@ -80,6 +88,7 @@ export const fetchProfile = async (userId: string): Promise<ProfileSummary | nul
     avatarUrl: row.avatar_url,
     bio: row.bio,
     isPrivate: row.is_private,
+    accountVisibility: (row.account_visibility as AccountVisibility) ?? 'friends',
     isMe: row.is_me,
     isFriend: row.is_friend,
     hasPendingRequest: row.has_pending_request,
@@ -145,8 +154,8 @@ export const updateBoardVisibility = async (
   if (error) throw error;
 };
 
-/** 계정 공개/비공개 전환 */
-export const updateAccountPrivacy = async (isPrivate: boolean): Promise<void> => {
+/** 계정 공개 범위 변경. is_private는 DB 트리거가 맞춰 준다. */
+export const updateAccountVisibility = async (visibility: AccountVisibility): Promise<void> => {
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -154,7 +163,7 @@ export const updateAccountPrivacy = async (isPrivate: boolean): Promise<void> =>
 
   const { error } = await supabase
     .from('users')
-    .update({ is_private: isPrivate })
+    .update({ account_visibility: visibility })
     .eq('id', user.id);
   if (error) throw error;
 };

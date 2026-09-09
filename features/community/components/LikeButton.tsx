@@ -146,7 +146,7 @@ export function LikeButton({
     <Pressable onPress={handlePress} className="flex-row items-center gap-1">
       <View style={{ width: iconSize, height: iconSize }}>
         {liked ? (
-          <LikeOnIcon width={iconSize} height={iconSize} color="#E02828" />
+          <LikeOnIcon width={iconSize} height={iconSize} color="#CD5353" /* danger */ />
         ) : (
           <LikeOffIcon width={iconSize} height={iconSize} color={iconColor} />
         )}

@@ -1,41 +1,26 @@
-import IconButton from '@/components/IconButton';
-import BackArrowIcon from '@/assets/icons/ic_arrow_back.svg';
-import SMSIcon from '@/assets/icons/ic_sms.svg';
+import { PageHeader } from '@/components/PageHeader';
+import Button from '@/components/Button';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 import { Text } from '@/components/Text';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { fetchMyPosts, MyPost } from '@/features/mypage/lib/mypage';
-import FavoriteOffIcon from '@/assets/icons/ic_favorite_off.svg';
 import Loading from '@/components/Loading';
 
 function PostItem({ post, onPress }: { post: MyPost; onPress: () => void }) {
-  const iconColor = '#4C5252'; /* gray-700 */
-
   return (
-    <Pressable onPress={onPress} className="px-5 pt-4 pb-4">
-      <View className="flex-row items-center gap-2 mb-2">
-        <Text className="text-caption-sm text-gray-500  ">{post.createdAt}</Text>
+    <Pressable onPress={onPress} className="px-4 pb-4 pt-4">
+      {/* 시안: 시각은 제목과 같은 줄 뒤에 붙는다 */}
+      <View className="flex-row items-baseline gap-2">
+        <Text className="flex-shrink text-body-md text-gray-900" numberOfLines={1}>
+          {post.title}
+        </Text>
+        <Text className="text-caption-sm text-gray-500">{post.createdAt}</Text>
       </View>
-
-      <Text className="text-label-sm mb-1" numberOfLines={1}>
-        {post.title}
-      </Text>
-      <Text className="text-body-sm text-gray-500  " numberOfLines={2}>
+      <Text className="mt-1 text-body-sm text-gray-700" numberOfLines={2}>
         {post.content}
       </Text>
-
-      <View className="flex-row items-center gap-4 mt-3">
-        <View className="flex-row items-center gap-1">
-          <FavoriteOffIcon width={18} height={18} color={iconColor} />
-          <Text className="text-body-sm">{post.likeCount}</Text>
-        </View>
-        <View className="flex-row items-center gap-1">
-          <SMSIcon width={18} height={18} color={iconColor} />
-          <Text className="text-body-sm">{post.commentCount}</Text>
-        </View>
-      </View>
     </Pressable>
   );
 }
@@ -57,26 +42,22 @@ export default function MyPostsScreen() {
   );
 
   return (
-    <View className="flex-1 bg-white  " style={{ paddingTop: insets.top }}>
-      {/* Header */}
-      <View className="h-[60px] flex-row items-center px-4 border-b border-gray-300  ">
-        <IconButton
-          variant="ghost"
-          size={32}
-          icon={<BackArrowIcon width={20} height={20} />}
-          onClick={() => router.back()}
-        />
-        <Text className="flex-1 text-center text-title-sm font-pretendard-medium">게시글</Text>
-        <View className="w-8" />
-      </View>
+    <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
+      <PageHeader title="게시글" />
 
       {loading ? (
         <View className="flex-1 items-center justify-center">
-          <Loading color="#6ADE50" />
+          <Loading />
         </View>
       ) : posts.length === 0 ? (
-        <View className="flex-1 items-center justify-center">
-          <Text className="text-title-md text-gray-400  ">등록한 게시글이 없어요.</Text>
+        <View className="flex-1 items-center justify-center gap-6 px-4">
+          <Text className="text-body-md text-gray-500">아직 작성한 글이 없습니다</Text>
+          <Button
+            label="게시판 둘러보기"
+            size="md"
+            onClick={() => router.replace('/(tabs)/community')}
+            className="px-6"
+          />
         </View>
       ) : (
         <ScrollView
@@ -85,7 +66,7 @@ export default function MyPostsScreen() {
         >
           {posts.map((post, index) => (
             <View key={post.id}>
-              {index > 0 && <View className="h-px bg-gray-200  " />}
+              {index > 0 && <View className="h-px bg-gray-300" />}
               <PostItem post={post} onPress={() => router.push(`/community/${post.id}`)} />
             </View>
           ))}

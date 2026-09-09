@@ -53,7 +53,8 @@ export function AddEachBingo({
 
   const { contentWidth } = useResponsive();
   const [cols, rows] = selectedGrid.split('x').map(Number);
-  const availableWidth = contentWidth - 40;
+  // 시안: 판은 좌우 여백 없이 화면 폭 전체를 쓴다
+  const availableWidth = contentWidth;
   const textStyle = selectedGrid === '3x3' ? 'text-body-sm' : 'text-caption-md';
 
   const handleCellPress = (index: number) => {

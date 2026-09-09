@@ -1,8 +1,14 @@
 import IconButton from '@/components/IconButton';
+import { AccountVisibilitySelector } from '@/features/mypage/components/AccountVisibilitySelector';
+import {
+  fetchMyProfileSummary,
+  updateAccountVisibility,
+  type AccountVisibility,
+} from '@/features/profile/lib/profile';
+import { PageHeader } from '@/components/PageHeader';
 import { Modal } from '@/components/Modal';
 import { TextInput } from '@/components/TextInput';
 import { Toast } from '@/components/Toast';
-import BackArrowIcon from '@/assets/icons/ic_arrow_back.svg';
 import CameraIcon from '@/assets/icons/ic_camera.svg';
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
@@ -40,7 +46,14 @@ export default function ProfileEditPage() {
   const [toastVisible, setToastVisible] = useState(false);
   const [showLeaveModal, setShowLeaveModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const initialValues = useRef({ name: '', userId: '', bio: '', avatarUri: null as string | null });
+  const [visibility, setVisibility] = useState<AccountVisibility>('friends');
+  const initialValues = useRef({
+    name: '',
+    userId: '',
+    bio: '',
+    avatarUri: null as string | null,
+    visibility: 'friends' as AccountVisibility,
+  });
 
   useEffect(() => {
     fetchMyProfile().then((profile) => {
@@ -54,7 +67,14 @@ export default function ProfileEditPage() {
         userId: profile.username,
         bio: profile.bio,
         avatarUri: profile.avatarUrl,
+        visibility: initialValues.current.visibility,
       };
+    });
+
+    fetchMyProfileSummary().then((summary) => {
+      if (!summary) return;
+      setVisibility(summary.accountVisibility);
+      initialValues.current.visibility = summary.accountVisibility;
     });
   }, []);
 
@@ -159,6 +179,9 @@ export default function ProfileEditPage() {
         newAvatarUrl = await uploadProfileImage(avatarUri, filename);
       }
       await updateMyProfile({ displayName: name, username: userId, bio, avatarUrl: newAvatarUrl });
+      if (visibility !== initialValues.current.visibility) {
+        await updateAccountVisibility(visibility);
+      }
       await clearCache('@bingket/cache-my-profile');
       router.back();
     } catch (e) {
@@ -169,29 +192,19 @@ export default function ProfileEditPage() {
   };
 
   return (
-    <View className="flex-1 bg-white  " style={{ paddingTop: insets.top }}>
-      {/* Header — 화면 제목은 아래 본문 헤딩으로 뺀다 */}
-      <View className="h-[60px] flex-row items-center px-4">
-        <IconButton
-          variant="ghost"
-          size={32}
-          icon={<BackArrowIcon width={20} height={20} />}
-          onClick={handleBack}
-        />
-      </View>
+    <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
+      <PageHeader title="프로필 편집" onBack={handleBack} />
 
       <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 24 }}>
-        <Text className="text-title-lg font-pretendard-semibold px-5 mb-2">프로필 편집</Text>
-
         {/* 프로필 이미지 */}
         <View className="items-center pt-6 pb-6">
           <View className="relative">
             <ProfileAvatar avatarUrl={avatarUri} size={120} />
-            <View className="absolute bottom-0 -left-2">
+            <View className="absolute -right-1 bottom-0">
               <IconButton
                 variant="secondary"
-                size={36}
-                icon={<CameraIcon width={18} height={18} />}
+                size={40}
+                icon={<CameraIcon width={24} height={24} color="#6E7575" /* gray-600 */ />}
                 onClick={handleCameraPress}
               />
             </View>
@@ -199,9 +212,9 @@ export default function ProfileEditPage() {
         </View>
 
         {/* 폼 */}
-        <View className="px-5 gap-5">
+        <View className="px-4 gap-5">
           <View className="gap-2">
-            <Text className="text-label-md">닉네임</Text>
+            <Text className="text-body-md text-gray-900">닉네임</Text>
             <TextInput
               value={name}
               onChangeText={handleNameChange}
@@ -209,7 +222,7 @@ export default function ProfileEditPage() {
               rounded={12}
             />
             <Text
-              className="text-caption-md text-right"
+              className="text-right text-caption-sm"
               style={{ color: '#929898' /* gray-500 */ }}
             >
               {name.length}/{NAME_MAX}
@@ -217,7 +230,7 @@ export default function ProfileEditPage() {
           </View>
 
           <View className="gap-2">
-            <Text className="text-label-md">아이디</Text>
+            <Text className="text-body-md text-gray-900">아이디</Text>
             <TextInput
               value={userId}
               onChangeText={handleUserIdChange}
@@ -226,7 +239,7 @@ export default function ProfileEditPage() {
               rounded={12}
             />
             <Text
-              className="text-caption-md text-right"
+              className="text-right text-caption-sm"
               style={{ color: '#929898' /* gray-500 */ }}
             >
               {userId.length}/{USER_ID_MAX}
@@ -234,7 +247,7 @@ export default function ProfileEditPage() {
           </View>
 
           <View className="gap-2">
-            <Text className="text-label-md">한 줄 다짐</Text>
+            <Text className="text-body-md text-gray-900">한 줄 다짐</Text>
             <TextInput
               value={bio}
               onChangeText={(v) => setBio(v.slice(0, BIO_MAX))}
@@ -244,19 +257,25 @@ export default function ProfileEditPage() {
               rounded={12}
             />
             <Text
-              className="text-caption-md text-right"
+              className="text-right text-caption-sm"
               style={{ color: '#929898' /* gray-500 */ }}
             >
               {bio.length}/{BIO_MAX}
             </Text>
           </View>
+
+          <View className="gap-2">
+            <Text className="text-body-md text-gray-900">계정 공개 범위</Text>
+            <AccountVisibilitySelector value={visibility} onChange={setVisibility} />
+          </View>
         </View>
       </ScrollView>
 
       {/* 저장 */}
-      <View className="px-5" style={{ paddingBottom: insets.bottom + 16 }}>
+      <View className="px-4" style={{ paddingBottom: insets.bottom + 16 }}>
         <Button
           label="저장하기"
+          size="md"
           onClick={handleSave}
           disabled={saving}
           loading={saving}

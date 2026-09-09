@@ -1,4 +1,5 @@
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
+import Button from '@/components/Button';
 import { Text } from '@/components/Text';
 import Loading from '@/components/Loading';
 import type { Notification } from '@/features/notifications/lib/notifications';
@@ -39,47 +40,28 @@ export function NotificationStrip({
         return (
           <View
             key={item.id}
-            className="flex-row items-center gap-3 px-5 py-3 bg-gray-200  "
-            style={{ minHeight: 56 }}
+            className="flex-row items-center gap-3 bg-gray-300 px-4"
+            style={{ minHeight: 60 }}
           >
-            <Text
-              className="flex-1 text-body-sm"
-              style={{ color: '#181C1C' /* gray-900 */ }}
-              numberOfLines={2}
-            >
+            <Text className="flex-1 text-body-sm text-gray-900" numberOfLines={1}>
               {item.message}
             </Text>
 
             {busy ? (
-              <Loading color="#48BE30" variant="iconloading" size={5} />
+              <Loading />
             ) : isInvite ? (
-              <View className="flex-row items-center gap-3">
-                <Pressable onPress={() => onDecline(item)} hitSlop={8}>
-                  <Text className="text-body-sm" style={{ color: '#4C5252' /* gray-700 */ }}>
-                    거절
-                  </Text>
-                </Pressable>
+              <View className="flex-row items-center gap-2">
+                <Button label="거절" variant="ghost" size="sm" onClick={() => onDecline(item)} />
                 {/* 상한에 걸려도 누를 수는 있게 둔다. 눌러야 왜 안 되는지 알려줄 수 있다 */}
-                <Pressable
-                  onPress={() => onAccept(item)}
-                  hitSlop={8}
-                  className="px-4 py-1.5 rounded-full bg-green-500  "
-                  style={{ opacity: atBingoCap ? 0.4 : 1 }}
-                >
-                  <Text
-                    className="text-body-sm font-pretendard-medium"
-                    style={{ color: '#FDFDFD' /* white */ }}
-                  >
-                    수락
-                  </Text>
-                </Pressable>
+                <Button
+                  label="수락"
+                  size="sm"
+                  onClick={() => onAccept(item)}
+                  className={atBingoCap ? 'opacity-40' : ''}
+                />
               </View>
             ) : (
-              <Pressable onPress={() => onConfirm(item)} hitSlop={8}>
-                <Text className="text-body-sm" style={{ color: '#4C5252' /* gray-700 */ }}>
-                  확인
-                </Text>
-              </Pressable>
+              <Button label="확인" variant="ghost" size="sm" onClick={() => onConfirm(item)} />
             )}
           </View>
         );

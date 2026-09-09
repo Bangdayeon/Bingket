@@ -99,7 +99,11 @@ export function GoogleButton({ requireAgreement }: GoogleButtonProps) {
     <TouchableOpacity
       onPress={handlePress}
       disabled={loading}
-      className="w-full h-14 rounded-xl border border-gray-200   bg-white   items-center justify-center"
+      className="h-12 w-full items-center justify-center rounded-2xl bg-white"
+      style={{
+        borderWidth: 0.5,
+        borderColor: '#C9CCCF',
+      }} /* Apple·Google 브랜드 가이드가 강제하는 색이라 토큰 밖이어도 그대로 쓴다 */
     >
       {loading ? (
         <Loading color="#000000" />
@@ -111,7 +115,12 @@ export function GoogleButton({ requireAgreement }: GoogleButtonProps) {
             className="absolute left-4"
             resizeMode="contain"
           />
-          <Text className="text-black text-base font-pretendard-semibold md:text-lg">
+          <Text
+            className="text-label-sm font-pretendard-semibold md:text-label-md"
+            style={{
+              color: 'rgba(0,0,0,0.85)',
+            }} /* Apple·Google 브랜드 가이드가 강제하는 색이라 토큰 밖이어도 그대로 쓴다 */
+          >
             Google로 시작하기
           </Text>
         </>

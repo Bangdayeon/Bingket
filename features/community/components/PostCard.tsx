@@ -1,9 +1,10 @@
 import { useState } from 'react';
+import { useRouter } from 'expo-router';
 import { Pressable, View } from 'react-native';
 import { Image } from 'expo-image';
 import { Text } from '@/components/Text';
 import SMSIcon from '@/assets/icons/ic_sms.svg';
-import ReportIcon from '@/assets/icons/ic_report.svg';
+import MoreIcon from '@/assets/icons/ic_more_vert.svg';
 import { CommunityPost } from '@/types/community';
 import type { StoredBlock } from '@/types/community';
 import { LikeButton } from './LikeButton';
@@ -74,6 +75,7 @@ interface PostCardProps {
 }
 
 export function PostCard({ post, currentUserId, onBlock }: PostCardProps) {
+  const router = useRouter();
   const iconColor = '#4C5252'; /* gray-700 */
 
   const [showMenu, setShowMenu] = useState(false);
@@ -84,7 +86,12 @@ export function PostCard({ post, currentUserId, onBlock }: PostCardProps) {
   const [isBlocking, setIsBlocking] = useState(false);
   const [alertModal, setAlertModal] = useState<{ title: string; message: string } | null>(null);
 
-  const isOwnPost = currentUserId != null ? post.userId === currentUserId : true;
+  /**
+   * 검색 화면처럼 로그인 사용자를 안 넘기는 곳이 있다. 그때는 내 글인지 알 수 없으므로
+   * 메뉴를 아예 열지 않는다 — 남의 글에 '수정하기'를 띄우거나 내 글을 신고하게 두면 안 된다.
+   */
+  const ownership =
+    currentUserId == null ? 'unknown' : post.userId === currentUserId ? 'mine' : 'others';
 
   // blocks 기반 첫 번째 미디어 탐색
   const blocks = parseBlocks(post.body);
@@ -106,45 +113,43 @@ export function PostCard({ post, currentUserId, onBlock }: PostCardProps) {
   const bingoData = hasBingo && post.bingo ? postBingoToBingoData(post.bingo) : null;
   const preview = bodyPreview(blocks, post.body);
 
-  const menuItems = [
-    {
-      label: '신고하기',
-      onPress: () => setShowReportModal(true),
-    },
-    ...(post.user?.is_deleted
-      ? []
+  const menuItems =
+    ownership === 'mine'
+      ? [{ label: '수정하기', onPress: () => router.push(`/community/write?postId=${post.id}`) }]
       : [
           {
-            label: '차단하기',
-            danger: true as const,
-            onPress: () => setShowBlockModal(true),
+            label: '신고하기',
+            onPress: () => setShowReportModal(true),
           },
-        ]),
-  ];
+          ...(post.user?.is_deleted
+            ? []
+            : [
+                {
+                  label: '차단하기',
+                  danger: true as const,
+                  onPress: () => setShowBlockModal(true),
+                },
+              ]),
+        ];
 
   return (
-    <View className="px-5 pt-4 pb-4">
+    <View className="px-4 pb-4 pt-4">
       {/* 작성자 */}
       <View className="flex-row items-center justify-between">
         <View className="flex-row items-center gap-2">
           {post.isAnonymous ? (
             <AnonymousProfile seed={post.id} size="md" />
           ) : (
-            <ProfileAvatar avatarUrl={post.avatarUrl ?? null} size={32} />
+            <ProfileAvatar avatarUrl={post.avatarUrl ?? null} size={40} />
           )}
-          <View className="flex-row items-center gap-1">
-            <Text className="text-label-sm">{post.author}</Text>
-            <Text className="text-caption-sm" style={{ color: '#181C1C' }}>
-              •
-            </Text>
-            <Text className="text-caption-sm" style={{ color: '#929898' /* gray-500 */ }}>
-              {post.timeAgo}
-            </Text>
+          <View className="flex-row items-center gap-0.5">
+            <Text className="text-body-md text-gray-800">{post.author} · </Text>
+            <Text className="text-caption-sm text-gray-600">{post.timeAgo}</Text>
           </View>
         </View>
-        {!isOwnPost && (
+        {ownership !== 'unknown' && (
           <Pressable onPress={() => setShowMenu((v) => !v)} hitSlop={8}>
-            <ReportIcon width={20} height={20} color={iconColor} />
+            <MoreIcon width={24} height={24} color="#929898" /* gray-500 */ />
           </Pressable>
         )}
       </View>
@@ -164,7 +169,7 @@ export function PostCard({ post, currentUserId, onBlock }: PostCardProps) {
       ) : firstImageUrl ? (
         <Image
           source={{ uri: firstImageUrl }}
-          style={{ width: '100%', aspectRatio: 1, borderRadius: 12, marginTop: 16 }}
+          style={{ width: '100%', aspectRatio: 1, borderRadius: 16, marginTop: 16 }}
           contentFit="contain"
           cachePolicy="memory"
         />
@@ -172,7 +177,7 @@ export function PostCard({ post, currentUserId, onBlock }: PostCardProps) {
 
       {/* 본문 미리보기 */}
       {preview ? (
-        <Text className="text-body-sm mt-3" numberOfLines={2}>
+        <Text className="mt-3 text-body-sm text-gray-800" numberOfLines={2}>
           {preview}
         </Text>
       ) : null}
@@ -186,8 +191,8 @@ export function PostCard({ post, currentUserId, onBlock }: PostCardProps) {
           initialLiked={post.likedByMe}
         />
         <View className="flex-row items-center gap-1">
-          <SMSIcon width={ICON_SIZE} height={ICON_SIZE} color={iconColor} />
-          <Text className="text-body-sm">{post.commentCount}</Text>
+          <SMSIcon width={ICON_SIZE} height={ICON_SIZE} color="#B4BBBB" /* gray-400 */ />
+          <Text className="text-body-sm text-gray-700">{post.commentCount}</Text>
         </View>
       </View>
 
@@ -213,7 +218,7 @@ export function PostCard({ post, currentUserId, onBlock }: PostCardProps) {
                     height: 16,
                     borderRadius: 8,
                     borderWidth: 1.5,
-                    borderColor: selectedReason === reason ? '#28C8DE' : '#D2D6D6',
+                    borderColor: selectedReason === reason ? '#94BD52' : '#D2D6D6',
                     alignItems: 'center',
                     justifyContent: 'center',
                   }}
@@ -224,7 +229,7 @@ export function PostCard({ post, currentUserId, onBlock }: PostCardProps) {
                         width: 8,
                         height: 8,
                         borderRadius: 4,
-                        backgroundColor: '#28C8DE',
+                        backgroundColor: '#94BD52',
                       }}
                     />
                   )}

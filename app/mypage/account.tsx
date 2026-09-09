@@ -1,8 +1,4 @@
-import * as Sentry from '@sentry/react-native';
-import IconButton from '@/components/IconButton';
-import { Switch } from 'react-native';
-import { fetchMyProfileSummary, updateAccountPrivacy } from '@/features/profile/lib/profile';
-import BackArrowIcon from '@/assets/icons/ic_arrow_back.svg';
+import { PageHeader } from '@/components/PageHeader';
 import { useRouter } from 'expo-router';
 import { ImageSourcePropType, Image, Pressable, View } from 'react-native';
 import { Text } from '@/components/Text';
@@ -50,49 +46,14 @@ interface RowItemProps {
 }
 
 function RowItem({ label, onPress }: RowItemProps) {
-  const iconColor = '#181C1C'; /* gray-100 : gray-900 */
   return (
-    <Pressable onPress={onPress} className="flex-row items-center justify-between px-5 py-4">
-      <Text className="text-title-sm">{label}</Text>
-      <View style={{ transform: [{ rotate: '180deg' }] }}>
-        <BackArrowIcon width={20} height={20} color={iconColor} />
-      </View>
+    <Pressable onPress={onPress} className="h-12 justify-center px-4">
+      <Text className="text-body-md text-danger">{label}</Text>
     </Pressable>
   );
 }
 
 export default function AccountScreen() {
-  const [isPrivate, setIsPrivate] = useState(true);
-  const [privacyLoading, setPrivacyLoading] = useState(true);
-
-  useEffect(() => {
-    let cancelled = false;
-    fetchMyProfileSummary()
-      .then((p) => {
-        if (!cancelled && p) setIsPrivate(p.isPrivate);
-      })
-      .catch(Sentry.captureException)
-      .finally(() => {
-        if (!cancelled) setPrivacyLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  const handlePrivacyChange = async (next: boolean) => {
-    const prev = isPrivate;
-    setIsPrivate(next);
-    setPrivacyLoading(true);
-    try {
-      await updateAccountPrivacy(next);
-    } catch (e) {
-      Sentry.captureException(e);
-      setIsPrivate(prev);
-    } finally {
-      setPrivacyLoading(false);
-    }
-  };
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [accounts, setAccounts] = useState<LinkedAccount[]>([]);
@@ -136,24 +97,14 @@ export default function AccountScreen() {
   };
 
   return (
-    <View className="flex-1 bg-white  " style={{ paddingTop: insets.top }}>
-      {/* Header */}
-      <View className="h-[60px] flex-row items-center px-4 border-b border-gray-300  ">
-        <IconButton
-          variant="ghost"
-          size={32}
-          icon={<BackArrowIcon width={20} height={20} />}
-          onClick={() => router.back()}
-        />
-        <Text className="flex-1 text-center text-title-sm font-pretendard-medium">계정 관리</Text>
-        <View className="w-8" />
-      </View>
+    <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
+      <PageHeader title="계정 관리" />
 
       {/* 연동 계정 정보 */}
-      <View className="px-5 pt-6 pb-4">
-        <Text className="text-title-sm mb-4 font-pretendard-medium">연동 계정 정보</Text>
+      <View className="px-4 pt-6 pb-4">
+        <Text className="mb-4 text-caption-md text-gray-500">연동 계정 정보</Text>
         {accounts.length === 0 ? (
-          <Loading color="#6ADE50" />
+          <Loading />
         ) : (
           accounts.map((account) => {
             const cfg = PROVIDER_CONFIG[account.provider];
@@ -161,7 +112,7 @@ export default function AccountScreen() {
               <View key={account.provider} className="flex-row items-center gap-3 mb-3">
                 <View
                   className="w-6 h-6 rounded-md items-center justify-center border border-gray-200  "
-                  style={{ backgroundColor: cfg?.bgColor ?? '#EEEEEE' }}
+                  style={{ backgroundColor: cfg?.bgColor ?? '#EFEFEF' }}
                 >
                   {cfg?.logo && (
                     <Image
@@ -171,8 +122,8 @@ export default function AccountScreen() {
                     />
                   )}
                 </View>
-                <Text className="text-title-sm">{cfg?.label ?? account.provider}</Text>
-                <Text className="text-title-sm text-gray-500   ml-auto">
+                <Text className="text-body-md text-gray-900">{cfg?.label ?? account.provider}</Text>
+                <Text className="ml-auto text-body-md text-gray-500">
                   {account.email?.endsWith('@kakao.bingket') ? '' : (account.email ?? '')}
                 </Text>
               </View>
@@ -181,31 +132,11 @@ export default function AccountScreen() {
         )}
       </View>
 
-      <View className="h-px bg-gray-200   mx-5 my-2" />
-
-      {/* 계정 공개 설정 */}
-      <View className="px-5 pt-4 pb-2">
-        <View className="flex-row items-center justify-between">
-          <Text className="text-title-sm font-pretendard-medium">비공개 계정</Text>
-          <Switch
-            value={isPrivate}
-            disabled={privacyLoading}
-            onValueChange={handlePrivacyChange}
-            trackColor={{ true: '#6ADE50' /* green500 */, false: '#D2D6D6' /* gray-300 */ }}
-          />
-        </View>
-        <Text className="text-body-sm text-gray-500   mt-2">
-          {
-            '켜두면 친구만 내 빙고를 볼 수 있어요.\n검색과 프로필(사진·이름·한 줄 다짐)은 항상 공개돼요.'
-          }
-        </Text>
-      </View>
-
-      <View className="h-px bg-gray-200   mx-5 my-2" />
+      <View className="h-px bg-gray-300" />
 
       {loading ? (
         <View className="py-6 items-center">
-          <Loading color="#6ADE50" />
+          <Loading />
         </View>
       ) : (
         <>

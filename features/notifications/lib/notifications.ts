@@ -18,7 +18,7 @@ export interface Notification {
   senderProfile?: SenderProfile;
   /**
    * team_invite일 때만 채워진다. 홈 알림 스트립이 인라인으로 수락할 수 있는
-   * 모드인지 판단하는 데 쓴다 ('own'은 빙고를 직접 만들어야 해서 화면 이동이 필요하다).
+   * 모드인지 판단하는 데 쓴다 ('competition'은 빙고를 직접 만들어야 해서 화면 이동이 필요하다).
    */
   teamMode?: TeamMode;
 }

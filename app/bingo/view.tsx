@@ -1,4 +1,5 @@
 import * as Sentry from '@sentry/react-native';
+import { PageHeader } from '@/components/PageHeader';
 import { BingoCard } from '@/features/bingo/components/BingoCard';
 import { BingoCellModal, type MemoSaveState } from '@/features/bingo/BingoCellModal';
 import {
@@ -11,17 +12,16 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { ScrollView, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import IconButton from '@/components/IconButton';
 import { Text } from '@/components/Text';
-import BackArrowIcon from '@/assets/icons/ic_arrow_back.svg';
-import ProgressIcon from '@/assets/icons/ic_progress.svg';
-import DoneIcon from '@/assets/icons/ic_done.svg';
 import type { FetchedBingo } from '@/features/bingo/lib/bingo';
 import type { BingoCellDetail } from '@/types/bingo-cell';
 import { fetchMyTeams } from '@/features/team/lib/team';
 import type { TeamAvatarMember } from '@/features/team/components/TeamAvatars';
 import Loading from '@/components/Loading';
 import { Modal } from '@/components/Modal';
+
+// 시안: 완료 빙고의 메모는 300자까지
+const MEMO_MAX_LENGTH = 300;
 
 export default function BingoViewScreen() {
   const insets = useSafeAreaInsets();
@@ -129,8 +129,8 @@ export default function BingoViewScreen() {
 
   if (loading) {
     return (
-      <View className="flex-1 items-center justify-center bg-white  ">
-        <Loading color="#6ADE50" />
+      <View className="flex-1 items-center justify-center bg-surface">
+        <Loading />
       </View>
     );
   }
@@ -149,24 +149,8 @@ export default function BingoViewScreen() {
   };
 
   return (
-    <View className="flex-1 bg-white  " style={{ paddingTop: insets.top }}>
-      <View className="h-[60px] flex-row items-center px-4 border-b border-gray-200  ">
-        <IconButton
-          variant="ghost"
-          size={32}
-          icon={<BackArrowIcon width={20} height={20} />}
-          onClick={() => router.back()}
-        />
-        <View className="flex-1 flex-row items-center justify-center gap-2">
-          {isDone ? (
-            <DoneIcon width={20} height={20} color="#48BE30" /* green-600 */ />
-          ) : (
-            <ProgressIcon width={20} height={20} />
-          )}
-          <Text className="text-title-sm">{bingo.title}</Text>
-        </View>
-        <View style={{ width: 32 }} />
-      </View>
+    <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
+      <PageHeader />
 
       <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: insets.bottom + 40 }}>
         <BingoCard
@@ -188,27 +172,27 @@ export default function BingoViewScreen() {
         />
 
         {isDone && (
-          <View className="px-5 mt-2">
-            <Text className="text-title-md mb-2">회고</Text>
+          <View className="mt-2 px-4">
+            <Text className="mb-2 text-body-md text-gray-900">메모</Text>
             <TextInput
               value={retrospective}
               onChangeText={handleRetrospectiveChange}
-              placeholder="이 빙고를 돌아보며 한 마디 남겨보세요."
-              placeholderTextColor="#B4BBBB" /* gray-400 */
+              placeholder="메모를 입력해주세요."
+              placeholderTextColor="#929898" /* gray-500 */
               multiline
-              maxLength={500}
+              maxLength={MEMO_MAX_LENGTH}
               textAlignVertical="top"
               style={{
-                minHeight: 100,
-                backgroundColor: '#F6F7F7' /* gray-100 */,
-                borderRadius: 20,
-                padding: 16,
+                height: 190,
+                backgroundColor: '#EFEFEF' /* gray-200 */,
+                borderRadius: 16,
+                padding: 12,
                 lineHeight: 20,
                 color: '#181C1C' /* gray-900 */,
               }}
             />
-            <Text className="text-caption-sm text-gray-400 text-right mt-1">
-              {retrospective.length}/500
+            <Text className="mt-1 text-right text-caption-sm text-gray-500">
+              {retrospective.length}/{MEMO_MAX_LENGTH}
             </Text>
           </View>
         )}

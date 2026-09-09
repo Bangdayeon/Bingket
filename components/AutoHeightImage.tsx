@@ -25,7 +25,7 @@ export function AutoHeightImage({ uri, borderRadius = 12, marginTop = 0 }: AutoH
         // 로드 전에는 최소 높이 유지 (레이아웃 점프 최소화)
         minHeight: aspectRatio ? undefined : 180,
         aspectRatio: aspectRatio ?? undefined,
-        backgroundColor: '#F2F2F2',
+        backgroundColor: '#EFEFEF',
       }}
     >
       <Image

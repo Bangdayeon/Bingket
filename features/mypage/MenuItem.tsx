@@ -7,16 +7,24 @@ interface MenuItemProps {
   onPress: () => void;
   rightText?: string;
   showArrow?: boolean;
+  /** 로그아웃처럼 톤을 낮추는 항목 */
+  muted?: boolean;
 }
 
-export function MenuItem({ label, onPress, rightText, showArrow = false }: MenuItemProps) {
-  const iconColor = '#181C1C'; /* gray-100 : gray-900 */
+// 시안: 행 높이 44, 라벨 16/20 Regular gray-800, 화살표 24 gray-800, 우측 텍스트 gray-600.
+export function MenuItem({
+  label,
+  onPress,
+  rightText,
+  showArrow = false,
+  muted = false,
+}: MenuItemProps) {
   return (
-    <Pressable onPress={onPress} className="flex-row items-center justify-between py-4">
-      <Text className="text-body-md">{label}</Text>
+    <Pressable onPress={onPress} className="h-11 flex-row items-center justify-between">
+      <Text className={`text-body-md ${muted ? 'text-gray-600' : 'text-gray-800'}`}>{label}</Text>
       <View className="flex-row items-center gap-1">
-        {rightText && <Text className="text-body-md text-gray-500  ">{rightText}</Text>}
-        {showArrow && <ForwardArrowIcon width={20} height={20} color={iconColor} />}
+        {rightText && <Text className="text-body-md text-gray-600">{rightText}</Text>}
+        {showArrow && <ForwardArrowIcon width={24} height={24} color="#2E3333" /* gray-800 */ />}
       </View>
     </Pressable>
   );

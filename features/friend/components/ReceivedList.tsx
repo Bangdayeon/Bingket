@@ -12,13 +12,13 @@ export function ReceivedList({ pendingRequests, handleIncomingResponse }: Props)
     <View>
       {pendingRequests.length > 0 && (
         <View>
-          <Text className="text-title-sm   px-5 pt-4 pb-2">
+          <Text className="text-title-sm   px-4 pt-4 pb-2">
             받은 친구 요청 {pendingRequests.length}
           </Text>
           {pendingRequests.map((req) => (
             <View
               key={req.id}
-              className="flex-row items-center px-5 py-3 border-b border-gray-100  "
+              className="flex-row items-center px-4 py-3 border-b border-gray-100  "
             >
               <ProfileAvatar avatarUrl={req.avatarUrl} size={40} />
               <View className="flex-1 ml-3">
@@ -28,7 +28,7 @@ export function ReceivedList({ pendingRequests, handleIncomingResponse }: Props)
               <View className="flex-row gap-2">
                 <Pressable
                   onPress={() => handleIncomingResponse(req.id, false)}
-                  className="px-4 py-2 rounded-full bg-red-500"
+                  className="px-4 py-2 rounded-full bg-danger"
                 >
                   <Text className="text-label-sm" style={{ color: '#ffffff' }}>
                     거절

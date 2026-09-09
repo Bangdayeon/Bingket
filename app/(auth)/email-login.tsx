@@ -1,15 +1,20 @@
 import * as Sentry from '@sentry/react-native';
 import { supabase } from '@/lib/supabase';
-import { router } from 'expo-router';
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, TouchableOpacity, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text } from '@/components/Text';
 import { TextInput } from '@/components/TextInput';
 import Button from '@/components/Button';
-import ArrowBackIcon from '@/assets/icons/ic_arrow_back.svg';
+import VisibilityIcon from '@/assets/icons/ic_visibility.svg';
+import { PageHeader } from '@/components/PageHeader';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// 시안 안내 문구(8자 이상 영문·숫자·특수문자)는 '신규 가입'에만 적용한다.
+// 로그인 단계에서 막으면 이 규칙 이전에 가입한 계정이 들어올 수 없다.
+const STRONG_PASSWORD_REGEX = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+const STRONG_PASSWORD_MESSAGE = '8자 이상 영문, 숫자, 특수문자를 포함해주세요.';
 
 export default function EmailLoginScreen() {
   const [email, setEmail] = useState('');
@@ -18,6 +23,8 @@ export default function EmailLoginScreen() {
   const [errors, setErrors] = useState({ email: '', password: '', passwordConfirm: '' });
   const [loading, setLoading] = useState(false);
   const [passwordConfirmTouched, setPasswordConfirmTouched] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
 
   const validate = () => {
     const next = { email: '', password: '', passwordConfirm: '' };
@@ -63,6 +70,12 @@ export default function EmailLoginScreen() {
 
       // 로그인 실패 → 신규 가입 시도
       if (signInError.message.includes('Invalid login credentials') || signInError.status === 400) {
+        // 여기부터는 신규 가입 — 시안의 비밀번호 규칙을 지킨다
+        if (!STRONG_PASSWORD_REGEX.test(password)) {
+          setErrors((prev) => ({ ...prev, password: STRONG_PASSWORD_MESSAGE }));
+          return;
+        }
+
         const { error: signUpError } = await supabase.auth.signUp({
           email: trimmedEmail,
           password,
@@ -98,27 +111,21 @@ export default function EmailLoginScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView className="flex-1 bg-surface">
       <KeyboardAvoidingView
         className="flex-1"
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <View className="px-5" style={{ marginTop: 60 }}>
-          {/* 헤더: 뒤로가기 + 타이틀 */}
-          <View className="flex-row items-center gap-2">
-            <TouchableOpacity onPress={() => router.back()}>
-              <ArrowBackIcon width={24} height={24} />
-            </TouchableOpacity>
-            <Text className="text-title-lg">이메일로 시작하기</Text>
-          </View>
+        <PageHeader title="이메일로 시작하기" />
 
+        <View className="flex-1 px-4">
           {/* 폼 */}
-          <View className="mt-10 gap-6">
+          <View className="mt-7 gap-5">
             {/* 이메일 */}
             <View className="gap-2">
-              <Text className="text-label-md">이메일</Text>
+              <Text className="text-body-sm text-gray-900">이메일</Text>
               <TextInput
-                placeholder="이메일"
+                placeholder="example@gmail.com"
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoCorrect={false}
@@ -134,38 +141,46 @@ export default function EmailLoginScreen() {
                     setErrors((prev) => ({ ...prev, email: '올바른 이메일 형식을 입력해주세요.' }));
                   }
                 }}
-                className={errors.email ? 'border border-red-500' : ''}
+                className={errors.email ? 'border border-danger' : ''}
               />
-              {errors.email ? <Text className="text-red-500 px-1">{errors.email}</Text> : null}
+              {errors.email ? <Text className="text-danger px-1">{errors.email}</Text> : null}
             </View>
 
             {/* 비밀번호 */}
             <View className="gap-2">
-              <Text className="text-label-md">비밀번호</Text>
+              <Text className="text-body-sm text-gray-900">비밀번호</Text>
               <TextInput
-                placeholder="비밀번호 (6자 이상)"
-                secureTextEntry
+                placeholder="8자 이상 영문,숫자,특수문자 포함"
+                secureTextEntry={!showPassword}
                 rounded={12}
                 value={password}
+                rightIcon={
+                  <Pressable onPress={() => setShowPassword((v) => !v)} hitSlop={8}>
+                    <VisibilityIcon width={24} height={24} color="#6E7575" /* gray-600 */ />
+                  </Pressable>
+                }
                 onChangeText={(v) => {
                   setPassword(v);
                   if (errors.password) setErrors((prev) => ({ ...prev, password: '' }));
                 }}
-                className={errors.password ? 'border border-red-500' : ''}
+                className={errors.password ? 'border border-danger' : ''}
               />
-              {errors.password ? (
-                <Text className="text-red-500 px-1">{errors.password}</Text>
-              ) : null}
+              {errors.password ? <Text className="text-danger px-1">{errors.password}</Text> : null}
             </View>
 
             {/* 비밀번호 확인 */}
             <View className="gap-2">
-              <Text className="text-label-md">비밀번호 확인</Text>
+              <Text className="text-body-sm text-gray-900">비밀번호 확인</Text>
               <TextInput
                 placeholder="비밀번호 확인"
-                secureTextEntry
+                secureTextEntry={!showPasswordConfirm}
                 rounded={12}
                 value={passwordConfirm}
+                rightIcon={
+                  <Pressable onPress={() => setShowPasswordConfirm((v) => !v)} hitSlop={8}>
+                    <VisibilityIcon width={24} height={24} color="#6E7575" /* gray-600 */ />
+                  </Pressable>
+                }
                 onFocus={() => setPasswordConfirmTouched(true)}
                 onChangeText={(v) => {
                   setPasswordConfirm(v);
@@ -176,23 +191,23 @@ export default function EmailLoginScreen() {
                     }));
                   }
                 }}
-                className={errors.passwordConfirm ? 'border border-red-500' : ''}
+                className={errors.passwordConfirm ? 'border border-danger' : ''}
               />
               {errors.passwordConfirm ? (
-                <Text className="text-red-500 px-1">{errors.passwordConfirm}</Text>
+                <Text className="text-danger px-1">{errors.passwordConfirm}</Text>
               ) : null}
             </View>
           </View>
+        </View>
 
-          {/* 계속하기 버튼 */}
-          <View className="mt-10">
-            <Button
-              label="계속하기"
-              onClick={() => void handleSubmit()}
-              loading={loading}
-              disabled={!email || !password || !passwordConfirm}
-            />
-          </View>
+        {/* 시안: 계속하기는 화면 하단 고정 */}
+        <View className="px-4 pb-9">
+          <Button
+            label="계속하기"
+            onClick={() => void handleSubmit()}
+            loading={loading}
+            disabled={!email || !password || !passwordConfirm}
+          />
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>

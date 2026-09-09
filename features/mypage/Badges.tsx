@@ -4,6 +4,7 @@ import { Text } from '@/components/Text';
 import { supabase } from '@/lib/supabase';
 import { BadgeModal } from './components/BadgeModal';
 import Loading from '@/components/Loading';
+import { useResponsive } from '@/lib/use-responsive';
 
 interface EarnedBadge {
   badgeId: string;
@@ -14,8 +15,9 @@ interface EarnedBadge {
 
 const TOTAL_BADGES = 16;
 const COLUMNS = 3;
-const BADGE_SIZE = 96;
-const GAP = 12;
+// 시안: 좌우 16, 열 간격 11 → 390 화면에서 112px 세 칸
+const H_PADDING = 16;
+const GAP = 11;
 
 async function fetchMyBadges(): Promise<EarnedBadge[]> {
   const {
@@ -47,6 +49,8 @@ export function BadgesPage() {
   const [earned, setEarned] = useState<EarnedBadge[]>([]);
   const [loading, setLoading] = useState(true);
   const [showBadgeModal, setShowBadgeModal] = useState<EarnedBadge | null>(null);
+  const { contentWidth } = useResponsive();
+  const badgeSize = (contentWidth - H_PADDING * 2 - GAP * (COLUMNS - 1)) / COLUMNS;
 
   useEffect(() => {
     fetchMyBadges().then((data) => {
@@ -69,14 +73,14 @@ export function BadgesPage() {
 
   return (
     <>
-      <ScrollView className="flex-1 bg-white   mb-20">
+      <ScrollView className="mb-20 flex-1 bg-surface">
         {loading ? (
           <View className="flex-1 items-center justify-center py-20">
-            <Loading color="#6ADE50" />
+            <Loading />
           </View>
         ) : (
-          <View className="py-4 items-center">
-            <View style={{ gap: GAP }}>
+          <View className="py-4">
+            <View style={{ gap: GAP, paddingHorizontal: H_PADDING }}>
               {rows.map((row, rowIndex) => (
                 <View key={rowIndex} style={{ flexDirection: 'row', gap: GAP }}>
                   {row.map((badge, colIndex) =>
@@ -90,14 +94,14 @@ export function BadgesPage() {
                         <Image
                           key={badge.badgeId}
                           source={{ uri: badge.iconUrl }}
-                          style={{ width: BADGE_SIZE, height: BADGE_SIZE, borderRadius: 12 }}
+                          style={{ width: badgeSize, height: badgeSize, borderRadius: 16 }}
                           resizeMode="contain"
                         />
                       </Pressable>
                     ) : (
                       <View
                         key={`empty-${rowIndex}-${colIndex}`}
-                        style={{ width: BADGE_SIZE, height: BADGE_SIZE, borderRadius: 20 }}
+                        style={{ width: badgeSize, height: badgeSize, borderRadius: 16 }}
                         className="bg-gray-200  "
                       />
                     ),

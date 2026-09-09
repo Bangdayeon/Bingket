@@ -58,14 +58,14 @@ export function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarP
         borderTopWidth: 1,
         borderLeftWidth: 1,
         borderRightWidth: 1,
-        borderColor: '#E8EAEA', // gray-200
-        borderTopLeftRadius: 20,
-        borderTopRightRadius: 20,
+        borderColor: '#D2D6D6', // gray-300
+        borderTopLeftRadius: 24,
+        borderTopRightRadius: 24,
         // 탭을 flex로 균등 분배하지 않는다. 좌우를 비우고 나머지를 space-between으로
         // 벌린다 — 시안의 아이콘 위치가 이 방식이라야 맞는다.
         justifyContent: 'space-between',
         paddingHorizontal: horizontalPadding,
-        paddingTop: 10,
+        paddingTop: 4,
         paddingBottom: insets.bottom + 6,
       }}
     >
@@ -75,7 +75,7 @@ export function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarP
         const tab = TAB_ICONS[route.name];
         const Icon = tab ? (isFocused ? tab.on : tab.off) : null;
         const isNotifications = route.name === 'notifications';
-        const color = isFocused ? '#181C1C' : '#6E7575'; // gray-900 / gray-600
+        const color = isFocused ? '#2E3333' : '#6E7575'; // gray-800 / gray-600
 
         const onPress = () => {
           const event = navigation.emit({
@@ -120,14 +120,14 @@ export function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarP
                     width: 6,
                     height: 6,
                     borderRadius: 3,
-                    backgroundColor: '#E02828', // red-500
+                    backgroundColor: '#CD5353', // danger
                   }}
                 />
               )}
             </View>
             {/* lineHeight를 폰트 크기에 붙여 아이콘과의 간격을 gap으로만 통제한다.
                 20을 주면 글자 위아래로 4px씩 빈 공간이 더 생겨 간격이 흐려진다. */}
-            <Text style={{ fontSize: 12, lineHeight: 14, color, fontFamily: 'pretendard' }}>
+            <Text className="text-caption-sm font-pretendard" style={{ color }}>
               {tab?.label}
             </Text>
           </TouchableOpacity>

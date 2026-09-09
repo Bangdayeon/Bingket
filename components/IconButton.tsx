@@ -45,7 +45,7 @@ export default function IconButton({
 }: IconButtonProps) {
   const { default: defaultStyle, active: activeStyle } = variantStyles[variant];
 
-  const iconColor = '#181C1C';
+  const iconColor = '#181C1C'; /* gray-900 */
 
   const coloredIcon = React.isValidElement(icon)
     ? React.cloneElement(icon as React.ReactElement<{ color?: string }>, {
@@ -70,7 +70,9 @@ export default function IconButton({
   const isDisabled = disabled || loading;
 
   const loadingColor =
-    variant === 'secondary' ? '#181C1C' : variant === 'ghost' ? '#F07840' : '#ffffff';
+    variant === 'secondary' || variant === 'ghost'
+      ? '#2E3333' /* gray-800 */
+      : '#F6F7F7'; /* gray-100 */
 
   return (
     <TouchableOpacity
@@ -92,7 +94,7 @@ export default function IconButton({
               width: size,
               height: size,
               borderRadius: size / 2,
-              backgroundColor: '#F2FDE8',
+              backgroundColor: '#ECF1D5' /* green-100 */,
             },
             animatedBgStyle,
           ]}
@@ -107,7 +109,7 @@ export default function IconButton({
       {/* 로딩 (정중앙 overlay) */}
       {loading && (
         <View className="absolute inset-0 items-center justify-center">
-          <Loading variant="iconloading" size={5} color={loadingColor} />
+          <Loading color={loadingColor} />
         </View>
       )}
     </TouchableOpacity>

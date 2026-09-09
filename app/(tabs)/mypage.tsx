@@ -4,7 +4,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useRouter } from 'expo-router';
 import * as Sentry from '@sentry/react-native';
 import { Text } from '@/components/Text';
-import IconButton from '@/components/IconButton';
 import Loading from '@/components/Loading';
 import SettingsIcon from '@/assets/icons/ic_settings.svg';
 import { BadgesPage } from '@/features/mypage/Badges';
@@ -60,16 +59,12 @@ export default function MyPageScreen() {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={['top']}>
-      <View className="h-[60px] flex-row items-center px-4 border-b border-gray-300">
-        <View className="w-8" />
-        <Text className="flex-1 text-center text-title-sm">마이페이지</Text>
-        <IconButton
-          variant="ghost"
-          size={32}
-          icon={<SettingsIcon width={20} height={20} />}
-          onClick={() => router.push('/mypage/settings')}
-        />
+    <SafeAreaView className="flex-1 bg-surface" edges={['top']}>
+      {/* 시안에는 화면 제목이 없다 — 설정 아이콘만 우측 */}
+      <View className="h-[60px] flex-row items-center justify-end border-b border-gray-300 px-4">
+        <Pressable onPress={() => router.push('/mypage/settings')} hitSlop={8}>
+          <SettingsIcon width={36} height={36} color="#4C5252" /* gray-700 */ />
+        </Pressable>
       </View>
 
       <ProfileHeader
@@ -78,23 +73,23 @@ export default function MyPageScreen() {
         onPostsPress={() => router.push('/mypage/my-posts')}
       />
 
-      <View className="flex-row border-b border-gray-200 px-5">
+      <View className="flex-row border-b border-gray-300 px-4">
         {TABS.map((tab, index) => (
-          <Pressable
-            key={tab}
-            onPress={() => setTabIndex(index)}
-            className="px-4 py-3"
-            style={{
-              borderBottomWidth: 2,
-              borderBottomColor: tabIndex === index ? '#181C1C' : 'transparent',
-            }}
-          >
+          <Pressable key={tab} onPress={() => setTabIndex(index)} className="items-center py-3">
             <Text
-              className="text-title-sm"
-              style={{ color: tabIndex === index ? '#181C1C' : '#929898' }}
+              className={
+                tabIndex === index
+                  ? 'text-body-md font-pretendard-bold text-gray-800'
+                  : 'text-body-md font-pretendard-medium text-gray-400'
+              }
             >
               {tab}
             </Text>
+            {/* 시안: 밑줄은 44×1.5 */}
+            <View
+              className="mt-2 h-[1.5px] w-11"
+              style={{ backgroundColor: tabIndex === index ? '#2E3333' : 'transparent' }}
+            />
           </Pressable>
         ))}
       </View>
@@ -102,7 +97,7 @@ export default function MyPageScreen() {
       {tabIndex === 0 ? (
         loading ? (
           <View className="flex-1 items-center justify-center">
-            <Loading color="#6ADE50" />
+            <Loading />
           </View>
         ) : (
           <ScrollView className="flex-1" contentContainerStyle={{ paddingTop: 16 }}>

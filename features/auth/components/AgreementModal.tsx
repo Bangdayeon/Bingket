@@ -128,7 +128,7 @@ function AgreementItem({ label, checked, onToggle, onLinkPress }: AgreementItemP
         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
       >
         <Text className="text-label-md">{label}</Text>
-        <ArrowForwardIcon width={20} height={20} />
+        <ArrowForwardIcon width={24} height={24} color="#2E3333" /* gray-800 */ />
       </TouchableOpacity>
     </View>
   );

@@ -30,12 +30,12 @@ export function BingoStat({
 
   return (
     <View className="items-center gap-1">
-      <Text className="text-label-sm md:text-label-md font-pretendard-medium text-gray-600  ">
+      <Text className="text-label-sm font-pretendard-semibold text-gray-800 md:text-label-md">
         {label}
       </Text>
       <Text
-        className={`${size === 'sm' ? 'text-body-md' : 'text-title-sm'} font-pretendard-semibold`}
-        style={isOver ? { color: '#EC5858' /* red-400 */ } : undefined}
+        className={`${size === 'sm' ? 'text-caption-sm' : 'text-caption-sm md:text-body-sm'} text-gray-800`}
+        style={isOver ? { color: '#CD5353' /* danger */ } : undefined}
       >
         {valueText ?? `${current}/${total}`}
       </Text>

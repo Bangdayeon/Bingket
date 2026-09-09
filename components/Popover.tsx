@@ -57,7 +57,7 @@ export function Popover({ visible, items, onDismiss, style }: PopoverProps) {
           >
             <Text
               className="text-body-md"
-              style={{ color: item.danger ? '#E02828' /* red-500 */ : '#181C1C' /* gray-900 */ }}
+              style={{ color: item.danger ? '#CD5353' /* danger */ : '#181C1C' /* gray-900 */ }}
             >
               {item.label}
             </Text>

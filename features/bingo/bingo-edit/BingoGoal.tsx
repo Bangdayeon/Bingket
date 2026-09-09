@@ -1,10 +1,10 @@
+import { ScrollView, View } from 'react-native';
 import { Chip } from '@/components/Chip';
-import Calendar from '@/assets/icons/ic_calendar.svg';
-import { Pressable, ScrollView, View } from 'react-native';
-import { Text } from '@/components/Text';
-import { Information } from '@/components/Information';
+import { DateInput } from '@/components/DateInput';
+import { SectionLabel } from './SectionLabel';
 
-const DURATION_OPTIONS = ['1개월', '3개월', '6개월', '1년', '직접 지정'];
+// 시안은 '직접 지정'이 맨 앞이다.
+const DURATION_OPTIONS = ['직접 지정', '1개월', '3개월', '6개월', '1년'];
 
 interface BingoGoalProps {
   selectedDuration: string | null;
@@ -14,6 +14,8 @@ interface BingoGoalProps {
   isEndDateDisabled: boolean;
   onOpenStartPicker: () => void;
   onOpenEndPicker: () => void;
+  /** 팀 빙고는 기간을 참여자 전원이 공유한다는 안내를 덧붙인다. */
+  hint?: string;
 }
 
 const formatDate = (date: Date | null) =>
@@ -29,14 +31,11 @@ export function BingoGoal({
   isEndDateDisabled,
   onOpenStartPicker,
   onOpenEndPicker,
+  hint = '저장 후 변경 불가',
 }: BingoGoalProps) {
-  const iconColor = '#181C1C'; /* gray-100 : gray-900 */
   return (
-    <View className="px-5 py-6 border-t border-gray-100  ">
-      <View className="flex-row items-center gap-2 mb-4">
-        <Text className="text-title-md font-pretendard-medium">목표 기간</Text>
-        <Information content="처음 지정 후 수정이 불가능해요." />
-      </View>
+    <View className="px-4 py-6">
+      <SectionLabel label="목표 기간" hint={hint} />
 
       <ScrollView
         horizontal
@@ -53,33 +52,14 @@ export function BingoGoal({
         ))}
       </ScrollView>
 
-      <View className="flex-row gap-4">
-        <View className="flex-1">
-          <Text className="text-title-sm mb-2">시작일</Text>
-          <Pressable
-            onPress={onOpenStartPicker}
-            className="flex-row items-center gap-1 bg-gray-100   rounded-full px-3 h-10"
-          >
-            <Calendar width={16} height={16} color={iconColor} />
-            <Text className="text-body-sm text-gray-700  ">
-              {formatDate(startDate) || '선택하기'}
-            </Text>
-          </Pressable>
-        </View>
-
-        <View className="flex-1">
-          <Text className="text-title-sm mb-2">종료일</Text>
-          <Pressable
-            onPress={!isEndDateDisabled ? onOpenEndPicker : undefined}
-            className="flex-row items-center gap-1 bg-gray-100   rounded-full px-3 h-10"
-            style={{ opacity: isEndDateDisabled ? 0.6 : 1 }}
-          >
-            <Calendar width={16} height={16} color={iconColor} />
-            <Text className="text-body-md text-gray-500  ">
-              {formatDate(endDate) || '선택하기'}
-            </Text>
-          </Pressable>
-        </View>
+      {/* 시안: 시작일 · 종료일 라벨 없이 date input 두 개를 간격 31로만 벌린다 */}
+      <View className="flex-row items-center" style={{ gap: 31 }}>
+        <DateInput value={formatDate(startDate) || 'yyyy.mm.dd'} onPress={onOpenStartPicker} />
+        <DateInput
+          value={formatDate(endDate) || 'yyyy.mm.dd'}
+          onPress={onOpenEndPicker}
+          disabled={isEndDateDisabled}
+        />
       </View>
     </View>
   );

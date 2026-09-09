@@ -1,5 +1,5 @@
 import DateTimePicker from '@react-native-community/datetimepicker';
-import CalendarIcon from '@/assets/icons/ic_calendar.svg';
+import { DateInput } from '@/components/DateInput';
 import DoneIcon from '@/assets/icons/ic_done.svg';
 import CloseIcon from '@/assets/icons/ic_close.svg';
 import { BingoCellDetail } from '@/types/bingo-cell';
@@ -19,9 +19,11 @@ import { Text } from '@/components/Text';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ProfileAvatar } from '@/components/ProfileAvatar';
 
-const PEEK = 20;
+// 시안: 칸 메모는 300자까지
+const MEMO_MAX_LENGTH = 300;
+const PEEK = 13;
 const CARD_MARGIN = 4;
-const CARD_HEIGHT = 460;
+const CARD_HEIGHT = 436;
 
 type CellUpdate = Partial<Pick<BingoCellDetail, 'completed' | 'completedAt' | 'memo'>>;
 
@@ -56,22 +58,24 @@ function MemoFooter({ length, saveState }: { length: number; saveState?: MemoSav
     <View className="flex-row items-center justify-end gap-2 mt-2">
       {saveState === 'saved' && (
         <View className="flex-row items-center gap-0.5">
-          <Text className="text-caption-md" style={{ color: '#48BE30' /* green-600 */ }}>
+          <Text className="text-caption-md" style={{ color: '#759E38' /* green-500 */ }}>
             저장됨
           </Text>
-          <DoneIcon width={12} height={12} color="#48BE30" /* green-600 */ />
+          <DoneIcon width={12} height={12} color="#759E38" /* green-500 */ />
         </View>
       )}
       {saveState === 'error' && (
-        <Text className="text-caption-md" style={{ color: '#E02828' /* red-500 */ }}>
+        <Text className="text-caption-md" style={{ color: '#CD5353' /* danger */ }}>
           저장 실패
         </Text>
       )}
       <Text
         className="text-caption-md"
-        style={{ color: length >= 500 ? '#4C5252' : '#929898' /* gray-700 : gray-500 */ }}
+        style={{
+          color: length >= MEMO_MAX_LENGTH ? '#4C5252' : '#929898' /* gray-700 : gray-500 */,
+        }}
       >
-        {length}/500
+        {length}/{MEMO_MAX_LENGTH}
       </Text>
     </View>
   );
@@ -177,7 +181,7 @@ export function BingoCellModal({
     >
       {/* Backdrop — 뒤의 빙고판을 흐리게 깔아둔다 */}
       <BlurView
-        intensity={30}
+        intensity={20}
         tint="dark"
         style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
       />
@@ -188,7 +192,7 @@ export function BingoCellModal({
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundColor: 'rgba(115,115,115,0.4)' /* gray-600/40 */,
+          backgroundColor: 'rgba(88,88,88,0.7)' /* 시안 #585858 70% */,
         }}
         onPress={onClose}
       />
@@ -230,16 +234,22 @@ export function BingoCellModal({
                 width: CARD_WIDTH,
                 height: CARD_HEIGHT,
                 marginHorizontal: CARD_MARGIN,
-                backgroundColor: '#FDFDFD' /* white */,
-                borderRadius: 30,
-                padding: 24,
+                backgroundColor: '#FAFAFA' /* surface */,
+                borderRadius: 24,
+                padding: 16,
                 overflow: 'hidden',
+                // 시안 드롭섀도: 0/0 blur 12, 검정 25%
+                shadowColor: '#000000',
+                shadowOpacity: 0.25,
+                shadowRadius: 12,
+                shadowOffset: { width: 0, height: 0 },
+                elevation: 6,
               }}
             >
               {/* Title + check button */}
               <View className="flex-row items-start mb-5 ">
                 <Text
-                  className="flex-1 text-title-lg mr-3 py-2.5 font-pretendard-semibold"
+                  className="mr-3 flex-1 py-2.5 text-title-sm font-pretendard-semibold"
                   style={{ color: '#181C1C' /* gray-900 */ }}
                   numberOfLines={2}
                   ellipsizeMode="tail"
@@ -255,7 +265,7 @@ export function BingoCellModal({
                   >
                     {item.completed ? (
                       // ic_done은 원 안에서 체크가 파인 모양이라 그대로 두면 채워진 녹색 원이 된다
-                      <DoneIcon width={32} height={32} color="#6ADE50" /* green-500 */ />
+                      <DoneIcon width={28} height={28} color="#94BD52" /* green-400 */ />
                     ) : (
                       // 빈 테두리 원은 에셋이 없어 View로 만든다
                       <View
@@ -289,58 +299,30 @@ export function BingoCellModal({
                   체크하면 현재 시각이 자동으로 찍히고, 그 뒤 날짜를 고쳐 잡으면 된다. */}
               {item.completed && (
                 <>
-                  <Text
-                    className="text-label-md mb-2 font-pretendard-medium"
-                    style={{ color: '#181C1C' /* gray-900 */ }}
-                  >
-                    완료일
-                  </Text>
-                  {readOnly ? (
-                    <View className="flex-row items-center gap-1 bg-gray-100 rounded-full h-10 px-4 mb-5 self-start">
-                      <CalendarIcon width={16} height={16} color="#4C5252" /* gray-700 */ />
-                      <Text className="text-body-sm" style={{ color: '#181C1C' /* gray-900 */ }}>
-                        {formatDate(item.completedAt)}
-                      </Text>
-                    </View>
-                  ) : (
-                    <Pressable
-                      onPress={() => !lockedByOther(item) && handleOpenDatePicker(item)}
-                      className="flex-row items-center gap-1 bg-gray-100 rounded-full h-10 px-4 mb-5 self-start"
-                      style={{ opacity: lockedByOther(item) ? 0.4 : 1 }}
-                    >
-                      <CalendarIcon width={16} height={16} color="#4C5252" /* gray-700 */ />
-                      <Text
-                        className="text-body-sm"
-                        style={{
-                          color: item.completedAt ? '#181C1C' : '#929898' /* gray-900 : gray-500 */,
-                        }}
-                      >
-                        {formatDate(item.completedAt) || '날짜 선택'}
-                      </Text>
-                    </Pressable>
-                  )}
+                  <Text className="mb-2 text-body-md text-gray-900">완료일</Text>
+                  <DateInput
+                    value={formatDate(item.completedAt) || '날짜 선택'}
+                    onPress={() => handleOpenDatePicker(item)}
+                    disabled={readOnly || lockedByOther(item)}
+                    className="mb-5 self-start"
+                  />
                 </>
               )}
 
               {/* 메모 */}
-              <Text
-                className="text-label-md mb-2 font-pretendard-medium"
-                style={{ color: '#181C1C' /* gray-900 */ }}
-              >
-                메모
-              </Text>
+              <Text className="mb-2 text-body-md text-gray-900">메모</Text>
               {/* 여기서는 미리보기만 한다. 실제 입력은 아래 메모 편집 오버레이에서. */}
               <Pressable onPress={() => setEditingMemoCellId(item.id)}>
                 <RNTextInput
                   value={item.memo}
                   placeholder="메모를 입력해주세요."
-                  placeholderTextColor="#B4BBBB" /* gray-400 */
+                  placeholderTextColor="#929898" /* gray-500 */
                   multiline
                   scrollEnabled={false}
                   editable={false}
                   pointerEvents="none"
                   textAlignVertical="top"
-                  className="h-[170px] bg-gray-100 rounded-2xl p-4 text-body-md"
+                  className="h-[190px] rounded-2xl bg-gray-200 p-3 text-body-md"
                   style={{ color: '#181C1C' /* gray-900 */ }}
                 />
                 <MemoFooter length={item.memo?.length ?? 0} saveState={memoSaveState[item.id]} />
@@ -361,7 +343,7 @@ export function BingoCellModal({
           <Pressable
             onPress={onClose}
             hitSlop={8}
-            className="w-12 h-12 rounded-full bg-white   items-center justify-center"
+            className="h-11 w-11 items-center justify-center rounded-full bg-white"
           >
             <CloseIcon width={24} height={24} color="#181C1C" /* gray-900 */ />
           </Pressable>
@@ -384,7 +366,7 @@ export function BingoCellModal({
                 width: CARD_WIDTH,
                 marginTop: insets.top + 16,
                 backgroundColor: '#FDFDFD' /* white */,
-                borderRadius: 30,
+                borderRadius: 24,
                 padding: 24,
               }}
             >
@@ -396,7 +378,7 @@ export function BingoCellModal({
                   메모
                 </Text>
                 <Pressable onPress={closeMemoEditor} hitSlop={8}>
-                  <Text className="text-title-sm" style={{ color: '#6ADE50' /* green-500 */ }}>
+                  <Text className="text-title-sm" style={{ color: '#759E38' /* green-500 */ }}>
                     완료
                   </Text>
                 </Pressable>
@@ -412,12 +394,12 @@ export function BingoCellModal({
                   value={editingMemoCell.memo}
                   onChangeText={(v) => onUpdate(editingMemoCell.id, { memo: v })}
                   placeholder="메모를 입력해주세요."
-                  placeholderTextColor="#B4BBBB" /* gray-400 */
+                  placeholderTextColor="#929898" /* gray-500 */
                   multiline
                   scrollEnabled
                   textAlignVertical="top"
-                  maxLength={500}
-                  className="h-[190px] bg-gray-100 rounded-2xl p-4 text-body-md"
+                  maxLength={MEMO_MAX_LENGTH}
+                  className="h-[298px] rounded-2xl bg-gray-200 p-3 text-body-md"
                 />
                 <MemoFooter
                   length={editingMemoCell.memo?.length ?? 0}
@@ -436,13 +418,13 @@ export function BingoCellModal({
           {/* 하단 여백은 인라인 스타일로 준다. `pb-[${'{'}...{'}'}px]` 같은 동적 클래스는
               NativeWind가 빌드 타임에 생성하지 못해 패딩이 조용히 사라진다. */}
           <View
-            className="absolute bottom-0 left-0 right-0 bg-white   rounded-t-[16px] px-5 pt-4 z-11"
+            className="absolute bottom-0 left-0 right-0 bg-white   rounded-t-[16px] px-4 pt-4 z-11"
             style={{ paddingBottom: insets.bottom + 16 }}
           >
             <View className="flex-row justify-between items-center mb-2">
               <Text className="text-title-sm">완료일 선택</Text>
               <Pressable onPress={handleDateConfirm}>
-                <Text className="text-title-sm" style={{ color: '#6ADE50' /* green-500 */ }}>
+                <Text className="text-title-sm" style={{ color: '#759E38' /* green-500 */ }}>
                   확인
                 </Text>
               </Pressable>

@@ -11,9 +11,10 @@ interface Props extends TextInputProps {
   rounded?: number;
 }
 
+// 시안 Input: 높이 48, radius 12, gray-200 배경, 좌우 여백 16, body-md / gray-800.
 const variantStyles: Record<Variant, string> = {
-  default: 'bg-gray-100  ',
-  community: 'bg-sky-100  ',
+  default: 'bg-gray-200',
+  community: 'bg-green-50',
 };
 
 export const TextInput = forwardRef<RNTextInput, Props>(function TextInput(
@@ -21,15 +22,13 @@ export const TextInput = forwardRef<RNTextInput, Props>(function TextInput(
   ref,
 ) {
   const isMultiline = rest.multiline || maxHeight !== undefined;
-  const borderRadiusClass =
-    rounded === undefined ? (isMultiline ? 'rounded-2xl' : 'rounded-full') : '';
 
   return (
     <View
       className={`
-        ${borderRadiusClass} px-4
+        ${rounded === undefined ? 'rounded-xl' : ''} px-4
         flex-row
-        ${isMultiline ? 'py-3 items-start' : 'h-11 items-center'}
+        ${isMultiline ? 'py-3 items-start' : 'h-12 items-center'}
         ${variantStyles[variant]}
         ${className}
       `}
@@ -41,8 +40,8 @@ export const TextInput = forwardRef<RNTextInput, Props>(function TextInput(
       {leftIcon && <View className="mr-2">{leftIcon}</View>}
       <RNTextInput
         ref={ref}
-        placeholderTextColor="#929898"
-        className="flex-1 text-body-sm text-gray-900  "
+        placeholderTextColor="#929898" /* gray-500 */
+        className="flex-1 text-body-md text-gray-800"
         style={style}
         multiline={isMultiline}
         scrollEnabled={maxHeight !== undefined}

@@ -81,13 +81,26 @@ async function loadDraftBingo(): Promise<BingoData | null> {
 }
 
 /** 빈 화면과 추가 카드 양쪽에서 쓰는 만들기 버튼 한 쌍 */
-function CreateBingoButtons({ onCreate }: { onCreate: (pathname: string) => void }) {
+function CreateBingoButtons({
+  onCreate,
+  teamLabel,
+}: {
+  onCreate: (pathname: string) => void;
+  /** 빈 화면은 '지인과', 추가 카드는 '친구와' — 시안 문구가 다르다. */
+  teamLabel: string;
+}) {
   return (
-    <View className="w-full gap-3">
-      <Button label="혼자 할래요" onClick={() => onCreate('/bingo/add')} className="w-full" />
+    <View className="w-full max-w-[282px] gap-4 self-center">
       <Button
-        label="지인과 할래요"
+        label="혼자 할래요"
+        size="md"
+        onClick={() => onCreate('/bingo/add')}
+        className="w-full"
+      />
+      <Button
+        label={teamLabel}
         variant="secondary"
+        size="md"
         onClick={() => onCreate('/bingo/team-mode')}
         className="w-full"
       />
@@ -375,7 +388,7 @@ export function BingoAll() {
       return;
     }
     // 다른 목표로(own)는 내 빙고를 직접 만들어야 해서 여기서 바로 수락할 수 없다
-    if (item.teamMode === 'own') {
+    if (item.teamMode === 'competition') {
       navigateOnce({ pathname: '/bingo/team-invite', params: { teamId: item.target_id } });
       return;
     }
@@ -447,7 +460,7 @@ export function BingoAll() {
       <View className="flex-1 bg-white  ">
         {strip}
         <View className="flex-1 items-center justify-center">
-          <Loading color="#6ADE50" />
+          <Loading />
         </View>
       </View>
     );
@@ -459,7 +472,7 @@ export function BingoAll() {
       <ScrollView
         className="flex-1"
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#6ADE50" />
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#759E38" />
         }
       >
         {bingos.map((bingo) => (
@@ -488,31 +501,29 @@ export function BingoAll() {
         ))}
         {/* 빙고가 하나도 없을 때: 화면 가운데 안내 + 만들기 버튼 */}
         {bingos.length === 0 && (
-          <View className="items-center px-5 mt-40">
-            <Text className="text-body-md" style={{ color: '#4C5252' /* gray-700 */ }}>
-              빙고가 하나도 없어요
+          <View className="mt-40 items-center px-4">
+            <Text className="text-center text-body-md text-gray-900">
+              {'빙고가 하나도 없어요\n첫 빙고를 만들어 볼까요?'}
             </Text>
-            <Text className="text-body-md mb-8" style={{ color: '#4C5252' /* gray-700 */ }}>
-              첫 빙고를 만들어 볼까요?
-            </Text>
-            <CreateBingoButtons onCreate={navigateOnce} />
+            <View className="h-10" />
+            <CreateBingoButtons onCreate={navigateOnce} teamLabel="지인과 할래요" />
           </View>
         )}
 
         {/* 빙고가 있을 때: 목록 아래에 추가 카드, 상한에 닿으면 안내 문구 */}
         {bingos.length > 0 &&
           (myBingoCount < MAX_BINGOS ? (
-            <View className="px-5 mt-6">
-              <View className="items-center bg-white   rounded-[20px] py-6 px-5">
-                <Text className="text-body-md mb-5" style={{ color: '#181C1C' /* gray-900 */ }}>
+            <View className="mt-6 px-4">
+              <View className="items-center rounded-[20px] bg-white px-5 py-6">
+                <Text className="mb-5 text-body-md text-gray-800">
                   빙고 추가하기 ({myBingoCount}/{MAX_BINGOS})
                 </Text>
-                <CreateBingoButtons onCreate={navigateOnce} />
+                <CreateBingoButtons onCreate={navigateOnce} teamLabel="친구와 할래요" />
               </View>
             </View>
           ) : (
-            <View className="items-center px-5 mt-10">
-              <Text className="text-body-md" style={{ color: '#929898' /* gray-500 */ }}>
+            <View className="mt-10 items-center px-4">
+              <Text className="text-body-md text-gray-700">
                 빙고는 한 번에 {MAX_BINGOS}개까지 진행할 수 있어요
               </Text>
             </View>

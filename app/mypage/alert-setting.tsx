@@ -1,11 +1,9 @@
 import * as Sentry from '@sentry/react-native';
+import { PageHeader } from '@/components/PageHeader';
 import { useEffect, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
-import IconButton from '@/components/IconButton';
 import { Toggle } from '@/components/Toggle';
-import BackArrowIcon from '@/assets/icons/ic_arrow_back.svg';
 import { Text } from '@/components/Text';
 import {
   DEFAULT_NOTIFICATION_SETTINGS,
@@ -19,29 +17,27 @@ import { Toast } from '@/components/Toast';
 
 interface ToggleRowProps {
   label: string;
-  description?: string;
   value: boolean;
   onValueChange: (v: boolean) => void;
 }
 
-function ToggleRow({ label, description, value, onValueChange }: ToggleRowProps) {
+function ToggleRow({ label, value, onValueChange }: ToggleRowProps) {
   return (
-    <View className="flex-row items-center justify-between px-5 py-3">
-      <View className="flex-1 mr-4">
-        <Text className="text-body-md">{label}</Text>
-        {description ? (
-          <Text className="text-caption-sm" style={{ color: '#929898' /* gray-500 */ }}>
-            {description}
-          </Text>
-        ) : null}
-      </View>
+    <View className="h-14 flex-row items-center justify-between px-4">
+      <Text className="text-body-md text-gray-800">{label}</Text>
       <Toggle value={value} onValueChange={onValueChange} />
     </View>
   );
 }
 
+/** 시안: 그룹 이름은 작은 회색 캡션이다 */
+function GroupCaption({ label }: { label: string }) {
+  return <Text className="px-4 pb-1 pt-6 text-caption-md text-gray-500">{label}</Text>;
+}
+
+const Divider = () => <View className="h-px bg-gray-300" />;
+
 export default function AlertSettingScreen() {
-  const router = useRouter();
   const insets = useSafeAreaInsets();
   const [settings, setSettings] = useState<NotificationSettings>(DEFAULT_NOTIFICATION_SETTINGS);
   const [loading, setLoading] = useState(true);
@@ -71,97 +67,57 @@ export default function AlertSettingScreen() {
     });
   };
 
-  const allAlert = Object.values(settings).every(Boolean);
-
-  const handleAllAlert = (v: boolean) => {
-    update({
-      bingoDeadline: v,
-      bingoDaily: v,
-      communityPopular: v,
-      communityComment: v,
-      communityLike: v,
-      eventPush: v,
-      teamActivity: v,
-    });
-  };
-
   return (
-    <View className="flex-1 bg-white  " style={{ paddingTop: insets.top }}>
-      {/* Header */}
-      <View className="h-[60px] flex-row items-center px-4 border-b border-gray-300  ">
-        <IconButton
-          variant="ghost"
-          size={32}
-          icon={<BackArrowIcon width={20} height={20} />}
-          onClick={() => router.back()}
-        />
-        <Text className="flex-1 text-center text-title-sm font-pretendard-medium">알림 설정</Text>
-        {loading ? <Loading color="#6ADE50" /> : <View className="w-8" />}
-      </View>
+    <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
+      <PageHeader title="알림 설정" right={loading ? <Loading /> : undefined} />
 
       <ScrollView className="flex-1">
-        <ToggleRow label="전체 알림" value={allAlert} onValueChange={handleAllAlert} />
-
-        <View className="h-px bg-gray-200   mx-5 my-2" />
-
-        {/* 빙고 알림 */}
-        <View className="px-5 pt-3 pb-1">
-          <Text className="text-title-md font-pretendard-medium">빙고 알림</Text>
-        </View>
+        <GroupCaption label="빙고" />
         <ToggleRow
           label="기간 임박 알림"
-          description="빙고 기간이 10일, 5일 남았을 때"
           value={settings.bingoDeadline}
           onValueChange={(v) => update({ bingoDeadline: v })}
         />
+        <ToggleRow
+          label="데일리 알림"
+          value={settings.bingoDaily}
+          onValueChange={(v) => update({ bingoDaily: v })}
+        />
 
-        <View className="h-px bg-gray-200   mx-5 my-2" />
+        <Divider />
 
-        {/* 팀 빙고 알림 */}
-        <View className="px-5 pt-3 pb-1">
-          <Text className="text-title-md font-pretendard-medium">팀 빙고 알림</Text>
-        </View>
+        {/* 팀 빙고는 시안에 없지만 기능이 살아 있어 남긴다 */}
+        <GroupCaption label="팀 빙고" />
         <ToggleRow
           label="팀원 활동 알림"
-          description="팀원이 칸을 채우거나 팀에 합류했을 때"
           value={settings.teamActivity}
           onValueChange={(v) => update({ teamActivity: v })}
         />
 
-        <View className="h-px bg-gray-200   mx-5 my-2" />
+        <Divider />
 
-        {/* 커뮤니티 알림 */}
-        <View className="px-5 pt-3 pb-1">
-          <Text className="text-title-md font-pretendard-medium">커뮤니티 알림</Text>
-        </View>
+        <GroupCaption label="게시판" />
         <ToggleRow
           label="인기글 알림"
-          description="내 게시글이 좋아요 10개를 받았을 때"
           value={settings.communityPopular}
           onValueChange={(v) => update({ communityPopular: v })}
         />
         <ToggleRow
-          label="댓글 및 대댓글 알림"
-          description="내 게시글에 댓글이 달렸을 때"
+          label="댓글 알림"
           value={settings.communityComment}
           onValueChange={(v) => update({ communityComment: v })}
         />
         <ToggleRow
           label="좋아요 알림"
-          description="내 게시글에 좋아요가 달렸을 때"
           value={settings.communityLike}
           onValueChange={(v) => update({ communityLike: v })}
         />
 
-        <View className="h-px bg-gray-200   mx-5 my-2" />
+        <Divider />
 
-        {/* 이벤트 및 혜택 알림 */}
-        <View className="px-5 pt-3 pb-1">
-          <Text className="text-title-md font-pretendard-medium">이벤트 및 혜택 알림</Text>
-        </View>
+        <GroupCaption label="이벤트 및 혜택" />
         <ToggleRow
-          label="앱 푸시"
-          description="새로운 이벤트 및 혜택 소식"
+          label="이벤트 알림"
           value={settings.eventPush}
           onValueChange={(v) => update({ eventPush: v })}
         />

@@ -15,7 +15,7 @@ interface PostListProps {
   isRefreshing: boolean;
 }
 
-const Separator = () => <View className="h-2 bg-gray-100  " />;
+const Separator = () => <View className="h-px bg-gray-300" />;
 
 export function PostList({
   posts,
@@ -61,7 +61,7 @@ export function PostList({
       {/* ✅ 커스텀 상단 로딩 */}
       {isRefreshing && (
         <View className="absolute top-2 left-0 right-0 items-center z-10">
-          <Loading color="#6ADE50" />
+          <Loading />
         </View>
       )}
 
@@ -88,7 +88,7 @@ export function PostList({
         ListFooterComponent={
           isLoading ? (
             <View className="pt-5 items-center">
-              <Loading color="#6ADE50" />
+              <Loading />
             </View>
           ) : null
         }

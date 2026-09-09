@@ -1,7 +1,9 @@
 import * as Sentry from '@sentry/react-native';
 import Button from '@/components/Button';
 import { Modal } from '@/components/Modal';
-import { BingoEditHeader } from '@/features/bingo/bingo-edit/Header';
+import { PageHeader } from '@/components/PageHeader';
+import { SectionLabel } from '@/features/bingo/bingo-edit/SectionLabel';
+import DeleteIcon from '@/assets/icons/ic_delete.svg';
 import { BingoTitle } from '@/features/bingo/bingo-edit/BingoTitle';
 import { AddEachBingo } from '@/features/bingo/bingo-edit/AddEachBingo';
 import { fetchBingoForEdit, updateBingo, deleteBingo } from '@/features/bingo/lib/bingo';
@@ -11,7 +13,7 @@ import { fetchTeamByBoardId, leaveTeam } from '@/features/team/lib/team';
 import { fetchThemes } from '@/features/bingo/lib/theme';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { Image, Pressable, ScrollView, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 import { Text } from '@/components/Text';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Chip } from '@/components/Chip';
@@ -131,15 +133,23 @@ export default function BingoModifyScreen() {
 
   if (loading) {
     return (
-      <View className="flex-1 items-center justify-center bg-white  ">
-        <Loading color="#6ADE50" />
+      <View className="flex-1 items-center justify-center bg-surface">
+        <Loading />
       </View>
     );
   }
 
   return (
-    <View className="flex-1 bg-white  " style={{ paddingTop: insets.top }}>
-      <BingoEditHeader title="빙고 수정하기" onBack={handleBack} />
+    <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
+      <PageHeader
+        title="빙고 수정하기"
+        onBack={handleBack}
+        right={
+          <Pressable onPress={() => setShowDeleteModal(true)} hitSlop={8}>
+            <DeleteIcon width={24} height={24} color="#CD5353" /* danger */ />
+          </Pressable>
+        }
+      />
 
       <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: insets.bottom + 100 }}>
         <BingoTitle
@@ -150,14 +160,14 @@ export default function BingoModifyScreen() {
           }}
         />
 
-        <View className="px-5 py-6">
-          <Text className="text-title-md mb-4 font-pretendard-medium">빙고 수정</Text>
-
-          <Text className="text-title-sm mb-3">테마</Text>
+        <View className="py-6">
+          <View className="px-4">
+            <SectionLabel label="테마 선택" />
+          </View>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ gap: 8, paddingBottom: 20 }}
+            contentContainerStyle={{ gap: 8, paddingHorizontal: 16 }}
           >
             {themes.map((theme) => (
               <Chip
@@ -172,7 +182,11 @@ export default function BingoModifyScreen() {
             ))}
           </ScrollView>
 
-          <Text className="text-title-sm mb-4">빙고 내용 수정하기</Text>
+          {/* 시안: 남은 수정 횟수는 판 위, 좌측 정렬 */}
+          <Text className="px-4 pb-2 pt-6 text-body-sm text-gray-600">
+            빙고 수정 가능 횟수 {totalUsedEdits}/{isUnlimited ? '무제한' : maxEdits}
+          </Text>
+
           <AddEachBingo
             selectedGrid={grid}
             theme={selectedTheme}
@@ -190,30 +204,6 @@ export default function BingoModifyScreen() {
               setCells(newCells);
             }}
           />
-
-          <View className="flex-row justify-end items-center mt-3">
-            <Text className="text-body-sm text-gray-500  ">수정 가능 횟수 </Text>
-            {isUnlimited ? (
-              <Image
-                source={require('@/assets/icons/infinite.png')}
-                style={{ width: 20, height: 20 }}
-                resizeMode="contain"
-              />
-            ) : (
-              <Text className="text-label-sm">
-                {totalUsedEdits}/{maxEdits}
-              </Text>
-            )}
-          </View>
-
-          <Pressable onPress={() => setShowDeleteModal(true)} className="mt-6">
-            <Text
-              className="text-body-md font-pretendard-medium"
-              style={{ color: '#E02828' /* red */ }}
-            >
-              빙고 삭제하기
-            </Text>
-          </Pressable>
         </View>
 
         <VisibilitySelector value={visibility} onChange={setVisibility} />
@@ -255,11 +245,16 @@ export default function BingoModifyScreen() {
       />
 
       <View
-        className="absolute bottom-0 left-0 right-0 flex-row gap-3 px-5 bg-white   pt-3 border-t border-gray-100  "
+        className="absolute bottom-0 left-0 right-0 bg-surface px-4 pt-3"
         style={{ paddingBottom: insets.bottom + 8 }}
       >
-        <Button label="취소하기" variant="secondary" onClick={handleBack} className="flex-1" />
-        <Button label="저장하기" variant="primary" onClick={handleSave} className="flex-1" />
+        <Button
+          label="저장하기"
+          variant="primary"
+          size="md"
+          onClick={handleSave}
+          className="w-full"
+        />
       </View>
     </View>
   );

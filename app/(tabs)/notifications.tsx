@@ -12,6 +12,11 @@ import {
   type Notification,
 } from '@/features/notifications/lib/notifications';
 import { navigateToNotification } from '@/features/notifications/lib/notification-route';
+import {
+  formatNotificationTime,
+  hasNotificationBody,
+  notificationTitle,
+} from '@/features/notifications/lib/notification-display';
 import { useUnreadNotifications } from '@/features/notifications/unread-context';
 import { supabase } from '@/lib/supabase';
 import Loading from '@/components/Loading';
@@ -50,15 +55,15 @@ function NotificationItem({ item, onRead, onAction, onFriendResponse }: Notifica
 
   return (
     <Pressable
-      className={`border-t border-gray-300   px-4 py-4 justify-center ${
-        item.is_read ? 'bg-gray-100  ' : 'bg-sky-100  '
+      className={`justify-center border-b border-gray-300 p-4 ${
+        item.is_read ? '' : 'bg-green-100'
       }`}
       onPress={handlePress}
     >
       {/* 친구/배틀 요청: sender 프로필 */}
       {(isFriendRequest || isTeamInvite) && item.senderProfile && (
         <View className="flex-row items-center gap-3 mb-3">
-          <ProfileAvatar avatarUrl={item.senderProfile.avatarUrl} size={40} />
+          <ProfileAvatar avatarUrl={item.senderProfile.avatarUrl} size={32} />
           <View>
             <Text className="text-label-sm">{item.senderProfile.displayName}</Text>
             <Text className="text-caption-sm text-gray-500  ">@{item.senderProfile.username}</Text>
@@ -66,52 +71,69 @@ function NotificationItem({ item, onRead, onAction, onFriendResponse }: Notifica
         </View>
       )}
 
-      <Text className="text-body-md mb-3">{item.message}</Text>
+      <View className="flex-row items-center justify-between">
+        <Text className="flex-1 text-title-sm font-pretendard-semibold text-gray-800">
+          {notificationTitle(item.type)}
+        </Text>
+        <Text className="ml-2 text-caption-md text-gray-600">
+          {formatNotificationTime(item.created_at)}
+        </Text>
+      </View>
+
+      {hasNotificationBody(item.type, item.message) && (
+        <Text className="mt-3 text-body-md text-gray-800" numberOfLines={2}>
+          {item.message}
+        </Text>
+      )}
 
       {/* 친구 요청: 수락/거절 버튼 */}
       {isFriendRequest && item.target_id ? (
-        <View className="flex-row gap-3">
-          <View className="flex-1">
-            <Button
-              label="수락하기"
-              onClick={() => handleFriendResponse(true)}
-              disabled={responding}
-              loading={responding}
-            />
-          </View>
-          <View className="flex-1">
-            <Button
-              label="거절하기"
-              variant="secondary"
-              onClick={() => handleFriendResponse(false)}
-              disabled={responding}
-            />
-          </View>
+        <View className="mt-3 flex-row justify-end gap-2">
+          <Button
+            label="거절하기"
+            variant="ghost"
+            size="sm"
+            onClick={() => handleFriendResponse(false)}
+            disabled={responding}
+          />
+          <Button
+            label="수락하기"
+            size="sm"
+            onClick={() => handleFriendResponse(true)}
+            disabled={responding}
+            loading={responding}
+          />
         </View>
       ) : null}
 
       {/* 팀 초대: 초대장 확인 */}
       {isTeamInvite && item.target_id ? (
-        <Button
-          label="초대 확인하기"
-          variant="secondary"
-          onClick={async () => {
-            await onRead();
-            onAction(item.type, item.target_id);
-          }}
-        />
+        <View className="mt-3 flex-row justify-end">
+          <Button
+            label="초대 확인하기"
+            variant="secondary"
+            size="sm"
+            onClick={async () => {
+              await onRead();
+              onAction(item.type, item.target_id);
+            }}
+          />
+        </View>
       ) : null}
 
       {/* 팀 소식: 현황 보기 */}
       {isTeamUpdate && item.target_id ? (
-        <Button
-          label="팀 현황 보기"
-          variant="secondary"
-          onClick={async () => {
-            await onRead();
-            onAction(item.type, item.target_id);
-          }}
-        />
+        <View className="mt-3 flex-row justify-end">
+          <Button
+            label="팀 현황 보기"
+            variant="secondary"
+            size="sm"
+            onClick={async () => {
+              await onRead();
+              onAction(item.type, item.target_id);
+            }}
+          />
+        </View>
       ) : null}
     </Pressable>
   );
@@ -164,19 +186,18 @@ export default function NotificationsScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 bg-white   items-center justify-center" edges={['top']}>
-        <Loading color="#6ADE50" />
+      <SafeAreaView className="flex-1 items-center justify-center bg-surface" edges={['top']}>
+        <Loading />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white  " edges={['top']}>
-      {/* Header */}
-      <View className="h-[60px] flex-row items-center justify-between px-4 border-b border-gray-300  ">
-        <Text className="text-title-md font-pretendard-semibold">알림</Text>
-        <Pressable onPress={markAllRead} className="items-end">
-          <Text className="text-body-md">모두 읽음 처리</Text>
+    <SafeAreaView className="flex-1 bg-surface" edges={['top']}>
+      {/* 시안에는 화면 제목이 없다 — '모두 읽음 처리'만 우측에 둔다 */}
+      <View className="h-[60px] flex-row items-center justify-end px-4">
+        <Pressable onPress={markAllRead} hitSlop={8}>
+          <Text className="text-body-md text-gray-800">모두 읽음 처리</Text>
         </Pressable>
       </View>
 

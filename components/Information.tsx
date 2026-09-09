@@ -12,7 +12,7 @@ export function Information({ content }: InformationProps) {
   const [visible, setVisible] = useState(false);
   const [anchor, setAnchor] = useState({ x: 0, y: 0, width: 0, height: 0 });
   const iconRef = useRef<View>(null);
-  const iconColor = '#1F2937'; /* gray-800 */
+  const iconColor = '#2E3333'; /* gray-800 */
 
   const handlePress = () => {
     iconRef.current?.measureInWindow((x, y, width, height) => {

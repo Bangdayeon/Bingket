@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Text } from '@/components/Text';
-import { TextInput } from '@/components/TextInput';
-import IconButton from '@/components/IconButton';
-import BackArrowIcon from '@/assets/icons/ic_arrow_back.svg';
-import SearchIcon from '@/assets/icons/ic_search.svg';
+import { ProfileAvatar } from '@/components/ProfileAvatar';
+import CloseIcon from '@/assets/icons/ic_close.svg';
+import { friendSelection, useFriendSelection } from '@/features/team/lib/friend-selection';
+import { TEAM_MAX_MEMBERS } from '@/types/team';
+import { SearchInput } from '@/components/SearchInput';
+import { PageHeader } from '@/components/PageHeader';
 import { deleteFriend, fetchFriends } from '@/features/friend/lib/friend';
 import type { Friend } from '@/types/friend';
 import {
@@ -21,6 +23,7 @@ import { DeleteFriendModal } from '@/features/friend/components/DeleteFriendModa
 import { ErrorModal } from '@/features/friend/components/ErrorModal';
 import { FriendList } from '@/features/friend/components/FriendList';
 import { ReceivedList } from '@/features/friend/components/ReceivedList';
+import { CollapsibleSection } from '@/features/friend/components/CollapsibleSection';
 import { SearchList } from '@/features/friend/components/SearchList';
 import type {
   ConflictModal as ConflictModalType,
@@ -32,17 +35,21 @@ import Loading from '@/components/Loading';
 
 export default function FriendListScreen() {
   const router = useRouter();
-  const { mode } = useLocalSearchParams<{ mode?: string }>();
+  const { mode, max } = useLocalSearchParams<{ mode?: string; max?: string }>();
   const insets = useSafeAreaInsets();
   const isSelectMode = mode === 'select';
+  const maxSelect = Number(max) || TEAM_MAX_MEMBERS - 1;
+  const picked = useFriendSelection();
 
   const [friendSearch, setFriendSearch] = useState('');
 
-  const [globalSearchMode, setGlobalSearchMode] = useState(false);
-  const [globalSearch, setGlobalSearch] = useState('');
   const [searchResults, setSearchResults] = useState<UserSearchResult[] | null>(null);
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
+
+  // 두 목록은 항상 함께 보인다. 제목 옆 `>` 로 각각 접었다 편다.
+  const [friendsExpanded, setFriendsExpanded] = useState(true);
+  const [othersExpanded, setOthersExpanded] = useState(true);
 
   const [friends, setFriends] = useState<Friend[]>([]);
   const [pendingRequests, setPendingRequests] = useState<IncomingRequest[]>([]);
@@ -191,106 +198,145 @@ export default function FriendListScreen() {
       )
     : friends;
 
-  const closeGlobalSearch = () => {
-    setGlobalSearchMode(false);
-    setGlobalSearch('');
+  const pickedFriends = picked
+    .map((id) => friends.find((f) => f.friendId === id))
+    .filter((f): f is Friend => Boolean(f));
+
+  const clearSearch = () => {
+    setFriendSearch('');
     setSearchResults(null);
     setSearchError(null);
   };
 
+  // 입력이 멎으면 전체 사용자에서도 찾아 아래 '전체 유저'에 붙인다.
+  useEffect(() => {
+    const keyword = friendSearch.trim();
+    if (keyword.length < 2) {
+      setSearchResults(null);
+      setSearchError(null);
+      return;
+    }
+    const timer = setTimeout(() => void runSearch(keyword), 400);
+    return () => clearTimeout(timer);
+  }, [friendSearch, runSearch]);
+
   return (
-    <View className="flex-1 bg-white  " style={{ paddingTop: insets.top }}>
-      {/* Header */}
-      <View className="h-[60px] flex-row items-center px-4 border-b border-gray-300  ">
-        <IconButton
-          variant="ghost"
-          size={32}
-          icon={<BackArrowIcon width={20} height={20} />}
-          onClick={globalSearchMode ? closeGlobalSearch : () => router.back()}
-        />
-        <Text className="flex-1 text-center text-title-sm">
-          {isSelectMode ? '친구 선택' : '친구'}
-        </Text>
-        <IconButton
-          variant="ghost"
-          size={32}
-          icon={<SearchIcon width={20} height={20} />}
-          onClick={() => setGlobalSearchMode(true)}
-        />
-      </View>
-
-      <View className="px-4 py-2">
-        {globalSearchMode ? (
-          <TextInput
-            value={globalSearch}
-            onChangeText={(text) => {
-              setGlobalSearch(text);
-              if (!text) {
-                setSearchResults(null);
-                setSearchError(null);
-              }
-            }}
-            onSubmitEditing={() => runSearch(globalSearch)}
-            returnKeyType="search"
-            placeholder="친구 요청을 보낼 유저의 id/이름을 입력해주세요."
-            autoCapitalize="none"
-            autoFocus
-            leftIcon={<SearchIcon width={16} height={16} />}
-          />
-        ) : (
-          <TextInput
-            value={friendSearch}
-            onChangeText={setFriendSearch}
-            placeholder="친구 목록에서 검색해보세요."
-            autoCapitalize="none"
-            leftIcon={<SearchIcon width={16} height={16} />}
-          />
-        )}
-      </View>
-
-      {globalSearchMode ? (
-        <SearchList
-          searchLoading={searchLoading}
-          searchError={searchError}
-          searchResults={searchResults}
-          sending={sending}
-          handleRequest={handleRequest}
-          insets={insets}
-        />
-      ) : (
-        <>
-          <View className="flex flex-row mx-4 mb-2 px-4 py-5 bg-yellow-100 rounded-xl items-center justify-between gap-2">
-            <Text className="text-body-sm text-gray-800">
-              {'아직 앱을 사용하지 않는 친구가 있나요?\n친구를 초대해서 함께해요.'}
+    <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
+      <PageHeader
+        title={isSelectMode ? '친구 선택' : '친구'}
+        titleRight={
+          isSelectMode ? (
+            <Text className="text-body-md text-gray-600">
+              {picked.length}/{maxSelect}
             </Text>
-            <Button
-              label="친구 초대하기"
-              onClick={handleInvite}
-              size="sm"
-              className="px-3 bg-amber-300"
-            />
-          </View>
-
-          {listLoading ? (
-            <View className="flex-1 items-center justify-center">
-              <Loading color="#6ADE50" />
-            </View>
           ) : (
-            <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 16 }}>
-              <ReceivedList
-                pendingRequests={pendingRequests}
-                handleIncomingResponse={handleIncomingResponse}
+            <Text className="text-body-md text-gray-600">{friends.length}</Text>
+          )
+        }
+        right={
+          isSelectMode ? (
+            <Pressable onPress={() => router.back()} hitSlop={8}>
+              <Text className="text-body-md font-pretendard-medium text-green-600">완료</Text>
+            </Pressable>
+          ) : undefined
+        }
+      />
+
+      {/* 고르기로 들어왔을 때만: 검색창 위에 고른 사람을 띄운다 */}
+      {isSelectMode && pickedFriends.length > 0 && (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ gap: 12, paddingHorizontal: 16, paddingBottom: 16 }}
+        >
+          {pickedFriends.map((friend) => (
+            <View key={friend.friendId} className="w-16 items-center gap-1">
+              <View>
+                <ProfileAvatar avatarUrl={friend.avatarUrl} size={48} />
+                <Pressable
+                  onPress={() => friendSelection.toggle(friend.friendId, maxSelect)}
+                  hitSlop={8}
+                  className="absolute -right-1 -top-1 rounded-full bg-gray-300"
+                >
+                  <CloseIcon width={18} height={18} color="#2E3333" /* gray-800 */ />
+                </Pressable>
+              </View>
+              <Text className="text-caption-sm text-gray-700" numberOfLines={1}>
+                {friend.displayName}
+              </Text>
+            </View>
+          ))}
+        </ScrollView>
+      )}
+
+      {/* 검색창 하나가 위 '친구'를 거르고, 동시에 아래 '전체 유저'를 채운다. */}
+      <View className="px-4 pb-4">
+        <SearchInput
+          value={friendSearch}
+          onChangeText={setFriendSearch}
+          onSubmitEditing={() => void runSearch(friendSearch)}
+          returnKeyType="search"
+          placeholder="검색어"
+          autoCapitalize="none"
+          onClear={clearSearch}
+        />
+      </View>
+
+      <View className="mx-4 mb-2 h-16 flex-row items-center justify-between gap-2 rounded-2xl bg-green-100 px-4">
+        <Text className="text-body-sm text-gray-800">
+          {'아직 앱을 사용하지 않는 친구가 있나요?\n친구를 초대해서 함께해요.'}
+        </Text>
+        <Button label="초대하기" onClick={handleInvite} size="sm" />
+      </View>
+
+      {listLoading ? (
+        <View className="flex-1 items-center justify-center">
+          <Loading />
+        </View>
+      ) : (
+        <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 16 }}>
+          <ReceivedList
+            pendingRequests={pendingRequests}
+            handleIncomingResponse={handleIncomingResponse}
+          />
+
+          <CollapsibleSection
+            title="친구"
+            count={filteredFriends.length}
+            expanded={friendsExpanded}
+            onToggle={() => setFriendsExpanded((v) => !v)}
+          >
+            <FriendList
+              friends={filteredFriends}
+              searching={friendSearch.trim().length > 0}
+              handleDeleteFriend={handleDeleteFriend}
+              selectable={isSelectMode}
+              selectedIds={picked}
+              handleProfilePress={(friend) =>
+                isSelectMode
+                  ? friendSelection.toggle(friend.friendId, maxSelect)
+                  : router.push({ pathname: '/profile/[id]', params: { id: friend.friendId } })
+              }
+            />
+          </CollapsibleSection>
+
+          {/* 검색 중일 때만 의미가 있어서, 검색어가 있을 때만 그린다. */}
+          {friendSearch.trim().length >= 2 && (
+            <CollapsibleSection
+              title="전체 유저"
+              expanded={othersExpanded}
+              onToggle={() => setOthersExpanded((v) => !v)}
+            >
+              <SearchList
+                searchLoading={searchLoading}
+                searchError={searchError}
+                searchResults={searchResults}
+                sending={sending}
+                handleRequest={handleRequest}
               />
-              <FriendList
-                friends={filteredFriends}
-                handleDeleteFriend={handleDeleteFriend}
-                handleProfilePress={(friend) =>
-                  router.push({ pathname: '/profile/[id]', params: { id: friend.friendId } })
-                }
-              />
-            </ScrollView>
+            </CollapsibleSection>
           )}
-        </>
+        </ScrollView>
       )}
 
       <ConflictModal

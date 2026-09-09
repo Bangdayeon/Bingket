@@ -1,8 +1,7 @@
-import IconButton from '@/components/IconButton';
-import BackArrowIcon from '@/assets/icons/ic_arrow_back.svg';
+import { PageHeader } from '@/components/PageHeader';
+import CheckIcon from '@/assets/icons/ic_check.svg';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 // import { setAppIcon, getAppIcon } from 'expo-dynamic-app-icon';
-import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Appearance, Pressable, ScrollView, View } from 'react-native';
 import { Text } from '@/components/Text';
@@ -49,7 +48,6 @@ function applyTheme(theme: AppTheme) {
 }
 
 export default function AppThemeScreen() {
-  const router = useRouter();
   const insets = useSafeAreaInsets();
   const [appTheme, setAppTheme] = useState<AppTheme>('system');
 
@@ -81,37 +79,26 @@ export default function AppThemeScreen() {
   // };
 
   return (
-    <View className="flex-1 bg-white  " style={{ paddingTop: insets.top }}>
-      {/* Header */}
-      <View className="h-[60px] flex-row items-center px-4 border-b border-gray-300  ">
-        <IconButton
-          variant="ghost"
-          size={32}
-          icon={<BackArrowIcon width={20} height={20} />}
-          onClick={() => router.back()}
-        />
-        <Text className="flex-1 text-center text-title-sm">앱 테마</Text>
-        <View style={{ width: 32 }} />
-      </View>
+    <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
+      <PageHeader title="앱 테마" />
 
       <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}>
         {/* 앱 테마 */}
-        <View className="px-5 pt-6 pb-4">
-          <Text className="text-title-md mb-4">앱 테마</Text>
+        <View className="px-4 pt-6 pb-4">
           {APP_THEMES.map(({ value, label, leftBg, rightBg }) => (
             <Pressable
               key={value}
               onPress={() => handleThemeChange(value)}
-              className="flex-row items-center gap-3 py-2"
+              className="h-[52px] flex-row items-center gap-3"
             >
               <View
                 style={{
-                  width: 30,
-                  height: 30,
+                  width: 44,
+                  height: 44,
                   borderRadius: 999,
                   overflow: 'hidden',
                   borderWidth: 1,
-                  borderColor: '#B4BBBB' /* gray-400 */,
+                  borderColor: '#D2D6D6' /* gray-300 */,
                   flexDirection: 'row',
                 }}
               >
@@ -120,8 +107,8 @@ export default function AppThemeScreen() {
               </View>
               <Text className="flex-1 text-body-md">{label}</Text>
               {appTheme === value && (
-                <View className="w-5 h-5 rounded-full bg-green-500 items-center justify-center">
-                  <View className="w-2 h-2 rounded-full bg-white" />
+                <View className="h-6 w-6 items-center justify-center rounded-full bg-green-400">
+                  <CheckIcon width={16} height={16} color="#FDFDFD" /* white */ />
                 </View>
               )}
             </Pressable>

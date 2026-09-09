@@ -1,12 +1,11 @@
 import { useCallback, useState } from 'react';
+import { PageHeader } from '@/components/PageHeader';
 import { ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
+import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import * as Sentry from '@sentry/react-native';
 import { Text } from '@/components/Text';
-import IconButton from '@/components/IconButton';
 import Loading from '@/components/Loading';
-import BackArrowIcon from '@/assets/icons/ic_arrow_back.svg';
 import { BingoThumbnail } from '@/features/profile/components/BingoThumbnail';
 import { fetchBoardDetail, type BoardDetail } from '@/features/profile/lib/profile';
 import { useResponsive } from '@/lib/use-responsive';
@@ -16,7 +15,6 @@ import { useResponsive } from '@/lib/use-responsive';
  * 메모와 회고는 RPC 응답에 아예 포함되지 않는다 — 빙고판과 체크 여부만 보여준다.
  */
 export default function FriendBingoViewScreen() {
-  const router = useRouter();
   const insets = useSafeAreaInsets();
   const { contentWidth } = useResponsive();
   const { boardId } = useLocalSearchParams<{ boardId: string }>();
@@ -44,23 +42,12 @@ export default function FriendBingoViewScreen() {
   );
 
   return (
-    <View className="flex-1 bg-white" style={{ paddingTop: insets.top }}>
-      <View className="h-[60px] flex-row items-center px-4 border-b border-gray-300">
-        <IconButton
-          variant="ghost"
-          size={32}
-          icon={<BackArrowIcon width={20} height={20} />}
-          onClick={() => router.back()}
-        />
-        <Text className="flex-1 text-center text-title-sm" numberOfLines={1}>
-          {board?.title ?? ''}
-        </Text>
-        <View className="w-8" />
-      </View>
+    <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
+      <PageHeader title={board?.title ?? ''} />
 
       {loading ? (
         <View className="flex-1 items-center justify-center">
-          <Loading color="#6ADE50" />
+          <Loading />
         </View>
       ) : !board ? (
         <View className="flex-1 items-center justify-center px-8">

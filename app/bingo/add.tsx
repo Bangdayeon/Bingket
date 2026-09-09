@@ -1,7 +1,7 @@
 import * as Sentry from '@sentry/react-native';
 import Button from '@/components/Button';
 import { Modal } from '@/components/Modal';
-import { BingoEditHeader } from '@/features/bingo/bingo-edit/Header';
+import { PageHeader } from '@/components/PageHeader';
 import { BingoTitle } from '@/features/bingo/bingo-edit/BingoTitle';
 import { BingoGoal } from '@/features/bingo/bingo-edit/BingoGoal';
 import { WriteBingo } from '@/features/bingo/bingo-edit/WriteBingo';
@@ -168,8 +168,8 @@ export default function BingoAddScreen() {
   };
 
   return (
-    <View className="flex-1 bg-white  " style={{ paddingTop: insets.top }}>
-      <BingoEditHeader title="빙고 추가하기" onBack={handleBack} />
+    <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
+      <PageHeader title="빙고 추가하기" onBack={handleBack} />
 
       <ScrollView
         className="flex-1"
@@ -289,11 +289,23 @@ export default function BingoAddScreen() {
       )}
 
       <View
-        className="absolute bottom-0 left-0 right-0 flex-row gap-3 px-5 bg-white   pt-3 border-t border-gray-100  "
+        className="absolute bottom-0 left-0 right-0 flex-row gap-2 bg-surface px-4 pt-3"
         style={{ paddingBottom: insets.bottom + 8 }}
       >
-        <Button label="임시 저장" variant="secondary" onClick={handleTempSave} className="flex-1" />
-        <Button label="저장하기" variant="primary" onClick={handleSave} className="flex-1" />
+        <Button
+          label="임시 저장"
+          variant="secondary"
+          size="md"
+          onClick={handleTempSave}
+          className="flex-1"
+        />
+        <Button
+          label="저장하기"
+          variant="primary"
+          size="md"
+          onClick={handleSave}
+          className="flex-1"
+        />
       </View>
     </View>
   );

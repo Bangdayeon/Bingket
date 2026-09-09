@@ -1,4 +1,5 @@
 import * as Sentry from '@sentry/react-native';
+import type { BoardVisibility } from '@/features/profile/lib/profile';
 import { supabase } from '@/lib/supabase';
 import {
   calcBingoCount,
@@ -226,6 +227,11 @@ export interface CreateTeamParams {
   friendIds: string[];
   /** 방장이 만들 빙고판 */
   board: { title: string; grid: string; theme: string; editCount: string; cells: string[] };
+  /**
+   * 방장 판의 공개 범위. 경쟁하기(own)에서만 고를 수 있고, 나머지는 friends로 둔다.
+   * 팀원은 서로 친구여야 초대되므로 friends가 기본값이다.
+   */
+  visibility?: BoardVisibility;
 }
 
 export const createTeam = async (params: CreateTeamParams): Promise<{ teamId: string }> => {
@@ -241,8 +247,8 @@ export const createTeam = async (params: CreateTeamParams): Promise<{ teamId: st
     editCount: params.board.editCount,
     theme: params.board.theme,
     cells: params.board.cells,
-    // 팀원은 서로 친구여야 초대되므로 팀 빙고판은 친구공개로 만든다
-    visibility: 'friends',
+    // 팀원은 서로 친구여야 초대되므로 기본은 친구공개다
+    visibility: params.visibility ?? 'friends',
   });
 
   const { data: team, error: teamError } = await supabase
@@ -253,7 +259,7 @@ export const createTeam = async (params: CreateTeamParams): Promise<{ teamId: st
       mode: params.mode,
       start_date: params.startDate.split('T')[0],
       end_date: params.endDate.split('T')[0],
-      bet_text: params.mode === 'own' ? params.betText : null,
+      bet_text: params.mode === 'competition' ? params.betText : null,
       status: isTeamStarted(params.startDate.split('T')[0]) ? 'in_progress' : 'waiting',
     })
     .select('id')
@@ -329,12 +335,12 @@ export const fetchTeamInvite = async (teamId: string): Promise<TeamInviteItem | 
 /**
  * 초대 수락.
  *
- * shared는 방장의 판을 그대로 쓰고, copied/own은 본인 판을 새로 만든다.
+ * shared는 방장의 판을 그대로 쓰고, copied/competition은 본인 판을 새로 만든다.
  * 판 생성이 곧 수락이므로 "판 없는 멤버" 상태는 존재하지 않는다.
  */
 export const acceptTeamInvite = async (params: {
   teamId: string;
-  /** copied/own 전용. 내가 채울 판의 내용 */
+  /** copied/competition 전용. 내가 채울 판의 내용 */
   board?: { title: string; grid: string; theme: string; editCount: string; cells: string[] };
 }): Promise<void> => {
   const userId = await currentUserId();

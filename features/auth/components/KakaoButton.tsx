@@ -71,7 +71,7 @@ export function KakaoButton({ requireAgreement }: KakaoButtonProps) {
     <TouchableOpacity
       onPress={handlePress}
       disabled={loading}
-      className="w-full h-14 rounded-xl bg-kakao items-center justify-center"
+      className="h-12 w-full rounded-2xl bg-kakao items-center justify-center"
     >
       {loading ? (
         <Loading color="#000000" />
@@ -83,7 +83,14 @@ export function KakaoButton({ requireAgreement }: KakaoButtonProps) {
             className="absolute left-4"
             resizeMode="contain"
           />
-          <Text className="text-base font-pretendard-semibold md:text-lg">카카오로 시작하기</Text>
+          <Text
+            className="text-label-sm font-pretendard-semibold md:text-label-md"
+            style={{
+              color: 'rgba(0,0,0,0.85)',
+            }} /* 카카오 가이드가 강제하는 라벨 색 */
+          >
+            카카오로 시작하기
+          </Text>
         </>
       )}
     </TouchableOpacity>

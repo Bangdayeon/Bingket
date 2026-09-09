@@ -1,30 +1,30 @@
 import * as Sentry from '@sentry/react-native';
-import { useRef, useState } from 'react';
+import { friendSelection, useFriendSelection } from '@/features/team/lib/friend-selection';
+import { useEffect, useRef, useState } from 'react';
 import { ScrollView, TextInput, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Button from '@/components/Button';
 import { Modal } from '@/components/Modal';
 import { Text } from '@/components/Text';
-import { BingoEditHeader } from '@/features/bingo/bingo-edit/Header';
+import { PageHeader } from '@/components/PageHeader';
+import { SectionLabel } from '@/features/bingo/bingo-edit/SectionLabel';
+import { VisibilitySelector } from '@/features/bingo/bingo-edit/VisibilitySelector';
+import type { BoardVisibility } from '@/features/profile/lib/profile';
 import { BingoTitle } from '@/features/bingo/bingo-edit/BingoTitle';
 import { BingoGoal } from '@/features/bingo/bingo-edit/BingoGoal';
 import { WriteBingo } from '@/features/bingo/bingo-edit/WriteBingo';
 import { DatePicker } from '@/features/bingo/bingo-edit/DatePicker';
 import { FriendPicker } from '@/features/team/components/FriendPicker';
 import { createTeam } from '@/features/team/lib/team';
-import {
-  TEAM_MAX_MEMBERS,
-  TEAM_MODE_DESCRIPTION,
-  TEAM_MODE_LABEL,
-  type TeamMode,
-} from '@/types/team';
+import { TEAM_MAX_MEMBERS, TEAM_MODE_LABEL, type TeamMode, TEAM_MODE_GUIDE } from '@/types/team';
 
 const MAX_INVITES = TEAM_MAX_MEMBERS - 1;
-const BET_MAX_LENGTH = 100;
+// 시안: 내기 내용은 50자까지
+const BET_MAX_LENGTH = 50;
 
 const isTeamMode = (value: string | undefined): value is TeamMode =>
-  value === 'shared' || value === 'copied' || value === 'own';
+  value === 'shared' || value === 'copied' || value === 'competition';
 
 export default function TeamCreateScreen() {
   const insets = useSafeAreaInsets();
@@ -41,8 +41,16 @@ export default function TeamCreateScreen() {
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [pickerTarget, setPickerTarget] = useState<'start' | 'end' | null>(null);
   const [tempDate, setTempDate] = useState(new Date());
-  const [friendIds, setFriendIds] = useState<string[]>([]);
+  // 친구 고르기는 친구 목록 화면에서 하고, 그 선택을 공용 저장소로 주고받는다.
+  const friendIds = useFriendSelection();
+
+  // 저장소는 화면 밖에 있으므로 새로 들어올 때마다 비운다.
+  useEffect(() => {
+    friendSelection.set([]);
+  }, []);
   const [betText, setBetText] = useState('');
+  // 시안: 공개 범위는 경쟁하기 제작 화면에만 있다. 함께하기는 공유판이라 의미가 없다.
+  const [visibility, setVisibility] = useState<BoardVisibility>('friends');
   const cellsRef = useRef<string[]>([]);
 
   const [alertMessage, setAlertMessage] = useState<string | null>(null);
@@ -111,6 +119,7 @@ export default function TeamCreateScreen() {
         endDate: endDate!.toISOString(),
         betText: betText.trim() || null,
         friendIds,
+        visibility: mode === 'competition' ? visibility : undefined,
         board: {
           title: title.trim(),
           grid: selectedGrid,
@@ -129,8 +138,8 @@ export default function TeamCreateScreen() {
   };
 
   return (
-    <View className="flex-1 bg-white" style={{ paddingTop: insets.top }}>
-      <BingoEditHeader
+    <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
+      <PageHeader
         title={TEAM_MODE_LABEL[mode]}
         onBack={() => (isDirty.current ? setShowLeaveModal(true) : router.back())}
       />
@@ -141,16 +150,9 @@ export default function TeamCreateScreen() {
         keyboardShouldPersistTaps="handled"
         automaticallyAdjustKeyboardInsets={false}
       >
-        <View className="mx-5 mt-4 mb-2 bg-green-100 rounded-2xl px-4 py-3">
-          <Text className="text-body-sm" style={{ color: '#4C5252' /* gray-700 */ }}>
-            {TEAM_MODE_DESCRIPTION[mode]}
-          </Text>
-          <Text className="text-caption-sm mt-1" style={{ color: '#4C5252' /* gray-700 */ }}>
-            {mode === 'shared'
-              ? '칸 내용은 방장인 나만 고칠 수 있어요.'
-              : '친구들도 같은 기간으로 자기 빙고를 채워요.'}
-          </Text>
-        </View>
+        <Text className="px-4 pb-2 pt-4 text-caption-md text-gray-700">
+          {TEAM_MODE_GUIDE[mode]}
+        </Text>
 
         <BingoTitle
           value={title}
@@ -200,34 +202,41 @@ export default function TeamCreateScreen() {
           }}
         />
 
-        {mode === 'own' && (
-          <View className="mx-5 mt-8">
-            <Text className="text-title-md mb-3 font-pretendard-semibold">내기 내용</Text>
+        {mode === 'competition' && (
+          <VisibilitySelector value={visibility} onChange={setVisibility} />
+        )}
+
+        {mode === 'competition' && (
+          <View className="mt-8 px-4">
+            <SectionLabel label="내기 내용" />
             <TextInput
               value={betText}
               onChangeText={(v) => {
                 markDirty();
                 setBetText(v.slice(0, BET_MAX_LENGTH));
               }}
-              placeholder="예) 진 사람이 커피 사기"
-              placeholderTextColor="#B4BBBB" /* gray-400 */
+              placeholder="메모를 입력해주세요."
+              placeholderTextColor="#929898" /* gray-500 */
               multiline
-              className="bg-gray-100 rounded-2xl p-4 text-body-md min-h-[80px]"
+              className="h-20 rounded-2xl bg-gray-200 p-3 text-body-md"
               style={{ textAlignVertical: 'top' }}
             />
-            <Text className="text-caption-sm text-gray-400 mt-1 text-right">
+            <Text className="mt-1 text-right text-caption-sm text-gray-500">
               {betText.length}/{BET_MAX_LENGTH}
             </Text>
           </View>
         )}
 
-        <View className="mx-5 mt-8">
-          <Text className="text-title-md mb-3 font-pretendard-semibold">함께할 친구</Text>
+        <View className="mt-8 px-4">
+          <SectionLabel
+            label={mode === 'competition' ? '경쟁할 친구' : '초대할 친구'}
+            hint={`(${friendIds.length}/${MAX_INVITES})`}
+          />
           <FriendPicker
             selectedIds={friendIds}
             onChange={(ids) => {
               markDirty();
-              setFriendIds(ids);
+              friendSelection.set(ids);
             }}
             maxCount={MAX_INVITES}
           />
@@ -282,14 +291,15 @@ export default function TeamCreateScreen() {
       )}
 
       <View
-        className="absolute bottom-0 left-0 right-0 flex-row gap-3 px-5 bg-white pt-3 border-t border-gray-100"
+        className="absolute bottom-0 left-0 right-0 bg-surface px-4 pt-3"
         style={{ paddingBottom: insets.bottom + 8 }}
       >
         <Button
-          label={saving ? '만드는 중...' : '팀 빙고 만들기'}
+          label={saving ? '만드는 중...' : '함께 빙고 시작하기'}
           variant="primary"
+          size="md"
           onClick={handleSave}
-          className="flex-1"
+          className="w-full"
         />
       </View>
     </View>

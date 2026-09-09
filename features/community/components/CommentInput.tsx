@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
+import CloseIcon from '@/assets/icons/ic_close.svg';
 import { Pressable, TextInput as RNTextInput, View } from 'react-native';
 import { Text } from '@/components/Text';
 import { TextInput } from '@/components/TextInput';
-import SendIcon from '@/assets/icons/ic_send.svg';
+import ArrowUpwardIcon from '@/assets/icons/ic_arrow_upward.svg';
 import CheckIcon from '@/assets/icons/ic_check.svg';
 import IconButton from '@/components/IconButton';
 
@@ -35,40 +36,39 @@ export function CommentInput({
     if (replyTo) inputRef.current?.focus();
   }, [replyTo?.id]);
 
-  const anonymousColor = isAnonymous ? '#28C8DE' /* sky-500 */ : '#B4BBBB'; /* gray-400 */
+  const anonymousColor = isAnonymous ? '#94BD52' /* green-400 */ : '#B4BBBB'; /* gray-400 */
   const [pressed, setPressed] = useState(false);
 
   return (
-    <View className="border-t border-gray-200   bg-white  " style={{ paddingBottom }}>
+    <View className="border-t border-gray-300 bg-white" style={{ paddingBottom }}>
       {replyTo && (
-        <View className="flex-row items-center justify-between px-5 py-2 bg-sky-100">
+        <View className="flex-row items-center justify-between bg-green-50 px-4 py-2">
           <Text className="text-caption-sm text-gray-500">{replyTo.author}에게 답글 작성 중</Text>
           <Pressable hitSlop={8} onPress={onCancelReply}>
-            <Text className="text-gray-500 text-base">×</Text>
+            <CloseIcon width={18} height={18} color="#929898" /* gray-500 */ />
           </Pressable>
         </View>
       )}
 
-      <View className="flex-row items-center px-5 gap-3 pt-3 pb-1">
+      <View className="flex-row items-center gap-3 px-4 pb-1 pt-3">
         <Pressable className="flex-row items-center gap-1" onPress={onToggleAnonymous} hitSlop={8}>
-          <Text className="text-caption-md" style={{ color: anonymousColor }}>
+          <Text className="text-body-md" style={{ color: anonymousColor }}>
             익명
           </Text>
-          <CheckIcon width={16} height={16} color={anonymousColor} />
+          <CheckIcon width={20} height={20} color={anonymousColor} />
         </Pressable>
 
         <TextInput
           ref={inputRef}
-          variant="community"
           value={value}
           onChangeText={onChangeText}
-          placeholder="부적절한 내용은 제한될 수 있어요."
+          placeholder="댓글을 입력해주세요."
           className="flex-1"
           style={{ flex: 1 }}
         />
 
         <IconButton
-          icon={<SendIcon width={24} height={24} color={pressed ? '#F79A6E' : '#F07840'} />}
+          icon={<ArrowUpwardIcon width={24} height={24} color={pressed ? '#929898' : '#B4BBBB'} />}
           onClick={onSubmit}
           variant="ghost"
           loading={isSubmitting}

@@ -1,14 +1,16 @@
 import { Image } from 'expo-image';
-import { Pressable, TouchableOpacity, View } from 'react-native';
+import { InteractionManager, Pressable, TouchableOpacity, View } from 'react-native';
+import * as Sentry from '@sentry/react-native';
 import { Text } from '@/components/Text';
 import { useResponsive } from '@/lib/use-responsive';
 import EditIcon from '@/assets/icons/ic_edit.svg';
-import BattleIcon from '@/assets/icons/ic_battle.svg';
+import SaveIcon from '@/assets/icons/ic_save.svg';
+import { Toast } from '@/components/Toast';
 import { BingoData } from '@/types/bingo';
 import { BingoStat } from './BingoStat';
 import { TeamAvatars, type TeamAvatarMember } from '@/features/team/components/TeamAvatars';
 import { calcMaxBingo } from '@/lib/calcMaxBingo';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   FIGMA_W,
   FIGMA_H,
@@ -16,6 +18,7 @@ import {
   getThemeImageUrl,
   getThemeForegroundColor,
 } from '@/features/bingo/lib/theme';
+import { shareBingoBoard } from '@/features/bingo/lib/share-board';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -56,6 +59,10 @@ export function BingoCard({
   const [image, setImage] = useState<string | null>(null);
   const [checkImage, setCheckImage] = useState<string | null>(null);
   const [fgColor, setFgColor] = useState<string>('#181C1C');
+  const boardRef = useRef<View>(null);
+  // 캡처 중에는 저장·편집 버튼을 감춘다
+  const [capturing, setCapturing] = useState(false);
+  const [saveFailed, setSaveFailed] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -100,9 +107,30 @@ export function BingoCard({
   const gapX = cfg.gapX * scale;
   const gapY = cfg.gapY * scale;
 
+  const handleSavePress = () => {
+    // 배경이 아직 안 왔으면 빈 판이 찍힌다. 버튼도 이때는 안 그리지만 한 번 더 막는다.
+    if (!image) return;
+    setCapturing(true);
+    // 버튼을 감춘 프레임이 실제로 그려진 뒤에 찍어야 이미지에 버튼이 남지 않는다
+    InteractionManager.runAfterInteractions(async () => {
+      try {
+        await shareBingoBoard(boardRef, bingo.title, {
+          // 화면 폭 그대로 뽑으면 저해상도라 2배로 키워 캡처한다
+          width: screenWidth * 2,
+          height: cardHeight * 2,
+        });
+      } catch (e) {
+        Sentry.captureException(e);
+        setSaveFailed(true);
+      } finally {
+        setCapturing(false);
+      }
+    });
+  };
+
   return (
-    <View className={`pb-24${isTablet ? ' items-center' : ''}`}>
-      <View style={{ width: screenWidth, height: cardHeight }}>
+    <View className={`pb-6${isTablet ? ' items-center' : ''}`}>
+      <View ref={boardRef} collapsable={false} style={{ width: screenWidth, height: cardHeight }}>
         <Image
           source={{ uri: image }}
           style={{ position: 'absolute', width: '100%', height: '100%' }}
@@ -117,11 +145,20 @@ export function BingoCard({
           >
             {bingo.title}
           </Text>
-          {onEditPress && (
-            <TouchableOpacity onPress={onEditPress} hitSlop={8}>
-              <EditIcon width={18} height={18} color={fgColor} />
-            </TouchableOpacity>
-          )}
+          {/* display:none으로 지우면 레이아웃이 흔들려 opacity로만 감춘다 */}
+          <View className="flex-row items-center gap-3" style={{ opacity: capturing ? 0 : 1 }}>
+            {/* 테마 배경을 받기 전에는 캡처해봐야 빈 판이라 버튼을 내놓지 않는다 */}
+            {image && (
+              <TouchableOpacity onPress={handleSavePress} hitSlop={8}>
+                <SaveIcon width={18} height={18} color={fgColor} />
+              </TouchableOpacity>
+            )}
+            {onEditPress && (
+              <TouchableOpacity onPress={onEditPress} hitSlop={8}>
+                <EditIcon width={18} height={18} color={fgColor} />
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
 
         {Array.from({ length: cols * rows }).map((_, i) => {
@@ -163,12 +200,12 @@ export function BingoCard({
         })}
       </View>
 
-      <View className="mt-8" style={isTablet ? { width: screenWidth } : undefined}>
-        <View className="flex-row">
-          <View className="flex-1 items-center">
+      <View className="mt-6" style={isTablet ? { width: screenWidth } : undefined}>
+        <View className="flex-row justify-between px-10">
+          <View className="items-center">
             <BingoStat label="달성" current={bingo.achievedCount} total={cols * rows} />
           </View>
-          <View className="flex-1 items-center">
+          <View className="items-center">
             <BingoStat
               label="빙고"
               current={bingo.bingoCount}
@@ -176,7 +213,7 @@ export function BingoCard({
               overflowRed
             />
           </View>
-          <View className="flex-1 items-center">
+          <View className="items-center">
             <BingoStat
               label="종료일"
               current={dayElapsed}
@@ -186,22 +223,25 @@ export function BingoCard({
           </View>
         </View>
 
-        <View className="flex-row items-center justify-between px-5 mt-10 gap-3">
+        <View className="mt-8 flex-row items-center justify-between gap-3 px-4">
           {formattedPeriod ? (
-            <Text className="text-caption-sm text-gray-600">{formattedPeriod}</Text>
+            <Text className="text-caption-sm text-gray-700">{formattedPeriod}</Text>
           ) : null}
 
           {/* 팀 빙고 표시 겸 현황 이동. 개인 빙고에는 그리지 않는다. */}
           {onTeamPress && teamMembers && teamMembers.length > 0 && (
             <TouchableOpacity onPress={onTeamPress} hitSlop={8}>
-              <View className="flex-row items-center gap-2">
-                <BattleIcon width={22} height={22} color="#4C5252" />
-                <TeamAvatars members={teamMembers} size={22} />
-              </View>
+              <TeamAvatars members={teamMembers} size={32} />
             </TouchableOpacity>
           )}
         </View>
       </View>
+
+      <Toast
+        message="빙고판을 저장하지 못했어요. 잠시 후 다시 시도해 주세요."
+        visible={saveFailed}
+        onDismiss={() => setSaveFailed(false)}
+      />
     </View>
   );
 }

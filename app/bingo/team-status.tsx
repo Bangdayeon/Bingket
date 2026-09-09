@@ -4,14 +4,12 @@ import { Modal as RNModal, Pressable, ScrollView, TextInput, View } from 'react-
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/Text';
-import IconButton from '@/components/IconButton';
+import { PageHeader } from '@/components/PageHeader';
 import { Modal } from '@/components/Modal';
 import { Popover } from '@/components/Popover';
 import { ProfileAvatar } from '@/components/ProfileAvatar';
-import { Information } from '@/components/Information';
 import BingoPreview from '@/components/BingoPreview';
 import Loading from '@/components/Loading';
-import BackArrowIcon from '@/assets/icons/ic_arrow_back.svg';
 import MenuIcon from '@/assets/icons/ic_more_vert.svg';
 import InfoIcon from '@/assets/icons/ic_info.svg';
 import { BingoStat } from '@/features/bingo/components/BingoStat';
@@ -29,7 +27,7 @@ import {
 import { calcDaysUntilStart, calcTeamDday } from '@/features/team/lib/team-result';
 import { calcMaxBingo } from '@/lib/calcMaxBingo';
 import { useResponsive } from '@/lib/use-responsive';
-import { TEAM_MODE_DESCRIPTION, TEAM_MODE_LABEL } from '@/types/team';
+import { TEAM_MODE_DESCRIPTION } from '@/types/team';
 import type { BingoData } from '@/types/bingo';
 
 function toBingoData(board: TeamBoardSummary, endDate: string): BingoData {
@@ -75,9 +73,9 @@ function MemberColumn({ member, showRank, isFinished, contributionOnly }: Member
     <View className="items-center gap-1 w-[72px]" style={{ opacity: pending ? 0.4 : 1 }}>
       <View className="relative">
         <WinnerCrown visible={showRank && isFinished && member.rank === 1} />
-        <ProfileAvatar avatarUrl={member.avatarUrl} size={40} />
+        <ProfileAvatar avatarUrl={member.avatarUrl} size={32} />
       </View>
-      <Text className="text-caption-md" numberOfLines={1}>
+      <Text className="text-body-sm text-gray-800" numberOfLines={1}>
         {member.displayName}
       </Text>
       {pending ? (
@@ -135,8 +133,8 @@ export default function TeamStatusScreen() {
 
   if (loading) {
     return (
-      <View className="flex-1 items-center justify-center bg-white">
-        <Loading color="#6ADE50" />
+      <View className="flex-1 items-center justify-center bg-surface">
+        <Loading />
       </View>
     );
   }
@@ -145,28 +143,24 @@ export default function TeamStatusScreen() {
   const joined = detail?.members.filter((m) => m.status === 'joined') ?? [];
   const winners = joined.filter((m) => m.rank === 1);
   const sharedBoard = detail?.sharedBoard ?? null;
-  const [sharedCols, sharedRows] = (sharedBoard?.grid ?? '3x3').split('x').map(Number);
 
   return (
-    <View className="flex-1 bg-white" style={{ paddingTop: insets.top }}>
-      <View className="h-[60px] flex-row items-center px-4 border-b border-gray-300">
-        <IconButton
-          variant="ghost"
-          size={32}
-          icon={<BackArrowIcon width={20} height={20} />}
-          onClick={() => router.back()}
-        />
-        <Text className="flex-1 text-center text-title-sm font-pretendard-medium">팀 빙고</Text>
-        {detail?.isFinished ? (
-          <View className="w-8" />
-        ) : (
-          <IconButton
-            variant="ghost"
-            onClick={() => setShowMenu(true)}
-            icon={<MenuIcon width={20} height={20} />}
-          />
-        )}
-      </View>
+    <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
+      <PageHeader
+        title={detail?.title}
+        titleRight={
+          detail && !isShared ? (
+            <Text className="text-body-md text-gray-700">{periodLabel(detail)}</Text>
+          ) : undefined
+        }
+        right={
+          detail?.isFinished ? undefined : (
+            <Pressable onPress={() => setShowMenu(true)} hitSlop={8}>
+              <MenuIcon width={24} height={24} color="#4C5252" /* gray-700 */ />
+            </Pressable>
+          )
+        }
+      />
 
       <Popover
         visible={showMenu}
@@ -184,24 +178,9 @@ export default function TeamStatusScreen() {
           className="flex-1"
           contentContainerStyle={{ paddingTop: 24, paddingBottom: insets.bottom + 32 }}
         >
-          {/* 제목 + 기간 */}
-          <View className="flex-row gap-4 mx-5 mb-2 items-center">
-            <Text className="font-pretendard-semibold text-3xl flex-1" numberOfLines={1}>
-              {detail.title}
-            </Text>
-            <View className="flex-row items-center gap-2">
-              <Text className="text-xl text-gray-600">{periodLabel(detail)}</Text>
-              <Information
-                content={<Text>팀을 만든 사람이 정한 기간이에요. 모두 같은 기간을 써요.</Text>}
-              />
-            </View>
-          </View>
-
-          <View className="mx-5 mb-6">
-            <Text className="text-caption-md text-gray-600">
-              {TEAM_MODE_LABEL[detail.mode]} · {TEAM_MODE_DESCRIPTION[detail.mode]}
-            </Text>
-          </View>
+          <Text className="mb-6 px-4 text-caption-md text-gray-700">
+            {TEAM_MODE_DESCRIPTION[detail.mode]}
+          </Text>
 
           {/* 시작 전 안내 */}
           {!detail.isStarted && (
@@ -244,34 +223,9 @@ export default function TeamStatusScreen() {
             </View>
           )}
 
-          {/* 같이 채우기: 팀 전체 진행률이 주인공 */}
-          {isShared && sharedBoard && (
-            <View className="mx-5 mb-8 items-center gap-4">
-              <View className="flex-row gap-2">
-                <BingoStat
-                  label="팀 달성"
-                  current={sharedBoard.checkedCount}
-                  total={sharedBoard.totalCells}
-                  size={statSize}
-                />
-                <BingoStat
-                  label="빙고"
-                  current={sharedBoard.bingoCount}
-                  total={calcMaxBingo(sharedCols, sharedRows)}
-                  size={statSize}
-                />
-              </View>
-              <Text className="text-title-lg">
-                {sharedBoard.checkedCount} / {sharedBoard.totalCells}칸
-              </Text>
-            </View>
-          )}
-
           {/* 멤버 나열: 1등이 왼쪽 */}
           <View className="mb-6">
-            <Text className="text-title-md mx-5 mb-3 font-pretendard-semibold">
-              {isShared ? '누가 얼마나 채웠나요' : '지금 순위'}
-            </Text>
+            <Text className="mb-3 px-4 text-body-md text-gray-900">참여자</Text>
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
@@ -292,23 +246,15 @@ export default function TeamStatusScreen() {
           {/* 빙고판 */}
           {isShared ? (
             sharedBoard && (
-              <View className="mx-5 items-center">
-                <View className="rounded-xl overflow-hidden">
-                  <BingoPreview
-                    bingo={toBingoData(sharedBoard, detail.endDate)}
-                    className="w-64 md:w-[360px]"
-                    completedCells={sharedBoard.completedCells}
-                    onPress={() => setSelectedBoard(sharedBoard)}
-                  />
-                </View>
-              </View>
+              <BingoPreview
+                bingo={toBingoData(sharedBoard, detail.endDate)}
+                className="w-full"
+                completedCells={sharedBoard.completedCells}
+                onPress={() => setSelectedBoard(sharedBoard)}
+              />
             )
           ) : (
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ paddingHorizontal: 20, gap: 16 }}
-            >
+            <View className="flex-row flex-wrap gap-x-[14px] gap-y-8 px-4">
               {detail.members
                 .filter((m) => m.status === 'joined')
                 .map((member) => {
@@ -317,10 +263,10 @@ export default function TeamStatusScreen() {
                   const [cols, rows] = board.grid.split('x').map(Number);
                   return (
                     <View key={member.userId} className="items-center gap-2">
-                      <View className="rounded-xl overflow-hidden">
+                      <View className="w-[172px] overflow-hidden rounded-2xl">
                         <BingoPreview
                           bingo={toBingoData(board, detail.endDate)}
-                          className="w-48 md:w-[360px]"
+                          className="w-full"
                           completedCells={board.completedCells}
                           onPress={() => setSelectedBoard(board)}
                         />
@@ -342,7 +288,7 @@ export default function TeamStatusScreen() {
                     </View>
                   );
                 })}
-            </ScrollView>
+            </View>
           )}
 
           {/* 회고: 사람마다 따로 쓴다 */}
@@ -406,7 +352,7 @@ export default function TeamStatusScreen() {
           onPress={() => setSelectedBoard(null)}
         >
           {selectedBoard && detail && (
-            <View className="w-full px-5">
+            <View className="w-full px-4">
               <BingoPreview
                 bingo={toBingoData(selectedBoard, detail.endDate)}
                 className="w-full"

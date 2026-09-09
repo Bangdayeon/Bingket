@@ -4,11 +4,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Text } from '@/components/Text';
-import { TextInput } from '@/components/TextInput';
+import { SearchInput } from '@/components/SearchInput';
 import { RecentSearchTag } from '@/features/community/components/RecentSearchTag';
 import { PostCard } from '@/features/community/components/PostCard';
 import ArrowBackIcon from '@/assets/icons/ic_arrow_back.svg';
-import SearchIcon from '@/assets/icons/ic_search.svg';
 import { searchPosts } from '@/features/community/lib/community';
 import type { CommunityPost } from '@/types/community';
 import Loading from '@/components/Loading';
@@ -68,13 +67,13 @@ export default function CommunitySearchScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white  " edges={['top']}>
-      {/* 헤더 */}
-      <View className="flex-row items-center h-[60px] px-4 gap-3 border-b border-gray-300  ">
+    <SafeAreaView className="flex-1 bg-surface" edges={['top']}>
+      {/* 헤더 — 시안에는 구분선이 없다 */}
+      <View className="h-[60px] flex-row items-center gap-3 px-4">
         <Pressable onPress={() => router.back()} hitSlop={8}>
           <ArrowBackIcon width={24} height={24} color={iconColor} />
         </Pressable>
-        <TextInput
+        <SearchInput
           ref={inputRef}
           autoFocus
           value={value}
@@ -84,32 +83,20 @@ export default function CommunitySearchScreen() {
           }}
           onSubmitEditing={() => runSearch(value)}
           returnKeyType="search"
-          placeholder="글 제목, 내용, 빙고 아이템"
-          className="flex-1 bg-gray-200 h-10 px-3"
-          leftIcon={<SearchIcon width={20} height={20} color="#929898" /* gray-500 */ />}
-          rightIcon={
-            value.length > 0 ? (
-              <Pressable
-                hitSlop={8}
-                onPress={() => {
-                  setValue('');
-                  setResults(null);
-                  inputRef.current?.focus();
-                }}
-              >
-                <Text style={{ color: '#929898' /* gray-500 */, fontSize: 18, lineHeight: 20 }}>
-                  ×
-                </Text>
-              </Pressable>
-            ) : undefined
-          }
+          placeholder="검색어"
+          className="flex-1"
+          onClear={() => {
+            setValue('');
+            setResults(null);
+            inputRef.current?.focus();
+          }}
         />
       </View>
 
       {/* 로딩 */}
       {loading && (
         <View className="flex-1 items-center justify-center">
-          <Loading color="#6ADE50" />
+          <Loading />
         </View>
       )}
 
@@ -138,12 +125,14 @@ export default function CommunitySearchScreen() {
 
       {/* 최근 검색어 (검색 전) */}
       {!loading && results === null && (
-        <View className="px-5 pt-5">
+        <View className="px-4 pt-5">
           <View className="flex-row items-center justify-between mb-4">
-            <Text className="text-title-sm">최근 검색어</Text>
+            <Text className="text-title-sm font-pretendard-semibold text-gray-900">
+              최근 검색어
+            </Text>
             {searches.length > 0 && (
               <Pressable onPress={handleDeleteAll} hitSlop={8}>
-                <Text className="text-label-sm">전체 삭제</Text>
+                <Text className="text-body-md text-gray-800">전체 삭제</Text>
               </Pressable>
             )}
           </View>
@@ -155,7 +144,7 @@ export default function CommunitySearchScreen() {
               최근 검색어가 없습니다.
             </Text>
           ) : (
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', columnGap: 4, rowGap: 8 }}>
               {searches.map((search) => (
                 <RecentSearchTag
                   key={search}

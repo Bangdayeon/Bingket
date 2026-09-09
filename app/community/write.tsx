@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import Button from '@/components/Button';
 import {
   Alert,
   Keyboard,
@@ -16,7 +17,8 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { Text } from '@/components/Text';
 import ArrowBackIcon from '@/assets/icons/ic_arrow_back.svg';
-import CameraIcon from '@/assets/icons/ic_camera.svg';
+import ImagesIcon from '@/assets/icons/ic_imagesmode.svg';
+import GridIcon from '@/assets/icons/ic_grid_3x3.svg';
 import CheckIcon from '@/assets/icons/ic_check.svg';
 import CloseIcon from '@/assets/icons/ic_close.svg';
 import type { EditorBlock } from '@/types/community';
@@ -31,7 +33,8 @@ import { ensurePhotoLibraryPermission } from '@/lib/photo-library';
 import Loading from '@/components/Loading';
 
 const HEADER_H = 60;
-const TOOLBAR_H = 56;
+// 시안: 하단 툴바 높이 84
+const TOOLBAR_H = 84;
 const MAX_IMAGES = 5;
 
 const STATE_LABELS: Record<BingoState, string> = {
@@ -42,22 +45,9 @@ const STATE_LABELS: Record<BingoState, string> = {
 
 const STATE_COLORS: Record<BingoState, string> = {
   draft: '#929898' /* gray-500 */,
-  progress: '#48BE30' /* green-600 */,
-  done: '#28C8DE' /* sky-500 */,
+  progress: '#759E38' /* green-600 */,
+  done: '#94BD52' /* green-400 */,
 };
-
-function GridIcon({ color }: { color: string }) {
-  return (
-    <View style={{ width: 22, height: 22, flexDirection: 'row', flexWrap: 'wrap', gap: 2.5 }}>
-      {[...Array(9)].map((_, i) => (
-        <View
-          key={i}
-          style={{ width: 5.5, height: 5.5, backgroundColor: color, borderRadius: 1 }}
-        />
-      ))}
-    </View>
-  );
-}
 
 function newId() {
   return `block-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
@@ -290,25 +280,24 @@ export default function CommunityWriteScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white  " edges={['top']}>
+    <SafeAreaView className="flex-1 bg-surface" edges={['top']}>
       {/* 헤더 — 뒤로가기 / 등록 */}
       <View className="flex-row items-center" style={{ height: HEADER_H }}>
         <View style={{ width: 56 }} className="pl-4">
           <Pressable onPress={() => router.back()} hitSlop={8}>
-            <ArrowBackIcon width={20} height={20} color={iconColor} />
+            <ArrowBackIcon width={24} height={24} color="#181C1C" /* gray-900 */ />
           </Pressable>
         </View>
         <View style={{ flex: 1 }} />
-        <View style={{ width: 56 }} className="pr-4 items-end">
-          <Pressable onPress={handleSubmit} disabled={!canSubmit} hitSlop={8}>
-            {isSubmitting ? (
-              <Loading color="#54DBED" variant="iconloading" size={5} />
-            ) : (
-              <Text className="text-body-md" style={{ color: canSubmit ? '#28C8DE' : '#B4BBBB' }}>
-                등록
-              </Text>
-            )}
-          </Pressable>
+        <View className="pr-2">
+          <Button
+            label="등록"
+            size="sm"
+            variant="ghost"
+            disabled={!canSubmit}
+            loading={isSubmitting}
+            onClick={handleSubmit}
+          />
         </View>
       </View>
 
@@ -319,12 +308,12 @@ export default function CommunityWriteScreen() {
         {/* 본문 */}
         <ScrollView style={{ flex: 1 }} keyboardShouldPersistTaps="handled">
           {/* 화면 제목 */}
-          <Text className="text-title-lg font-pretendard-semibold px-5 mb-4">
+          <Text className="mb-4 px-4 text-title-sm font-pretendard-semibold text-gray-900">
             {isEditMode ? '게시글 수정하기' : '게시글 작성하기'}
           </Text>
 
           {/* 제목 */}
-          <View className="px-5 mb-4">
+          <View className="mb-4 px-6">
             <TextInput
               value={title}
               onChangeText={setTitle}
@@ -335,7 +324,7 @@ export default function CommunityWriteScreen() {
 
           {/* 빙고 (맨 위) */}
           {bingoBlock && (
-            <View style={{ marginHorizontal: 20, marginTop: 16, marginBottom: 8 }}>
+            <View style={{ marginHorizontal: 24, marginTop: 16, marginBottom: 8 }}>
               <View className="flex-row items-center justify-between mb-2">
                 <View className="flex-row items-center gap-2">
                   <Text
@@ -349,7 +338,7 @@ export default function CommunityWriteScreen() {
                   </Text>
                 </View>
                 <Pressable onPress={() => removeMedia(bingoBlock.id)} hitSlop={8}>
-                  <Text style={{ color: '#929898', fontSize: 18, lineHeight: 20 }}>×</Text>
+                  <CloseIcon width={18} height={18} color="#929898" /* gray-500 */ />
                 </Pressable>
               </View>
               <BingoPreview bingo={bingoBlock.bingo} size="md" />
@@ -363,7 +352,7 @@ export default function CommunityWriteScreen() {
                 ? block.uri
                 : (block as EditorBlock & { type: 'existing-image' }).url;
             return (
-              <View key={block.id} style={{ marginHorizontal: 20, marginVertical: 8 }}>
+              <View key={block.id} style={{ marginHorizontal: 24, marginVertical: 8 }}>
                 <AutoHeightImage uri={uri} />
                 <Pressable
                   onPress={() => removeMedia(block.id)}
@@ -376,7 +365,7 @@ export default function CommunityWriteScreen() {
                     padding: 6,
                   }}
                 >
-                  <CloseIcon width={16} height={16} color="#fff" />
+                  <CloseIcon width={18} height={18} color="#fff" />
                 </Pressable>
               </View>
             );
@@ -392,7 +381,7 @@ export default function CommunityWriteScreen() {
             textAlignVertical="top"
             style={{
               minHeight: 200,
-              paddingHorizontal: 20,
+              paddingHorizontal: 24,
               paddingTop: 4,
               fontSize: 16,
               lineHeight: 22,
@@ -405,7 +394,7 @@ export default function CommunityWriteScreen() {
         {/* 하단 툴바 — 키보드가 올라오면 감춘다 */}
         {!keyboardShown && (
           <View
-            className="flex-row items-center gap-2 px-5 border-t border-gray-200  "
+            className="flex-row items-center gap-2 border-t border-gray-300 px-4"
             style={{ height: TOOLBAR_H, marginBottom: insets.bottom }}
           >
             {/* 이미지 */}
@@ -416,9 +405,9 @@ export default function CommunityWriteScreen() {
               hitSlop={8}
               className="p-1"
             >
-              <CameraIcon
-                width={24}
-                height={24}
+              <ImagesIcon
+                width={32}
+                height={32}
                 color={imageBlockCount >= MAX_IMAGES ? '#B4BBBB' : iconColor}
               />
               {imageBlockCount > 0 && (
@@ -427,7 +416,7 @@ export default function CommunityWriteScreen() {
                     position: 'absolute',
                     top: -2,
                     right: -2,
-                    backgroundColor: '#28C8DE' /* sky-500 */,
+                    backgroundColor: '#94BD52' /* green-400 */,
                     borderRadius: 8,
                     minWidth: 14,
                     height: 14,
@@ -447,19 +436,17 @@ export default function CommunityWriteScreen() {
             <Pressable onPress={handleOpenBingoModal} hitSlop={8}>
               {({ pressed }) => (
                 <View
-                  className={`flex-row items-center gap-2 rounded-full px-3 py-2${
-                    pressed || bingoBlock ? ' bg-gray-100  ' : ''
+                  className={`h-10 flex-row items-center gap-1 rounded-2xl px-2${
+                    pressed || bingoBlock ? ' bg-gray-200' : ''
                   }`}
                 >
-                  <GridIcon color={bingoBlock ? '#28C8DE' : iconColor} />
-                  <Text className="text-body-md" style={{ color: '#181C1C' /* gray-900 */ }}>
+                  <GridIcon width={32} height={32} color={bingoBlock ? '#94BD52' : iconColor} />
+                  <Text className="text-body-md font-pretendard-medium text-gray-800">
                     빙고 불러오기
                   </Text>
                 </View>
               )}
             </Pressable>
-
-            <View style={{ flex: 1 }} />
 
             {/* 익명 */}
             <Pressable
@@ -467,10 +454,10 @@ export default function CommunityWriteScreen() {
               className="flex-row items-center gap-1"
               hitSlop={8}
             >
-              <Text className="text-body-sm" style={{ color: isAnonymous ? '#28C8DE' : '#B4BBBB' }}>
+              <Text className="text-body-md" style={{ color: isAnonymous ? '#94BD52' : '#B4BBBB' }}>
                 익명
               </Text>
-              <CheckIcon width={18} height={18} color={isAnonymous ? '#28C8DE' : '#B4BBBB'} />
+              <CheckIcon width={20} height={20} color={isAnonymous ? '#94BD52' : '#B4BBBB'} />
             </Pressable>
           </View>
         )}
@@ -484,10 +471,10 @@ export default function CommunityWriteScreen() {
         onRequestClose={() => setShowCameraMenu(false)}
       >
         <Pressable
-          style={{ flex: 1, backgroundColor: 'rgba(115,115,115,0.5)' }}
+          style={{ flex: 1, backgroundColor: 'rgba(88,88,88,0.7)' /* 시안 #585858 70% */ }}
           onPress={() => setShowCameraMenu(false)}
         />
-        <View className="bg-white   rounded-t-3xl" style={{ paddingBottom: insets.bottom + 16 }}>
+        <View className="bg-white   rounded-t-2xl" style={{ paddingBottom: insets.bottom + 16 }}>
           <View className="items-center pt-3 pb-4">
             <View className="w-10 h-1 rounded-full bg-gray-300  " />
           </View>
@@ -514,20 +501,20 @@ export default function CommunityWriteScreen() {
         onRequestClose={() => setShowBingoModal(false)}
       >
         <Pressable
-          style={{ flex: 1, backgroundColor: 'rgba(115,115,115,0.5)' }}
+          style={{ flex: 1, backgroundColor: 'rgba(88,88,88,0.7)' /* 시안 #585858 70% */ }}
           onPress={() => setShowBingoModal(false)}
         />
         <View
-          className="bg-white   rounded-t-3xl"
+          className="bg-white   rounded-t-2xl"
           style={{ maxHeight: '60%', paddingBottom: insets.bottom + 16 }}
         >
-          <View className="px-5 pt-6 pb-4 border-b border-gray-200  ">
+          <View className="border-b border-gray-300 px-5 pb-4 pt-6">
             <Text className="text-title-sm font-pretendard-medium">빙고 불러오기</Text>
           </View>
 
           {loadingBingos ? (
             <View className="items-center justify-center py-10">
-              <Loading color="#6ADE50" />
+              <Loading />
             </View>
           ) : myBingos.length === 0 ? (
             <View className="items-center justify-center py-10">
@@ -543,12 +530,14 @@ export default function CommunityWriteScreen() {
                   <Pressable
                     key={bingo.id}
                     onPress={() => handleSelectBingo(bingo)}
-                    className="px-5 py-4 border-b border-gray-200   flex-row items-center justify-between"
+                    className="h-16 flex-row items-center justify-between border-b border-gray-300 px-5"
                   >
                     <Text className="text-body-md" style={{ color: '#181C1C' /* gray-900 */ }}>
                       {bingo.title}
                     </Text>
-                    {selected && <CheckIcon width={20} height={20} color="#28C8DE" /* sky-500 */ />}
+                    {selected && (
+                      <CheckIcon width={20} height={20} color="#94BD52" /* green-400 */ />
+                    )}
                   </Pressable>
                 );
               })}
