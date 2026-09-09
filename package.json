@@ -1,6 +1,7 @@
 {
   "name": "bingket",
   "version": "1.1.0",
+  "packageManager": "pnpm@10.17.1",
   "type": "module",
   "main": "index.ts",
   "scripts": {
@@ -74,6 +75,7 @@
     "eslint": "^9.39.4",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
     "globals": "^17.4.0",
     "husky": "^9.1.7",
     "jest": "^29.7.0",
@@ -97,7 +99,8 @@
       "^@/(.*)$": "<rootDir>/$1"
     },
     "transformIgnorePatterns": [
-      "node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|native-base|react-native-svg|nativewind)"
+      "/node_modules/(?!(.pnpm|(jest-)?react-native|@react-native|@react-native-community|expo|@expo|@expo-google-fonts|react-navigation|@react-navigation|@sentry/react-native|native-base|react-native-svg|nativewind))",
+      "/node_modules/react-native-reanimated/plugin/"
     ]
   },
   "lint-staged": {

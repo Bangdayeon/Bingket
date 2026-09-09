@@ -3,6 +3,7 @@ import js from '@eslint/js';
 import json from '@eslint/json';
 import prettierConfig from 'eslint-config-prettier';
 import pluginReact from 'eslint-plugin-react';
+import reactHooks from 'eslint-plugin-react-hooks';
 import { defineConfig } from 'eslint/config';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
@@ -14,7 +15,7 @@ export default defineConfig([
       'node_modules/**',
       'ios/**',
       'android/**',
-      'package-lock.json',
+      'pnpm-lock.yaml',
       'global.css',
       'supabase/functions/**', // Deno 런타임 — Node.js 규칙 적용 불가
       '.antigravitycli/**', // 외부 도구 임시 파일 — 실행 중 사라져 lint가 ENOENT로 죽는다
@@ -40,6 +41,25 @@ export default defineConfig([
       ...pluginReact.configs.flat.recommended.rules,
       'react/react-in-jsx-scope': 'off',
       'react/display-name': 'off',
+    },
+  },
+  {
+    // Hook 규칙. 렌더 중 ref 쓰기, 어긋난 deps 같은 건 tsc도 prettier도 못 잡는다.
+    // 지금은 동작해도 React Compiler를 켜는 순간 빌드가 깨지는 종류라 규칙으로 막는다.
+    files: [
+      'app/**/*.{ts,tsx}',
+      'components/**/*.{ts,tsx}',
+      'features/**/*.{ts,tsx}',
+      'lib/**/*.{ts,tsx}',
+      'store/**/*.{ts,tsx}',
+    ],
+    ...reactHooks.configs.flat['recommended-latest'],
+    rules: {
+      ...reactHooks.configs.flat['recommended-latest'].rules,
+      // 남은 11건은 전부 "효과 안에서 조회를 시작하며 setLoading(true)" 형태다.
+      // 규칙이 권하는 해법이 곧 서버 상태 라이브러리(React Query) 도입이라,
+      // 손으로 우회하면 use-async.ts가 더 나빠진다. 도입 전까지만 warn이다.
+      'react-hooks/set-state-in-effect': 'warn',
     },
   },
   {

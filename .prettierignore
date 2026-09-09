@@ -5,4 +5,4 @@ ios/
 android/
 
 # 패키지 매니저가 생성하는 lockfile (포맷 대상 아님)
-package-lock.json
+pnpm-lock.yaml
