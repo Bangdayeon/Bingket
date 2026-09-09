@@ -25,6 +25,7 @@ import {
   deleteComment,
   submitReport,
   blockUser,
+  COMMENT_PAGE_SIZE,
 } from '@/features/community/lib/community';
 import { checkAndAwardBadges } from '@/lib/badge-checker';
 import * as Sentry from '@sentry/react-native';
@@ -35,6 +36,7 @@ import { containsBadWord } from '@/constants/bad-words';
 import Loading from '@/components/Loading';
 import { ErrorState } from '@/components/ErrorState';
 import { EmptyState } from '@/components/EmptyState';
+import { useOnlineRestore } from '@/lib/use-online';
 
 const REPORT_REASONS = [
   '상업적 광고 및 판매',
@@ -117,28 +119,40 @@ export default function CommunityDetailScreen() {
 
   useFocusEffect(loadPost);
 
+  // 항상 처음부터 limit개를 받는다. 더 보기로 늘려도 익명 번호가 흔들리지 않는다.
+  const [commentLimit, setCommentLimit] = useState(COMMENT_PAGE_SIZE);
+  const [commentTotal, setCommentTotal] = useState(0);
+
   const loadComments = useCallback(() => {
     if (!id) return;
     setCommentsLoading(true);
     setCommentsFailed(false);
-    fetchComments(id)
-      .then(setLocalComments)
+    fetchComments(id, commentLimit)
+      .then((page) => {
+        setLocalComments(page.comments);
+        setCommentTotal(page.total);
+      })
       .catch((e: unknown) => {
         Sentry.captureException(e);
         setCommentsFailed(true);
       })
       .finally(() => setCommentsLoading(false));
-  }, [id]);
+  }, [id, commentLimit]);
 
   useEffect(loadComments, [loadComments]);
 
+  useOnlineRestore(() => {
+    if (postFailed) loadPost();
+    if (commentsFailed) loadComments();
+  });
+
   const refreshComments = useCallback(async () => {
     if (!id) return;
-    const data = await fetchComments(id);
-    setLocalComments(data);
-    const count = data.reduce((sum, c) => sum + 1 + (c.replies?.length ?? 0), 0);
-    setPost((p) => (p ? { ...p, commentCount: count } : p));
-  }, [id]);
+    const page = await fetchComments(id, commentLimit);
+    setLocalComments(page.comments);
+    setCommentTotal(page.total);
+    setPost((prev) => (prev ? { ...prev, commentCount: page.total } : prev));
+  }, [id, commentLimit]);
 
   useEffect(() => {
     const show = Keyboard.addListener('keyboardWillShow', () => setKeyboardShown(true));
@@ -409,6 +423,8 @@ export default function CommunityDetailScreen() {
             isLoading={commentsLoading}
             hasError={commentsFailed}
             onRetry={loadComments}
+            hasMore={commentTotal > commentLimit}
+            onLoadMore={() => setCommentLimit((n) => n + COMMENT_PAGE_SIZE)}
           />
         </ScrollView>
 

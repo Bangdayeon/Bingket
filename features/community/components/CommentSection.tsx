@@ -1,4 +1,4 @@
-import { View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { Text } from '@/components/Text';
 import { CommentItem } from './CommentItem';
 import { Comment } from '@/types/community';
@@ -16,6 +16,9 @@ interface CommentSectionProps {
   /** 조회 실패. "첫 댓글을 남겨주세요"로 위장되면 안 된다. */
   hasError?: boolean;
   onRetry?: () => void;
+  /** 아직 못 받은 댓글이 남아 있는지. */
+  hasMore?: boolean;
+  onLoadMore?: () => void;
 }
 
 export function CommentSection({
@@ -27,6 +30,8 @@ export function CommentSection({
   isLoading = false,
   hasError = false,
   onRetry,
+  hasMore = false,
+  onLoadMore,
 }: CommentSectionProps) {
   return (
     <View className="mt-5 pt-5 border-t border-gray-300 pb-20">
@@ -58,6 +63,11 @@ export function CommentSection({
               onReplyPress={onReplyPress}
             />
           ))}
+          {hasMore && onLoadMore && (
+            <Pressable onPress={onLoadMore} className="items-center py-3">
+              <Text className="text-body-md text-gray-600">댓글 더 보기</Text>
+            </Pressable>
+          )}
         </View>
       )}
     </View>

@@ -10,6 +10,7 @@ import {
   markAllNotificationsRead,
   markNotificationRead,
   type Notification,
+  NOTIFICATION_PAGE_SIZE,
 } from '@/features/notifications/lib/notifications';
 import { navigateToNotification } from '@/features/notifications/lib/notification-route';
 import {
@@ -20,6 +21,9 @@ import {
 import { useUnreadNotifications } from '@/features/notifications/unread-context';
 import { supabase } from '@/lib/supabase';
 import Loading from '@/components/Loading';
+import { ErrorState } from '@/components/ErrorState';
+import { EmptyState } from '@/components/EmptyState';
+import { useOnlineRestore } from '@/lib/use-online';
 import { ProfileAvatar } from '@/components/ProfileAvatar';
 
 interface NotificationItemProps {
@@ -148,17 +152,27 @@ export default function NotificationsScreen() {
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const { refresh: refreshUnread } = useUnreadNotifications();
+  // 예전에는 limit(50)이 하드코딩돼 51번째 이후 알림에 닿을 수 없었다.
+  const [limit, setLimit] = useState(NOTIFICATION_PAGE_SIZE);
+  const [hasMore, setHasMore] = useState(false);
 
   const loadData = useCallback(() => {
     setLoading(true);
     setFetchError(null);
-    fetchNotifications()
-      .then(setNotifications)
+    fetchNotifications(limit)
+      .then((list) => {
+        setNotifications(list);
+        setHasMore(list.length === limit);
+      })
       .catch(() => setFetchError('알림을 불러오지 못했어요. 잠시 후 다시 시도해주세요.'))
       .finally(() => setLoading(false));
-  }, []);
+  }, [limit]);
 
   useFocusEffect(loadData);
+
+  useOnlineRestore(() => {
+    if (fetchError) loadData();
+  });
 
   const markAllRead = async () => {
     await markAllNotificationsRead();
@@ -207,13 +221,9 @@ export default function NotificationsScreen() {
 
       <ScrollView className="flex-1">
         {fetchError ? (
-          <View className="flex-1 items-center justify-center mt-20">
-            <Text className="text-body-md text-gray-400">{fetchError}</Text>
-          </View>
+          <ErrorState message={fetchError} onRetry={loadData} />
         ) : notifications.length === 0 ? (
-          <View className="flex-1 items-center justify-center mt-20">
-            <Text className="text-body-md text-gray-400">새로운 알림이 없어요!</Text>
-          </View>
+          <EmptyState message="새로운 알림이 없어요!" />
         ) : null}
         {notifications.map((item) => (
           <NotificationItem
@@ -230,6 +240,14 @@ export default function NotificationsScreen() {
             onFriendResponse={handleFriendResponse}
           />
         ))}
+        {hasMore && (
+          <Pressable
+            onPress={() => setLimit((n) => n + NOTIFICATION_PAGE_SIZE)}
+            className="items-center py-4"
+          >
+            <Text className="text-body-md text-gray-600">알림 더 보기</Text>
+          </Pressable>
+        )}
       </ScrollView>
     </SafeAreaView>
   );

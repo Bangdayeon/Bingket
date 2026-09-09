@@ -28,6 +28,7 @@ import { MAX_BINGOS } from '@/constants/bingo';
 import { CACHE_KEY_ALL } from '@/constants/cache_key';
 import Loading from '@/components/Loading';
 import { ErrorState } from '@/components/ErrorState';
+import { useOnlineRestore } from '@/lib/use-online';
 import Button from '@/components/Button';
 import { Modal } from '@/components/Modal';
 import {
@@ -205,12 +206,18 @@ export function BingoAll() {
       .finally(() => setLoading(false));
   }, []);
 
+  // 오프라인 배너가 "연결되면 자동으로 새로고침돼요"라고 알린다. 실제로 그렇게 한다.
+  useOnlineRestore(() => {
+    if (loadFailed) loadData();
+  });
+
   /**
    * 홈 상단 스트립에 띄울 알림. 캐시를 태우지 않는다 — 알림 페이지에서 먼저 처리한
    * 초대가 3분 stale 창에 걸려 홈에 남아 있으면 안 된다.
    */
   const loadStripNotifications = useCallback(() => {
-    fetchNotifications()
+    // 스트립은 최근 알림 중 초대류만 걸러 쓰므로, 기본 페이지보다 넓게 본다.
+    fetchNotifications(50)
       .then((all) => setStripNotifications(all.filter((n) => STRIP_TYPES.has(n.type))))
       .catch(Sentry.captureException);
   }, []);

@@ -30,7 +30,16 @@ type RequestRow = {
 
 type TeamRow = RequestRow & { mode: TeamMode };
 
-export const fetchNotifications = async (): Promise<Notification[]> => {
+/** 한 번에 받아오는 알림 수. */
+export const NOTIFICATION_PAGE_SIZE = 30;
+
+/**
+ * 예전에는 limit(50)이 하드코딩돼 있고 더 보기가 없어서, 51번째 이후 알림에는
+ * 영원히 닿을 수 없었다.
+ */
+export const fetchNotifications = async (
+  limit: number = NOTIFICATION_PAGE_SIZE,
+): Promise<Notification[]> => {
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -41,7 +50,7 @@ export const fetchNotifications = async (): Promise<Notification[]> => {
     .select('id, type, message, target_id, target_type, is_read, created_at')
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
-    .limit(50);
+    .limit(limit);
 
   if (error) throw error;
   const notifications = data ?? [];

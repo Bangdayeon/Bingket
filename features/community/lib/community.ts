@@ -464,18 +464,39 @@ async function fetchLikedCommentSet(commentIds: string[]): Promise<Set<string>> 
 }
 
 // ── 댓글 목록 조회 ────────────────────────────────────────────
-export const fetchComments = async (postId: string): Promise<Comment[]> => {
-  const { data, error } = await supabase
+
+/** 한 번에 받아오는 댓글 행 수. 대댓글도 같이 센다. */
+export const COMMENT_PAGE_SIZE = 20;
+
+export interface CommentsPage {
+  comments: Comment[];
+  /** 삭제되지 않은 전체 댓글 행 수(대댓글 포함). 더 보기 여부와 게시글 댓글 수에 쓴다. */
+  total: number;
+}
+
+/**
+ * 인기 글에서 댓글 수백 개를 한 번에 받아 ScrollView에 전부 그리면 진입이 통째로 멈춘다.
+ * 항상 처음부터 `limit`개를 받는 방식이라, 더 보기로 늘려도 익명 번호(익명1, 익명2…)가
+ * 흔들리지 않는다. 대댓글은 부모보다 항상 늦게 만들어지므로 오름차순 자르기에서
+ * 부모 없는 답글이 생기지 않는다.
+ */
+export const fetchComments = async (
+  postId: string,
+  limit: number = COMMENT_PAGE_SIZE,
+): Promise<CommentsPage> => {
+  const { data, error, count } = await supabase
     .from('comments')
     .select(
       'id, content, user_id, parent_id, is_anonymous, created_at, like_count, users ( display_name, avatar_url )',
+      { count: 'exact' },
     )
     .eq('post_id', postId)
     .eq('is_deleted', false)
-    .order('created_at', { ascending: true });
+    .order('created_at', { ascending: true })
+    .limit(limit);
 
   if (error) throw error;
-  if (!data) return [];
+  if (!data) return { comments: [], total: 0 };
 
   const blockedIds = await fetchBlockedUserIds();
   const rows = (data as RawCommentRow[]).filter(
@@ -549,9 +570,11 @@ export const fetchComments = async (postId: string): Promise<Comment[]> => {
     }),
   );
 
-  return [...realComments, ...deletedPlaceholders].sort((a, b) =>
+  const comments = [...realComments, ...deletedPlaceholders].sort((a, b) =>
     a.createdAt.localeCompare(b.createdAt),
   );
+
+  return { comments, total: count ?? comments.length };
 };
 
 // ── 댓글 작성 ────────────────────────────────────────────────
