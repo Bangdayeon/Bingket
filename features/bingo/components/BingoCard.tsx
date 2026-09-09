@@ -185,7 +185,8 @@ export function BingoCard({
                   글씨가 흰색으로 뒤집혀 밝은 판 위에서 사라진다. 제목과 같은 전경색을 쓴다. */}
               <Text
                 className={`${textStyle} text-center`}
-                style={{ color: fgColor }}
+                // 칸은 모든 테마에서 밝은 색이라 글씨는 늘 어두워야 한다. 토큰 색은 다크모드에서 흰색으로 뒤집혀 사라지고, 테마의 fgColor는 제목용이라 밝을 수 있어 칸에는 못 쓴다.
+                style={{ color: FIXED.boardForeground }}
                 numberOfLines={3}
               >
                 {bingo.cells[i] ?? ''}

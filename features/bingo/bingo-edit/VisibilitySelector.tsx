@@ -20,7 +20,7 @@ export function VisibilitySelector({ value, onChange }: Props) {
   const selected = OPTIONS.find((opt) => opt.value === value);
 
   return (
-    <View className="py-8">
+    <View>
       <View className="px-4">
         <SectionLabel label="빙고 공개 범위" />
       </View>

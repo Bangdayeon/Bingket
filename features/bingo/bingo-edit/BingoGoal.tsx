@@ -35,7 +35,7 @@ export function BingoGoal({
   hint = '저장 후 변경 불가',
 }: BingoGoalProps) {
   return (
-    <View className="px-4 py-8">
+    <View className="px-4">
       <SectionLabel label="목표 기간" hint={hint} />
 
       <ScrollView

@@ -253,12 +253,13 @@ export default function FriendListScreen() {
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          // x 배지가 아바타 밖(-top-1)으로 나가므로 위쪽 여백이 없으면 헤더에 잘린다.
+          // 아바타(32) + 이름 한 줄이 들어갈 만큼만. 여백을 크게 두면 검색창이
+          // 화면 아래로 밀려난다. 위쪽 6은 x 배지가 아바타 밖으로 나가서 필요하다.
           contentContainerStyle={{
             gap: 12,
             paddingHorizontal: 16,
             paddingTop: 6,
-            paddingBottom: 16,
+            paddingBottom: 8,
           }}
         >
           {pickedFriends.map((friend) => (

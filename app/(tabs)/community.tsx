@@ -16,7 +16,7 @@ import { TAB_BAR_CONTENT_HEIGHT } from '@/components/FloatingTabBar';
 export default function CommunityScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const fabBottom = TAB_BAR_CONTENT_HEIGHT + insets.bottom + 16;
+  const fabBottom = TAB_BAR_CONTENT_HEIGHT + insets.bottom + 8;
   const [posts, setPosts] = useState<CommunityPost[]>([]);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);

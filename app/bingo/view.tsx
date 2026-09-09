@@ -182,7 +182,11 @@ export default function BingoViewScreen() {
     <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
       <PageHeader />
 
-      <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: insets.bottom + 40 }}>
+      <ScrollView
+        className="flex-1"
+        // 뒤로가기 줄 바로 아래 판이 붙어 있었다. 다른 화면에서 제목이 차지하던 만큼 띄운다.
+        contentContainerStyle={{ paddingTop: 24, paddingBottom: insets.bottom + 40 }}
+      >
         <BingoCard
           bingo={liveBingo}
           completedCells={completedCells}

@@ -174,8 +174,8 @@ export default function BingoModifyScreen() {
 
   return (
     <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
+      {/* 뒤로가기 줄만 고정한다. 제목과 저장 버튼은 내용과 함께 스크롤된다. */}
       <PageHeader
-        title="빙고 수정하기"
         onBack={handleBack}
         right={
           <Pressable onPress={() => setShowDeleteModal(true)} hitSlop={8}>
@@ -184,7 +184,15 @@ export default function BingoModifyScreen() {
         }
       />
 
-      <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: insets.bottom + 100 }}>
+      <ScrollView
+        className="flex-1"
+        // 섹션 간격은 여기 한 곳에서 준다. 섹션마다 자기 패딩을 들면 제각각이 된다.
+        contentContainerStyle={{ gap: 32, paddingBottom: insets.bottom + 32 }}
+      >
+        <View className="px-4 pb-2 pt-7">
+          <Text className="text-title-lg font-pretendard-medium text-gray-900">빙고 수정하기</Text>
+        </View>
+
         <BingoTitle
           value={title}
           onChange={(v) => {
@@ -193,30 +201,32 @@ export default function BingoModifyScreen() {
           }}
         />
 
-        <View className="py-8">
-          <View className="px-4">
-            <SectionLabel label="테마 선택" />
+        <View className="gap-8">
+          <View>
+            <View className="px-4">
+              <SectionLabel label="테마 선택" />
+            </View>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ gap: 8, paddingHorizontal: 16 }}
+            >
+              {themes.map((theme) => (
+                <Chip
+                  key={theme.id}
+                  label={theme.displayName}
+                  selected={selectedTheme === theme.id}
+                  onPress={() => {
+                    markDirty();
+                    setSelectedTheme(theme.id);
+                  }}
+                />
+              ))}
+            </ScrollView>
           </View>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ gap: 8, paddingHorizontal: 16 }}
-          >
-            {themes.map((theme) => (
-              <Chip
-                key={theme.id}
-                label={theme.displayName}
-                selected={selectedTheme === theme.id}
-                onPress={() => {
-                  markDirty();
-                  setSelectedTheme(theme.id);
-                }}
-              />
-            ))}
-          </ScrollView>
 
           {/* 시안: 남은 수정 횟수는 판 위, 좌측 정렬 */}
-          <Text className="px-4 pb-2 pt-6 text-body-sm text-gray-600">
+          <Text className="px-4 text-body-sm text-gray-600">
             빙고 수정 가능 횟수 {totalUsedEdits}/{isUnlimited ? '무제한' : maxEdits}
           </Text>
 
@@ -240,6 +250,18 @@ export default function BingoModifyScreen() {
         </View>
 
         <VisibilitySelector value={visibility} onChange={setVisibility} />
+
+        {/* 저장 버튼도 고정하지 않는다 — 화면이 짧아 보이고 스크롤 영역을 먹는다. */}
+        <View className="px-4">
+          <Button
+            label="저장하기"
+            variant="primary"
+            size="md"
+            onClick={handleSave}
+            loading={saving}
+            className="w-full"
+          />
+        </View>
       </ScrollView>
 
       <Modal
@@ -252,11 +274,11 @@ export default function BingoModifyScreen() {
 
       <Modal
         visible={showDeleteModal}
-        title="빙고를 정말로 삭제하시나요?"
+        title="빙고를 정말로 삭제할까요?"
         body="삭제된 빙고는 되돌릴 수 없어요."
         variant="warning"
-        cancelLabel="취소하기"
-        confirmLabel="삭제하기"
+        cancelLabel="취소"
+        confirmLabel="삭제"
         confirmLoading={deleting}
         // 삭제가 도는 중에 모달이 닫히면 사용자는 끝난 줄 알고 화면을 떠난다.
         onCancel={deleting ? undefined : () => setShowDeleteModal(false)}
@@ -278,20 +300,6 @@ export default function BingoModifyScreen() {
         }}
         onDismiss={() => setShowLeaveModal(false)}
       />
-
-      <View
-        className="absolute bottom-0 left-0 right-0 bg-surface px-4 pt-3"
-        style={{ paddingBottom: insets.bottom + 8 }}
-      >
-        <Button
-          label="저장하기"
-          variant="primary"
-          size="md"
-          onClick={handleSave}
-          loading={saving}
-          className="w-full"
-        />
-      </View>
     </View>
   );
 }

@@ -118,7 +118,7 @@ export function PostBody({ post }: PostBodyProps) {
       <View className="flex-row items-center gap-4 mt-3">
         <LikeButton count={post.likeCount} postId={post.id} initialLiked={post.likedByMe} />
         <View className="flex-row items-center gap-1">
-          <SMSIcon width={ICON_SIZE} height={ICON_SIZE} className="text-gray-700" />
+          <SMSIcon width={ICON_SIZE} height={ICON_SIZE} className="text-gray-400" />
           <Text className="text-body-sm text-gray-700">{post.commentCount}</Text>
         </View>
       </View>

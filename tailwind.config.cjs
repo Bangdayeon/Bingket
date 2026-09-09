@@ -91,8 +91,8 @@ module.exports = {
         'body-md': ['16px', { lineHeight: '20px', fontWeight: '400' }],
         'body-sm': ['14px', { lineHeight: '18px', fontWeight: '400' }],
         // caption
-        'caption-md': ['12px', { lineHeight: '20px', fontWeight: '400' }],
-        'caption-sm': ['10px', { lineHeight: '12px', fontWeight: '400' }],
+        'caption-md': ['14px', { lineHeight: '20px', fontWeight: '400' }],
+        'caption-sm': ['12px', { lineHeight: '16px', fontWeight: '400' }],
         // label
         'label-sm': ['14px', { lineHeight: '18px', fontWeight: '600' }],
         'label-md': ['16px', { lineHeight: '20px', fontWeight: '600' }],

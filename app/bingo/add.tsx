@@ -1,5 +1,6 @@
 import * as Sentry from '@sentry/react-native';
 import Button from '@/components/Button';
+import { Text } from '@/components/Text';
 import { Modal } from '@/components/Modal';
 import { PageHeader } from '@/components/PageHeader';
 import { BingoTitle } from '@/features/bingo/bingo-edit/BingoTitle';
@@ -169,14 +170,21 @@ export default function BingoAddScreen() {
 
   return (
     <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
-      <PageHeader title="빙고 추가하기" onBack={handleBack} />
+      {/* 뒤로가기 줄만 고정한다. 제목과 저장 버튼은 내용과 함께 스크롤된다. */}
+      <PageHeader onBack={handleBack} />
 
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ paddingBottom: insets.bottom + 100 }}
+        // 섹션 간격은 여기 한 곳에서 준다. 섹션마다 자기 패딩을 들면 제각각이 된다.
+        contentContainerStyle={{ gap: 32, paddingBottom: insets.bottom + 32 }}
         keyboardShouldPersistTaps="handled"
         automaticallyAdjustKeyboardInsets={false}
       >
+        {/* 제목은 내용과 함께 스크롤된다. 화면 위에 고정되는 건 뒤로가기 줄뿐이다. */}
+        <View className="px-4 pb-2 pt-7">
+          <Text className="text-title-lg font-pretendard-medium text-gray-900">빙고 추가하기</Text>
+        </View>
+
         <BingoTitle
           value={title}
           onChange={(v) => {
@@ -233,6 +241,24 @@ export default function BingoAddScreen() {
             setVisibility(v);
           }}
         />
+
+        {/* 저장 버튼도 고정하지 않는다 — 화면이 짧아 보이고 스크롤 영역을 먹는다. */}
+        <View className="flex-row gap-2 px-4">
+          <Button
+            label="임시 저장"
+            variant="secondary"
+            size="md"
+            onClick={handleTempSave}
+            className="flex-1"
+          />
+          <Button
+            label="저장하기"
+            variant="primary"
+            size="md"
+            onClick={handleSave}
+            className="flex-1"
+          />
+        </View>
       </ScrollView>
 
       <Modal
@@ -287,26 +313,6 @@ export default function BingoAddScreen() {
           onDismiss={() => setPickerTarget(null)}
         />
       )}
-
-      <View
-        className="absolute bottom-0 left-0 right-0 flex-row gap-2 bg-surface px-4 pt-3"
-        style={{ paddingBottom: insets.bottom + 8 }}
-      >
-        <Button
-          label="임시 저장"
-          variant="secondary"
-          size="md"
-          onClick={handleTempSave}
-          className="flex-1"
-        />
-        <Button
-          label="저장하기"
-          variant="primary"
-          size="md"
-          onClick={handleSave}
-          className="flex-1"
-        />
-      </View>
     </View>
   );
 }
