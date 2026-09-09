@@ -3,13 +3,13 @@ import { Pressable, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useRouter } from 'expo-router';
 import * as Sentry from '@sentry/react-native';
-import { Text } from '@/components/Text';
 import Loading from '@/components/Loading';
 import { ErrorState } from '@/components/ErrorState';
 import SettingsIcon from '@/assets/icons/ic_settings.svg';
 import { BadgesPage } from '@/features/mypage/Badges';
 import { ProfileHeader } from '@/features/profile/components/ProfileHeader';
 import { FeedGrid } from '@/features/profile/components/FeedGrid';
+import { ProfileTabs, type ProfileTab } from '@/features/profile/components/ProfileTabs';
 import {
   fetchMyProfileSummary,
   fetchUserFeed,
@@ -18,11 +18,9 @@ import {
 } from '@/features/profile/lib/profile';
 import { fetchMyTeams, type TeamListEntry } from '@/features/team/lib/team';
 
-const TABS = ['피드', '뱃지'] as const;
-
 export default function MyPageScreen() {
   const router = useRouter();
-  const [tabIndex, setTabIndex] = useState(0);
+  const [tab, setTab] = useState<ProfileTab>('피드');
   const [profile, setProfile] = useState<ProfileSummary | null>(null);
   const [feed, setFeed] = useState<FeedItem[]>([]);
   const [teams, setTeams] = useState<TeamListEntry[]>([]);
@@ -57,7 +55,14 @@ export default function MyPageScreen() {
     };
   }, []);
 
-  useFocusEffect(load);
+  useFocusEffect(
+    useCallback(() => {
+      // 탭 화면이라 다른 페이지에 갔다 와도 언마운트되지 않아 뱃지 탭이 그대로 남는다.
+      // 돌아올 때는 항상 피드부터 보여준다.
+      setTab('피드');
+      return load();
+    }, [load]),
+  );
 
   // 팀에 속한 내 빙고판. 피드 항목에 '함께' 뱃지를 붙이는 데 쓴다.
   const teamBoardIds = new Set(
@@ -79,29 +84,9 @@ export default function MyPageScreen() {
         onPostsPress={() => router.push('/mypage/my-posts')}
       />
 
-      <View className="flex-row gap-6 border-b border-gray-300 px-4">
-        {TABS.map((tab, index) => (
-          <Pressable key={tab} onPress={() => setTabIndex(index)} className="items-center pt-3">
-            <Text
-              className={
-                tabIndex === index
-                  ? 'text-body-md font-pretendard-bold text-gray-800'
-                  : 'text-body-md font-pretendard-medium text-gray-400'
-              }
-            >
-              {tab}
-            </Text>
-            {/* 시안: 밑줄은 44×1.5.
-                하단 패딩을 두지 않고 -mb-px로 내려, 아래 구분선 위에 겹쳐 앉게 한다.
-                패딩이 있으면 밑줄만 공중에 뜬 줄로 보인다. */}
-            <View
-              className={`-mb-px mt-2 h-[1.5px] w-11 ${tabIndex === index ? 'bg-gray-800' : 'bg-transparent'}`}
-            />
-          </Pressable>
-        ))}
-      </View>
+      <ProfileTabs value={tab} onChange={setTab} />
 
-      {tabIndex === 0 ? (
+      {tab === '피드' ? (
         loading ? (
           <View className="flex-1 items-center justify-center">
             <Loading />
@@ -117,7 +102,6 @@ export default function MyPageScreen() {
                 router.push({ pathname: '/bingo/view', params: { bingoId: item.id } })
               }
             />
-            <View className="h-24" />
           </ScrollView>
         )
       ) : (

@@ -11,6 +11,7 @@ import { BingoData } from '@/types/bingo';
 import { BingoStat } from './BingoStat';
 import { TeamAvatars, type TeamAvatarMember } from '@/features/team/components/TeamAvatars';
 import { calcMaxBingo } from '@/lib/calcMaxBingo';
+import { getBingoPeriod } from '@/lib/bingo-period';
 import { useEffect, useRef, useState } from 'react';
 import {
   FIGMA_W,
@@ -20,23 +21,6 @@ import {
   getThemeForegroundColor,
 } from '@/features/bingo/lib/theme';
 import { shareBingoBoard } from '@/features/bingo/lib/share-board';
-
-const DAY_MS = 24 * 60 * 60 * 1000;
-
-function calcDayProgress(startDate: string | null, targetDate: string | null): [number, number] {
-  if (!startDate || !targetDate) return [0, 0];
-  const start = new Date(startDate).getTime();
-  const end = new Date(targetDate).getTime();
-  const total = Math.max(Math.round((end - start) / DAY_MS), 1);
-  const elapsed = Math.min(Math.max(Math.round((Date.now() - start) / DAY_MS), 0), total);
-  return [elapsed, total];
-}
-
-function formatDate(date: string | null): string {
-  if (!date) return '';
-  const [y, m, d] = date.split('-');
-  return `${y.slice(2)}.${m}.${d}`;
-}
 
 interface BingoCardProps {
   bingo: BingoData;
@@ -84,11 +68,12 @@ export function BingoCard({
   const textStyle = bingo.grid === '3x3' ? 'text-body-sm' : 'text-caption-md';
   const screenWidth = contentWidth;
 
-  const [dayElapsed, dayTotal] = calcDayProgress(bingo.startDate, bingo.targetDate);
   // 시작일 - 종료일. 둘 중 하나만 있으면 있는 쪽만 보여준다 (제작 중 빙고는 비어 있을 수 있다)
-  const formattedPeriod = [formatDate(bingo.startDate), formatDate(bingo.targetDate)]
-    .filter(Boolean)
-    .join(' - ');
+  const {
+    elapsed: dayElapsed,
+    total: dayTotal,
+    formatted: formattedPeriod,
+  } = getBingoPeriod(bingo.startDate, bingo.targetDate);
 
   if (!image)
     return (
@@ -181,8 +166,6 @@ export function BingoCard({
                 padding: 8,
               }}
             >
-              {/* 판 배경은 앱 테마와 무관한 서버 이미지다. 토큰 색을 쓰면 다크에서
-                  글씨가 흰색으로 뒤집혀 밝은 판 위에서 사라진다. 제목과 같은 전경색을 쓴다. */}
               <Text
                 className={`${textStyle} text-center`}
                 // 칸은 모든 테마에서 밝은 색이라 글씨는 늘 어두워야 한다. 토큰 색은 다크모드에서 흰색으로 뒤집혀 사라지고, 테마의 fgColor는 제목용이라 밝을 수 있어 칸에는 못 쓴다.

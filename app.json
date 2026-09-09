@@ -8,7 +8,7 @@
     "icon": "./assets/app_icon.png",
     "userInterfaceStyle": "automatic",
     "splash": {
-      "image": "./assets/logo.png",
+      "image": "./assets/logo1024.png",
       "resizeMode": "contain",
       "backgroundColor": "#FAFAFA"
     },
@@ -75,7 +75,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/logo.png",
+          "image": "./assets/logo1024.png",
           "imageWidth": 200,
           "backgroundColor": "#FAFAFA"
         }

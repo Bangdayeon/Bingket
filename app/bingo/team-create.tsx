@@ -150,7 +150,8 @@ export default function TeamCreateScreen() {
         keyboardShouldPersistTaps="handled"
         automaticallyAdjustKeyboardInsets={false}
       >
-        <Text className="px-4 pb-2 pt-4 text-caption-md text-gray-700">
+        {/* PageHeader 가 제목 아래 8을 이미 주므로 여기 pt 만큼이 실제 간격이 된다 */}
+        <Text className="px-4 pb-2 pt-8 text-caption-md text-gray-700">
           {TEAM_MODE_GUIDE[mode]}
         </Text>
 
@@ -207,7 +208,7 @@ export default function TeamCreateScreen() {
         )}
 
         {mode === 'competition' && (
-          <View className="mt-8 px-4 placeholder:text-gray-500">
+          <View className="mt-8 px-4">
             <SectionLabel label="내기 내용" />
             <TextInput
               value={betText}

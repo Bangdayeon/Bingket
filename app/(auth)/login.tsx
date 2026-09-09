@@ -8,7 +8,6 @@ import { useState } from 'react';
 import { View } from 'react-native';
 import { Toast } from '@/components/Toast';
 import { Logo } from '@/components/Logo';
-import { Text } from '@/components/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function LoginScreen() {
@@ -19,14 +18,7 @@ export default function LoginScreen() {
   return (
     <SafeAreaView className="flex-1 items-center bg-surface">
       <View className="flex-1 w-full md:max-w-[480px] items-center justify-center">
-        {/* 시안: 로고 150 + 20px 아래 워드마크 */}
         <Logo size={150} />
-        <Text
-          className="mt-5 font-pretendard-bold text-green-500"
-          style={{ fontSize: 48, lineHeight: 48 }}
-        >
-          빙킷
-        </Text>
       </View>
 
       <View className="w-full gap-3 px-4 pb-9 md:max-w-[480px]">
