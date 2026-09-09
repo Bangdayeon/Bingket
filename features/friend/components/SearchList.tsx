@@ -74,7 +74,11 @@ export function SearchList({
               {isSending ? (
                 <Loading className="text-gray-800" />
               ) : (
-                <Text className="text-caption-sm text-gray-900">{label}</Text>
+                <Text
+                  className={`text-caption-sm ${isPending ? 'text-gray-800' : 'text-on-brand-dark'}`}
+                >
+                  {label}
+                </Text>
               )}
             </Pressable>
           </View>

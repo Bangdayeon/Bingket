@@ -1,4 +1,5 @@
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { FIXED, useColors } from '@/lib/use-colors';
 import { DateInput } from '@/components/DateInput';
 import DoneIcon from '@/assets/icons/ic_done.svg';
 import CloseIcon from '@/assets/icons/ic_close.svg';
@@ -64,10 +65,7 @@ function MemoFooter({ length, saveState }: { length: number; saveState?: MemoSav
       )}
       {saveState === 'error' && <Text className="text-caption-md text-danger">저장 실패</Text>}
       <Text
-        className="text-caption-md"
-        style={{
-          color: length >= MEMO_MAX_LENGTH ? '#4C5252' : '#929898' /* gray-700 : gray-500 */,
-        }}
+        className={`text-caption-md ${length >= MEMO_MAX_LENGTH ? 'text-gray-700' : 'text-gray-500'}`}
       >
         {length}/{MEMO_MAX_LENGTH}
       </Text>
@@ -102,6 +100,7 @@ export function BingoCellModal({
   team,
 }: BingoCellModalProps) {
   const insets = useSafeAreaInsets();
+  const colors = useColors();
   const { width } = useWindowDimensions();
   const CARD_WIDTH = Math.min(width, TABLET_MAX_CONTENT_WIDTH) - PEEK * 2;
   const SNAP_INTERVAL = CARD_WIDTH + CARD_MARGIN * 2;
@@ -214,16 +213,13 @@ export function BingoCellModal({
           style={{ flexGrow: 0 }}
           renderItem={({ item }) => (
             <View
+              className="overflow-hidden rounded-3xl bg-surface p-4"
               style={{
                 width: CARD_WIDTH,
                 height: CARD_HEIGHT,
                 marginHorizontal: CARD_MARGIN,
-                backgroundColor: '#FAFAFA' /* surface */,
-                borderRadius: 24,
-                padding: 16,
-                overflow: 'hidden',
                 // 시안 드롭섀도: 0/0 blur 12, 검정 25%
-                shadowColor: '#000000',
+                shadowColor: FIXED.fixedBlack,
                 shadowOpacity: 0.25,
                 shadowRadius: 12,
                 shadowOffset: { width: 0, height: 0 },
@@ -252,13 +248,8 @@ export function BingoCellModal({
                     ) : (
                       // 빈 테두리 원은 에셋이 없어 View로 만든다
                       <View
-                        style={{
-                          width: 28,
-                          height: 28,
-                          borderRadius: 14,
-                          borderWidth: 1.5,
-                          borderColor: '#D2D6D6' /* gray-300 */,
-                        }}
+                        className="rounded-full border-gray-300"
+                        style={{ width: 28, height: 28, borderWidth: 1.5 }}
                       />
                     )}
                   </Pressable>
@@ -345,13 +336,8 @@ export function BingoCellModal({
             pointerEvents="box-none"
           >
             <View
-              style={{
-                width: CARD_WIDTH,
-                marginTop: insets.top + 16,
-                backgroundColor: '#FDFDFD' /* white */,
-                borderRadius: 24,
-                padding: 24,
-              }}
+              className="rounded-3xl bg-white p-6"
+              style={{ width: CARD_WIDTH, marginTop: insets.top + 16 }}
             >
               <View className="flex-row justify-between items-center mb-2">
                 <Text className="text-title-sm font-pretendard-medium text-gray-900">메모</Text>
@@ -418,7 +404,7 @@ export function BingoCellModal({
                   if (date) setTempDate(date);
                 }}
                 locale="ko-KR"
-                textColor="#181C1C" /* gray-100 : gray-900 */
+                textColor={colors.gray[900]}
                 style={{ flex: 1 }}
               />
             </View>

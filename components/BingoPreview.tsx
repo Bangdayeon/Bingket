@@ -1,4 +1,5 @@
 import { Image } from 'expo-image';
+import { FIXED } from '@/lib/use-colors';
 import { View, Text, Pressable } from 'react-native';
 import { useEffect, useState } from 'react';
 import { BingoData } from '@/types/bingo';
@@ -45,7 +46,7 @@ export default function BingoPreview({
 }: BingoPreviewProps) {
   const [image, setImage] = useState<string | null>(null);
   const [checkImage, setCheckImage] = useState<string | null>(null);
-  const [fgColor, setFgColor] = useState<string>('#181C1C');
+  const [fgColor, setFgColor] = useState<string>(FIXED.boardForeground);
 
   useEffect(() => {
     const load = async () => {
@@ -144,17 +145,8 @@ export default function BingoPreview({
       {bingo.cells.map((text: string, i: number) => (
         <View
           key={i}
-          style={{
-            width: `${100 / cols}%`,
-            aspectRatio: 1,
-            borderRadius: 4,
-            borderWidth: 1,
-            borderColor: '#D2D6D6' /* gray-300 */,
-            backgroundColor: '#FDFDFD' /* white */,
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: 4,
-          }}
+          className="items-center justify-center rounded border border-gray-300 bg-white p-1"
+          style={{ width: `${100 / cols}%`, aspectRatio: 1 }}
         >
           <Text className="text-caption-sm text-center text-gray-900" numberOfLines={2}>
             {text}

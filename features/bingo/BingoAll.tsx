@@ -1,4 +1,5 @@
 import * as Sentry from '@sentry/react-native';
+import { useColors } from '@/lib/use-colors';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { InteractionManager, RefreshControl, ScrollView, View } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
@@ -111,6 +112,7 @@ function CreateBingoButtons({
 }
 
 export function BingoAll() {
+  const colors = useColors();
   const router = useRouter();
   const [bingos, setBingos] = useState<BingoData[]>([]);
   const [cellDetails, setCellDetails] = useState<Record<string, BingoCellDetail[]>>({});
@@ -496,7 +498,11 @@ export function BingoAll() {
       <ScrollView
         className="flex-1"
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#759E38" />
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor={colors.green[500]}
+          />
         }
       >
         {bingos.map((bingo) => (

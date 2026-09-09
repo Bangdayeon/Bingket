@@ -208,17 +208,14 @@ export default function BingoViewScreen() {
               value={retrospective}
               onChangeText={handleRetrospectiveChange}
               placeholder="메모를 입력해주세요."
-              placeholderTextColor="#929898" /* gray-500 */
               multiline
               maxLength={MEMO_MAX_LENGTH}
               textAlignVertical="top"
               style={{
                 height: 190,
-                backgroundColor: '#EFEFEF' /* gray-200 */,
                 borderRadius: 16,
                 padding: 12,
                 lineHeight: 20,
-                color: '#181C1C' /* gray-900 */,
               }}
             />
             <Text className="mt-1 text-right text-caption-sm text-gray-500">

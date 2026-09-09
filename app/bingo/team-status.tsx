@@ -311,7 +311,6 @@ export default function TeamStatusScreen() {
                   value={myRetrospective}
                   onChangeText={handleRetrospectiveChange}
                   placeholder="회고를 남겨보세요."
-                  placeholderTextColor="#B4BBBB" /* gray-400 */
                   multiline
                   maxLength={500}
                   className="h-[140px] bg-gray-100 rounded-2xl p-4 text-body-md"

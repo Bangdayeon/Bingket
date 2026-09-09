@@ -93,8 +93,7 @@ export default function MyPageScreen() {
             </Text>
             {/* 시안: 밑줄은 44×1.5 */}
             <View
-              className="mt-2 h-[1.5px] w-11"
-              style={{ backgroundColor: tabIndex === index ? '#2E3333' : 'transparent' }}
+              className={`mt-2 h-[1.5px] w-11 ${tabIndex === index ? 'bg-gray-800' : 'bg-transparent'}`}
             />
           </Pressable>
         ))}

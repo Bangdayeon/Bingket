@@ -1,4 +1,5 @@
 import { TouchableOpacity, useWindowDimensions } from 'react-native';
+import { useColors } from '@/lib/use-colors';
 import Animated, { useAnimatedStyle, withSpring } from 'react-native-reanimated';
 
 // 시안: 높이 16, 비활성 16, 활성 24, radius 99.
@@ -7,6 +8,7 @@ const DOT_ACTIVE_WIDTH = 24;
 const DOT_INACTIVE_WIDTH = 16;
 
 export function Dot({ active, onPress }: { active: boolean; onPress: () => void }) {
+  const colors = useColors();
   const { width } = useWindowDimensions();
   const isTablet = width >= 768;
   const scale = isTablet ? 1.4 : 1;
@@ -18,7 +20,7 @@ export function Dot({ active, onPress }: { active: boolean; onPress: () => void 
       stiffness: 120,
       mass: 0.6,
     }),
-    backgroundColor: withSpring(active ? '#94BD52' : '#D2D6D6', {
+    backgroundColor: withSpring(active ? colors.green[400] : colors.gray[300], {
       damping: 10,
       stiffness: 100,
     }) /* green-400 : gray-300 */,

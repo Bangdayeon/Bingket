@@ -56,9 +56,7 @@ export function FriendList({
             <CheckIcon
               width={24}
               height={24}
-              color={
-                selectedIds.includes(friend.friendId) ? '#94BD52' : '#D2D6D6'
-              } /* green-400 : gray-300 */
+              className={selectedIds.includes(friend.friendId) ? 'text-green-400' : 'text-gray-300'}
             />
           ) : (
             /* 팀 빙고 초대는 '새 빙고 만들기' 흐름에서만 시작한다 */

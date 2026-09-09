@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { FIXED } from '@/lib/use-colors';
 import * as Sentry from '@sentry/react-native';
 import { Toast } from '@/components/Toast';
 import { Animated, Pressable, View } from 'react-native';
@@ -11,7 +12,8 @@ import { checkAndAwardBadges } from '@/lib/badge-checker';
 const SIZES = { sm: 20, md: 24 } as const;
 
 // 파티클 설정
-const PARTICLE_COLORS = ['#E02828', '#FF6B00', '#FFB800', '#FF4444', '#FF8C00'];
+// 축하 효과라 테마를 따르지 않는다.
+const PARTICLE_COLORS = FIXED.particle;
 const PARTICLE_COUNT = 10;
 const PARTICLE_SIZE = 3;
 

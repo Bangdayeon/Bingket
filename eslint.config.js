@@ -43,6 +43,27 @@ export default defineConfig([
     },
   },
   {
+    // 색상 리터럴 금지. 화면에 하드코딩된 색이 하나라도 남으면 그 요소만 테마를
+    // 따라가지 않는다. grep은 지금 한 번 확인할 뿐이라, 재발은 규칙으로 막는다.
+    // 값이 필요한 자리(Animated.interpolate, RefreshControl 등)는
+    // useColors() / FIXED (constants/color-tokens.cjs)에서 가져온다.
+    files: ['app/**/*.{ts,tsx}', 'components/**/*.{ts,tsx}', 'features/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'Literal[value=/^#[0-9A-Fa-f]{3,8}$/]',
+          message:
+            '색상 리터럴 금지 — tailwind 클래스나 useColors()/FIXED(@/lib/use-colors)를 쓰세요.',
+        },
+        {
+          selector: 'Literal[value=/^rgba?[(]/]',
+          message: '색상 리터럴 금지 — bg-scrim/70 같은 토큰 유틸리티를 쓰세요.',
+        },
+      ],
+    },
+  },
+  {
     files: ['**/*.json'],
     plugins: { json },
     language: 'json/json',

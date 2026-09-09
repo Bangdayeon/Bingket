@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { FIXED } from '@/lib/use-colors';
 import { View } from 'react-native';
 import { Image } from 'expo-image';
 import { Text } from '@/components/Text';
@@ -38,7 +39,7 @@ interface Props {
 export function BingoThumbnail({ width, grid, theme, title, cells }: Props) {
   const [image, setImage] = useState<string | null>(null);
   const [checkImage, setCheckImage] = useState<string | null>(null);
-  const [fgColor, setFgColor] = useState<string>('#181C1C'); /* gray-900 */
+  const [fgColor, setFgColor] = useState<string>(FIXED.boardForeground);
 
   useEffect(() => {
     let cancelled = false;
@@ -122,7 +123,6 @@ export function BingoThumbnail({ width, grid, theme, title, cells }: Props) {
               numberOfLines={3}
               style={{
                 textAlign: 'center',
-                color: '#181C1C' /* gray-900 */,
                 fontSize: cellFont,
                 lineHeight: cellFont * 1.25,
               }}

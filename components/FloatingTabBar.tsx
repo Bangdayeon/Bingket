@@ -50,17 +50,11 @@ export function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarP
 
   return (
     <View
+      // 상단 모서리가 둥글어서 테두리를 위/좌/우에 둘러야 곡선을 따라간다.
+      // borderTopWidth만 주면 곡선 구간에서 선이 끊긴다.
+      className="flex-row rounded-t-3xl border-l border-r border-t border-gray-300 bg-white"
       style={{
         flexDirection: 'row',
-        backgroundColor: '#FDFDFD', // white
-        // 상단 모서리가 둥글어서 테두리를 위/좌/우에 둘러야 곡선을 따라간다.
-        // borderTopWidth만 주면 곡선 구간에서 선이 끊긴다.
-        borderTopWidth: 1,
-        borderLeftWidth: 1,
-        borderRightWidth: 1,
-        borderColor: '#D2D6D6', // gray-300
-        borderTopLeftRadius: 24,
-        borderTopRightRadius: 24,
         // 탭을 flex로 균등 분배하지 않는다. 좌우를 비우고 나머지를 space-between으로
         // 벌린다 — 시안의 아이콘 위치가 이 방식이라야 맞는다.
         justifyContent: 'space-between',
@@ -75,7 +69,7 @@ export function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarP
         const tab = TAB_ICONS[route.name];
         const Icon = tab ? (isFocused ? tab.on : tab.off) : null;
         const isNotifications = route.name === 'notifications';
-        const color = isFocused ? '#2E3333' : '#6E7575'; // gray-800 / gray-600
+        const labelClass = isFocused ? 'text-gray-800' : 'text-gray-600';
 
         const onPress = () => {
           const event = navigation.emit({
@@ -110,26 +104,17 @@ export function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarP
                 position: 'relative',
               }}
             >
-              {Icon && <Icon width={28} height={28} color={color} />}
+              {Icon && <Icon width={28} height={28} className={labelClass} />}
               {isNotifications && hasUnread && (
                 <View
-                  style={{
-                    position: 'absolute',
-                    top: -2,
-                    right: -2,
-                    width: 6,
-                    height: 6,
-                    borderRadius: 3,
-                    backgroundColor: '#CD5353', // danger
-                  }}
+                  className="absolute -right-0.5 -top-0.5 rounded-full bg-danger"
+                  style={{ width: 6, height: 6 }}
                 />
               )}
             </View>
             {/* lineHeight를 폰트 크기에 붙여 아이콘과의 간격을 gap으로만 통제한다.
                 20을 주면 글자 위아래로 4px씩 빈 공간이 더 생겨 간격이 흐려진다. */}
-            <Text className="text-caption-sm font-pretendard" style={{ color }}>
-              {tab?.label}
-            </Text>
+            <Text className={`text-caption-sm font-pretendard ${labelClass}`}>{tab?.label}</Text>
           </TouchableOpacity>
         );
       })}

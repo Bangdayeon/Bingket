@@ -68,7 +68,9 @@ export function FeedGrid({
                 item.status === 'done' ? 'bg-green-400' : 'bg-gray-200'
               }`}
             >
-              <Text className="text-caption-sm text-gray-900">
+              <Text
+                className={`text-caption-sm ${item.status === 'done' ? 'text-on-brand-dark' : 'text-gray-800'}`}
+              >
                 {item.status === 'done' ? '완료' : '진행 중'}
               </Text>
             </View>

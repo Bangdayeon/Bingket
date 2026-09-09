@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { FIXED } from '@/lib/use-colors';
 import { Modal, Pressable, useWindowDimensions, View } from 'react-native';
 import IcInfo from '@/assets/icons/ic_info.svg';
 import { Text } from '@/components/Text';
@@ -34,7 +35,7 @@ export function Information({ content }: InformationProps) {
               top: anchor.y + anchor.height + 4,
               left: Math.max(16, Math.min(anchor.x - 12, screenWidth - 256)),
               maxWidth: 240,
-              shadowColor: '#000',
+              shadowColor: FIXED.fixedBlack,
               shadowOpacity: 0.08,
               shadowRadius: 8,
               shadowOffset: { width: 0, height: 2 },

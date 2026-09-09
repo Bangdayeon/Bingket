@@ -26,6 +26,7 @@ export interface FixedColors {
   kakao: string;
   onBrand: string;
   onDanger: string;
+  onBrandDark: string;
   onSocial: string;
   socialBorder: string;
   fixedWhite: string;

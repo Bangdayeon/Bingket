@@ -1,4 +1,5 @@
 import { Pressable, StyleProp, View, ViewStyle } from 'react-native';
+import { FIXED } from '@/lib/use-colors';
 import { Text } from './Text';
 
 export interface PopoverItem {
@@ -24,13 +25,13 @@ export function Popover({ visible, items, onDismiss, style }: PopoverProps) {
         onPress={onDismiss}
       />
       <View
+        className="bg-white"
         style={[
           {
             position: 'absolute',
-            backgroundColor: '#FDFDFD' /* white */,
             borderRadius: 12,
             minWidth: 144,
-            shadowColor: '#000000',
+            shadowColor: FIXED.fixedBlack,
             shadowOffset: { width: 0, height: 2 },
             shadowOpacity: 0.15,
             shadowRadius: 5,
@@ -47,18 +48,10 @@ export function Popover({ visible, items, onDismiss, style }: PopoverProps) {
               onDismiss();
               item.onPress();
             }}
-            style={[
-              { paddingHorizontal: 16, paddingVertical: 12 },
-              i < items.length - 1 && {
-                borderBottomWidth: 1,
-                borderBottomColor: '#D2D6D6' /* gray-300 */,
-              },
-            ]}
+            className={i < items.length - 1 ? 'border-b border-gray-300' : undefined}
+            style={{ paddingHorizontal: 16, paddingVertical: 12 }}
           >
-            <Text
-              className="text-body-md"
-              style={{ color: item.danger ? '#CD5353' /* danger */ : '#181C1C' /* gray-900 */ }}
-            >
+            <Text className={`text-body-md ${item.danger ? 'text-danger' : 'text-gray-900'}`}>
               {item.label}
             </Text>
           </Pressable>

@@ -58,14 +58,7 @@ export function Toast({ message, visible, onDismiss }: ToastProps) {
           }}
           pointerEvents="none"
         >
-          <Animated.View
-            style={{
-              backgroundColor: '#4C5252' /* gray-700 */,
-              borderRadius: 9999,
-              paddingHorizontal: 20,
-              paddingVertical: 10,
-            }}
-          >
+          <Animated.View className="rounded-full bg-gray-700 px-5 py-2.5">
             <Text className="text-body-sm text-white">{message}</Text>
           </Animated.View>
         </Animated.View>

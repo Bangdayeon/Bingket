@@ -66,6 +66,7 @@ module.exports = {
       kakao: FIXED.kakao,
       'on-brand': FIXED.onBrand,
       'on-danger': FIXED.onDanger,
+      'on-brand-dark': FIXED.onBrandDark,
       'on-social': FIXED.onSocial,
       'social-border': FIXED.socialBorder,
       'fixed-white': FIXED.fixedWhite,

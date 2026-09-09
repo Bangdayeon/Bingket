@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { useColors } from '@/lib/use-colors';
 import { Animated, Pressable } from 'react-native';
 
 interface ToggleProps {
@@ -14,6 +15,7 @@ const KNOB_SIZE = 24;
 const KNOB_MARGIN = 4;
 
 export function Toggle({ value, onValueChange, disabled = false }: ToggleProps) {
+  const colors = useColors();
   const anim = useRef(new Animated.Value(value ? 1 : 0)).current;
 
   useEffect(() => {
@@ -30,7 +32,7 @@ export function Toggle({ value, onValueChange, disabled = false }: ToggleProps) 
   });
   const backgroundColor = anim.interpolate({
     inputRange: [0, 1],
-    outputRange: ['#D2D6D6', '#94BD52'],
+    outputRange: [colors.gray[300], colors.green[400]],
   }); /* gray-300 : green-400 */
 
   return (
@@ -49,13 +51,8 @@ export function Toggle({ value, onValueChange, disabled = false }: ToggleProps) 
         }}
       >
         <Animated.View
-          style={{
-            width: KNOB_SIZE,
-            height: KNOB_SIZE,
-            borderRadius: 9999,
-            backgroundColor: '#FDFDFD' /* white */,
-            transform: [{ translateX }],
-          }}
+          className="rounded-full bg-white"
+          style={{ width: KNOB_SIZE, height: KNOB_SIZE, transform: [{ translateX }] }}
         />
       </Animated.View>
     </Pressable>

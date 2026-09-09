@@ -1,4 +1,5 @@
 import { PageHeader } from '@/components/PageHeader';
+import { FIXED, useColors } from '@/lib/use-colors';
 import { useRouter } from 'expo-router';
 import { ImageSourcePropType, Image, Pressable, View } from 'react-native';
 import { Text } from '@/components/Text';
@@ -22,22 +23,22 @@ const PROVIDER_CONFIG: Record<
 > = {
   google: {
     label: 'Google',
-    bgColor: '#FFFFFF',
+    bgColor: FIXED.fixedWhite,
     logo: require('@/assets/icons/google_logo.png'),
   },
   apple: {
     label: 'Apple',
-    bgColor: '#000000',
+    bgColor: FIXED.fixedBlack,
     logo: require('@/assets/icons/apple_logo.png'),
   },
   kakao: {
     label: '카카오톡',
-    bgColor: '#FEE500',
+    bgColor: FIXED.kakao,
     logo: require('@/assets/icons/kakao_logo.png'),
   },
   email: {
     label: '이메일',
-    bgColor: '#FFFFFF',
+    bgColor: FIXED.fixedWhite,
     logo: require('@/assets/icons/mail_logo.png'),
   },
 };
@@ -69,6 +70,7 @@ export default function AccountScreen() {
   // accounts.length === 0 으로 판단해서, 연동 계정이 없으면 스피너가 영영 돌았다.
   const [accountsLoading, setAccountsLoading] = useState(true);
   const [accountsFailed, setAccountsFailed] = useState(false);
+  const colors = useColors();
 
   const loadAccounts = useCallback(() => {
     setAccountsLoading(true);
@@ -132,7 +134,7 @@ export default function AccountScreen() {
               <View key={account.provider} className="flex-row items-center gap-3 mb-3">
                 <View
                   className="w-6 h-6 rounded-md items-center justify-center border border-gray-200  "
-                  style={{ backgroundColor: cfg?.bgColor ?? '#EFEFEF' }}
+                  style={{ backgroundColor: cfg?.bgColor ?? colors.gray[200] }}
                 >
                   {cfg?.logo && (
                     <Image

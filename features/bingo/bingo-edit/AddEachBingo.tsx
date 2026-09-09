@@ -1,4 +1,5 @@
 import { Modal } from '@/components/Modal';
+import { FIXED } from '@/lib/use-colors';
 import { LIMITS } from '@/constants/limits';
 import { useEffect, useState } from 'react';
 import { Image, TouchableOpacity, View } from 'react-native';
@@ -34,7 +35,7 @@ export function AddEachBingo({
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [inputText, setInputText] = useState('');
   const [image, setImage] = useState<string | null>(null);
-  const [fgColor, setFgColor] = useState<string>('#181C1C');
+  const [fgColor, setFgColor] = useState<string>(FIXED.boardForeground);
 
   useEffect(() => {
     setLocalCells(cells);
@@ -183,17 +184,8 @@ export function AddEachBingo({
             key={i}
             onPress={() => handleCellPress(i)}
             activeOpacity={0.7}
-            style={{
-              width: cellSize,
-              height: cellSize,
-              borderRadius: 8,
-              borderWidth: 1,
-              borderColor: '#D2D6D6' /* gray-300 */,
-              backgroundColor: '#FDFDFD' /* white */,
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: 4,
-            }}
+            className="items-center justify-center rounded-lg border border-gray-300 bg-white p-1"
+            style={{ width: cellSize, height: cellSize }}
           >
             <Text className={`${textStyle} text-center`} numberOfLines={3}>
               {localCells[i] ?? ''}

@@ -1,4 +1,5 @@
 import { Image } from 'expo-image';
+import { FIXED } from '@/lib/use-colors';
 import { InteractionManager, Pressable, TouchableOpacity, View } from 'react-native';
 import * as Sentry from '@sentry/react-native';
 import { Text } from '@/components/Text';
@@ -58,7 +59,7 @@ export function BingoCard({
 }: BingoCardProps) {
   const [image, setImage] = useState<string | null>(null);
   const [checkImage, setCheckImage] = useState<string | null>(null);
-  const [fgColor, setFgColor] = useState<string>('#181C1C');
+  const [fgColor, setFgColor] = useState<string>(FIXED.boardForeground);
   const boardRef = useRef<View>(null);
   // 캡처 중에는 저장·편집 버튼을 감춘다
   const [capturing, setCapturing] = useState(false);

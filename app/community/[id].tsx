@@ -459,25 +459,13 @@ export default function CommunityDetailScreen() {
                 className="flex-row items-center gap-3 py-2"
               >
                 <View
-                  style={{
-                    width: 16,
-                    height: 16,
-                    borderRadius: 8,
-                    borderWidth: 1.5,
-                    borderColor: selectedReason === reason ? '#94BD52' : '#D2D6D6',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
+                  className={`h-4 w-4 items-center justify-center rounded-full ${
+                    selectedReason === reason ? 'border-green-400' : 'border-gray-300'
+                  }`}
+                  style={{ borderWidth: 1.5 }}
                 >
                   {selectedReason === reason && (
-                    <View
-                      style={{
-                        width: 8,
-                        height: 8,
-                        borderRadius: 4,
-                        backgroundColor: '#94BD52',
-                      }}
-                    />
+                    <View className="h-2 w-2 rounded-full bg-green-400" />
                   )}
                 </View>
                 <Text className="text-body-md">{reason}</Text>

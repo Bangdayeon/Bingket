@@ -39,7 +39,6 @@ export function BadgeModal({ visible, badge, onClose }: BadgeModalProps) {
         <View
           style={{
             width: 280,
-            backgroundColor: '#FDFDFD',
             borderRadius: 30,
             padding: 28,
             alignItems: 'center',
@@ -59,7 +58,6 @@ export function BadgeModal({ visible, badge, onClose }: BadgeModalProps) {
                 width: 120,
                 height: 120,
                 borderRadius: 20,
-                backgroundColor: '#F6F7F7',
               }}
             />
           )}
@@ -75,7 +73,6 @@ export function BadgeModal({ visible, badge, onClose }: BadgeModalProps) {
           {/* 획득일 */}
           <View
             style={{
-              backgroundColor: '#F6F7F7',
               borderRadius: 9999,
               paddingHorizontal: 16,
               paddingVertical: 8,

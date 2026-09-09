@@ -101,6 +101,8 @@ const FIXED = {
   onBrand: '#FDFDFD',
   /** danger 채움 위 전경. */
   onDanger: '#FDFDFD',
+  /** green 채움 위 어두운 전경. 시안이 흰색이 아니라 진한 글자를 쓴 자리. */
+  onBrandDark: '#181C1C',
   /** 소셜 로그인 버튼 라벨. 카카오 가이드가 강제한다. */
   onSocial: 'rgba(0,0,0,0.85)',
   /** Apple/Google 버튼 테두리. */

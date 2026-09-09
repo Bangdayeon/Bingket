@@ -19,15 +19,10 @@ export const SearchInput = forwardRef<RNTextInput, SearchInputProps>(function Se
 ) {
   return (
     <View className={`h-12 flex-row items-center rounded-xl bg-gray-200 px-3 ${className}`}>
-      <SearchIcon
-        width={24}
-        height={24}
-        color={value ? '#2E3333' : '#929898'} /* gray-800 : gray-500 */
-      />
+      <SearchIcon width={24} height={24} className={value ? 'text-gray-800' : 'text-gray-500'} />
       <RNTextInput
         ref={ref}
         value={value}
-        placeholderTextColor="#929898" /* gray-500 */
         className="ml-1 flex-1 text-body-md text-gray-800"
         style={style}
         {...rest}

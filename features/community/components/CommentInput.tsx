@@ -37,7 +37,7 @@ export function CommentInput({
     if (replyTo) inputRef.current?.focus();
   }, [replyTo?.id]);
 
-  const anonymousColor = isAnonymous ? '#94BD52' /* green-400 */ : '#B4BBBB'; /* gray-400 */
+  const anonymousClass = isAnonymous ? 'text-green-400' : 'text-gray-400';
   const [pressed, setPressed] = useState(false);
 
   return (
@@ -53,10 +53,8 @@ export function CommentInput({
 
       <View className="flex-row items-center gap-3 px-4 pb-1 pt-3">
         <Pressable className="flex-row items-center gap-1" onPress={onToggleAnonymous} hitSlop={8}>
-          <Text className="text-body-md" style={{ color: anonymousColor }}>
-            익명
-          </Text>
-          <CheckIcon width={20} height={20} color={anonymousColor} />
+          <Text className={`text-body-md ${anonymousClass}`}>익명</Text>
+          <CheckIcon width={20} height={20} className={anonymousClass} />
         </Pressable>
 
         <TextInput
@@ -70,7 +68,13 @@ export function CommentInput({
         />
 
         <IconButton
-          icon={<ArrowUpwardIcon width={24} height={24} color={pressed ? '#929898' : '#B4BBBB'} />}
+          icon={
+            <ArrowUpwardIcon
+              width={24}
+              height={24}
+              className={pressed ? 'text-gray-500' : 'text-gray-400'}
+            />
+          }
           onClick={onSubmit}
           variant="ghost"
           loading={isSubmitting}

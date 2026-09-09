@@ -34,8 +34,7 @@ export function BingoStat({
         {label}
       </Text>
       <Text
-        className={`${size === 'sm' ? 'text-caption-sm' : 'text-caption-sm md:text-body-sm'} text-gray-800`}
-        style={isOver ? { color: '#CD5353' /* danger */ } : undefined}
+        className={`${size === 'sm' ? 'text-caption-sm' : 'text-caption-sm md:text-body-sm'} ${isOver ? 'text-danger' : 'text-gray-800'}`}
       >
         {valueText ?? `${current}/${total}`}
       </Text>
