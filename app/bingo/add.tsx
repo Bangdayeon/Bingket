@@ -289,10 +289,9 @@ export default function BingoAddScreen() {
 
       <Modal
         visible={showLeaveModal}
-        title="변경사항을 저장하지 않았어요"
-        body="변경사항을 저장할까요?"
-        variant="warning"
-        cancelLabel="이어서 편집하기"
+        title="저장하지 않은 변경사항이 있어요"
+        body="지금 나가면 변경 사항이 저장되지 않아요."
+        cancelLabel="계속 수정"
         confirmLabel="나가기"
         onCancel={() => setShowLeaveModal(false)}
         onConfirm={() => {

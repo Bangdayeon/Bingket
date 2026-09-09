@@ -225,28 +225,32 @@ export default function BingoModifyScreen() {
             </ScrollView>
           </View>
 
-          {/* 시안: 남은 수정 횟수는 판 위, 좌측 정렬 */}
-          <Text className="px-4 text-body-sm text-gray-600">
-            빙고 수정 가능 횟수 {totalUsedEdits}/{isUnlimited ? '무제한' : maxEdits}
-          </Text>
+          {/* 수정 횟수는 판에 대한 설명이라 판과 한 덩어리로 둔다.
+              바깥 gap-8을 그대로 받으면 판에서 32px 떨어져 따로 노는 줄로 보인다. */}
+          <View className="gap-2">
+            {/* 시안: 남은 수정 횟수는 판 위, 좌측 정렬 */}
+            <Text className="px-4 text-body-sm text-gray-600">
+              빙고 수정 가능 횟수 {totalUsedEdits}/{isUnlimited ? '무제한' : maxEdits}
+            </Text>
 
-          <AddEachBingo
-            selectedGrid={grid}
-            theme={selectedTheme}
-            title={title}
-            cells={cells}
-            disabledCells={disabledCells}
-            onCellsChange={(newCells) => {
-              markDirty();
-              const changedIdx = newCells.findIndex((c, i) => c !== cells[i]);
-              if (changedIdx >= 0) {
-                const updated = [...cellEdits];
-                updated[changedIdx] = (updated[changedIdx] ?? 0) + 1;
-                setCellEdits(updated);
-              }
-              setCells(newCells);
-            }}
-          />
+            <AddEachBingo
+              selectedGrid={grid}
+              theme={selectedTheme}
+              title={title}
+              cells={cells}
+              disabledCells={disabledCells}
+              onCellsChange={(newCells) => {
+                markDirty();
+                const changedIdx = newCells.findIndex((c, i) => c !== cells[i]);
+                if (changedIdx >= 0) {
+                  const updated = [...cellEdits];
+                  updated[changedIdx] = (updated[changedIdx] ?? 0) + 1;
+                  setCellEdits(updated);
+                }
+                setCells(newCells);
+              }}
+            />
+          </View>
         </View>
 
         <VisibilitySelector value={visibility} onChange={setVisibility} />
@@ -288,7 +292,7 @@ export default function BingoModifyScreen() {
 
       <Modal
         visible={showLeaveModal}
-        title="변경사항을 저장하지 않았어요"
+        title="저장하지 않은 변경사항이 있어요"
         body="변경사항을 저장할까요?"
         variant="warning"
         cancelLabel="이어서 편집하기"

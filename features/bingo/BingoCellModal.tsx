@@ -18,6 +18,7 @@ import {
 import { BlurView } from 'expo-blur';
 import { TABLET_MAX_CONTENT_WIDTH } from '@/lib/use-responsive';
 import { Text } from '@/components/Text';
+import Button from '@/components/Button';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ProfileAvatar } from '@/components/ProfileAvatar';
 
@@ -342,9 +343,14 @@ export function BingoCellModal({
             >
               <View className="flex-row justify-between items-center mb-2">
                 <Text className="text-title-sm font-pretendard-medium text-gray-900">메모</Text>
-                <Pressable onPress={closeMemoEditor} hitSlop={8}>
-                  <Text className="text-title-sm text-green-500">완료</Text>
-                </Pressable>
+                {/* 버튼 자체 좌우 패딩(14)만큼 당겨서 라벨이 카드 안쪽 여백에 맞게 선다. */}
+                <Button
+                  label="완료"
+                  variant="ghost"
+                  size="sm"
+                  onClick={closeMemoEditor}
+                  className="-mr-[14px]"
+                />
               </View>
 
               <Text className="text-body-sm mb-3 text-gray-500 placeholder:text-gray-500">

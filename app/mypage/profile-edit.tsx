@@ -251,7 +251,7 @@ export default function ProfileEditPage() {
       <Toast message={toast} visible={toastVisible} onDismiss={() => setToastVisible(false)} />
       <Modal
         visible={showLeaveModal}
-        title="변경사항을 저장하지 않았어요"
+        title="저장하지 않은 변경사항이 있어요"
         body="변경사항을 저장할까요?"
         variant="warning"
         cancelLabel="이어서 편집하기"
