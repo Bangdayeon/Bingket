@@ -60,7 +60,8 @@ export default function MyPostsScreen() {
         <ErrorState onRetry={load} />
       ) : posts.length === 0 ? (
         <EmptyState
-          message="아직 작성한 글이 없습니다"
+          align="top"
+          message="아직 작성한 글이 없어요"
           actionLabel="게시판 둘러보기"
           onAction={() => router.replace('/(tabs)/community')}
         />

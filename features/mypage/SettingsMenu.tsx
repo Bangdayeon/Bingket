@@ -85,7 +85,7 @@ export function SettingsMenu() {
       });
     } catch (e) {
       Sentry.captureException(e);
-      setResultModal({ title: '오류', body: '문의 접수에 실패했습니다. 다시 시도해주세요.' });
+      setResultModal({ title: '오류', body: '문의 접수에 실패했어요. 다시 시도해주세요.' });
     } finally {
       setIsReportLoading(false);
     }
@@ -94,7 +94,7 @@ export function SettingsMenu() {
   return (
     <>
       <ScrollView className="flex-1 bg-surface md:w-full md:max-w-[600px] md:self-center">
-        <View className="px-4">
+        <View className="gap-3 px-4 py-3">
           <MenuItem
             label="프로필 편집"
             onPress={() => navigate('/mypage/profile-edit')}
@@ -107,7 +107,7 @@ export function SettingsMenu() {
 
         <View className="h-px bg-gray-300" />
 
-        <View className="px-4 md:w-full md:max-w-[600px] md:self-center">
+        <View className="gap-3 px-4 py-3">
           <MenuItem label="앱 리뷰 남기기" onPress={openReviewPage} />
           <MenuItem
             label="자주 묻는 질문"
@@ -147,7 +147,7 @@ export function SettingsMenu() {
         <View className="h-px bg-gray-300" />
 
         {/* 시안: 개발자 이메일이 버전 정보보다 위이고, 둘은 별도 구획이다 */}
-        <View className="px-4">
+        <View className="gap-3 px-4 py-3">
           <MenuItem
             label="개발자 이메일"
             onPress={async () => {
@@ -165,7 +165,7 @@ export function SettingsMenu() {
 
         <View className="h-px bg-gray-300" />
 
-        <View className="px-4">
+        <View className="gap-3 px-4 py-3">
           <MenuItem label="로그아웃" muted onPress={() => setShowLogoutModal(true)} />
         </View>
         <View className="h-40" />
@@ -224,7 +224,7 @@ export function SettingsMenu() {
         />
       </ScrollView>
       <Toast
-        message="이메일이 복사되었습니다."
+        message="이메일을 복사했어요."
         visible={emailToastVisible}
         onDismiss={() => setEmailToastVisible(false)}
       />

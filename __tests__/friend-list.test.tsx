@@ -28,12 +28,12 @@ it('접기/펼치기가 동작한다', () => {
 
 it('친구 목록 빈 상태 문구가 검색 여부에 따라 다르다', () => {
   const a = render(<FriendList friends={[]} handleDeleteFriend={noop} handleProfilePress={noop} />);
-  expect(a.getByText('아직 친구가 없습니다')).toBeTruthy();
+  expect(a.getByText('아직 친구가 없어요')).toBeTruthy();
 
   const b = render(
     <FriendList friends={[]} searching handleDeleteFriend={noop} handleProfilePress={noop} />,
   );
-  expect(b.getByText('일치하는 친구가 없습니다')).toBeTruthy();
+  expect(b.getByText('일치하는 친구가 없어요')).toBeTruthy();
 });
 
 it('전체 유저 목록은 이미 친구인 사람을 제외한다', () => {
@@ -63,6 +63,7 @@ it('전체 유저 목록은 이미 친구인 사람을 제외한다', () => {
       searchResults={results as any}
       sending={null}
       handleRequest={noop}
+      handleProfilePress={noop}
     />,
   );
   expect(screen.queryByText('친구야')).toBeNull();

@@ -37,9 +37,12 @@ export function AddEachBingo({
   const [image, setImage] = useState<string | null>(null);
   const [fgColor, setFgColor] = useState<string>(FIXED.boardForeground);
 
-  useEffect(() => {
+  // prop이 바뀌면 렌더 중에 맞춘다(효과로 미러링하면 렌더가 한 번 더 돈다).
+  const [prevCells, setPrevCells] = useState(cells);
+  if (cells !== prevCells) {
+    setPrevCells(cells);
     setLocalCells(cells);
-  }, [cells]);
+  }
 
   useEffect(() => {
     const load = async () => {
@@ -57,7 +60,8 @@ export function AddEachBingo({
   const [cols, rows] = selectedGrid.split('x').map(Number);
   // 시안: 판은 좌우 여백 없이 화면 폭 전체를 쓴다
   const availableWidth = contentWidth;
-  const textStyle = selectedGrid === '3x3' ? 'text-body-sm' : 'text-caption-md';
+  // 완성된 판(BingoCard)과 같은 크기로 보여야 작성 중과 결과가 어긋나지 않는다
+  const textStyle = 'text-caption-sm';
 
   const handleCellPress = (index: number) => {
     if (disabledCells?.[index]) return;
@@ -94,8 +98,8 @@ export function AddEachBingo({
         />
       }
       variant="default"
-      cancelLabel="취소하기"
-      confirmLabel="저장하기"
+      cancelLabel="취소"
+      confirmLabel="저장"
       onCancel={handleCancel}
       onConfirm={handleSave}
       onDismiss={handleCancel}
@@ -161,7 +165,14 @@ export function AddEachBingo({
                   padding: 4,
                 }}
               >
-                <Text className={`${textStyle} text-center`} numberOfLines={3}>
+                {/* 판 이미지 위라 앱 테마가 아니라 판의 전경색을 따라야 한다.
+                    아래 폴백 그리드는 앱 표면 위에 그리므로 기본 토큰 색이 맞다. */}
+                <Text
+                  className={`${textStyle} text-center`}
+                  // 칸은 모든 테마에서 밝은 색이라 글씨는 늘 어두워야 한다. 토큰 색은 다크모드에서 흰색으로 뒤집혀 사라지고, 테마의 fgColor는 제목용이라 밝을 수 있어 칸에는 못 쓴다.
+                  style={{ color: FIXED.boardForeground }}
+                  numberOfLines={3}
+                >
                   {localCells[i] ?? ''}
                 </Text>
               </TouchableOpacity>

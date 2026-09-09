@@ -12,6 +12,8 @@ interface MenuItemProps {
 }
 
 // 시안: 행 높이 44, 라벨 16/20 Regular gray-800, 화살표 24 gray-800, 우측 텍스트 gray-600.
+// 항목 사이 간격은 이 컴포넌트가 아니라 감싸는 그룹의 gap이 준다 —
+// 행 높이를 키워 대신하면 라벨만 헐렁해지고 간격은 여전히 0이다.
 export function MenuItem({
   label,
   onPress,

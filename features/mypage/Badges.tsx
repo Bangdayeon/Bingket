@@ -21,6 +21,7 @@ const COLUMNS = 3;
 const H_PADDING = 16;
 const GAP = 11;
 
+/** 내 뱃지. user_badges 의 RLS("본인만")가 그대로 통하는 경로다. */
 async function fetchMyBadges(): Promise<EarnedBadge[]> {
   const {
     data: { user },
@@ -50,7 +51,38 @@ async function fetchMyBadges(): Promise<EarnedBadge[]> {
   });
 }
 
-export function BadgesPage() {
+/**
+ * 타인 뱃지. RLS 가 "본인만"이라 테이블 직접 조회로는 한 줄도 안 나오므로,
+ * 계정 공개범위 판정이 들어간 security definer RPC 를 쓴다 (20260909000007).
+ * 볼 수 없는 상대면 빈 배열이 온다 — 잠금 표시는 프로필 화면이 account_visibility 로 판단한다.
+ *
+ * 내 뱃지까지 이 RPC 로 합치지 않은 건 마이그레이션이 원격에 적용되기 전까지
+ * 내 공간의 뱃지 탭이 같이 죽는 걸 피하기 위해서다. 배포 뒤에는 합쳐도 된다.
+ */
+async function fetchOtherBadges(userId: string): Promise<EarnedBadge[]> {
+  const { data, error } = await supabase.rpc('get_user_badges', { p_user_id: userId });
+  if (error) throw error;
+
+  return (data ?? []).map((row: Record<string, unknown>) => ({
+    badgeId: row.badge_id as string,
+    iconUrl: (row.icon_url as string | null) ?? '',
+    name: (row.name as string | null) ?? '',
+    earnedAt: row.earned_at as string,
+  }));
+}
+
+interface BadgesPageProps {
+  /** 비우면 내 뱃지. 타인 프로필에서는 그 사람 id 를 넘긴다. */
+  userId?: string;
+  /**
+   * 하단 여백. 기본은 0이다 — 탭바는 화면과 나란한 flex 형제라 화면 좌표계가
+   * 이미 탭바 위에서 끝난다(af04857에서 플로팅 → 고정으로 바뀜). 스택 화면에서
+   * 쓸 때만 safe-area를 넘긴다(app/profile/[id].tsx).
+   */
+  bottomGap?: number;
+}
+
+export function BadgesPage({ userId, bottomGap = 0 }: BadgesPageProps = {}) {
   const [earned, setEarned] = useState<EarnedBadge[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadFailed, setLoadFailed] = useState(false);
@@ -61,14 +93,14 @@ export function BadgesPage() {
   const load = useCallback(() => {
     setLoading(true);
     setLoadFailed(false);
-    fetchMyBadges()
+    (userId ? fetchOtherBadges(userId) : fetchMyBadges())
       .then(setEarned)
       .catch((e: unknown) => {
         Sentry.captureException(e);
         setLoadFailed(true);
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [userId]);
 
   useEffect(load, [load]);
 
@@ -86,7 +118,7 @@ export function BadgesPage() {
 
   return (
     <>
-      <ScrollView className="mb-20 flex-1 bg-surface">
+      <ScrollView className="flex-1 bg-surface" style={{ marginBottom: bottomGap }}>
         {loading ? (
           <View className="flex-1 items-center justify-center py-20">
             <Loading />

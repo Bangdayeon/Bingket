@@ -1,7 +1,7 @@
 import { View } from 'react-native';
 import { SectionLabel } from './SectionLabel';
 import { TextInput } from '@/components/TextInput';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { LIMITS } from '@/constants/limits';
 
 interface BingoTitleProps {
@@ -11,10 +11,14 @@ interface BingoTitleProps {
 
 export function BingoTitle({ value = '', onChange }: BingoTitleProps) {
   const [title, setTitle] = useState(value);
+  const [prevValue, setPrevValue] = useState(value);
 
-  useEffect(() => {
+  // prop이 바뀌면 렌더 중에 맞춘다. 효과로 하면 낡은 값으로 한 번 그린 뒤
+  // 다시 렌더돼서 입력창이 깜빡인다.
+  if (value !== prevValue) {
+    setPrevValue(value);
     setTitle(value);
-  }, [value]);
+  }
 
   const handleChange = (text: string) => {
     setTitle(text);
@@ -22,7 +26,7 @@ export function BingoTitle({ value = '', onChange }: BingoTitleProps) {
   };
 
   return (
-    <View className="px-4 py-6">
+    <View className="px-4">
       <SectionLabel label="제목" />
       <TextInput
         value={title}

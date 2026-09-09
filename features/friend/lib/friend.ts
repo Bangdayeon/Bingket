@@ -3,6 +3,25 @@ import type { Friend, IncomingRequest, UserSearchResult } from '@/types/friend';
 
 // ─── Friends ──────────────────────────────────────────────────
 
+/**
+ * 친구 수만 센다. 목록을 받을 필요가 없는 자리(홈의 '친구와 할래요' 노출 판정)에서
+ * 쓴다 — head: true 라 행은 안 넘어오고 카운트만 온다.
+ */
+export const fetchFriendCount = async (): Promise<number> => {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return 0;
+
+  const { count, error } = await supabase
+    .from('friends')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', user.id);
+
+  if (error) return 0;
+  return count ?? 0;
+};
+
 export const fetchFriends = async (): Promise<Friend[]> => {
   const {
     data: { user },
@@ -37,7 +56,7 @@ export const deleteFriend = async (friendUserId: string): Promise<void> => {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) throw new Error('로그인이 필요합니다.');
+  if (!user) throw new Error('로그인이 필요해요.');
 
   // 양방향 행을 함께 지운다
   const { error } = await supabase
@@ -135,7 +154,7 @@ export const sendFriendRequest = async (params: {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) throw new Error('로그인이 필요합니다.');
+  if (!user) throw new Error('로그인이 필요해요.');
 
   if (params.existingStatus !== null) {
     await supabase

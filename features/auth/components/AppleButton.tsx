@@ -3,6 +3,8 @@ import * as AppleAuthentication from 'expo-apple-authentication';
 import { useState } from 'react';
 import { Image, Platform, TouchableOpacity } from 'react-native';
 import { Text } from '@/components/Text';
+import { useResolvedScheme } from '@/lib/color-scheme';
+import { FIXED } from '@/lib/use-colors';
 import { supabase } from '@/lib/supabase';
 import { router } from 'expo-router';
 import Loading from '@/components/Loading';
@@ -64,6 +66,10 @@ interface AppleButtonProps {
 
 export function AppleButton({ requireAgreement, onError }: AppleButtonProps) {
   const [loading, setLoading] = useState(false);
+  // 버튼 배경이 다크에서 흰색으로 뒤집힌다(bg-fixed-black dark:bg-fixed-white).
+  // apple_logo.png는 흰색 단색이라 그대로 두면 다크에서 아이콘이 사라진다.
+  const isDark = useResolvedScheme() === 'dark';
+  const logoTint = isDark ? FIXED.fixedBlack : FIXED.fixedWhite;
 
   if (Platform.OS !== 'ios') return null;
 
@@ -107,7 +113,8 @@ export function AppleButton({ requireAgreement, onError }: AppleButtonProps) {
         <>
           <Image
             source={require('@/assets/icons/apple_logo.png')}
-            style={{ width: 18, height: 18 }}
+            // 라벨(text-fixed-white dark:text-fixed-black)과 같은 색이어야 한다
+            style={{ width: 18, height: 18, tintColor: logoTint }}
             className="absolute left-4"
             resizeMode="contain"
           />

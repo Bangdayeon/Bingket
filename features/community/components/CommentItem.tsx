@@ -3,6 +3,7 @@ import { Text } from '@/components/Text';
 import MoreVertIcon from '@/assets/icons/ic_more_vert.svg';
 import SMSIcon from '@/assets/icons/ic_sms.svg';
 import { LikeButton } from './LikeButton';
+import { AuthorLink } from './AuthorLink';
 import AnonymousProfile from '@/components/AnonymousProfile';
 import { ProfileAvatar } from '@/components/ProfileAvatar';
 import { ReplyItem } from './ReplyItem';
@@ -27,7 +28,7 @@ export function CommentItem({
     return (
       <View>
         <Text className="text-body-sm pb-6 border-b px-4 border-gray-200 text-gray-400">
-          (삭제된 댓글입니다.)
+          (삭제된 댓글이에요.)
         </Text>
         {comment.replies?.map((r) => (
           <ReplyItem key={r.id} reply={r} postAuthorId={postAuthorId} onMenuPress={onMenuPress} />
@@ -39,14 +40,20 @@ export function CommentItem({
   return (
     <View className="pb-1 border-b border-gray-200 px-4">
       <View className="flex-row items-center">
-        {comment.isAnonymous ? (
-          <AnonymousProfile seed={comment.userId} />
-        ) : (
-          <ProfileAvatar avatarUrl={comment.avatarUrl ?? null} size={32} />
-        )}
-        <Text className="ml-2 shrink text-label-sm" numberOfLines={1}>
-          {comment.author}
-        </Text>
+        <AuthorLink
+          userId={comment.userId}
+          isAnonymous={comment.isAnonymous}
+          className="shrink flex-row items-center"
+        >
+          {comment.isAnonymous ? (
+            <AnonymousProfile seed={comment.userId} />
+          ) : (
+            <ProfileAvatar avatarUrl={comment.avatarUrl ?? null} size={32} />
+          )}
+          <Text className="ml-2 shrink text-label-sm" numberOfLines={1}>
+            {comment.author}
+          </Text>
+        </AuthorLink>
         {isPostAuthor && (
           <View className="ml-1.5 px-1.5 py-1 rounded-full bg-green-200">
             <Text className="text-caption-sm text-green-800">작성자</Text>
@@ -61,7 +68,7 @@ export function CommentItem({
             initialLiked={comment.likedByMe}
           />
           <Pressable hitSlop={8} onPress={() => onReplyPress(comment.id, comment.author)}>
-            <SMSIcon width={24} height={24} className="text-gray-700" />
+            <SMSIcon width={20} height={20} className="text-gray-400" />
           </Pressable>
           <Pressable hitSlop={8} onPress={(e) => onMenuPress(comment.id, e.nativeEvent.pageY)}>
             <MoreVertIcon width={24} height={24} className="text-gray-700" />

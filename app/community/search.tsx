@@ -118,7 +118,7 @@ export default function CommunitySearchScreen() {
         (searchFailed ? (
           <ErrorState message="검색하지 못했어요" onRetry={() => void runSearch(value)} />
         ) : results.length === 0 ? (
-          <EmptyState message="검색 결과가 없습니다." />
+          <EmptyState message="검색 결과가 없어요." />
         ) : (
           <FlatList
             data={results}
@@ -148,7 +148,7 @@ export default function CommunitySearchScreen() {
           </View>
           {searches.length === 0 ? (
             <Text className="text-body-sm w-full text-center text-gray-500">
-              최근 검색어가 없습니다.
+              최근 검색어가 없어요.
             </Text>
           ) : (
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', columnGap: 4, rowGap: 8 }}>

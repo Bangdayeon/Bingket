@@ -16,6 +16,12 @@ import {
 } from '@/features/mypage/lib/mypage';
 import Loading from '@/components/Loading';
 import { ErrorState } from '@/components/ErrorState';
+import { AccountVisibilitySelector } from '@/features/mypage/components/AccountVisibilitySelector';
+import {
+  fetchMyProfileSummary,
+  updateAccountVisibility,
+  type AccountVisibility,
+} from '@/features/profile/lib/profile';
 
 const PROVIDER_CONFIG: Record<
   string,
@@ -86,6 +92,31 @@ export default function AccountScreen() {
 
   useEffect(loadAccounts, [loadAccounts]);
 
+  // 읽기 전에는 null이라 셀렉터를 그리지 않는다. 기본값으로 먼저 그리면
+  // 사용자가 고르지도 않은 값이 선택된 것처럼 보인다.
+  const [visibility, setVisibility] = useState<AccountVisibility | null>(null);
+
+  useEffect(() => {
+    void fetchMyProfileSummary()
+      .then((summary) => {
+        if (summary) setVisibility(summary.accountVisibility);
+      })
+      .catch(Sentry.captureException);
+  }, []);
+
+  const handleVisibilityChange = (next: AccountVisibility) => {
+    const previous = visibility;
+    // 즉시 반영하고 실패하면 되돌린다. 저장 버튼이 없는 화면이라
+    // 응답을 기다리면 탭이 먹통처럼 느껴진다.
+    setVisibility(next);
+    updateAccountVisibility(next).catch((e: unknown) => {
+      Sentry.captureException(e);
+      setVisibility(previous);
+      setErrorMessage('공개 범위를 바꾸지 못했어요. 잠시 후 다시 시도해주세요.');
+      setShowErrorModal(true);
+    });
+  };
+
   const handleResetBingos = async () => {
     setShowResetModal(false);
     setLoading(true);
@@ -145,12 +176,25 @@ export default function AccountScreen() {
                   )}
                 </View>
                 <Text className="text-body-md text-gray-900">{cfg?.label ?? account.provider}</Text>
+                {/* 가짜 주소가 새어 나가는 걸 막는 마지막 방어선.
+                    카카오는 진짜 이메일(없으면 닉네임)이 여기로 온다. */}
                 <Text className="ml-auto shrink text-body-md text-gray-500" numberOfLines={1}>
                   {account.email?.endsWith('@kakao.bingket') ? '' : (account.email ?? '')}
                 </Text>
               </View>
             );
           })
+        )}
+      </View>
+
+      <View className="h-px bg-gray-300" />
+
+      {/* 계정 공개 범위 — 프로필 편집에 있던 것을 옮겨 왔다.
+          저장 버튼이 따로 없는 화면이라 고르는 즉시 저장한다. */}
+      <View className="px-4 py-6">
+        <Text className="mb-4 text-caption-md text-gray-500">계정 공개 범위</Text>
+        {visibility && (
+          <AccountVisibilitySelector value={visibility} onChange={handleVisibilityChange} />
         )}
       </View>
 
@@ -173,8 +217,8 @@ export default function AccountScreen() {
         title="정말로 빙고를 초기화 하시겠어요?"
         body={`• 작성한 모든 빙고가 삭제돼요.\n• 글과 댓글은 남아요.\n• 계정과 프로필은 유지돼요.`}
         variant="warning"
-        cancelLabel="취소하기"
-        confirmLabel="빙고 초기화 하기"
+        cancelLabel="취소"
+        confirmLabel="초기화 하기"
         onCancel={() => setShowResetModal(false)}
         onConfirm={handleResetBingos}
         onDismiss={() => setShowResetModal(false)}
@@ -203,8 +247,8 @@ export default function AccountScreen() {
         title="정말로 탈퇴를 하시겠어요?"
         body={`• 계정과 프로필 정보, 프로필 사진이 삭제돼요.\n• 계정 삭제 후 데이터 복구가 불가능해요.\n• 작성한 글과 댓글은 첨부한 사진과 함께 (알 수 없음)으로 남아요`}
         variant="warning"
-        cancelLabel="취소하기"
-        confirmLabel="회원 탈퇴하기"
+        cancelLabel="취소"
+        confirmLabel="탈퇴하기"
         onCancel={() => setShowSecessionModal(false)}
         onConfirm={handleDeleteAccount}
         onDismiss={() => setShowSecessionModal(false)}

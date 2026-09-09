@@ -5,12 +5,13 @@ import * as Sentry from '@sentry/react-native';
 import { Text } from '@/components/Text';
 import { useResponsive } from '@/lib/use-responsive';
 import EditIcon from '@/assets/icons/ic_edit.svg';
-import SaveIcon from '@/assets/icons/ic_save.svg';
+import ShareIcon from '@/assets/icons/ic_share.svg';
 import { Toast } from '@/components/Toast';
 import { BingoData } from '@/types/bingo';
 import { BingoStat } from './BingoStat';
 import { TeamAvatars, type TeamAvatarMember } from '@/features/team/components/TeamAvatars';
 import { calcMaxBingo } from '@/lib/calcMaxBingo';
+import { getBingoPeriod } from '@/lib/bingo-period';
 import { useEffect, useRef, useState } from 'react';
 import {
   FIGMA_W,
@@ -20,23 +21,6 @@ import {
   getThemeForegroundColor,
 } from '@/features/bingo/lib/theme';
 import { shareBingoBoard } from '@/features/bingo/lib/share-board';
-
-const DAY_MS = 24 * 60 * 60 * 1000;
-
-function calcDayProgress(startDate: string | null, targetDate: string | null): [number, number] {
-  if (!startDate || !targetDate) return [0, 0];
-  const start = new Date(startDate).getTime();
-  const end = new Date(targetDate).getTime();
-  const total = Math.max(Math.round((end - start) / DAY_MS), 1);
-  const elapsed = Math.min(Math.max(Math.round((Date.now() - start) / DAY_MS), 0), total);
-  return [elapsed, total];
-}
-
-function formatDate(date: string | null): string {
-  if (!date) return '';
-  const [y, m, d] = date.split('-');
-  return `${y.slice(2)}.${m}.${d}`;
-}
 
 interface BingoCardProps {
   bingo: BingoData;
@@ -81,14 +65,17 @@ export function BingoCard({
 
   const { isTablet, contentWidth } = useResponsive();
   const [cols, rows] = bingo.grid.split('x').map(Number);
-  const textStyle = bingo.grid === '3x3' ? 'text-body-sm' : 'text-caption-md';
+  // 3x3(14px)과 4x4(14px)는 원래 크기가 같고 line-height만 달랐다. 한 단계 줄이면서
+  // 토큰 하나로 합친다. 작성 화면(AddEachBingo)과 같은 값이어야 한다.
+  const textStyle = 'text-caption-sm';
   const screenWidth = contentWidth;
 
-  const [dayElapsed, dayTotal] = calcDayProgress(bingo.startDate, bingo.targetDate);
   // 시작일 - 종료일. 둘 중 하나만 있으면 있는 쪽만 보여준다 (제작 중 빙고는 비어 있을 수 있다)
-  const formattedPeriod = [formatDate(bingo.startDate), formatDate(bingo.targetDate)]
-    .filter(Boolean)
-    .join(' - ');
+  const {
+    elapsed: dayElapsed,
+    total: dayTotal,
+    formatted: formattedPeriod,
+  } = getBingoPeriod(bingo.startDate, bingo.targetDate);
 
   if (!image)
     return (
@@ -108,7 +95,7 @@ export function BingoCard({
   const gapX = cfg.gapX * scale;
   const gapY = cfg.gapY * scale;
 
-  const handleSavePress = () => {
+  const handleSharePress = () => {
     // 배경이 아직 안 왔으면 빈 판이 찍힌다. 버튼도 이때는 안 그리지만 한 번 더 막는다.
     if (!image) return;
     setCapturing(true);
@@ -130,7 +117,7 @@ export function BingoCard({
   };
 
   return (
-    <View className={`pb-6${isTablet ? ' items-center' : ''}`}>
+    <View className={isTablet ? 'items-center' : undefined}>
       <View ref={boardRef} collapsable={false} style={{ width: screenWidth, height: cardHeight }}>
         <Image
           source={{ uri: image }}
@@ -151,13 +138,13 @@ export function BingoCard({
           <View className="flex-row items-center gap-3" style={{ opacity: capturing ? 0 : 1 }}>
             {/* 테마 배경을 받기 전에는 캡처해봐야 빈 판이라 버튼을 내놓지 않는다 */}
             {image && (
-              <TouchableOpacity onPress={handleSavePress} hitSlop={8}>
-                <SaveIcon width={18} height={18} color={fgColor} />
+              <TouchableOpacity onPress={handleSharePress} hitSlop={8}>
+                <ShareIcon width={24} height={24} color={fgColor} />
               </TouchableOpacity>
             )}
             {onEditPress && (
               <TouchableOpacity onPress={onEditPress} hitSlop={8}>
-                <EditIcon width={18} height={18} color={fgColor} />
+                <EditIcon width={24} height={24} color={fgColor} />
               </TouchableOpacity>
             )}
           </View>
@@ -181,7 +168,12 @@ export function BingoCard({
                 padding: 8,
               }}
             >
-              <Text className={`${textStyle} text-center text-gray-900`} numberOfLines={3}>
+              <Text
+                className={`${textStyle} text-center`}
+                // 칸은 모든 테마에서 밝은 색이라 글씨는 늘 어두워야 한다. 토큰 색은 다크모드에서 흰색으로 뒤집혀 사라지고, 테마의 fgColor는 제목용이라 밝을 수 있어 칸에는 못 쓴다.
+                style={{ color: FIXED.boardForeground }}
+                numberOfLines={3}
+              >
                 {bingo.cells[i] ?? ''}
               </Text>
 

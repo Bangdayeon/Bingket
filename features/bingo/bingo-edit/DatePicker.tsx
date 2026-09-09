@@ -1,5 +1,6 @@
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useColors } from '@/lib/use-colors';
+import { useResolvedScheme } from '@/lib/color-scheme';
 import { Modal, Platform, Pressable, View } from 'react-native';
 import { Text } from '@/components/Text';
 
@@ -23,6 +24,7 @@ export function DatePicker({
   onDismiss,
 }: DatePickerProps) {
   const colors = useColors();
+  const scheme = useResolvedScheme();
   const minimumDate = target === 'end' && startDate ? startDate : undefined;
 
   if (Platform.OS === 'android') {
@@ -73,6 +75,8 @@ export function DatePicker({
             locale="ko-KR"
             style={{ flex: 1 }}
             textColor={colors.gray[900]}
+            // 글자색만 주면 스피너 선택 바와 컬럼 배경은 밝은 채로 남는다.
+            themeVariant={scheme}
             minimumDate={minimumDate}
           />
         </View>

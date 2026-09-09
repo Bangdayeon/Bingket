@@ -33,7 +33,12 @@ export function useIsOnline(): boolean {
 /** 오프라인이었다가 연결이 돌아왔을 때 한 번 호출된다. 실패한 조회를 자동으로 다시 태우는 용도. */
 export function useOnlineRestore(callback: () => void): void {
   const callbackRef = useRef(callback);
-  callbackRef.current = callback;
+
+  // 렌더 중 ref 쓰기는 React 규칙 위반이라 커밋된 뒤에 갱신한다. deps 없이 매 렌더
+  // 실행돼야 콜백이 최신 클로저(loadFailed 등)를 보고 판단한다.
+  useEffect(() => {
+    callbackRef.current = callback;
+  });
 
   useEffect(() => {
     const listener = () => callbackRef.current();

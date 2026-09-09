@@ -43,7 +43,6 @@ export const TEAM_MODE_DESCRIPTION: Record<TeamMode, string> = {
 export const TEAM_MODE_GUIDE: Record<TeamMode, string> = {
   shared:
     '빙고판 하나를 작성해서 친구들과 함께 완성해요\n칸 내용과 테마는 방장인 나만 수정할 수 있어요.',
-  competition:
-    '각자 빙고판을 작성해서 경쟁해요\n내 빙고판을 작성하고 초대를 보내면 친구들도 각자 빙고판을 작성해요',
+  competition: '각자 빙고판을 작성해서 경쟁해요\n초대를 보내면 친구들도 각자 빙고를 작성해요',
   copied: '같은 목표로 시작해 각자 자기 판을 채워요',
 };

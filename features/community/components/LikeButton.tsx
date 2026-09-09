@@ -52,18 +52,22 @@ export function LikeButton({
   const isProcessingRef = useRef(false);
 
   // 파티클별 애니메이션 값
-  const particleAnims = useRef(
+  const [particleAnims] = useState(() =>
     PARTICLES.map(() => ({
       progress: new Animated.Value(0), // 0 → 1 (거리)
       opacity: new Animated.Value(1),
       gravity: new Animated.Value(0), // 중력 효과
     })),
-  ).current;
+  );
 
-  useEffect(() => {
+  // 목록이 새로 조회되면 서버 값으로 되돌린다. 효과가 아니라 렌더 중에 맞춰서
+  // 낙관적 갱신 뒤 낡은 값이 한 프레임 보이는 일이 없게 한다.
+  const [prevProps, setPrevProps] = useState({ initialLiked, count });
+  if (prevProps.initialLiked !== initialLiked || prevProps.count !== count) {
+    setPrevProps({ initialLiked, count });
     setLiked(initialLiked);
     setLikeCount(count);
-  }, [initialLiked, count]);
+  }
 
   useEffect(() => {
     return () => {
@@ -73,7 +77,7 @@ export function LikeButton({
         gravity.stopAnimation();
       });
     };
-  }, []);
+  }, [particleAnims]);
 
   const triggerParticles = () => {
     // 초기화

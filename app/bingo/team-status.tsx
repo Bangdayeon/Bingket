@@ -258,6 +258,10 @@ export default function TeamStatusScreen() {
                 onPress={() => setSelectedBoard(sharedBoard)}
               />
             )
+          ) : detail.boardsFailed ? (
+            // 판 조회가 실패한 것과 "아직 아무도 안 들어왔다"는 완전히 다른 상황이다.
+            // 예전에는 둘 다 아무것도 안 그려서 구분이 안 됐다.
+            <EmptyState message={'빙고판을 불러오지 못했어요\n당겨서 새로고침해주세요'} />
           ) : detail.members.filter((m) => m.status === 'joined').length === 0 ? (
             <EmptyState message={'아직 참여한 사람이 없어요\n초대를 수락하면 여기에 보여요'} />
           ) : (
@@ -266,7 +270,19 @@ export default function TeamStatusScreen() {
                 .filter((m) => m.status === 'joined')
                 .map((member) => {
                   const board = detail.boards[member.userId];
-                  if (!board) return null;
+                  // 참여자는 있는데 판이 없다 = 아직 빙고를 만들지 않았다는 뜻이다.
+                  // 조용히 지우면 "참여자는 뜨는데 판이 안 뜬다"로만 보인다.
+                  if (!board) {
+                    return (
+                      <View key={member.userId} className="items-center gap-2">
+                        <View className="h-[172px] w-[172px] items-center justify-center rounded-2xl bg-gray-200 px-3">
+                          <Text className="text-caption-md text-center text-gray-600">
+                            아직 빙고판을{'\n'}만들지 않았어요
+                          </Text>
+                        </View>
+                      </View>
+                    );
+                  }
                   const [cols, rows] = board.grid.split('x').map(Number);
                   return (
                     <View key={member.userId} className="items-center gap-2">
@@ -313,7 +329,7 @@ export default function TeamStatusScreen() {
                   placeholder="회고를 남겨보세요."
                   multiline
                   maxLength={500}
-                  className="h-[140px] bg-gray-100 rounded-2xl p-4 text-body-md"
+                  className="h-[140px] bg-gray-100 rounded-2xl p-4 text-body-md text-gray-900 placeholder:text-gray-500"
                   style={{ textAlignVertical: 'top', paddingBottom: 28 }}
                 />
                 <Text
@@ -388,7 +404,7 @@ export default function TeamStatusScreen() {
         }
         variant="warning"
         confirmLabel="나가기"
-        cancelLabel="취소하기"
+        cancelLabel="취소"
         onCancel={() => setShowLeaveModal(false)}
         onDismiss={() => setShowLeaveModal(false)}
         onConfirm={async () => {

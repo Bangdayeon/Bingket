@@ -2,6 +2,7 @@ import { Pressable, View } from 'react-native';
 import { Text } from '@/components/Text';
 import MoreVertIcon from '@/assets/icons/ic_more_vert.svg';
 import { LikeButton } from './LikeButton';
+import { AuthorLink } from './AuthorLink';
 import AnonymousProfile from '@/components/AnonymousProfile';
 import { ProfileAvatar } from '@/components/ProfileAvatar';
 import { CommentReply } from '@/types/community';
@@ -20,14 +21,20 @@ export function ReplyItem({ reply, postAuthorId, onMenuPress }: ReplyItemProps) 
       <SubIcon className="text-gray-500" style={{ marginRight: 4 }} />
       <View className="flex-1 rounded-lg px-3 pt-2 pb-2 bg-green-50">
         <View className="flex-row items-center">
-          {reply.isAnonymous ? (
-            <AnonymousProfile seed={reply.userId} />
-          ) : (
-            <ProfileAvatar avatarUrl={reply.avatarUrl ?? null} size={32} />
-          )}
-          <Text className="ml-2 shrink text-label-sm" numberOfLines={1}>
-            {reply.author}
-          </Text>
+          <AuthorLink
+            userId={reply.userId}
+            isAnonymous={reply.isAnonymous}
+            className="shrink flex-row items-center"
+          >
+            {reply.isAnonymous ? (
+              <AnonymousProfile seed={reply.userId} />
+            ) : (
+              <ProfileAvatar avatarUrl={reply.avatarUrl ?? null} size={32} />
+            )}
+            <Text className="ml-2 shrink text-label-sm" numberOfLines={1}>
+              {reply.author}
+            </Text>
+          </AuthorLink>
           {isPostAuthor && (
             <View className="ml-1.5 px-1.5 py-1 rounded-full bg-green-200">
               <Text className="text-caption-sm text-green-800">작성자</Text>

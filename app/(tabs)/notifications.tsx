@@ -59,7 +59,9 @@ function NotificationItem({ item, onRead, onAction, onFriendResponse }: Notifica
 
   return (
     <Pressable
-      className={`justify-center border-b border-gray-300 p-4 ${
+      // 좌우는 화면 여백(16)에 맞추고 세로만 넉넉히 준다. 알림이 두세 줄씩이라
+      // 사방 16으로는 줄끼리 붙어 보인다.
+      className={`justify-center border-b border-gray-300 px-4 py-6 ${
         item.is_read ? '' : 'bg-green-100'
       }`}
       onPress={handlePress}
@@ -80,7 +82,9 @@ function NotificationItem({ item, onRead, onAction, onFriendResponse }: Notifica
       )}
 
       <View className="flex-row items-center justify-between">
-        <Text className="flex-1 text-title-sm font-pretendard-semibold text-gray-800">
+        {/* title-sm(18px)은 목록 항목에 쓰기엔 크다. 본문과 같은 body-md로 낮추고
+            제목이라는 건 굵기로만 구분한다. 아래 message가 같은 body-md라 크기가 맞는다. */}
+        <Text className="flex-1 text-body-md font-pretendard-bold text-gray-800">
           {notificationTitle(item.type)}
         </Text>
         <Text className="ml-2 text-caption-md text-gray-600">
@@ -218,6 +222,8 @@ export default function NotificationsScreen() {
           <Text className="text-body-md text-gray-800">모두 읽음 처리</Text>
         </Pressable>
       </View>
+      {/* 설정 화면과 같은 구분선 규격 — 화면 끝까지 닿는 풀블리드 */}
+      <View className="h-px bg-gray-300" />
 
       <ScrollView className="flex-1">
         {fetchError ? (

@@ -253,18 +253,25 @@ export default function FriendListScreen() {
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ gap: 12, paddingHorizontal: 16, paddingBottom: 16 }}
+          // 아바타(32) + 이름 한 줄이 들어갈 만큼만. 여백을 크게 두면 검색창이
+          // 화면 아래로 밀려난다. 위쪽 6은 x 배지가 아바타 밖으로 나가서 필요하다.
+          contentContainerStyle={{
+            gap: 12,
+            paddingHorizontal: 16,
+            paddingTop: 6,
+            paddingBottom: 8,
+          }}
         >
           {pickedFriends.map((friend) => (
-            <View key={friend.friendId} className="w-16 items-center gap-1">
+            <View key={friend.friendId} className="w-[52px] items-center gap-1">
               <View>
-                <ProfileAvatar avatarUrl={friend.avatarUrl} size={40} />
+                <ProfileAvatar avatarUrl={friend.avatarUrl} size={32} />
                 <Pressable
                   onPress={() => friendSelection.toggle(friend.friendId, maxSelect)}
                   hitSlop={8}
                   className="absolute -right-1 -top-1 rounded-full bg-gray-300"
                 >
-                  <CloseIcon width={18} height={18} className="text-gray-800" />
+                  <CloseIcon width={16} height={16} className="text-gray-800" />
                 </Pressable>
               </View>
               <Text className="text-caption-sm text-gray-700" numberOfLines={1}>
@@ -340,6 +347,9 @@ export default function FriendListScreen() {
                 searchResults={searchResults}
                 sending={sending}
                 handleRequest={handleRequest}
+                handleProfilePress={(item) =>
+                  router.push({ pathname: '/profile/[id]', params: { id: item.id } })
+                }
               />
             </CollapsibleSection>
           )}

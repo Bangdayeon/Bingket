@@ -89,6 +89,10 @@ export default function BingoModifyScreen() {
 
   const [alertMessage, setAlertMessage] = useState<string | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  // 저장·삭제 모두 네트워크 왕복이 있고, 삭제는 최대 3번이다(팀 조회 → 탈퇴 → 삭제).
+  // 표시가 없으면 사용자는 눌린 줄 모르고 다시 누른다.
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [showLeaveModal, setShowLeaveModal] = useState(false);
 
   const handleBack = () => {
@@ -98,6 +102,8 @@ export default function BingoModifyScreen() {
 
   const handleSave = async () => {
     if (!title.trim()) return setAlertMessage('제목을 입력해주세요.');
+    if (saving) return;
+    setSaving(true);
     try {
       const changedCells = cellIds
         .map((id, i) => ({
@@ -111,10 +117,14 @@ export default function BingoModifyScreen() {
     } catch (e) {
       Sentry.captureException(e);
       setAlertMessage('저장에 실패했어요. 잠시 후 다시 시도해주세요.');
+      setSaving(false);
     }
+    // 성공하면 router.replace로 화면이 통째로 바뀌므로 해제하지 않는다.
   };
 
   const handleDelete = async () => {
+    if (deleting) return;
+    setDeleting(true);
     try {
       const team = await fetchTeamByBoardId(bingoId);
 
@@ -128,9 +138,11 @@ export default function BingoModifyScreen() {
       router.replace('/(tabs)');
     } catch (e) {
       Sentry.captureException(e);
+      setDeleting(false);
       setShowDeleteModal(false);
       setAlertMessage('삭제에 실패했어요. 잠시 후 다시 시도해주세요.');
     }
+    // 성공 경로는 router.replace로 화면이 사라지므로 해제하지 않는다.
   };
 
   const isUnlimited = maxEdits === 9999 || maxEdits === -1;
@@ -162,8 +174,8 @@ export default function BingoModifyScreen() {
 
   return (
     <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
+      {/* 뒤로가기 줄만 고정한다. 제목과 저장 버튼은 내용과 함께 스크롤된다. */}
       <PageHeader
-        title="빙고 수정하기"
         onBack={handleBack}
         right={
           <Pressable onPress={() => setShowDeleteModal(true)} hitSlop={8}>
@@ -172,7 +184,18 @@ export default function BingoModifyScreen() {
         }
       />
 
-      <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: insets.bottom + 100 }}>
+      <ScrollView
+        className="flex-1"
+        // 섹션 간격은 여기 한 곳에서 준다. 섹션마다 자기 패딩을 들면 제각각이 된다.
+        contentContainerStyle={{ gap: 32, paddingBottom: insets.bottom + 32 }}
+        // 저장 버튼이 스크롤 안에 있다. 이게 없으면 제목 입력 중 저장하기를 누를 때
+        // 첫 탭이 키보드 dismiss에 먹혀 두 번 눌러야 한다.
+        keyboardShouldPersistTaps="handled"
+      >
+        <View className="px-4 pb-2 pt-7">
+          <Text className="text-title-lg font-pretendard-medium text-gray-900">빙고 수정하기</Text>
+        </View>
+
         <BingoTitle
           value={title}
           onChange={(v) => {
@@ -181,53 +204,72 @@ export default function BingoModifyScreen() {
           }}
         />
 
-        <View className="py-6">
-          <View className="px-4">
-            <SectionLabel label="테마 선택" />
+        {/* gap-8은 rem 기반이라 28로 인라인된다. 바깥과 맞추려면 숫자로 준다. */}
+        <View style={{ gap: 32 }}>
+          <View>
+            <View className="px-4">
+              <SectionLabel label="테마 선택" />
+            </View>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ gap: 8, paddingHorizontal: 16 }}
+            >
+              {themes.map((theme) => (
+                <Chip
+                  key={theme.id}
+                  label={theme.displayName}
+                  selected={selectedTheme === theme.id}
+                  onPress={() => {
+                    markDirty();
+                    setSelectedTheme(theme.id);
+                  }}
+                />
+              ))}
+            </ScrollView>
           </View>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ gap: 8, paddingHorizontal: 16 }}
-          >
-            {themes.map((theme) => (
-              <Chip
-                key={theme.id}
-                label={theme.displayName}
-                selected={selectedTheme === theme.id}
-                onPress={() => {
-                  markDirty();
-                  setSelectedTheme(theme.id);
-                }}
-              />
-            ))}
-          </ScrollView>
 
-          {/* 시안: 남은 수정 횟수는 판 위, 좌측 정렬 */}
-          <Text className="px-4 pb-2 pt-6 text-body-sm text-gray-600">
-            빙고 수정 가능 횟수 {totalUsedEdits}/{isUnlimited ? '무제한' : maxEdits}
-          </Text>
+          {/* 수정 횟수는 판에 대한 설명이라 판과 한 덩어리로 둔다.
+              바깥 gap-8을 그대로 받으면 판에서 32px 떨어져 따로 노는 줄로 보인다. */}
+          <View className="gap-2">
+            {/* 시안: 남은 수정 횟수는 판 위, 좌측 정렬 */}
+            <Text className="px-4 text-body-sm text-gray-600">
+              빙고 수정 가능 횟수 {totalUsedEdits}/{isUnlimited ? '무제한' : maxEdits}
+            </Text>
 
-          <AddEachBingo
-            selectedGrid={grid}
-            theme={selectedTheme}
-            title={title}
-            cells={cells}
-            disabledCells={disabledCells}
-            onCellsChange={(newCells) => {
-              markDirty();
-              const changedIdx = newCells.findIndex((c, i) => c !== cells[i]);
-              if (changedIdx >= 0) {
-                const updated = [...cellEdits];
-                updated[changedIdx] = (updated[changedIdx] ?? 0) + 1;
-                setCellEdits(updated);
-              }
-              setCells(newCells);
-            }}
-          />
+            <AddEachBingo
+              selectedGrid={grid}
+              theme={selectedTheme}
+              title={title}
+              cells={cells}
+              disabledCells={disabledCells}
+              onCellsChange={(newCells) => {
+                markDirty();
+                const changedIdx = newCells.findIndex((c, i) => c !== cells[i]);
+                if (changedIdx >= 0) {
+                  const updated = [...cellEdits];
+                  updated[changedIdx] = (updated[changedIdx] ?? 0) + 1;
+                  setCellEdits(updated);
+                }
+                setCells(newCells);
+              }}
+            />
+          </View>
         </View>
 
         <VisibilitySelector value={visibility} onChange={setVisibility} />
+
+        {/* 저장 버튼도 고정하지 않는다 — 화면이 짧아 보이고 스크롤 영역을 먹는다. */}
+        <View className="px-4">
+          <Button
+            label="저장하기"
+            variant="primary"
+            size="md"
+            onClick={handleSave}
+            loading={saving}
+            className="w-full"
+          />
+        </View>
       </ScrollView>
 
       <Modal
@@ -240,22 +282,23 @@ export default function BingoModifyScreen() {
 
       <Modal
         visible={showDeleteModal}
-        title="빙고를 정말로 삭제하시나요?"
+        title="빙고를 정말로 삭제할까요?"
         body="삭제된 빙고는 되돌릴 수 없어요."
         variant="warning"
-        cancelLabel="취소하기"
-        confirmLabel="삭제하기"
-        onCancel={() => setShowDeleteModal(false)}
+        cancelLabel="취소"
+        confirmLabel="삭제"
+        confirmLoading={deleting}
+        // 삭제가 도는 중에 모달이 닫히면 사용자는 끝난 줄 알고 화면을 떠난다.
+        onCancel={deleting ? undefined : () => setShowDeleteModal(false)}
         onConfirm={handleDelete}
-        onDismiss={() => setShowDeleteModal(false)}
+        onDismiss={deleting ? undefined : () => setShowDeleteModal(false)}
       />
 
       <Modal
         visible={showLeaveModal}
-        title="변경사항을 저장하지 않았어요"
-        body="변경사항을 저장할까요?"
-        variant="warning"
-        cancelLabel="이어서 편집하기"
+        title="저장하지 않은 변경사항이 있어요"
+        body="지금 나가면 변경 사항이 저장되지 않아요."
+        cancelLabel="계속 수정"
         confirmLabel="나가기"
         onCancel={() => setShowLeaveModal(false)}
         onConfirm={() => {
@@ -264,19 +307,6 @@ export default function BingoModifyScreen() {
         }}
         onDismiss={() => setShowLeaveModal(false)}
       />
-
-      <View
-        className="absolute bottom-0 left-0 right-0 bg-surface px-4 pt-3"
-        style={{ paddingBottom: insets.bottom + 8 }}
-      >
-        <Button
-          label="저장하기"
-          variant="primary"
-          size="md"
-          onClick={handleSave}
-          className="w-full"
-        />
-      </View>
     </View>
   );
 }

@@ -146,11 +146,14 @@ export default function TeamCreateScreen() {
 
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ paddingBottom: insets.bottom + 100 }}
+        // 섹션 간격은 여기 한 곳에서 준다. 빙고 추가 화면(app/bingo/add.tsx)과 같은 값이라야
+        // 제목·목표 기간·빙고 칸 수·공개 범위가 두 화면에서 같은 리듬으로 떨어진다.
+        contentContainerStyle={{ gap: 32, paddingBottom: insets.bottom + 100 }}
         keyboardShouldPersistTaps="handled"
         automaticallyAdjustKeyboardInsets={false}
       >
-        <Text className="px-4 pb-2 pt-4 text-caption-md text-gray-700">
+        {/* PageHeader 가 제목 아래 8을 이미 주므로 여기 pt 만큼이 실제 간격이 된다 */}
+        <Text className="px-4 pb-2 pt-8 text-caption-md text-gray-700">
           {TEAM_MODE_GUIDE[mode]}
         </Text>
 
@@ -207,7 +210,7 @@ export default function TeamCreateScreen() {
         )}
 
         {mode === 'competition' && (
-          <View className="mt-8 px-4 placeholder:text-gray-500">
+          <View className="px-4">
             <SectionLabel label="내기 내용" />
             <TextInput
               value={betText}
@@ -217,7 +220,7 @@ export default function TeamCreateScreen() {
               }}
               placeholder="메모를 입력해주세요."
               multiline
-              className="h-20 rounded-2xl bg-gray-200 p-3 text-body-md"
+              className="h-20 rounded-2xl bg-gray-200 p-3 text-body-md text-gray-900 placeholder:text-gray-500"
               style={{ textAlignVertical: 'top' }}
             />
             <Text className="mt-1 text-right text-caption-sm text-gray-500">
@@ -226,9 +229,9 @@ export default function TeamCreateScreen() {
           </View>
         )}
 
-        <View className="mt-8 px-4">
+        <View className="px-4">
           <SectionLabel
-            label={mode === 'competition' ? '경쟁할 친구' : '초대할 친구'}
+            label={mode === 'competition' ? '친구 선택하기' : '초대할 친구'}
             hint={`(${friendIds.length}/${MAX_INVITES})`}
           />
           <FriendPicker

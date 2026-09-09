@@ -1,5 +1,6 @@
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { FIXED, useColors } from '@/lib/use-colors';
+import { useResolvedScheme } from '@/lib/color-scheme';
 import { DateInput } from '@/components/DateInput';
 import DoneIcon from '@/assets/icons/ic_done.svg';
 import CloseIcon from '@/assets/icons/ic_close.svg';
@@ -17,6 +18,7 @@ import {
 import { BlurView } from 'expo-blur';
 import { TABLET_MAX_CONTENT_WIDTH } from '@/lib/use-responsive';
 import { Text } from '@/components/Text';
+import Button from '@/components/Button';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ProfileAvatar } from '@/components/ProfileAvatar';
 
@@ -57,12 +59,7 @@ interface BingoCellModalProps {
 function MemoFooter({ length, saveState }: { length: number; saveState?: MemoSaveState }) {
   return (
     <View className="flex-row items-center justify-end gap-2 mt-2">
-      {saveState === 'saved' && (
-        <View className="flex-row items-center gap-0.5">
-          <Text className="text-caption-md text-green-500">저장됨</Text>
-          <DoneIcon width={16} height={16} className="text-green-500" />
-        </View>
-      )}
+      {saveState === 'saved' && <Text className="text-caption-md text-green-500">저장됨</Text>}
       {saveState === 'error' && <Text className="text-caption-md text-danger">저장 실패</Text>}
       <Text
         className={`text-caption-md ${length >= MEMO_MAX_LENGTH ? 'text-gray-700' : 'text-gray-500'}`}
@@ -101,6 +98,7 @@ export function BingoCellModal({
 }: BingoCellModalProps) {
   const insets = useSafeAreaInsets();
   const colors = useColors();
+  const scheme = useResolvedScheme();
   const { width } = useWindowDimensions();
   const CARD_WIDTH = Math.min(width, TABLET_MAX_CONTENT_WIDTH) - PEEK * 2;
   const SNAP_INTERVAL = CARD_WIDTH + CARD_MARGIN * 2;
@@ -169,8 +167,14 @@ export function BingoCellModal({
       visible={visible}
       transparent
       animationType="fade"
-      // 안드로이드 백 버튼: 메모 편집 중이면 편집만 닫고 카드로 돌아간다
-      onRequestClose={editingMemoCell ? closeMemoEditor : onClose}
+      // 안드로이드 백 버튼: 위에 뜬 것부터 하나씩 닫는다. 날짜 시트 → 메모 편집 → 셀 모달.
+      onRequestClose={
+        datePickerCellId
+          ? () => setDatePickerCellId(null)
+          : editingMemoCell
+            ? closeMemoEditor
+            : onClose
+      }
     >
       {/* Backdrop — 뒤의 빙고판을 흐리게 깔아둔다 */}
       <BlurView
@@ -284,9 +288,7 @@ export function BingoCellModal({
               )}
 
               {/* 메모 */}
-              <Text className="mb-2 text-body-md text-gray-900 placeholder:text-gray-500">
-                메모
-              </Text>
+              <Text className="mb-2 text-body-md text-gray-900">메모</Text>
               {/* 여기서는 미리보기만 한다. 실제 입력은 아래 메모 편집 오버레이에서. */}
               <Pressable onPress={() => setEditingMemoCellId(item.id)}>
                 <RNTextInput
@@ -297,7 +299,7 @@ export function BingoCellModal({
                   editable={false}
                   pointerEvents="none"
                   textAlignVertical="top"
-                  className="h-[190px] rounded-2xl bg-gray-200 p-3 text-body-md text-gray-900"
+                  className="h-[190px] rounded-2xl bg-gray-200 p-3 text-body-md text-gray-900 placeholder:text-gray-500"
                 />
                 <MemoFooter length={item.memo?.length ?? 0} saveState={memoSaveState[item.id]} />
               </Pressable>
@@ -341,12 +343,17 @@ export function BingoCellModal({
             >
               <View className="flex-row justify-between items-center mb-2">
                 <Text className="text-title-sm font-pretendard-medium text-gray-900">메모</Text>
-                <Pressable onPress={closeMemoEditor} hitSlop={8}>
-                  <Text className="text-title-sm text-green-500">완료</Text>
-                </Pressable>
+                {/* 버튼 자체 좌우 패딩(14)만큼 당겨서 라벨이 카드 안쪽 여백에 맞게 선다. */}
+                <Button
+                  label="완료"
+                  variant="ghost"
+                  size="sm"
+                  onClick={closeMemoEditor}
+                  className="-mr-[14px]"
+                />
               </View>
 
-              <Text className="text-body-sm mb-3 text-gray-500 placeholder:text-gray-500">
+              <Text className="text-body-sm mb-3 text-gray-500">
                 {normalizeTitle(editingMemoCell.title)}
               </Text>
 
@@ -360,7 +367,7 @@ export function BingoCellModal({
                   scrollEnabled
                   textAlignVertical="top"
                   maxLength={MEMO_MAX_LENGTH}
-                  className="h-[298px] rounded-2xl bg-gray-200 p-3 text-body-md"
+                  className="h-[298px] rounded-2xl bg-gray-200 p-3 text-body-md text-gray-900 placeholder:text-gray-500"
                 />
                 <MemoFooter
                   length={editingMemoCell.memo?.length ?? 0}
@@ -375,11 +382,17 @@ export function BingoCellModal({
       {/* Date picker sheet */}
       {datePickerCellId && (
         <>
-          <Pressable className="absolute z-10" onPress={() => setDatePickerCellId(null)} />
+          {/* 4방향을 다 줘야 실제로 눌린다. 크기가 없으면 이 backdrop을 그냥 통과해
+            아래 깔린 전체화면 Pressable이 먹고 셀 모달째 닫힌다.
+            날짜는 '확인'에서만 확정되므로 여기서 닫으면 고른 값은 버려진다. */}
+          <Pressable
+            className="absolute bottom-0 left-0 right-0 top-0 z-10"
+            onPress={() => setDatePickerCellId(null)}
+          />
           {/* 하단 여백은 인라인 스타일로 준다. `pb-[${'{'}...{'}'}px]` 같은 동적 클래스는
               NativeWind가 빌드 타임에 생성하지 못해 패딩이 조용히 사라진다. */}
           <View
-            className="absolute bottom-0 left-0 right-0 bg-white   rounded-t-[16px] px-4 pt-4 z-11"
+            className="absolute bottom-0 left-0 right-0 z-20 rounded-t-[16px] bg-white px-4 pt-4"
             style={{ paddingBottom: insets.bottom + 16 }}
           >
             <View className="flex-row justify-between items-center mb-2">
@@ -405,6 +418,8 @@ export function BingoCellModal({
                 }}
                 locale="ko-KR"
                 textColor={colors.gray[900]}
+                // 글자색만 주면 스피너 선택 바와 컬럼 배경은 밝은 채로 남는다.
+                themeVariant={scheme}
                 style={{ flex: 1 }}
               />
             </View>

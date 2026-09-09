@@ -9,16 +9,8 @@ const H_PADDING = 16;
 const GAP = 14;
 const COLUMNS = 2;
 
-const VISIBILITY_LABEL: Record<string, string> = {
-  private: '나만 보기',
-  friends: '친구 공개',
-  public: '전체 공개',
-};
-
 interface Props {
   items: FeedItem[];
-  /** 본인 피드면 공개범위 배지를 함께 노출한다 */
-  isMe: boolean;
   /** 팀에 속한 빙고판 id. 해당 항목에 '함께' 배지를 붙인다 */
   teamBoardIds?: Set<string>;
   onItemPress: (item: FeedItem) => void;
@@ -27,7 +19,6 @@ interface Props {
 
 export function FeedGrid({
   items,
-  isMe,
   teamBoardIds,
   onItemPress,
   emptyText = '아직 빙고가 없어요.',
@@ -62,7 +53,8 @@ export function FeedGrid({
             cells={item.cells}
           />
 
-          <View className="flex-row items-center gap-1.5 mt-2 mb-1">
+          {/* 뱃지와 제목을 한 줄에 좌측정렬로 둔다. 카드 폭이 좁아 제목은 말줄임한다. */}
+          <View className="mt-2 flex-row items-center gap-1.5">
             <View
               className={`px-2 py-0.5 rounded-full ${
                 item.status === 'done' ? 'bg-green-400' : 'bg-gray-200'
@@ -81,16 +73,10 @@ export function FeedGrid({
               </View>
             )}
 
-            {isMe && item.visibility && (
-              <Text className="text-caption-sm text-gray-500" numberOfLines={1}>
-                {VISIBILITY_LABEL[item.visibility]}
-              </Text>
-            )}
+            <Text className="flex-1 text-body-sm text-gray-700" numberOfLines={1}>
+              {item.title}
+            </Text>
           </View>
-
-          <Text className="text-center text-body-sm text-gray-700" numberOfLines={1}>
-            {item.title}
-          </Text>
         </Pressable>
       ))}
     </View>

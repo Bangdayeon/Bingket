@@ -199,7 +199,7 @@ export default function CommunityDetailScreen() {
         {postFailed ? (
           <ErrorState onRetry={loadPost} />
         ) : (
-          <EmptyState message="게시글을 찾을 수 없습니다." />
+          <EmptyState message="게시글을 찾을 수 없어요." />
         )}
       </SafeAreaView>
     );
@@ -220,7 +220,7 @@ export default function CommunityDetailScreen() {
       setShowDeleteModal(false);
       setAlertModal({
         title: '삭제 실패',
-        message: e instanceof Error ? e.message : '게시글 삭제에 실패했습니다.',
+        message: e instanceof Error ? e.message : '게시글 삭제에 실패했어요.',
       });
     }
   };
@@ -243,7 +243,7 @@ export default function CommunityDetailScreen() {
     } catch (e) {
       setAlertModal({
         title: '오류',
-        message: e instanceof Error ? e.message : '댓글 작성에 실패했습니다.',
+        message: e instanceof Error ? e.message : '댓글 작성에 실패했어요.',
       });
     } finally {
       setCommentSubmitting(false);
@@ -269,7 +269,7 @@ export default function CommunityDetailScreen() {
       setDeleteCommentTargetId(null);
       setAlertModal({
         title: '오류',
-        message: e instanceof Error ? e.message : '댓글 삭제에 실패했습니다.',
+        message: e instanceof Error ? e.message : '댓글 삭제에 실패했어요.',
       });
     } finally {
       setIsDeletingComment(false);
@@ -288,13 +288,13 @@ export default function CommunityDetailScreen() {
       await blockUser(blockTargetUserId);
       setShowBlockModal(false);
       setBlockTargetUserId(null);
-      setAlertModal({ title: '차단 완료', message: '해당 사용자를 차단했습니다.' });
+      setAlertModal({ title: '차단 완료', message: '해당 사용자를 차단했어요.' });
     } catch (e) {
       setShowBlockModal(false);
       setBlockTargetUserId(null);
       setAlertModal({
         title: '오류',
-        message: e instanceof Error ? e.message : '차단에 실패했습니다.',
+        message: e instanceof Error ? e.message : '차단에 실패했어요.',
       });
     } finally {
       setIsBlocking(false);
@@ -358,7 +358,7 @@ export default function CommunityDetailScreen() {
   const commentMenuItems = isOwnComment
     ? [
         {
-          label: '삭제하기',
+          label: '삭제',
           danger: true as const,
           onPress: () => commentMenuId && handleDeleteComment(commentMenuId),
         },
@@ -450,32 +450,36 @@ export default function CommunityDetailScreen() {
         body={
           <View className="gap-3">
             <Text className="text-body-sm text-gray-700">
-              누적 신고 횟수가 3회 이상인 유저는 커뮤니티 이용 제한이 있을 수 있습니다.
+              누적 신고 횟수가 3회 이상인 유저는 커뮤니티 이용 제한이 있을 수 있어요.
             </Text>
-            {REPORT_REASONS.map((reason) => (
-              <Pressable
-                key={reason}
-                onPress={() => setSelectedReason(reason)}
-                className="flex-row items-center gap-3 py-2"
-              >
-                <View
-                  className={`h-4 w-4 items-center justify-center rounded-full ${
-                    selectedReason === reason ? 'border-green-400' : 'border-gray-300'
-                  }`}
-                  style={{ borderWidth: 1.5 }}
+            {/* 선택지끼리는 바깥 gap-3을 받지 않는다. 줄마다 py-1.5만 줘서 간격 12,
+                터치 영역은 32를 유지한다. */}
+            <View>
+              {REPORT_REASONS.map((reason) => (
+                <Pressable
+                  key={reason}
+                  onPress={() => setSelectedReason(reason)}
+                  className="flex-row items-center gap-3 py-1.5"
                 >
-                  {selectedReason === reason && (
-                    <View className="h-2 w-2 rounded-full bg-green-400" />
-                  )}
-                </View>
-                <Text className="text-body-md">{reason}</Text>
-              </Pressable>
-            ))}
+                  <View
+                    className={`h-4 w-4 items-center justify-center rounded-full ${
+                      selectedReason === reason ? 'border-green-400' : 'border-gray-300'
+                    }`}
+                    style={{ borderWidth: 1.5 }}
+                  >
+                    {selectedReason === reason && (
+                      <View className="h-2 w-2 rounded-full bg-green-400" />
+                    )}
+                  </View>
+                  <Text className="text-body-md">{reason}</Text>
+                </Pressable>
+              ))}
+            </View>
           </View>
         }
-        variant="default" // 확인 + 취소 버튼 둘 다 사용
+        variant="warning" // danger 확인 + 취소 버튼 둘 다 사용
         confirmLabel="신고하기"
-        cancelLabel="취소하기"
+        cancelLabel="취소"
         onConfirm={async () => {
           if (!selectedReason || !reportTarget) return;
           setIsReporting(true);
@@ -484,11 +488,11 @@ export default function CommunityDetailScreen() {
             setShowReportModal(false);
             setSelectedReason(null);
             setReportTarget(null);
-            setAlertModal({ title: '신고 완료', message: '신고 내용은 24시간 이내에 조치됩니다.' });
+            setAlertModal({ title: '신고 완료', message: '신고 내용은 24시간 이내에 조치돼요.' });
           } catch (e) {
             setAlertModal({
               title: '오류',
-              message: e instanceof Error ? e.message : '신고에 실패했습니다.',
+              message: e instanceof Error ? e.message : '신고에 실패했어요.',
             });
           } finally {
             setIsReporting(false);
@@ -509,18 +513,17 @@ export default function CommunityDetailScreen() {
       {/* ── 게시글 삭제 확인 모달 ── */}
       <Modal
         visible={showDeleteModal}
-        title="게시글 삭제"
+        title="게시글을 삭제할까요?"
         confirmLoading={isDeleting}
         body={
           <>
-            <Text className="text-body-sm text-gray-500">
-              정말로 삭제하시겠어요?{'\n'}
-              삭제된 게시글은 복구할 수 없어요.
-            </Text>
+            <Text className="text-body-sm text-gray-500">삭제된 게시글은 복구할 수 없어요.</Text>
           </>
         }
-        variant="single"
-        confirmLabel="삭제하기"
+        // 'error'는 단일 버튼은 그대로 두고 확인 버튼만 danger로 만든다.
+        // 'single'은 primary(초록)라 되돌릴 수 없는 동작인데 색으로 경고가 안 됐다.
+        variant="error"
+        confirmLabel="삭제"
         onConfirm={handleDeletePost}
         onDismiss={() => !isDeleting && setShowDeleteModal(false)}
       />
@@ -535,8 +538,8 @@ export default function CommunityDetailScreen() {
             <Text className="text-body-sm text-gray-500">댓글을 삭제할까요?</Text>
           </>
         }
-        variant="single" // 확인 버튼만 사용
-        confirmLabel="삭제하기"
+        variant="error" // 확인 버튼만 쓰되 danger 색으로
+        confirmLabel="삭제"
         onConfirm={confirmDeleteComment}
         onDismiss={() => !isDeletingComment && setShowDeleteCommentModal(false)}
       />
@@ -550,12 +553,12 @@ export default function CommunityDetailScreen() {
           <>
             <Text className="text-body-sm text-gray-500">
               이 사용자를 차단하시겠어요?{'\n'}
-              차단된 사용자의 게시글과 댓글이 보이지 않습니다.
+              차단된 사용자의 게시글과 댓글이 보이지 않아요.
             </Text>
           </>
         }
-        variant="single"
-        confirmLabel="차단하기"
+        variant="error" // danger 단일 버튼
+        confirmLabel="차단"
         onConfirm={confirmBlockUser}
         onDismiss={() => !isBlocking && setShowBlockModal(false)}
       />

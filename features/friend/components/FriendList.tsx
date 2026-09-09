@@ -28,7 +28,7 @@ export function FriendList({
     return (
       <View className="items-center py-8">
         <Text className="text-body-md text-gray-500">
-          {searching ? '일치하는 친구가 없습니다' : '아직 친구가 없습니다'}
+          {searching ? '일치하는 친구가 없어요' : '아직 친구가 없어요'}
         </Text>
       </View>
     );

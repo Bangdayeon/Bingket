@@ -1,5 +1,6 @@
 import * as Sentry from '@sentry/react-native';
 import Button from '@/components/Button';
+import { Text } from '@/components/Text';
 import { Modal } from '@/components/Modal';
 import { PageHeader } from '@/components/PageHeader';
 import { BingoTitle } from '@/features/bingo/bingo-edit/BingoTitle';
@@ -13,6 +14,8 @@ import type { BoardVisibility } from '@/features/profile/lib/profile';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { ScrollView, View } from 'react-native';
+import { CoachMarkTarget } from '@/features/coachmark/CoachMarkTarget';
+import { useCoachMarkScrollIntoView } from '@/features/coachmark/use-coach-mark-scroll';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function BingoAddScreen() {
@@ -26,6 +29,12 @@ export default function BingoAddScreen() {
   const [selectedDuration, setSelectedDuration] = useState<string | null>(null);
   const [selectedGrid, setSelectedGrid] = useState<string>('3x3');
   const cellsRef = useRef<string[]>([]);
+  const scrollRef = useRef<ScrollView>(null);
+  // 빙고 정보는 맨 위, 임시 저장 버튼은 맨 아래다. 「이전」으로 되돌아올 때도 따라와야 한다.
+  const coachScroll = useCoachMarkScrollIntoView(scrollRef, {
+    'add-info': 'top',
+    'add-temp-save': 'end',
+  });
   const [initialCells, setInitialCells] = useState<string[]>([]);
   const [writeBingoKey, setWriteBingoKey] = useState(0);
   const [selectedEditCount, setSelectedEditCount] = useState<string>('0');
@@ -162,44 +171,59 @@ export default function BingoAddScreen() {
       cells: cellsRef.current,
     };
     await AsyncStorage.setItem('@bingket/draft-bingo', JSON.stringify(data));
-    showAlert('임시 저장되었습니다.\n홈 화면에서 이어서 만들 수 있어요.', () =>
+    showAlert('임시 저장되었어요.\n홈 화면에서 이어서 만들 수 있어요.', () =>
       router.replace('/(tabs)'),
     );
   };
 
   return (
     <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
-      <PageHeader title="빙고 추가하기" onBack={handleBack} />
+      {/* 뒤로가기 줄만 고정한다. 제목과 저장 버튼은 내용과 함께 스크롤된다. */}
+      <PageHeader onBack={handleBack} />
 
       <ScrollView
+        ref={scrollRef}
+        {...coachScroll}
         className="flex-1"
-        contentContainerStyle={{ paddingBottom: insets.bottom + 100 }}
+        // 섹션 간격은 여기 한 곳에서 준다. 섹션마다 자기 패딩을 들면 제각각이 된다.
+        contentContainerStyle={{ gap: 32, paddingBottom: insets.bottom + 32 }}
         keyboardShouldPersistTaps="handled"
-        automaticallyAdjustKeyboardInsets={false}
+        // 저장 버튼이 하단 고정 바였을 땐 false가 맞았다(고정 바가 키보드에 밀려 튐).
+        // 버튼이 스크롤 안으로 들어온 지금은 반대로, 키보드 위로 올릴 수 없게 막는다.
+        automaticallyAdjustKeyboardInsets
       >
-        <BingoTitle
-          value={title}
-          onChange={(v) => {
-            markDirty();
-            setTitle(v);
-          }}
-        />
+        {/* 제목은 내용과 함께 스크롤된다. 화면 위에 고정되는 건 뒤로가기 줄뿐이다. */}
+        <View className="px-4 pb-2 pt-7">
+          <Text className="text-title-lg font-pretendard-medium text-gray-900">빙고 추가하기</Text>
+        </View>
 
-        <BingoGoal
-          selectedDuration={selectedDuration}
-          onDurationSelect={handleDurationSelect}
-          startDate={startDate}
-          endDate={endDate}
-          isEndDateDisabled={isEndDateDisabled}
-          onOpenStartPicker={() => {
-            setTempDate(startDate ?? new Date());
-            setPickerTarget('start');
-          }}
-          onOpenEndPicker={() => {
-            setTempDate(endDate ?? new Date());
-            setPickerTarget('end');
-          }}
-        />
+        {/* 첫 실행 안내 5단계가 가리키는 '빙고 정보'. 두 섹션을 한 자식으로 묶으므로
+            바깥 contentContainerStyle의 gap 32를 래퍼가 대신 준다. */}
+        <CoachMarkTarget id="add-info" className="gap-8">
+          <BingoTitle
+            value={title}
+            onChange={(v) => {
+              markDirty();
+              setTitle(v);
+            }}
+          />
+
+          <BingoGoal
+            selectedDuration={selectedDuration}
+            onDurationSelect={handleDurationSelect}
+            startDate={startDate}
+            endDate={endDate}
+            isEndDateDisabled={isEndDateDisabled}
+            onOpenStartPicker={() => {
+              setTempDate(startDate ?? new Date());
+              setPickerTarget('start');
+            }}
+            onOpenEndPicker={() => {
+              setTempDate(endDate ?? new Date());
+              setPickerTarget('end');
+            }}
+          />
+        </CoachMarkTarget>
 
         <WriteBingo
           title={title}
@@ -233,6 +257,28 @@ export default function BingoAddScreen() {
             setVisibility(v);
           }}
         />
+
+        {/* 저장 버튼도 고정하지 않는다 — 화면이 짧아 보이고 스크롤 영역을 먹는다. */}
+        <View className="flex-row gap-2 px-4">
+          {/* 첫 실행 안내 5단계가 가리키는 버튼. 래퍼가 flex-1을 이어받아야
+              두 버튼이 반씩 나눠 갖는 배치가 유지된다. */}
+          <CoachMarkTarget id="add-temp-save" className="flex-1">
+            <Button
+              label="임시 저장"
+              variant="secondary"
+              size="md"
+              onClick={handleTempSave}
+              className="w-full"
+            />
+          </CoachMarkTarget>
+          <Button
+            label="저장하기"
+            variant="primary"
+            size="md"
+            onClick={handleSave}
+            className="flex-1"
+          />
+        </View>
       </ScrollView>
 
       <Modal
@@ -251,7 +297,7 @@ export default function BingoAddScreen() {
         visible={showConfirmModal}
         title={title}
         body={
-          '목표 기간, 칸 개수, 수정 가능 횟수는\n저장 후 수정이 불가능합니다.\n이대로 빙고를 만들까요?'
+          '목표 기간, 칸 개수, 수정 가능 횟수는\n저장 후에는 수정할 수 없어요.\n이대로 빙고를 만들까요?'
         }
         variant="default"
         cancelLabel="한 번 더 보기"
@@ -263,10 +309,9 @@ export default function BingoAddScreen() {
 
       <Modal
         visible={showLeaveModal}
-        title="변경사항을 저장하지 않았어요"
-        body="변경사항을 저장할까요?"
-        variant="warning"
-        cancelLabel="이어서 편집하기"
+        title="저장하지 않은 변경사항이 있어요"
+        body="지금 나가면 변경 사항이 저장되지 않아요."
+        cancelLabel="계속 수정"
         confirmLabel="나가기"
         onCancel={() => setShowLeaveModal(false)}
         onConfirm={() => {
@@ -287,26 +332,6 @@ export default function BingoAddScreen() {
           onDismiss={() => setPickerTarget(null)}
         />
       )}
-
-      <View
-        className="absolute bottom-0 left-0 right-0 flex-row gap-2 bg-surface px-4 pt-3"
-        style={{ paddingBottom: insets.bottom + 8 }}
-      >
-        <Button
-          label="임시 저장"
-          variant="secondary"
-          size="md"
-          onClick={handleTempSave}
-          className="flex-1"
-        />
-        <Button
-          label="저장하기"
-          variant="primary"
-          size="md"
-          onClick={handleSave}
-          className="flex-1"
-        />
-      </View>
     </View>
   );
 }

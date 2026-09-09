@@ -22,14 +22,16 @@ export function ProfileHeader({ profile, onFriendsPress, onPostsPress }: Props) 
 
         <View className="flex-1 gap-1.5">
           {profile ? (
-            <>
+            // 이름과 @아이디는 한 덩어리다. 바깥 gap-1.5 를 그대로 받으면 둘 사이가
+            // 아래 카운터 줄과 같은 간격이 돼 따로 노는 두 줄로 보인다.
+            <View className="gap-0.5">
               <Text className="text-body-md font-pretendard-medium text-gray-800" numberOfLines={1}>
                 {profile.displayName}
               </Text>
               <Text className="text-caption-md text-gray-600" numberOfLines={1}>
                 @{profile.username}
               </Text>
-            </>
+            </View>
           ) : (
             <Loading />
           )}

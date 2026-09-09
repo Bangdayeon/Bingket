@@ -2,13 +2,13 @@
   "expo": {
     "name": "빙킷",
     "slug": "bingkit",
-    "version": "1.1.0",
+    "version": "2.0.0",
     "scheme": "bingket",
     "orientation": "portrait",
     "icon": "./assets/app_icon.png",
     "userInterfaceStyle": "automatic",
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/logo1024.png",
       "resizeMode": "contain",
       "backgroundColor": "#FAFAFA"
     },
@@ -26,10 +26,10 @@
     },
     "android": {
       "package": "com.day.bingket.app",
-      "versionCode": 31,
+      "versionCode": 32,
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
-        "backgroundColor": "#759E38",
+        "backgroundColor": "#7CAF32",
         "foregroundImage": "./assets/android-icon-foreground.png"
       },
       "predictiveBackGestureEnabled": false,
@@ -75,7 +75,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/splash-icon.png",
+          "image": "./assets/logo1024.png",
           "imageWidth": 200,
           "backgroundColor": "#FAFAFA"
         }
@@ -87,7 +87,7 @@
         "expo-notifications",
         {
           "icon": "./assets/notification-icon.png",
-          "color": "#759E38",
+          "color": "#7CAF32",
           "defaultChannel": "default"
         }
       ],

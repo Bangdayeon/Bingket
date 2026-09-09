@@ -27,7 +27,7 @@ iOS, Android를 동시 지원합니다.
 
 ### DevOps
 
-- Package Manager: npm
+- Package Manager: pnpm (`node-linker=hoisted` — RN 오토링킹이 flat한 node_modules를 가정한다)
 - CI/CD: GitHub Actions
 - Distribution: EAS (Expo Application Services)
 
@@ -94,16 +94,22 @@ iOS, Android를 동시 지원합니다.
 ├── assets/               # 아이콘, 이미지 등의 애셋
 │   └── icons/            # SVG 아이콘 파일
 ├── components/           # 재사용 가능한 공용 UI 컴포넌트
+├── constants/            # 색 토큰, 길이 상한, 캐시 키 등 상수
 ├── features/             # 기능별 모듈 (Vertical Slice)
+│   ├── app-update/       # 강제 업데이트 게이트
 │   ├── auth/             # 인증 관련 로직 (OAuth, 세션 등)
 │   ├── bingo/            # 빙고 기능
 │   │   ├── components/   # bingo feature 전용 컴포넌트
-│   │   ├── bingo-add/    # 빙고 추가 화면 컴포넌트
-│   │   ├── bingo-modify/ # 빙고 수정 화면 컴포넌트
+│   │   ├── bingo-edit/   # 추가·수정 화면이 함께 쓰는 컴포넌트
 │   │   └── lib/          # bingo feature API 호출
+│   ├── coachmark/        # 첫 사용 안내
 │   ├── community/        # 커뮤니티 기능
+│   ├── friend/           # 친구 검색·요청·목록
 │   ├── mypage/           # 마이페이지 기능
-│   └── onboarding/       # 온보딩 기능
+│   ├── notifications/    # 알림 목록·안읽음 컨텍스트
+│   ├── onboarding/       # 온보딩 기능
+│   ├── profile/          # 내·타인 프로필과 피드
+│   └── team/             # 같이하기(팀 빙고)
 ├── lib/                  # 공용 유틸리티 (HTTP 클라이언트, 날짜 포맷터 등)
 ├── mocks/                # 개발용 mock 데이터 (API 연동 후 제거)
 ├── store/                # Zustand 전역 상태 (미도입, 예정)
@@ -137,6 +143,8 @@ iOS, Android를 동시 지원합니다.
   - draft 상태, auth 상태, theme 상태 등을 관리할 예정
   - 현재는 AsyncStorage + useState 혼용
 - 서버 상태: React Query — 미도입, 추후 도입 예정
+  - 현재는 화면마다 `useEffect` + `setLoading(true)`로 직접 조회한다.
+    `react-hooks/set-state-in-effect` 경고 11건이 이 패턴이며, 도입 시 함께 사라진다.
 - 네비게이션 상태: Expo Router (`useLocalSearchParams`)
 
 ### 네비게이션
@@ -154,6 +162,17 @@ iOS, Android를 동시 지원합니다.
 - 민감 정보(토큰, 자격증명)는 `expo-secure-store` 사용 (`AsyncStorage` 금지)
 - 비민감 정보(draft, theme 등)는 `AsyncStorage` 사용 가능
 
+### RLS 정책과 함수 권한
+
+- **RLS 정책 식에서 EXECUTE가 회수된 함수를 호출하지 말 것.**
+  정책 식은 함수 본문과 달리 질의를 던진 롤 권한으로 평가된다. `is_friend_with`,
+  `is_blocked_between`, `can_view_board`는 anon·authenticated에 EXECUTE가 없으므로
+  (`20260812000002`) 정책에서 부르면 그 테이블 조회가 통째로 42501로 실패한다.
+  SECURITY DEFINER 함수 _본문_ 안에서만 호출한다.
+- 정책에 친구/차단 판정이 필요하면 헬퍼 대신 원본 테이블 인라인 서브쿼리를 쓴다.
+  해당 테이블의 RLS가 이미 조회자 본인 행을 허용하므로 새 권한을 열지 않아도 된다
+  (`20260909000004` 참고).
+
 ### 데이터 보호
 
 - `.env` 파일 절대 커밋 금지
@@ -161,7 +180,7 @@ iOS, Android를 동시 지원합니다.
 - 민감 데이터 로그 출력 금지
 - 사용자 입력 항상 검증 (Zod 스키마 사용)
 
-- `npm audit` 주기적 실행
+- `pnpm audit` 주기적 실행
 - 의존성 자동 업데이트 (Dependabot 또는 Renovate)
 
 ## 플랫폼별 유의사항

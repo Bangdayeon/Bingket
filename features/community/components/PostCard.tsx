@@ -8,6 +8,7 @@ import MoreIcon from '@/assets/icons/ic_more_vert.svg';
 import { CommunityPost } from '@/types/community';
 import type { StoredBlock } from '@/types/community';
 import { LikeButton } from './LikeButton';
+import { AuthorLink } from './AuthorLink';
 import AnonymousProfile from '@/components/AnonymousProfile';
 import { ProfileAvatar } from '@/components/ProfileAvatar';
 import BingoPreview from '@/components/BingoPreview';
@@ -15,8 +16,6 @@ import type { BingoData } from '@/types/bingo';
 import { Popover } from '@/components/Popover';
 import { Modal } from '@/components/Modal';
 import { submitReport, blockUser } from '@/features/community/lib/community';
-
-const ICON_SIZE = 24;
 
 const REPORT_REASONS = [
   '상업적 광고 및 판매',
@@ -136,15 +135,19 @@ export function PostCard({ post, currentUserId, onBlock }: PostCardProps) {
       {/* 작성자 */}
       <View className="flex-row items-center justify-between">
         <View className="flex-row items-center gap-2">
-          {post.isAnonymous ? (
-            <AnonymousProfile seed={post.id} />
-          ) : (
-            <ProfileAvatar avatarUrl={post.avatarUrl ?? null} size={40} />
-          )}
+          <AuthorLink userId={post.userId} isAnonymous={post.isAnonymous}>
+            {post.isAnonymous ? (
+              <AnonymousProfile seed={post.id} />
+            ) : (
+              <ProfileAvatar avatarUrl={post.avatarUrl ?? null} size={40} />
+            )}
+          </AuthorLink>
           <View className="shrink flex-row items-center gap-0.5">
-            <Text className="shrink text-body-md text-gray-800" numberOfLines={1}>
-              {post.author}{' '}
-            </Text>
+            <AuthorLink userId={post.userId} isAnonymous={post.isAnonymous} className="shrink">
+              <Text className="shrink text-body-md text-gray-800" numberOfLines={1}>
+                {post.author}{' '}
+              </Text>
+            </AuthorLink>
             <Text className="text-caption-sm text-gray-600">· {post.timeAgo}</Text>
           </View>
         </View>
@@ -162,10 +165,12 @@ export function PostCard({ post, currentUserId, onBlock }: PostCardProps) {
         style={{ top: 52, right: 10 }}
       />
 
-      {/* 미디어 썸네일 (빙고 우선, 없으면 첫 이미지) */}
+      {/* 미디어 썸네일 (빙고 우선, 없으면 첫 이미지).
+          빙고는 목록에서 정사각형으로 자른다 — 3:4 그대로 두면 카드 하나가 화면을 거의 다
+          먹어 다음 글이 안 보인다. 전체 판은 게시글 상세에서 보여준다. */}
       {bingoData ? (
-        <View className="mt-4">
-          <BingoPreview bingo={bingoData} size="md" />
+        <View className="mt-4 overflow-hidden rounded-2xl">
+          <BingoPreview bingo={bingoData} size="md" square />
         </View>
       ) : firstImageUrl ? (
         <Image
@@ -187,7 +192,7 @@ export function PostCard({ post, currentUserId, onBlock }: PostCardProps) {
       <View className="flex-row items-center gap-4 mt-3">
         <LikeButton count={post.likeCount} postId={post.id} initialLiked={post.likedByMe} />
         <View className="flex-row items-center gap-1">
-          <SMSIcon width={ICON_SIZE} height={ICON_SIZE} className="text-gray-400" />
+          <SMSIcon width={24} height={24} className="text-gray-400" />
           <Text className="text-body-sm text-gray-700">{post.commentCount}</Text>
         </View>
       </View>
@@ -202,30 +207,34 @@ export function PostCard({ post, currentUserId, onBlock }: PostCardProps) {
             <Text className="text-body-sm text-gray-700">
               누적 신고 횟수가 3회 이상인 유저는 커뮤니티 이용 제한이 있을 수 있습니다.
             </Text>
-            {REPORT_REASONS.map((reason) => (
-              <Pressable
-                key={reason}
-                onPress={() => setSelectedReason(reason)}
-                className="flex-row items-center gap-3 py-2"
-              >
-                <View
-                  className={`h-4 w-4 items-center justify-center rounded-full ${
-                    selectedReason === reason ? 'border-green-400' : 'border-gray-300'
-                  }`}
-                  style={{ borderWidth: 1.5 }}
+            {/* 선택지끼리는 바깥 gap-3을 받지 않는다. 줄마다 py-1.5만 줘서 간격 12,
+                터치 영역은 32를 유지한다. */}
+            <View>
+              {REPORT_REASONS.map((reason) => (
+                <Pressable
+                  key={reason}
+                  onPress={() => setSelectedReason(reason)}
+                  className="flex-row items-center gap-3 py-1.5"
                 >
-                  {selectedReason === reason && (
-                    <View className="h-2 w-2 rounded-full bg-green-400" />
-                  )}
-                </View>
-                <Text className="text-body-md">{reason}</Text>
-              </Pressable>
-            ))}
+                  <View
+                    className={`h-4 w-4 items-center justify-center rounded-full ${
+                      selectedReason === reason ? 'border-green-400' : 'border-gray-300'
+                    }`}
+                    style={{ borderWidth: 1.5 }}
+                  >
+                    {selectedReason === reason && (
+                      <View className="h-2 w-2 rounded-full bg-green-400" />
+                    )}
+                  </View>
+                  <Text className="text-body-md">{reason}</Text>
+                </Pressable>
+              ))}
+            </View>
           </View>
         }
-        variant="default"
-        confirmLabel="신고하기"
-        cancelLabel="취소하기"
+        variant="warning" // danger 확인 + 취소 버튼 둘 다 사용
+        confirmLabel="신고"
+        cancelLabel="취소"
         confirmDisabled={!selectedReason}
         onConfirm={async () => {
           if (!selectedReason) return;
@@ -241,7 +250,7 @@ export function PostCard({ post, currentUserId, onBlock }: PostCardProps) {
           } catch (e) {
             setAlertModal({
               title: '오류',
-              message: e instanceof Error ? e.message : '신고에 실패했습니다.',
+              message: e instanceof Error ? e.message : '신고에 실패했어요.',
             });
           } finally {
             setIsReporting(false);
@@ -266,11 +275,11 @@ export function PostCard({ post, currentUserId, onBlock }: PostCardProps) {
         body={
           <Text className="text-body-sm text-gray-500">
             이 사용자를 차단하시겠어요?{'\n'}
-            차단된 사용자의 게시글과 댓글이 보이지 않습니다.
+            차단된 사용자의 게시글과 댓글이 보이지 않아요.
           </Text>
         }
-        variant="single"
-        confirmLabel="차단하기"
+        variant="error" // danger 단일 버튼
+        confirmLabel="차단"
         onConfirm={async () => {
           setIsBlocking(true);
           try {
@@ -281,7 +290,7 @@ export function PostCard({ post, currentUserId, onBlock }: PostCardProps) {
             setShowBlockModal(false);
             setAlertModal({
               title: '오류',
-              message: e instanceof Error ? e.message : '차단에 실패했습니다.',
+              message: e instanceof Error ? e.message : '차단에 실패했어요.',
             });
           } finally {
             setIsBlocking(false);

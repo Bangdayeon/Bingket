@@ -23,7 +23,7 @@ export const SearchInput = forwardRef<RNTextInput, SearchInputProps>(function Se
       <RNTextInput
         ref={ref}
         value={value}
-        className="ml-1 flex-1 text-body-md text-gray-800"
+        className="ml-1 flex-1 text-body-md text-gray-800 placeholder:text-gray-500"
         style={style}
         {...rest}
       />

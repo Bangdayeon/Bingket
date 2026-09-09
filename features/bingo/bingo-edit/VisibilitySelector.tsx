@@ -7,8 +7,8 @@ import type { BoardVisibility } from '@/features/profile/lib/profile';
 // 시안 순서: 전체 공개 → 친구 공개 → 비공개
 const OPTIONS: { value: BoardVisibility; label: string; description: string }[] = [
   { value: 'public', label: '전체 공개', description: '빙고를 누구에게나 공개해요' },
-  { value: 'friends', label: '친구 공개', description: '친구에게만 이 빙고가 보여요' },
-  { value: 'private', label: '비공개', description: '이 빙고를 나만 볼 수 있어요' },
+  { value: 'friends', label: '친구 공개', description: '빙고를 친구들에게만 공개해요' },
+  { value: 'private', label: '비공개', description: '빙고를 나만 봐요' },
 ];
 
 interface Props {
@@ -20,7 +20,7 @@ export function VisibilitySelector({ value, onChange }: Props) {
   const selected = OPTIONS.find((opt) => opt.value === value);
 
   return (
-    <View className="py-6">
+    <View>
       <View className="px-4">
         <SectionLabel label="빙고 공개 범위" />
       </View>

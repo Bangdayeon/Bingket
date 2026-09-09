@@ -1,4 +1,4 @@
-import { useColorScheme } from 'nativewind';
+import { useResolvedScheme } from '@/lib/color-scheme';
 import { DARK, FIXED, LIGHT } from '@/constants/color-tokens.cjs';
 import type { Palette } from '@/constants/color-tokens';
 
@@ -14,6 +14,6 @@ export type { Palette };
  * 돌려주기 때문에 테마 전환이 저절로 따라온다.
  */
 export function useColors(): Palette {
-  const { colorScheme } = useColorScheme();
-  return colorScheme === 'dark' ? DARK : LIGHT;
+  // className과 같은 값에서 파생된다. 여기가 갈라지면 어두운 시트 위에 검은 글씨가 깔린다.
+  return useResolvedScheme() === 'dark' ? DARK : LIGHT;
 }

@@ -56,78 +56,90 @@ export function WriteBingo({
   }, []);
 
   return (
-    <View className="py-6">
+    // 내부 블록도 바깥 섹션과 같은 32px로 벌린다. 블록마다 자기 패딩을 들고 있으면
+    // 반드시 제각각이 된다 — 실제로 pt-5 / pb-5 pt-2 로 섞여 있었다.
+    // gap을 숫자로 준다. tailwind의 gap-8은 rem 기반이라 metro의 inlineRem(기본 14)
+    // 때문에 32가 아니라 28로 인라인되고, 바깥 섹션(인라인 32)과 어긋난다.
+    <View style={{ gap: 32 }}>
       {/* 빙고 칸 수 */}
-      <View className="px-4">
-        <SectionLabel label="빙고 칸 수" hint="저장 후 변경 불가" />
+      <View>
+        <View className="px-4">
+          <SectionLabel label="빙고 칸 수" hint="저장 후 변경 불가" />
+        </View>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ gap: 8, paddingHorizontal: 16 }}
+        >
+          {GRID_OPTIONS.map((opt) => (
+            <Chip
+              key={opt.value}
+              label={opt.label}
+              selected={selectedGrid === opt.value}
+              onPress={() => onGridSelect(opt.value)}
+            />
+          ))}
+        </ScrollView>
+        <Text className="px-4 pt-2 text-caption-sm text-gray-600">
+          대각선 3칸도 빙고로 인정돼요
+        </Text>
       </View>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ gap: 8, paddingHorizontal: 16 }}
-      >
-        {GRID_OPTIONS.map((opt) => (
-          <Chip
-            key={opt.value}
-            label={opt.label}
-            selected={selectedGrid === opt.value}
-            onPress={() => onGridSelect(opt.value)}
-          />
-        ))}
-      </ScrollView>
-      <Text className="px-4 pb-5 pt-2 text-caption-sm text-gray-600">
-        대각선 3칸도 빙고로 인정돼요
-      </Text>
 
       {/* 각 항목 수정 가능 횟수 */}
-      <View className="px-4">
-        <SectionLabel label="각 항목 수정 가능 횟수" hint="저장 후 변경 불가" />
+      <View>
+        <View className="px-4">
+          <SectionLabel label="각 항목 수정 가능 횟수" hint="저장 후 변경 불가" />
+        </View>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ gap: 8, paddingHorizontal: 16 }}
+        >
+          {EDIT_COUNT_OPTIONS.map((opt) => (
+            <Chip
+              key={opt.value}
+              label={opt.label}
+              selected={selectedEditCount === opt.value}
+              onPress={() => onEditCountSelect(opt.value)}
+            />
+          ))}
+        </ScrollView>
       </View>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ gap: 8, paddingHorizontal: 16 }}
-      >
-        {EDIT_COUNT_OPTIONS.map((opt) => (
-          <Chip
-            key={opt.value}
-            label={opt.label}
-            selected={selectedEditCount === opt.value}
-            onPress={() => onEditCountSelect(opt.value)}
-          />
-        ))}
-      </ScrollView>
 
       {/* 테마 선택 */}
-      <View className="px-4 pt-5">
-        <SectionLabel label="테마 선택" />
+      <View>
+        <View className="px-4">
+          <SectionLabel label="테마 선택" />
+        </View>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ gap: 8, paddingHorizontal: 16 }}
+        >
+          {themes.map((theme) => (
+            <Chip
+              key={theme.id}
+              label={theme.displayName}
+              selected={selectedTheme === theme.id}
+              onPress={() => onThemeSelect(theme.id)}
+            />
+          ))}
+        </ScrollView>
       </View>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ gap: 8, paddingHorizontal: 16 }}
-      >
-        {themes.map((theme) => (
-          <Chip
-            key={theme.id}
-            label={theme.displayName}
-            selected={selectedTheme === theme.id}
-            onPress={() => onThemeSelect(theme.id)}
-          />
-        ))}
-      </ScrollView>
 
       {/* 빙고 내용 작성 — 판은 화면 좌우 끝까지 */}
-      <View className="px-4 pt-5">
-        <SectionLabel label="빙고 내용 작성" hint="각 칸을 선택해서 빙고 내용을 채워주세요." />
+      <View className="gap-4">
+        <View className="px-4">
+          <SectionLabel label="빙고 내용 작성" hint="각 칸을 선택해서 빙고 내용을 채워주세요." />
+        </View>
+        <AddEachBingo
+          selectedGrid={selectedGrid}
+          theme={selectedTheme}
+          title={title}
+          cells={cells}
+          onCellsChange={onCellsChange}
+        />
       </View>
-      <AddEachBingo
-        selectedGrid={selectedGrid}
-        theme={selectedTheme}
-        title={title}
-        cells={cells}
-        onCellsChange={onCellsChange}
-      />
     </View>
   );
 }

@@ -50,6 +50,12 @@ Deno.serve(async (req) => {
     const nickname =
       (kakaoUser.kakao_account?.profile?.nickname as string | undefined) ?? '빙고유저';
 
+    // 계정 관리 화면에 보여줄 진짜 카카오 이메일. 카카오 개발자 콘솔에서 email
+    // 동의항목이 켜져 있고 사용자가 동의해야만 내려온다. 없으면 화면이 닉네임으로
+    // 폴백한다. 아래 email 변수(로그인 식별용 가짜 주소)와 절대 섞지 말 것.
+    const kakaoEmail = kakaoUser.kakao_account?.email as string | undefined;
+
+    // 로그인 식별용. 카카오는 이메일을 안 줄 수도 있어서 id로 주소를 만든다.
     const email = `${kakaoId}@kakao.bingket`;
 
     const admin = createClient(SUPABASE_URL, SERVICE_KEY);
@@ -74,6 +80,16 @@ Deno.serve(async (req) => {
 
     if (existing) {
       userId = existing.id;
+
+      // 기존 유저는 createUser를 안 타므로 메타데이터가 영영 갱신되지 않는다.
+      // 카카오 이메일을 나중에 도입했기 때문에 이미 가입한 사람은 여기서 채워야 한다.
+      // 실패해도 로그인은 진행한다 — 화면 보조 정보일 뿐이다.
+      if (kakaoEmail) {
+        const { error: metaError } = await admin.auth.admin.updateUserById(userId, {
+          user_metadata: { kakao_id: kakaoId, name: nickname, kakao_email: kakaoEmail },
+        });
+        if (metaError) console.error('kakao_email 갱신 실패:', metaError.message);
+      }
     } else {
       const { data: newUser, error: createError } = await admin.auth.admin.createUser({
         email,
@@ -81,6 +97,7 @@ Deno.serve(async (req) => {
         user_metadata: {
           kakao_id: kakaoId,
           name: nickname,
+          ...(kakaoEmail ? { kakao_email: kakaoEmail } : {}),
         },
       });
 

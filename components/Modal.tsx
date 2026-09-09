@@ -59,7 +59,9 @@ export function Modal({
   const confirmVariant = variant === 'warning' || variant === 'error' ? 'danger' : 'primary';
   const isSingleButton = variant === 'single' || variant === 'success' || variant === 'error';
 
-  const opacity = useRef(new Animated.Value(visible ? 1 : 0)).current;
+  // 초기화 함수는 마운트 때 한 번만 돈다. useRef(...).current와 값은 같고,
+  // 렌더 중 ref를 읽지 않는다.
+  const [opacity] = useState(() => new Animated.Value(visible ? 1 : 0));
   // 애니메이션이 끝나야 트리에서 내린다
   const [mounted, setMounted] = useState(visible);
   const mountedRef = useRef(visible);

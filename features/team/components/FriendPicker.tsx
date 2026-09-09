@@ -83,7 +83,7 @@ export function FriendPicker({ selectedIds, onChange, maxCount }: FriendPickerPr
         className="h-12 flex-row items-center justify-between rounded-xl bg-gray-200 px-3"
       >
         <Text className="text-body-md text-gray-500">
-          {selected.length > 0 ? `${selected.length}명 선택함` : '친구 고르기'}
+          {selected.length > 0 ? `${selected.length}명 선택함` : '친구 선택하기'}
         </Text>
         <ArrowForwardIcon width={24} height={24} className="text-gray-600" />
       </Pressable>

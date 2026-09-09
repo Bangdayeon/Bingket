@@ -33,9 +33,12 @@ export function CommentInput({
 }: CommentInputProps) {
   const inputRef = useRef<RNTextInput>(null);
 
+  // replyTo 객체가 아니라 id를 본다. 부모가 리렌더될 때마다 새 객체가 와도
+  // 답글 대상이 그대로면 포커스를 다시 뺏지 않는다.
+  const replyToId = replyTo?.id;
   useEffect(() => {
-    if (replyTo) inputRef.current?.focus();
-  }, [replyTo?.id]);
+    if (replyToId) inputRef.current?.focus();
+  }, [replyToId]);
 
   const anonymousClass = isAnonymous ? 'text-green-400' : 'text-gray-400';
   const [pressed, setPressed] = useState(false);
@@ -65,22 +68,29 @@ export function CommentInput({
           maxLength={LIMITS.comment}
           className="flex-1"
           style={{ flex: 1 }}
-        />
-
-        <IconButton
-          icon={
-            <ArrowUpwardIcon
-              width={24}
-              height={24}
-              className={pressed ? 'text-gray-500' : 'text-gray-400'}
+          rightIcon={
+            // 입력창 안 오른쪽에 붙인다. 입력창 높이가 48이라 버튼은 32로 줄이고,
+            // px-4로 잡힌 우측 여백을 -mr-2로 당겨 가장자리에서 8만 띄운다.
+            // 줄어든 만큼은 hitSlop으로 메워 터치 영역은 48을 유지한다.
+            <IconButton
+              size={32}
+              className="-mr-2"
+              hitSlop={8}
+              icon={
+                <ArrowUpwardIcon
+                  width={24}
+                  height={24}
+                  className={pressed ? 'text-gray-500' : 'text-gray-400'}
+                />
+              }
+              onClick={onSubmit}
+              variant="ghost"
+              loading={isSubmitting}
+              disabled={isSubmitting}
+              onPressIn={() => setPressed(true)}
+              onPressOut={() => setPressed(false)}
             />
           }
-          onClick={onSubmit}
-          variant="ghost"
-          loading={isSubmitting}
-          disabled={isSubmitting}
-          onPressIn={() => setPressed(true)}
-          onPressOut={() => setPressed(false)}
         />
       </View>
     </View>

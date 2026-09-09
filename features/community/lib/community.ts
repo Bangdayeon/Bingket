@@ -258,7 +258,7 @@ export const uploadPostImage = async (uri: string): Promise<string> => {
     data: { session },
   } = await supabase.auth.getSession();
 
-  if (!session) throw new Error('로그인이 필요합니다.');
+  if (!session) throw new Error('로그인이 필요해요.');
 
   const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL!;
   const presignRes = await fetch(`${supabaseUrl}/functions/v1/post-presign`, {
@@ -292,7 +292,7 @@ export const uploadPostImage = async (uri: string): Promise<string> => {
     body: blob,
     headers: { 'Content-Type': 'image/jpeg' },
   });
-  if (!uploadRes.ok) throw new Error('이미지 업로드에 실패했습니다.');
+  if (!uploadRes.ok) throw new Error('이미지 업로드에 실패했어요.');
 
   return `${R2_PUBLIC_URL}/${data.key as string}`;
 };
@@ -354,7 +354,7 @@ export interface CreatePostRequest {
 
 export const createPost = async (req: CreatePostRequest): Promise<string> => {
   const { data: userData, error: authError } = await supabase.auth.getUser();
-  if (authError || !userData?.user) throw new Error('로그인이 필요합니다.');
+  if (authError || !userData?.user) throw new Error('로그인이 필요해요.');
 
   const { storedBlocks, imageUrls, bingoBoardId, bingoSnapshot } = await processBlocks(req.blocks);
 
@@ -372,7 +372,7 @@ export const createPost = async (req: CreatePostRequest): Promise<string> => {
     .select('id')
     .single();
 
-  if (error || !data) throw new Error(error?.message ?? '게시글 작성에 실패했습니다.');
+  if (error || !data) throw new Error(error?.message ?? '게시글 작성에 실패했어요.');
   return data.id as string;
 };
 
@@ -389,7 +389,7 @@ export const updatePost = async (req: UpdatePostRequest): Promise<void> => {
     data: { user },
     error: authError,
   } = await supabase.auth.getUser();
-  if (authError || !user) throw new Error('로그인이 필요합니다.');
+  if (authError || !user) throw new Error('로그인이 필요해요.');
 
   const { storedBlocks, imageUrls, bingoBoardId, bingoSnapshot } = await processBlocks(req.blocks);
 
@@ -406,7 +406,7 @@ export const updatePost = async (req: UpdatePostRequest): Promise<void> => {
     .eq('id', req.postId)
     .eq('user_id', user.id);
 
-  if (error) throw new Error(error.message ?? '게시글 수정에 실패했습니다.');
+  if (error) throw new Error(error.message ?? '게시글 수정에 실패했어요.');
 };
 
 // ── 게시글 삭제 (소프트 딜리트) ──────────────────────────────────
@@ -415,7 +415,7 @@ export const deletePost = async (postId: string): Promise<void> => {
     data: { user },
     error: authError,
   } = await supabase.auth.getUser();
-  if (authError || !user) throw new Error('로그인이 필요합니다.');
+  if (authError || !user) throw new Error('로그인이 필요해요.');
 
   const { error } = await supabase
     .from('posts')
@@ -588,7 +588,7 @@ export const addComment = async (
     data: { user },
     error: authError,
   } = await supabase.auth.getUser();
-  if (authError || !user) throw new Error('로그인이 필요합니다.');
+  if (authError || !user) throw new Error('로그인이 필요해요.');
 
   const { error } = await supabase.from('comments').insert({
     post_id: postId,
@@ -607,7 +607,7 @@ export const deleteComment = async (commentId: string): Promise<void> => {
     data: { user },
     error: authError,
   } = await supabase.auth.getUser();
-  if (authError || !user) throw new Error('로그인이 필요합니다.');
+  if (authError || !user) throw new Error('로그인이 필요해요.');
 
   const { error } = await supabase
     .from('comments')
@@ -624,7 +624,7 @@ export const toggleCommentLike = async (commentId: string, like: boolean): Promi
     data: { user },
     error: authError,
   } = await supabase.auth.getUser();
-  if (authError || !user) throw new Error('로그인이 필요합니다.');
+  if (authError || !user) throw new Error('로그인이 필요해요.');
 
   if (like) {
     const { error } = await supabase
@@ -657,7 +657,7 @@ export const blockUser = async (userId: string): Promise<void> => {
     data: { user },
     error: authError,
   } = await supabase.auth.getUser();
-  if (authError || !user) throw new Error('로그인이 필요합니다.');
+  if (authError || !user) throw new Error('로그인이 필요해요.');
   const { error } = await supabase
     .from('blocks')
     .insert({ blocker_id: user.id, blocked_id: userId });
@@ -674,7 +674,7 @@ export const submitReport = async (
     data: { user },
     error: authError,
   } = await supabase.auth.getUser();
-  if (authError || !user) throw new Error('로그인이 필요합니다.');
+  if (authError || !user) throw new Error('로그인이 필요해요.');
   const { error } = await supabase.from('reports').insert({
     reporter_id: user.id,
     target_type: targetType,
@@ -721,7 +721,7 @@ export const togglePostLike = async (postId: string, like: boolean): Promise<voi
     data: { user },
     error: authError,
   } = await supabase.auth.getUser();
-  if (authError || !user) throw new Error('로그인이 필요합니다.');
+  if (authError || !user) throw new Error('로그인이 필요해요.');
 
   if (like) {
     const { error } = await supabase.from('likes').insert({ user_id: user.id, post_id: postId });

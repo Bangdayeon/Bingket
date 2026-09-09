@@ -25,10 +25,11 @@ import { useEffect, useState } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useColorScheme } from 'nativewind';
 import { applyAppTheme, loadAppTheme } from '@/lib/app-theme';
 import { useColors } from '@/lib/use-colors';
+import { useResolvedScheme } from '@/lib/color-scheme';
 import { ForceUpdateGate } from '@/features/app-update/ForceUpdateGate';
+import { CoachMarkHost } from '@/features/coachmark/CoachMarkHost';
 import { PortalHost } from '@/components/PortalHost';
 import { OfflineBanner } from '@/components/OfflineBanner';
 import { useFonts } from 'expo-font';
@@ -45,9 +46,13 @@ function RootLayout() {
     'Pretendard-ExtraBold': require('../assets/fonts/Pretendard-ExtraBold.otf'),
   });
 
+  // 저장된 테마를 적용하기 전에 첫 프레임이 나가면 OS 테마로 그려졌다가 뒤집힌다.
+  // 스플래시를 테마까지 읽은 뒤에 내린다.
+  const [themeLoaded, setThemeLoaded] = useState(false);
+
   useEffect(() => {
-    if (fontsLoaded) SplashScreen.hideAsync();
-  }, [fontsLoaded]);
+    if (fontsLoaded && themeLoaded) SplashScreen.hideAsync();
+  }, [fontsLoaded, themeLoaded]);
 
   // 동의 여부를 읽기 전에는 텔레메트리 게이트가 기본값(미동의)이므로, 읽기가 끝나야
   // 화면 조회 로깅을 시작한다.
@@ -61,7 +66,10 @@ function RootLayout() {
   }, []);
 
   useEffect(() => {
-    void loadAppTheme().then(applyAppTheme);
+    // 읽기가 실패해도 스플래시에 갇히면 안 된다. 그때는 기본값(시스템)으로 간다.
+    void loadAppTheme()
+      .then(applyAppTheme)
+      .finally(() => setThemeLoaded(true));
   }, []);
 
   useEffect(() => {
@@ -104,13 +112,13 @@ function RootLayout() {
     void logScreenView(segments.join('/') || 'index').catch(Sentry.captureException);
   }, [segments, consentLoaded]);
 
-  const { colorScheme } = useColorScheme();
+  const scheme = useResolvedScheme();
   const colors = useColors();
   // 화면 전환 애니메이션 중 react-navigation의 기본 흰 배경이 비치지 않게 한다.
   const navigationTheme = {
-    ...(colorScheme === 'dark' ? DarkTheme : DefaultTheme),
+    ...(scheme === 'dark' ? DarkTheme : DefaultTheme),
     colors: {
-      ...(colorScheme === 'dark' ? DarkTheme : DefaultTheme).colors,
+      ...(scheme === 'dark' ? DarkTheme : DefaultTheme).colors,
       background: colors.surface,
       card: colors.white,
       text: colors.gray[900],
@@ -122,8 +130,9 @@ function RootLayout() {
   return (
     <ThemeProvider value={navigationTheme}>
       <SafeAreaProvider>
-        {/* style="auto"는 배경 밝기에 맞춰 상태바 아이콘 명암을 뒤집는다. */}
-        <StatusBar style="auto" />
+        {/* style="auto"는 RN의 useColorScheme을 읽는데, 그 값이 오염되면
+            상태바만 반대로 뒤집힌다. 우리가 정한 값에서 직접 파생시킨다. */}
+        <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
         <Stack
           screenOptions={{
             headerShown: false,
@@ -157,6 +166,7 @@ function RootLayout() {
         </Stack>
         <OfflineBanner />
         <ForceUpdateGate />
+        <CoachMarkHost />
         {/* 다이얼로그 오버레이가 Stack 위에 그려지도록 마지막에 둔다 */}
         <PortalHost />
       </SafeAreaProvider>

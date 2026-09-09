@@ -182,7 +182,11 @@ export default function BingoViewScreen() {
     <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
       <PageHeader />
 
-      <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: insets.bottom + 40 }}>
+      <ScrollView
+        className="flex-1"
+        // 뒤로가기 줄 바로 아래 판이 붙어 있었다. 다른 화면에서 제목이 차지하던 만큼 띄운다.
+        contentContainerStyle={{ paddingTop: 24, paddingBottom: insets.bottom + 40 }}
+      >
         <BingoCard
           bingo={liveBingo}
           completedCells={completedCells}
@@ -202,8 +206,11 @@ export default function BingoViewScreen() {
         />
 
         {isDone && (
-          <View className="mt-2 px-4">
+          <View className="mt-8 px-4">
             <Text className="mb-2 text-body-md text-gray-900">메모</Text>
+            {/* react-native 의 TextInput 을 그대로 쓰는 자리다. 공용 TextInput 과 달리
+                배경·글자색이 하나도 안 붙어서, 칸 메모(BingoCellModal)와 같은 클래스를 준다.
+                색까지 같이 주는 이유는 기본 글자색이 검정이라 다크모드에서 사라지기 때문. */}
             <TextInput
               value={retrospective}
               onChangeText={handleRetrospectiveChange}
@@ -211,12 +218,7 @@ export default function BingoViewScreen() {
               multiline
               maxLength={MEMO_MAX_LENGTH}
               textAlignVertical="top"
-              style={{
-                height: 190,
-                borderRadius: 16,
-                padding: 12,
-                lineHeight: 20,
-              }}
+              className="h-[190px] rounded-2xl bg-gray-200 p-3 text-body-md text-gray-900 placeholder:text-gray-500"
             />
             <Text className="mt-1 text-right text-caption-sm text-gray-500">
               {retrospective.length}/{MEMO_MAX_LENGTH}

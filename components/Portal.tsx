@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { nextPortalId, setPortalNode } from '@/lib/portal-store';
 
 /**
@@ -8,9 +8,8 @@ import { nextPortalId, setPortalNode } from '@/lib/portal-store';
  * 렌더해야 하는데, 호출부가 ScrollView 안일 수도 있어서(AddEachBingo) 포털이 필요하다.
  */
 export function Portal({ children }: { children: ReactNode }) {
-  const idRef = useRef<number | null>(null);
-  if (idRef.current === null) idRef.current = nextPortalId();
-  const id = idRef.current;
+  // 초기화 함수는 최초 1회만 실행된다. ref 지연 초기화와 같되 렌더 중 ref를 안 건드린다.
+  const [id] = useState(() => nextPortalId());
 
   // 의존성 배열이 없다. children이 바뀔 때마다 호스트에 반영해야 한다
   useEffect(() => {

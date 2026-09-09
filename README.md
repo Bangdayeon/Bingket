@@ -17,9 +17,12 @@
 
 ## 핵심 기능
 
-- **🎲 빙고판 만들기** — 3×3, 4×4 등 크기를 선택하고 목표 항목을 직접 작성
+- **🎲 빙고판 만들기** — 3×3, 4×3, 4×4 중에 고르고 목표 항목을 직접 작성
 - **⭐ 달성 기록** — 목표 달성 시 완료 처리 및 날짜·메모 기록
-- **👊 대결** — 친구와 빙고판을 공유하며 점수 내기
+- **👊 같이하기** — 하나의 판을 여럿이 채우거나(같이 채우기), 각자 만들어 달성률로 겨루기(각자 하기)
+- **🔒 공개 범위** — 빙고별·계정별로 전체 공개 / 친구 공개 / 비공개
+- **🏅 뱃지** — 꾸준히 채운 기록이 뱃지로 남고 마이페이지에서 모아 보기
+- **🌗 다크 모드** — 시스템·라이트·다크 중에 선택
 - **📢 커뮤니티** — 빙고판, 달성 후기, 자유게시판 형식으로 다른 유저와 공유
 
 ### 누구에게 추천하나요?
@@ -42,19 +45,51 @@
 - **디자인** — Figma로 직접 설계, MCP를 통해 코드로 변환
 - **플랫폼** — iOS / Android (준비중)
 
+## 시작하기
+
+패키지 매니저는 **pnpm**이다. `npm install`을 쓰면 안 된다 — `.npmrc`의
+`node-linker=hoisted`가 적용되지 않아 React Native 오토링킹이 모듈을 못 찾는다.
+
+```bash
+pnpm install
+```
+
+`.env.local`에 Supabase 키가 필요하다.
+
+```
+EXPO_PUBLIC_SUPABASE_URL=...
+EXPO_PUBLIC_SUPABASE_ANON_KEY=...
+```
+
+```bash
+pnpm start              # Metro (dev client)
+pnpm run ios            # 네이티브 빌드 후 iOS 실행
+pnpm run android        # 네이티브 빌드 후 Android 실행
+```
+
+네이티브 모듈이 들어 있어 Expo Go로는 안 되고 dev client가 필요하다.
+패키지를 바꾼 뒤에는 `pnpm exec expo start --clear`로 Metro 캐시를 비운다.
+
+검사는 CI와 같은 네 가지를 돌린다.
+
+```bash
+pnpm exec tsc --noEmit && pnpm run lint && pnpm run format:check && pnpm test
+```
+
 ## 기술 스택
 
-| 분류           | 기술                              |
-| -------------- | --------------------------------- |
-| Framework      | Expo ~55.0.6, React Native 0.83.2 |
-| Language       | TypeScript (strict mode)          |
-| Styling        | NativeWind 4.x (Tailwind CSS 3.x) |
-| Navigation     | Expo Router (file-based routing)  |
-| Backend        | Supabase (Auth, Database)         |
-| Notifications  | Expo Notifications                |
-| Error Tracking | Sentry                            |
-| CI/CD          | GitHub Actions + EAS Build        |
-| Distribution   | EAS (Expo Application Services)   |
+| 분류            | 기술                              |
+| --------------- | --------------------------------- |
+| Framework       | Expo ~55.0.6, React Native 0.83.2 |
+| Language        | TypeScript (strict mode)          |
+| Styling         | NativeWind 4.x (Tailwind CSS 3.x) |
+| Navigation      | Expo Router (file-based routing)  |
+| Backend         | Supabase (Auth, Database)         |
+| Notifications   | Expo Notifications                |
+| Error Tracking  | Sentry                            |
+| Package Manager | pnpm (`node-linker=hoisted`)      |
+| CI/CD           | GitHub Actions + EAS Build        |
+| Distribution    | EAS (Expo Application Services)   |
 
 ## 디렉토리 구조
 
@@ -69,15 +104,25 @@
 │   └── _layout.tsx         # 루트 레이아웃
 ├── assets/                 # 아이콘, 이미지, 폰트 등 정적 파일
 ├── components/             # 재사용 가능한 공용 UI 컴포넌트
+├── constants/              # 색 토큰, 길이 상한, 캐시 키
 ├── features/               # 기능별 Vertical Slice 모듈
+│   ├── app-update/         # 강제 업데이트 게이트
 │   ├── auth/               # 인증 (OAuth, 세션)
 │   ├── bingo/              # 빙고 생성·수정·조회 로직 및 컴포넌트
+│   ├── coachmark/          # 첫 사용 안내
 │   ├── community/          # 커뮤니티 로직 및 컴포넌트
+│   ├── friend/             # 친구 검색·요청·목록
 │   ├── mypage/             # 마이페이지 로직 및 컴포넌트
-│   └── onboarding/         # 온보딩 로직 및 컴포넌트
+│   ├── notifications/      # 알림 목록·안읽음 상태
+│   ├── onboarding/         # 온보딩 로직 및 컴포넌트
+│   ├── profile/            # 내·타인 프로필과 피드
+│   └── team/               # 같이하기 (팀 빙고)
 ├── lib/                    # 공용 유틸리티
 │   ├── supabase.ts         # Supabase 클라이언트 (Auth, Database)
 │   ├── api.ts              # HTTP 클라이언트
+│   ├── color-scheme.ts     # 앱 테마(라이트/다크) 단일 진입점
 │   └── push-notifications.ts # 푸시 알림
-└── types/                  # 공유 TypeScript 타입
+├── supabase/               # 마이그레이션과 엣지 함수
+├── types/                  # 공유 TypeScript 타입
+└── __tests__/              # Jest 테스트
 ```

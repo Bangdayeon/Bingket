@@ -3,14 +3,13 @@ import { Text } from '@/components/Text';
 import { AutoHeightImage } from '@/components/AutoHeightImage';
 import SMSIcon from '@/assets/icons/ic_sms.svg';
 import { LikeButton } from './LikeButton';
+import { AuthorLink } from './AuthorLink';
 import AnonymousProfile from '@/components/AnonymousProfile';
 import { ProfileAvatar } from '@/components/ProfileAvatar';
 import { CommunityPost } from '@/types/community';
 import type { StoredBlock } from '@/types/community';
 import BingoPreview from '@/components/BingoPreview';
 import type { BingoData } from '@/types/bingo';
-
-const ICON_SIZE = 24;
 
 function postBingoToBingoData(bingo: NonNullable<CommunityPost['bingo']>): BingoData {
   return {
@@ -58,14 +57,20 @@ export function PostBody({ post }: PostBodyProps) {
     <View className="px-4 pt-4">
       {/* 작성자 */}
       <View className="flex-row items-center gap-2">
-        {post.isAnonymous ? (
-          <AnonymousProfile seed={post.id} />
-        ) : (
-          <ProfileAvatar avatarUrl={post.avatarUrl ?? null} size={40} />
-        )}
-        <Text className="shrink text-body-md text-gray-800" numberOfLines={1}>
-          {post.author}{' '}
-        </Text>
+        <AuthorLink
+          userId={post.userId}
+          isAnonymous={post.isAnonymous}
+          className="shrink flex-row items-center gap-2"
+        >
+          {post.isAnonymous ? (
+            <AnonymousProfile seed={post.id} />
+          ) : (
+            <ProfileAvatar avatarUrl={post.avatarUrl ?? null} size={40} />
+          )}
+          <Text className="shrink text-body-md text-gray-800" numberOfLines={1}>
+            {post.author}{' '}
+          </Text>
+        </AuthorLink>
         <Text className="text-caption-sm text-gray-600">· {post.timeAgo}</Text>
       </View>
 
@@ -118,7 +123,7 @@ export function PostBody({ post }: PostBodyProps) {
       <View className="flex-row items-center gap-4 mt-3">
         <LikeButton count={post.likeCount} postId={post.id} initialLiked={post.likedByMe} />
         <View className="flex-row items-center gap-1">
-          <SMSIcon width={ICON_SIZE} height={ICON_SIZE} className="text-gray-700" />
+          <SMSIcon width={24} height={24} className="text-gray-400" />
           <Text className="text-body-sm text-gray-700">{post.commentCount}</Text>
         </View>
       </View>
