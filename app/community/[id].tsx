@@ -322,7 +322,7 @@ export default function CommunityDetailScreen() {
           },
         },
         {
-          label: '삭제하기',
+          label: '삭제',
           danger: true as const,
           onPress: () => {
             setShowPostMenu(false);
@@ -358,7 +358,7 @@ export default function CommunityDetailScreen() {
   const commentMenuItems = isOwnComment
     ? [
         {
-          label: '삭제하기',
+          label: '삭제',
           danger: true as const,
           onPress: () => commentMenuId && handleDeleteComment(commentMenuId),
         },
@@ -509,18 +509,17 @@ export default function CommunityDetailScreen() {
       {/* ── 게시글 삭제 확인 모달 ── */}
       <Modal
         visible={showDeleteModal}
-        title="게시글 삭제"
+        title="게시글을 삭제할까요?"
         confirmLoading={isDeleting}
         body={
           <>
-            <Text className="text-body-sm text-gray-500">
-              정말로 삭제하시겠어요?{'\n'}
-              삭제된 게시글은 복구할 수 없어요.
-            </Text>
+            <Text className="text-body-sm text-gray-500">삭제된 게시글은 복구할 수 없어요.</Text>
           </>
         }
-        variant="single"
-        confirmLabel="삭제하기"
+        // 'error'는 단일 버튼은 그대로 두고 확인 버튼만 danger로 만든다.
+        // 'single'은 primary(초록)라 되돌릴 수 없는 동작인데 색으로 경고가 안 됐다.
+        variant="error"
+        confirmLabel="삭제"
         onConfirm={handleDeletePost}
         onDismiss={() => !isDeleting && setShowDeleteModal(false)}
       />
@@ -535,8 +534,8 @@ export default function CommunityDetailScreen() {
             <Text className="text-body-sm text-gray-500">댓글을 삭제할까요?</Text>
           </>
         }
-        variant="single" // 확인 버튼만 사용
-        confirmLabel="삭제하기"
+        variant="error" // 확인 버튼만 쓰되 danger 색으로
+        confirmLabel="삭제"
         onConfirm={confirmDeleteComment}
         onDismiss={() => !isDeletingComment && setShowDeleteCommentModal(false)}
       />
