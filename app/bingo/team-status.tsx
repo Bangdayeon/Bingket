@@ -10,6 +10,7 @@ import { Popover } from '@/components/Popover';
 import { ProfileAvatar } from '@/components/ProfileAvatar';
 import BingoPreview from '@/components/BingoPreview';
 import Loading from '@/components/Loading';
+import { EmptyState } from '@/components/EmptyState';
 import MenuIcon from '@/assets/icons/ic_more_vert.svg';
 import InfoIcon from '@/assets/icons/ic_info.svg';
 import { BingoStat } from '@/features/bingo/components/BingoStat';
@@ -127,7 +128,11 @@ export default function TeamStatusScreen() {
     setMyRetrospective(value);
     if (retroDebounceRef.current) clearTimeout(retroDebounceRef.current);
     retroDebounceRef.current = setTimeout(() => {
-      saveMyRetrospective(teamId, value).catch(Sentry.captureException);
+      saveMyRetrospective(teamId, value).catch((e: unknown) => {
+        // 저장 실패를 삼키면 화면만 채워진 채 남아 다음 진입에 되돌아간다.
+        Sentry.captureException(e);
+        setErrorMessage('회고를 저장하지 못했어요. 잠시 후 다시 시도해주세요.');
+      });
     }, 500);
   };
 
@@ -253,6 +258,8 @@ export default function TeamStatusScreen() {
                 onPress={() => setSelectedBoard(sharedBoard)}
               />
             )
+          ) : detail.members.filter((m) => m.status === 'joined').length === 0 ? (
+            <EmptyState message={'아직 참여한 사람이 없어요\n초대를 수락하면 여기에 보여요'} />
           ) : (
             <View className="flex-row flex-wrap gap-x-[14px] gap-y-8 px-4">
               {detail.members
@@ -317,6 +324,12 @@ export default function TeamStatusScreen() {
                   {myRetrospective.length}/500
                 </Text>
               </View>
+
+              {retrospectives.filter((r) => !r.isMe && r.content.trim()).length === 0 && (
+                <Text className="mt-6 text-center text-body-sm text-gray-500">
+                  아직 다른 사람의 회고가 없어요
+                </Text>
+              )}
 
               {retrospectives
                 .filter((r) => !r.isMe && r.content.trim())

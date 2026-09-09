@@ -243,6 +243,11 @@ export default function FriendListScreen() {
       />
 
       {/* 고르기로 들어왔을 때만: 검색창 위에 고른 사람을 띄운다 */}
+      {isSelectMode && pickedFriends.length === 0 && (
+        <Text className="px-4 pb-4 text-body-sm text-gray-500">
+          함께할 친구를 골라주세요. 고른 사람이 여기에 보여요.
+        </Text>
+      )}
       {isSelectMode && pickedFriends.length > 0 && (
         <ScrollView
           horizontal

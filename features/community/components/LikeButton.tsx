@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
+import * as Sentry from '@sentry/react-native';
+import { Toast } from '@/components/Toast';
 import { Animated, Pressable, View } from 'react-native';
 import { Text } from '@/components/Text';
 import LikeOffIcon from '@/assets/icons/ic_favorite_off.svg';
@@ -46,6 +48,7 @@ export function LikeButton({
   const [liked, setLiked] = useState(initialLiked);
   const [likeCount, setLikeCount] = useState(count);
   const [showParticles, setShowParticles] = useState(false);
+  const [failed, setFailed] = useState(false);
   const isProcessingRef = useRef(false);
 
   // 파티클별 애니메이션 값
@@ -130,10 +133,12 @@ export function LikeButton({
       } else if (commentId) {
         await toggleCommentLike(commentId, nextLiked);
       }
-    } catch {
-      // 롤백
+    } catch (e) {
+      // 롤백만 하고 조용히 넘어가면, 사용자 눈에는 좋아요가 슬쩍 되돌아간 것으로만 보인다.
+      Sentry.captureException(e);
       setLiked(liked);
       setLikeCount(likeCount);
+      setFailed(true);
     } finally {
       isProcessingRef.current = false; // 성공/실패 모두 여기서 해제
     }
@@ -201,6 +206,11 @@ export function LikeButton({
           })}
       </View>
       <Text className="text-body-sm">{likeCount}</Text>
+      <Toast
+        message="좋아요를 반영하지 못했어요. 잠시 후 다시 시도해주세요."
+        visible={failed}
+        onDismiss={() => setFailed(false)}
+      />
     </Pressable>
   );
 }

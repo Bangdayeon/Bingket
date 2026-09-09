@@ -4,13 +4,17 @@ import { GuestLoginButton } from '@/features/auth/components/GuestLoginButton';
 import { KakaoButton } from '@/features/auth/components/KakaoButton';
 import { AgreementModal } from '@/features/auth/components/AgreementModal';
 import { useAgreement } from '@/features/auth/use-agreement';
+import { useState } from 'react';
 import { View } from 'react-native';
+import { Toast } from '@/components/Toast';
 import { Logo } from '@/components/Logo';
 import { Text } from '@/components/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function LoginScreen() {
   const { requireAgreement, modalVisible, onAgree, onDismiss } = useAgreement();
+  // 로그인 실패는 Sentry로만 가고 화면에는 아무 변화가 없었다. 첫 진입 이탈 지점이다.
+  const [errorMessage, setErrorMessage] = useState('');
 
   return (
     <SafeAreaView className="flex-1 items-center bg-surface">
@@ -26,13 +30,18 @@ export default function LoginScreen() {
       </View>
 
       <View className="w-full gap-3 px-4 pb-9 md:max-w-[480px]">
-        <KakaoButton requireAgreement={requireAgreement} />
-        <AppleButton requireAgreement={requireAgreement} />
-        <GoogleButton requireAgreement={requireAgreement} />
+        <KakaoButton requireAgreement={requireAgreement} onError={setErrorMessage} />
+        <AppleButton requireAgreement={requireAgreement} onError={setErrorMessage} />
+        <GoogleButton requireAgreement={requireAgreement} onError={setErrorMessage} />
         <GuestLoginButton requireAgreement={requireAgreement} />
       </View>
 
       <AgreementModal visible={modalVisible} onAgree={onAgree} onDismiss={onDismiss} />
+      <Toast
+        message={errorMessage}
+        visible={!!errorMessage}
+        onDismiss={() => setErrorMessage('')}
+      />
     </SafeAreaView>
   );
 }

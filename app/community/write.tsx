@@ -15,6 +15,7 @@ import { AutoHeightImage } from '@/components/AutoHeightImage';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
+import * as Sentry from '@sentry/react-native';
 import { Text } from '@/components/Text';
 import ArrowBackIcon from '@/assets/icons/ic_arrow_back.svg';
 import ImagesIcon from '@/assets/icons/ic_imagesmode.svg';
@@ -31,6 +32,8 @@ import { Toast } from '@/components/Toast';
 import { containsBadWord } from '@/constants/bad-words';
 import { ensurePhotoLibraryPermission } from '@/lib/photo-library';
 import Loading from '@/components/Loading';
+import { ErrorState } from '@/components/ErrorState';
+import { EmptyState } from '@/components/EmptyState';
 
 const HEADER_H = 60;
 // 시안: 하단 툴바 높이 84
@@ -144,6 +147,7 @@ export default function CommunityWriteScreen() {
 
   const [myBingos, setMyBingos] = useState<BingoData[]>([]);
   const [loadingBingos, setLoadingBingos] = useState(false);
+  const [bingosFailed, setBingosFailed] = useState(false);
   const bingosLoadedRef = useRef(false);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -181,10 +185,15 @@ export default function CommunityWriteScreen() {
     setShowBingoModal(true);
     if (bingosLoadedRef.current) return;
     setLoadingBingos(true);
+    setBingosFailed(false);
     try {
       const bingos = await fetchMyBingosForPost();
       setMyBingos(bingos);
       bingosLoadedRef.current = true;
+    } catch (e) {
+      // catch가 없으면 조회 실패가 "빙고가 없습니다"로 보인다.
+      Sentry.captureException(e);
+      setBingosFailed(true);
     } finally {
       setLoadingBingos(false);
     }
@@ -516,12 +525,16 @@ export default function CommunityWriteScreen() {
             <View className="items-center justify-center py-10">
               <Loading />
             </View>
+          ) : bingosFailed ? (
+            <ErrorState
+              message="빙고 목록을 불러오지 못했어요"
+              onRetry={() => {
+                bingosLoadedRef.current = false;
+                void handleOpenBingoModal();
+              }}
+            />
           ) : myBingos.length === 0 ? (
-            <View className="items-center justify-center py-10">
-              <Text className="text-body-sm" style={{ color: '#929898' /* gray-500 */ }}>
-                빙고가 없습니다.
-              </Text>
-            </View>
+            <EmptyState message="빙고가 없습니다." />
           ) : (
             <ScrollView>
               {myBingos.map((bingo) => {

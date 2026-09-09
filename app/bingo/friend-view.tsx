@@ -4,8 +4,9 @@ import { ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import * as Sentry from '@sentry/react-native';
-import { Text } from '@/components/Text';
 import Loading from '@/components/Loading';
+import { ErrorState } from '@/components/ErrorState';
+import { EmptyState } from '@/components/EmptyState';
 import { BingoThumbnail } from '@/features/profile/components/BingoThumbnail';
 import { fetchBoardDetail, type BoardDetail } from '@/features/profile/lib/profile';
 import { useResponsive } from '@/lib/use-responsive';
@@ -22,24 +23,31 @@ export default function FriendBingoViewScreen() {
   const [board, setBoard] = useState<BoardDetail | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useFocusEffect(
-    useCallback(() => {
-      if (!boardId) return;
-      let cancelled = false;
-      setLoading(true);
-      fetchBoardDetail(boardId)
-        .then((b) => {
-          if (!cancelled) setBoard(b);
-        })
-        .catch(Sentry.captureException)
-        .finally(() => {
-          if (!cancelled) setLoading(false);
-        });
-      return () => {
-        cancelled = true;
-      };
-    }, [boardId]),
-  );
+  const [loadFailed, setLoadFailed] = useState(false);
+
+  const load = useCallback(() => {
+    if (!boardId) return;
+    let cancelled = false;
+    setLoading(true);
+    setLoadFailed(false);
+    fetchBoardDetail(boardId)
+      .then((b) => {
+        if (!cancelled) setBoard(b);
+      })
+      .catch((e: unknown) => {
+        // 권한 문제와 네트워크 실패는 다른 상황이다. 같은 문구로 뭉뚱그리지 않는다.
+        Sentry.captureException(e);
+        if (!cancelled) setLoadFailed(true);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [boardId]);
+
+  useFocusEffect(load);
 
   return (
     <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
@@ -49,10 +57,10 @@ export default function FriendBingoViewScreen() {
         <View className="flex-1 items-center justify-center">
           <Loading />
         </View>
+      ) : loadFailed ? (
+        <ErrorState onRetry={() => void load()} />
       ) : !board ? (
-        <View className="flex-1 items-center justify-center px-8">
-          <Text className="text-body-md text-gray-400 text-center">{'볼 수 없는 빙고예요.'}</Text>
-        </View>
+        <EmptyState message="볼 수 없는 빙고예요." />
       ) : (
         <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 32 }}>
           <View className="items-center pt-4">

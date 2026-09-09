@@ -47,9 +47,11 @@ async function signInWithKakao(): Promise<void> {
 
 interface KakaoButtonProps {
   requireAgreement: (action: () => Promise<void>) => Promise<void>;
+  /** 로그인 실패를 화면이 알린다. 예전에는 눌러도 아무 일이 없는 것처럼 보였다. */
+  onError: (message: string) => void;
 }
 
-export function KakaoButton({ requireAgreement }: KakaoButtonProps) {
+export function KakaoButton({ requireAgreement, onError }: KakaoButtonProps) {
   const [loading, setLoading] = useState(false);
 
   const handlePress = async () => {
@@ -64,6 +66,7 @@ export function KakaoButton({ requireAgreement }: KakaoButtonProps) {
       });
     } catch (e) {
       Sentry.captureException(e);
+      onError(e instanceof Error ? e.message : '로그인에 실패했어요. 잠시 후 다시 시도해주세요.');
     }
   };
 

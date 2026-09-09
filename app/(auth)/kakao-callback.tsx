@@ -1,10 +1,12 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { router } from 'expo-router';
 import { View } from 'react-native';
 import * as Linking from 'expo-linking';
 import * as WebBrowser from 'expo-web-browser';
 import * as Sentry from '@sentry/react-native';
 import { supabase } from '@/lib/supabase';
 import Loading from '@/components/Loading';
+import { ErrorState } from '@/components/ErrorState';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -18,17 +20,24 @@ function extractParam(url: string, key: string): string | undefined {
 }
 
 export default function KakaoCallback() {
+  // 토큰을 못 받거나 세션 설정이 실패하면 예전에는 스피너만 도는 화면에 갇혔다.
+  const [failed, setFailed] = useState(false);
+
   useEffect(() => {
     const handle = async (url: string | null) => {
       if (!url) return;
       try {
         const access_token = extractParam(url, 'access_token');
         const refresh_token = extractParam(url, 'refresh_token');
-        if (!access_token || !refresh_token) return;
+        if (!access_token || !refresh_token) {
+          setFailed(true);
+          return;
+        }
         // 세션 설정 → _layout.tsx onAuthStateChange(SIGNED_IN) → /(tabs)
         await supabase.auth.setSession({ access_token, refresh_token });
       } catch (e) {
         Sentry.captureException(e);
+        setFailed(true);
       }
     };
 
@@ -39,6 +48,17 @@ export default function KakaoCallback() {
     const sub = Linking.addEventListener('url', ({ url }) => handle(url));
     return () => sub.remove();
   }, []);
+
+  if (failed) {
+    return (
+      <View className="flex-1 bg-surface">
+        <ErrorState
+          message="로그인을 마치지 못했어요"
+          onRetry={() => router.replace('/(auth)/login')}
+        />
+      </View>
+    );
+  }
 
   return (
     <View className="flex-1 items-center justify-center bg-white">

@@ -5,6 +5,7 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import * as Sentry from '@sentry/react-native';
 import { Text } from '@/components/Text';
 import Loading from '@/components/Loading';
+import { ErrorState } from '@/components/ErrorState';
 import SettingsIcon from '@/assets/icons/ic_settings.svg';
 import { BadgesPage } from '@/features/mypage/Badges';
 import { ProfileHeader } from '@/features/profile/components/ProfileHeader';
@@ -26,32 +27,37 @@ export default function MyPageScreen() {
   const [feed, setFeed] = useState<FeedItem[]>([]);
   const [teams, setTeams] = useState<TeamListEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadFailed, setLoadFailed] = useState(false);
 
-  useFocusEffect(
-    useCallback(() => {
-      let cancelled = false;
-      fetchMyProfileSummary()
-        .then(async (p) => {
-          if (cancelled || !p) return;
-          setProfile(p);
-          const items = await fetchUserFeed(p.id);
-          if (!cancelled) setFeed(items);
-        })
-        .catch(Sentry.captureException)
-        .finally(() => {
-          if (!cancelled) setLoading(false);
-        });
-      // 함께하는 빙고는 여기서만 볼 수 있다 (홈의 '함께' 탭이 없어졌다)
-      fetchMyTeams()
-        .then((t) => {
-          if (!cancelled) setTeams(t);
-        })
-        .catch(Sentry.captureException);
-      return () => {
-        cancelled = true;
-      };
-    }, []),
-  );
+  const load = useCallback(() => {
+    let cancelled = false;
+    setLoadFailed(false);
+    fetchMyProfileSummary()
+      .then(async (p) => {
+        if (cancelled || !p) return;
+        setProfile(p);
+        const items = await fetchUserFeed(p.id);
+        if (!cancelled) setFeed(items);
+      })
+      .catch((e: unknown) => {
+        Sentry.captureException(e);
+        if (!cancelled) setLoadFailed(true);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    // 함께하는 빙고는 여기서만 볼 수 있다 (홈의 '함께' 탭이 없어졌다)
+    fetchMyTeams()
+      .then((t) => {
+        if (!cancelled) setTeams(t);
+      })
+      .catch(Sentry.captureException);
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useFocusEffect(load);
 
   // 팀에 속한 내 빙고판. 피드 항목에 '함께' 뱃지를 붙이는 데 쓴다.
   const teamBoardIds = new Set(
@@ -99,6 +105,8 @@ export default function MyPageScreen() {
           <View className="flex-1 items-center justify-center">
             <Loading />
           </View>
+        ) : loadFailed ? (
+          <ErrorState onRetry={() => void load()} />
         ) : (
           <ScrollView className="flex-1" contentContainerStyle={{ paddingTop: 16 }}>
             <FeedGrid

@@ -1,7 +1,7 @@
 import * as Sentry from '@sentry/react-native';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { useState } from 'react';
-import { Alert, Image, Platform, TouchableOpacity } from 'react-native';
+import { Image, Platform, TouchableOpacity } from 'react-native';
 import { Text } from '@/components/Text';
 import { supabase } from '@/lib/supabase';
 import { router } from 'expo-router';
@@ -58,9 +58,11 @@ async function signInWithApple(): Promise<void> {
 
 interface AppleButtonProps {
   requireAgreement: (action: () => Promise<void>) => Promise<void>;
+  /** 로그인 실패를 화면이 알린다. 예전에는 눌러도 아무 일이 없는 것처럼 보였다. */
+  onError: (message: string) => void;
 }
 
-export function AppleButton({ requireAgreement }: AppleButtonProps) {
+export function AppleButton({ requireAgreement, onError }: AppleButtonProps) {
   const [loading, setLoading] = useState(false);
 
   if (Platform.OS !== 'ios') return null;
@@ -80,15 +82,15 @@ export function AppleButton({ requireAgreement }: AppleButtonProps) {
           ) {
             return;
           }
-          const message = e instanceof Error ? e.message : String(e);
-          Alert.alert('Apple 로그인 실패', message);
           Sentry.captureException(e);
+          onError(e instanceof Error ? e.message : String(e));
         } finally {
           setLoading(false);
         }
       });
     } catch (e) {
       Sentry.captureException(e);
+      onError(e instanceof Error ? e.message : '로그인에 실패했어요. 잠시 후 다시 시도해주세요.');
     }
   };
 
