@@ -64,9 +64,13 @@ function NotificationItem({ item, onRead, onAction, onFriendResponse }: Notifica
       {(isFriendRequest || isTeamInvite) && item.senderProfile && (
         <View className="flex-row items-center gap-3 mb-3">
           <ProfileAvatar avatarUrl={item.senderProfile.avatarUrl} size={32} />
-          <View>
-            <Text className="text-label-sm">{item.senderProfile.displayName}</Text>
-            <Text className="text-caption-sm text-gray-500  ">@{item.senderProfile.username}</Text>
+          <View className="flex-1">
+            <Text className="text-label-sm" numberOfLines={1}>
+              {item.senderProfile.displayName}
+            </Text>
+            <Text className="text-caption-sm text-gray-500  " numberOfLines={1}>
+              @{item.senderProfile.username}
+            </Text>
           </View>
         </View>
       )}

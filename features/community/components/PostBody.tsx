@@ -64,8 +64,10 @@ export function PostBody({ post, iconColor }: PostBodyProps) {
         ) : (
           <ProfileAvatar avatarUrl={post.avatarUrl ?? null} size={40} />
         )}
-        <Text className="text-body-md text-gray-800">{post.author} · </Text>
-        <Text className="text-caption-sm text-gray-600">{post.timeAgo}</Text>
+        <Text className="shrink text-body-md text-gray-800" numberOfLines={1}>
+          {post.author}{' '}
+        </Text>
+        <Text className="text-caption-sm text-gray-600">· {post.timeAgo}</Text>
       </View>
 
       <Text className="mt-3 text-title-md font-pretendard-semibold text-gray-900">

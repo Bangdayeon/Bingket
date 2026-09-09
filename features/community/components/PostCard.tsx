@@ -142,9 +142,11 @@ export function PostCard({ post, currentUserId, onBlock }: PostCardProps) {
           ) : (
             <ProfileAvatar avatarUrl={post.avatarUrl ?? null} size={40} />
           )}
-          <View className="flex-row items-center gap-0.5">
-            <Text className="text-body-md text-gray-800">{post.author} · </Text>
-            <Text className="text-caption-sm text-gray-600">{post.timeAgo}</Text>
+          <View className="shrink flex-row items-center gap-0.5">
+            <Text className="shrink text-body-md text-gray-800" numberOfLines={1}>
+              {post.author}{' '}
+            </Text>
+            <Text className="text-caption-sm text-gray-600">· {post.timeAgo}</Text>
           </View>
         </View>
         {ownership !== 'unknown' && (

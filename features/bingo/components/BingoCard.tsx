@@ -140,8 +140,9 @@ export function BingoCard({
 
         <View className="pt-7 px-5 items-center justify-between flex-row absolute w-full">
           <Text
-            className="text-title-md font-pretendard-medium"
+            className="flex-1 text-title-md font-pretendard-medium"
             style={{ color: fgColor, fontWeight: 600 }}
+            numberOfLines={1}
           >
             {bingo.title}
           </Text>

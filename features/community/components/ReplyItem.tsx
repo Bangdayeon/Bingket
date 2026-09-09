@@ -29,7 +29,9 @@ export function ReplyItem({ reply, postAuthorId, iconColor, onMenuPress }: Reply
           ) : (
             <ProfileAvatar avatarUrl={reply.avatarUrl ?? null} size={22} />
           )}
-          <Text className="text-label-sm ml-2">{reply.author}</Text>
+          <Text className="ml-2 shrink text-label-sm" numberOfLines={1}>
+            {reply.author}
+          </Text>
           {isPostAuthor && (
             <View
               className="ml-1.5 px-1.5 py-1 rounded-full"

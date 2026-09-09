@@ -44,8 +44,12 @@ export function FriendList({
           >
             <ProfileAvatar avatarUrl={friend.avatarUrl} size={40} />
             <View className="ml-3 flex-1">
-              <Text className="text-body-md text-gray-900">{friend.displayName}</Text>
-              <Text className="text-caption-sm text-gray-500">@{friend.username}</Text>
+              <Text className="text-body-md text-gray-900" numberOfLines={1}>
+                {friend.displayName}
+              </Text>
+              <Text className="text-caption-sm text-gray-500" numberOfLines={1}>
+                @{friend.username}
+              </Text>
             </View>
           </Pressable>
           {selectable ? (

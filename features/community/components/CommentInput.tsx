@@ -6,6 +6,7 @@ import { TextInput } from '@/components/TextInput';
 import ArrowUpwardIcon from '@/assets/icons/ic_arrow_upward.svg';
 import CheckIcon from '@/assets/icons/ic_check.svg';
 import IconButton from '@/components/IconButton';
+import { LIMITS } from '@/constants/limits';
 
 interface CommentInputProps {
   value: string;
@@ -63,6 +64,7 @@ export function CommentInput({
           value={value}
           onChangeText={onChangeText}
           placeholder="댓글을 입력해주세요."
+          maxLength={LIMITS.comment}
           className="flex-1"
           style={{ flex: 1 }}
         />

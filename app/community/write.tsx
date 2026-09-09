@@ -23,6 +23,7 @@ import GridIcon from '@/assets/icons/ic_grid_3x3.svg';
 import CheckIcon from '@/assets/icons/ic_check.svg';
 import CloseIcon from '@/assets/icons/ic_close.svg';
 import type { EditorBlock } from '@/types/community';
+import { LIMITS } from '@/constants/limits';
 import { TextInput } from '@/components/TextInput';
 import type { BingoData, BingoState, BingoTheme } from '@/types/bingo';
 import { fetchMyBingosForPost, createPost, updatePost } from '@/features/community/lib/community';
@@ -327,6 +328,7 @@ export default function CommunityWriteScreen() {
               value={title}
               onChangeText={setTitle}
               placeholder="제목을 입력해주세요."
+              maxLength={LIMITS.postTitle}
               rounded={12}
             />
           </View>
@@ -335,14 +337,18 @@ export default function CommunityWriteScreen() {
           {bingoBlock && (
             <View style={{ marginHorizontal: 24, marginTop: 16, marginBottom: 8 }}>
               <View className="flex-row items-center justify-between mb-2">
-                <View className="flex-row items-center gap-2">
+                <View className="mr-2 flex-1 flex-row items-center gap-2">
                   <Text
                     className="text-caption-sm"
                     style={{ color: STATE_COLORS[bingoBlock.bingo.state] }}
                   >
                     {STATE_LABELS[bingoBlock.bingo.state]}
                   </Text>
-                  <Text className="text-label-sm" style={{ color: '#929898' }}>
+                  <Text
+                    className="shrink text-label-sm"
+                    style={{ color: '#929898' }}
+                    numberOfLines={1}
+                  >
                     {bingoBlock.bingo.title}
                   </Text>
                 </View>
@@ -386,6 +392,7 @@ export default function CommunityWriteScreen() {
             onChangeText={setTextValue}
             placeholder="내용을 입력해주세요."
             placeholderTextColor="#929898"
+            maxLength={LIMITS.postContent}
             multiline
             textAlignVertical="top"
             style={{
@@ -545,7 +552,11 @@ export default function CommunityWriteScreen() {
                     onPress={() => handleSelectBingo(bingo)}
                     className="h-16 flex-row items-center justify-between border-b border-gray-300 px-5"
                   >
-                    <Text className="text-body-md" style={{ color: '#181C1C' /* gray-900 */ }}>
+                    <Text
+                      className="mr-2 flex-1 text-body-md"
+                      style={{ color: '#181C1C' /* gray-900 */ }}
+                      numberOfLines={1}
+                    >
                       {bingo.title}
                     </Text>
                     {selected && (

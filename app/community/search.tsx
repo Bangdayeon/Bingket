@@ -11,6 +11,7 @@ import ArrowBackIcon from '@/assets/icons/ic_arrow_back.svg';
 import { searchPosts } from '@/features/community/lib/community';
 import type { CommunityPost } from '@/types/community';
 import Loading from '@/components/Loading';
+import { LIMITS } from '@/constants/limits';
 import { ErrorState } from '@/components/ErrorState';
 import { EmptyState } from '@/components/EmptyState';
 import * as Sentry from '@sentry/react-native';
@@ -95,6 +96,7 @@ export default function CommunitySearchScreen() {
           onSubmitEditing={() => runSearch(value)}
           returnKeyType="search"
           placeholder="검색어"
+          maxLength={LIMITS.searchKeyword}
           className="flex-1"
           onClear={() => {
             setValue('');

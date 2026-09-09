@@ -337,7 +337,9 @@ export default function TeamStatusScreen() {
                   <View key={retro.userId} className="mt-4 bg-gray-100 rounded-2xl p-4 gap-2">
                     <View className="flex-row items-center gap-2">
                       <ProfileAvatar avatarUrl={retro.avatarUrl} size={24} />
-                      <Text className="text-caption-md text-gray-700">{retro.displayName}</Text>
+                      <Text className="flex-1 text-caption-md text-gray-700" numberOfLines={1}>
+                        {retro.displayName}
+                      </Text>
                     </View>
                     <Text className="text-body-md">{retro.content}</Text>
                   </View>

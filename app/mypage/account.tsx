@@ -143,7 +143,7 @@ export default function AccountScreen() {
                   )}
                 </View>
                 <Text className="text-body-md text-gray-900">{cfg?.label ?? account.provider}</Text>
-                <Text className="ml-auto text-body-md text-gray-500">
+                <Text className="ml-auto shrink text-body-md text-gray-500" numberOfLines={1}>
                   {account.email?.endsWith('@kakao.bingket') ? '' : (account.email ?? '')}
                 </Text>
               </View>

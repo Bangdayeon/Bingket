@@ -286,7 +286,11 @@ export function BingoCellModal({
               {team && item.completed && item.completedBy && (
                 <View className="flex-row items-center gap-2 mb-4">
                   <ProfileAvatar avatarUrl={memberOf(item.completedBy)?.avatarUrl} size={24} />
-                  <Text className="text-body-sm" style={{ color: '#4C5252' /* gray-700 */ }}>
+                  <Text
+                    className="flex-1 text-body-sm"
+                    style={{ color: '#4C5252' /* gray-700 */ }}
+                    numberOfLines={1}
+                  >
                     {item.completedBy === team.currentUserId
                       ? '내가 채웠어요'
                       : `${memberOf(item.completedBy)?.displayName ?? '탈퇴한 멤버'}님이 채웠어요`}

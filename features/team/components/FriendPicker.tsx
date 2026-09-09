@@ -92,8 +92,12 @@ export function FriendPicker({ selectedIds, onChange, maxCount }: FriendPickerPr
         {selected.map((friend) => (
           <View key={friend.friendId} className="h-11 flex-row items-center gap-2">
             <ProfileAvatar avatarUrl={friend.avatarUrl} size={32} />
-            <Text className="text-body-md text-gray-900">{friend.displayName}</Text>
-            <Text className="flex-1 text-caption-sm text-gray-500">@{friend.username}</Text>
+            <Text className="shrink text-body-md text-gray-900" numberOfLines={1}>
+              {friend.displayName}
+            </Text>
+            <Text className="flex-1 text-caption-sm text-gray-500" numberOfLines={1}>
+              @{friend.username}
+            </Text>
             <Pressable
               onPress={() => onChange(selectedIds.filter((id) => id !== friend.friendId))}
               hitSlop={8}

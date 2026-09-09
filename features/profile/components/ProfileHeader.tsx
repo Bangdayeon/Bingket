@@ -23,10 +23,12 @@ export function ProfileHeader({ profile, onFriendsPress, onPostsPress }: Props) 
         <View className="flex-1 gap-1.5">
           {profile ? (
             <>
-              <Text className="text-body-md font-pretendard-medium text-gray-800">
+              <Text className="text-body-md font-pretendard-medium text-gray-800" numberOfLines={1}>
                 {profile.displayName}
               </Text>
-              <Text className="text-caption-md text-gray-600">@{profile.username}</Text>
+              <Text className="text-caption-md text-gray-600" numberOfLines={1}>
+                @{profile.username}
+              </Text>
             </>
           ) : (
             <Loading />

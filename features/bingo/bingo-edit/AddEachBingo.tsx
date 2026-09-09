@@ -1,4 +1,5 @@
 import { Modal } from '@/components/Modal';
+import { LIMITS } from '@/constants/limits';
 import { useEffect, useState } from 'react';
 import { Image, TouchableOpacity, View } from 'react-native';
 import { useResponsive } from '@/lib/use-responsive';
@@ -85,6 +86,7 @@ export function AddEachBingo({
           value={inputText}
           onChangeText={setInputText}
           placeholder="내용을 입력하세요."
+          maxLength={LIMITS.bingoCell}
           maxHeight={120}
           className="min-h-[72px]"
           style={{ textAlignVertical: 'top' }}

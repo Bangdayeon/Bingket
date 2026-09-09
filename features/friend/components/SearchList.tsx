@@ -57,8 +57,12 @@ export function SearchList({
           <View key={item.id} className="flex-row items-center px-4 py-3">
             <ProfileAvatar avatarUrl={item.avatar_url} size={40} />
             <View className="ml-3 flex-1">
-              <Text className="text-body-md text-gray-900">{item.display_name}</Text>
-              <Text className="text-caption-sm text-gray-500">@{item.username}</Text>
+              <Text className="text-body-md text-gray-900" numberOfLines={1}>
+                {item.display_name}
+              </Text>
+              <Text className="text-caption-sm text-gray-500" numberOfLines={1}>
+                @{item.username}
+              </Text>
             </View>
             <Pressable
               disabled={isSending}

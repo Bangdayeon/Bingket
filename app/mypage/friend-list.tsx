@@ -32,6 +32,7 @@ import type {
 } from '@/types/friend';
 import Button from '@/components/Button';
 import Loading from '@/components/Loading';
+import { LIMITS } from '@/constants/limits';
 
 export default function FriendListScreen() {
   const router = useRouter();
@@ -282,6 +283,7 @@ export default function FriendListScreen() {
           onSubmitEditing={() => void runSearch(friendSearch)}
           returnKeyType="search"
           placeholder="검색어"
+          maxLength={LIMITS.searchKeyword}
           autoCapitalize="none"
           onClear={clearSearch}
         />
