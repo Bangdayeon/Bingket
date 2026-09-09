@@ -82,7 +82,9 @@ function NotificationItem({ item, onRead, onAction, onFriendResponse }: Notifica
       )}
 
       <View className="flex-row items-center justify-between">
-        <Text className="flex-1 text-title-sm font-pretendard-semibold text-gray-800">
+        {/* title-sm(18px)은 목록 항목에 쓰기엔 크다. 본문과 같은 body-md로 낮추고
+            제목이라는 건 굵기로만 구분한다. 아래 message가 같은 body-md라 크기가 맞는다. */}
+        <Text className="flex-1 text-body-md font-pretendard-bold text-gray-800">
           {notificationTitle(item.type)}
         </Text>
         <Text className="ml-2 text-caption-md text-gray-600">
