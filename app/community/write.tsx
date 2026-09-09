@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { HEADER_HEIGHT } from '@/lib/layout';
 import Button from '@/components/Button';
 import {
   Alert,
@@ -36,7 +37,6 @@ import Loading from '@/components/Loading';
 import { ErrorState } from '@/components/ErrorState';
 import { EmptyState } from '@/components/EmptyState';
 
-const HEADER_H = 60;
 // 시안: 하단 툴바 높이 84
 const TOOLBAR_H = 84;
 const MAX_IMAGES = 5;
@@ -292,7 +292,7 @@ export default function CommunityWriteScreen() {
   return (
     <SafeAreaView className="flex-1 bg-surface" edges={['top']}>
       {/* 헤더 — 뒤로가기 / 등록 */}
-      <View className="flex-row items-center" style={{ height: HEADER_H }}>
+      <View className="flex-row items-center" style={{ height: HEADER_HEIGHT }}>
         <View style={{ width: 56 }} className="pl-4">
           <Pressable onPress={() => router.back()} hitSlop={8}>
             <ArrowBackIcon width={24} height={24} color="#181C1C" /* gray-900 */ />
@@ -329,7 +329,6 @@ export default function CommunityWriteScreen() {
               onChangeText={setTitle}
               placeholder="제목을 입력해주세요."
               maxLength={LIMITS.postTitle}
-              rounded={12}
             />
           </View>
 

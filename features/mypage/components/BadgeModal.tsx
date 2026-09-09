@@ -90,7 +90,7 @@ export function BadgeModal({ visible, badge, onClose }: BadgeModalProps) {
           <View
             style={{
               backgroundColor: '#F6F7F7',
-              borderRadius: 999,
+              borderRadius: 9999,
               paddingHorizontal: 16,
               paddingVertical: 8,
             }}

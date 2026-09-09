@@ -130,7 +130,6 @@ export default function EmailLoginScreen() {
                 autoCapitalize="none"
                 autoCorrect={false}
                 value={email}
-                rounded={12}
                 onChangeText={(v) => {
                   setEmail(v);
                   if (errors.email) setErrors((prev) => ({ ...prev, email: '' }));
@@ -152,7 +151,6 @@ export default function EmailLoginScreen() {
               <TextInput
                 placeholder="8자 이상 영문,숫자,특수문자 포함"
                 secureTextEntry={!showPassword}
-                rounded={12}
                 value={password}
                 rightIcon={
                   <Pressable onPress={() => setShowPassword((v) => !v)} hitSlop={8}>
@@ -174,7 +172,6 @@ export default function EmailLoginScreen() {
               <TextInput
                 placeholder="비밀번호 확인"
                 secureTextEntry={!showPasswordConfirm}
-                rounded={12}
                 value={passwordConfirm}
                 rightIcon={
                   <Pressable onPress={() => setShowPasswordConfirm((v) => !v)} hitSlop={8}>

@@ -1,41 +1,27 @@
 import { forwardRef } from 'react';
 import { TextInput as RNTextInput, TextInputProps, View } from 'react-native';
 
-type Variant = 'default' | 'community';
-
 interface Props extends TextInputProps {
-  variant?: Variant;
   maxHeight?: number;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
-  rounded?: number;
 }
 
-// 시안 Input: 높이 48, radius 12, gray-200 배경, 좌우 여백 16, body-md / gray-800.
-const variantStyles: Record<Variant, string> = {
-  default: 'bg-gray-200',
-  community: 'bg-green-50',
-};
-
 export const TextInput = forwardRef<RNTextInput, Props>(function TextInput(
-  { variant = 'default', maxHeight, leftIcon, rightIcon, rounded, className = '', style, ...rest },
+  { maxHeight, leftIcon, rightIcon, className = '', style, ...rest },
   ref,
 ) {
   const isMultiline = rest.multiline || maxHeight !== undefined;
 
+  // 시안 Input: 높이 48, radius 12(rounded-xl), gray-200 배경, 좌우 여백 16, body-md / gray-800.
   return (
     <View
       className={`
-        ${rounded === undefined ? 'rounded-xl' : ''} px-4
-        flex-row
+        flex-row rounded-xl bg-gray-200 px-4
         ${isMultiline ? 'py-3 items-start' : 'h-12 items-center'}
-        ${variantStyles[variant]}
         ${className}
       `}
-      style={[
-        rounded !== undefined ? { borderRadius: rounded } : null,
-        maxHeight !== undefined ? { maxHeight } : null,
-      ]}
+      style={maxHeight !== undefined ? { maxHeight } : undefined}
     >
       {leftIcon && <View className="mr-2">{leftIcon}</View>}
       <RNTextInput

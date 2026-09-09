@@ -51,9 +51,9 @@ export function CommentItem({
     <View className="pb-1 border-b border-gray-200 px-4">
       <View className="flex-row items-center">
         {comment.isAnonymous ? (
-          <AnonymousProfile seed={comment.userId} size="sm" />
+          <AnonymousProfile seed={comment.userId} />
         ) : (
-          <ProfileAvatar avatarUrl={comment.avatarUrl ?? null} size={22} />
+          <ProfileAvatar avatarUrl={comment.avatarUrl ?? null} size={32} />
         )}
         <Text className="ml-2 shrink text-label-sm" numberOfLines={1}>
           {comment.author}

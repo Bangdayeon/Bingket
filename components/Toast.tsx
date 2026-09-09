@@ -61,7 +61,7 @@ export function Toast({ message, visible, onDismiss }: ToastProps) {
           <Animated.View
             style={{
               backgroundColor: '#4C5252' /* gray-700 */,
-              borderRadius: 999,
+              borderRadius: 9999,
               paddingHorizontal: 20,
               paddingVertical: 10,
             }}

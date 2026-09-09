@@ -43,7 +43,7 @@ export function Toggle({ value, onValueChange, disabled = false }: ToggleProps) 
         style={{
           width: TRACK_WIDTH,
           height: TRACK_HEIGHT,
-          borderRadius: 999,
+          borderRadius: 9999,
           backgroundColor,
           justifyContent: 'center',
         }}
@@ -52,7 +52,7 @@ export function Toggle({ value, onValueChange, disabled = false }: ToggleProps) 
           style={{
             width: KNOB_SIZE,
             height: KNOB_SIZE,
-            borderRadius: 99,
+            borderRadius: 9999,
             backgroundColor: '#FDFDFD' /* white */,
             transform: [{ translateX }],
           }}

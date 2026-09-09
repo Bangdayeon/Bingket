@@ -61,7 +61,7 @@ function MemoFooter({ length, saveState }: { length: number; saveState?: MemoSav
           <Text className="text-caption-md" style={{ color: '#759E38' /* green-500 */ }}>
             저장됨
           </Text>
-          <DoneIcon width={12} height={12} color="#759E38" /* green-500 */ />
+          <DoneIcon width={16} height={16} color="#759E38" /* green-500 */ />
         </View>
       )}
       {saveState === 'error' && (
@@ -270,9 +270,9 @@ export function BingoCellModal({
                       // 빈 테두리 원은 에셋이 없어 View로 만든다
                       <View
                         style={{
-                          width: 32,
-                          height: 32,
-                          borderRadius: 16,
+                          width: 28,
+                          height: 28,
+                          borderRadius: 14,
                           borderWidth: 1.5,
                           borderColor: '#D2D6D6' /* gray-300 */,
                         }}

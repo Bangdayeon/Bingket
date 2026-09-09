@@ -1,8 +1,7 @@
 import { Pressable, View } from 'react-native';
+import { HEADER_HEIGHT } from '@/lib/layout';
 import ArrowBackIcon from '@/assets/icons/ic_arrow_back.svg';
 import MoreVertIcon from '@/assets/icons/ic_more_vert.svg';
-
-export const HEADER_H = 60;
 
 interface PostHeaderProps {
   iconColor: string;
@@ -12,7 +11,7 @@ interface PostHeaderProps {
 
 export function PostHeader({ iconColor, onBack, onMenuPress }: PostHeaderProps) {
   return (
-    <View className="flex-row items-center justify-between px-4" style={{ height: HEADER_H }}>
+    <View className="flex-row items-center justify-between px-4" style={{ height: HEADER_HEIGHT }}>
       <Pressable onPress={onBack} hitSlop={8}>
         <ArrowBackIcon width={24} height={24} color="#181C1C" /* gray-900 */ />
       </Pressable>

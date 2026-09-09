@@ -25,9 +25,9 @@ export function ReplyItem({ reply, postAuthorId, iconColor, onMenuPress }: Reply
       >
         <View className="flex-row items-center">
           {reply.isAnonymous ? (
-            <AnonymousProfile seed={reply.userId} size="sm" />
+            <AnonymousProfile seed={reply.userId} />
           ) : (
-            <ProfileAvatar avatarUrl={reply.avatarUrl ?? null} size={22} />
+            <ProfileAvatar avatarUrl={reply.avatarUrl ?? null} size={32} />
           )}
           <Text className="ml-2 shrink text-label-sm" numberOfLines={1}>
             {reply.author}

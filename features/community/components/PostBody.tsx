@@ -60,7 +60,7 @@ export function PostBody({ post, iconColor }: PostBodyProps) {
       {/* 작성자 */}
       <View className="flex-row items-center gap-2">
         {post.isAnonymous ? (
-          <AnonymousProfile seed={post.id} size="md" />
+          <AnonymousProfile seed={post.id} />
         ) : (
           <ProfileAvatar avatarUrl={post.avatarUrl ?? null} size={40} />
         )}

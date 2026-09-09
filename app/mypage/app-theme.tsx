@@ -95,7 +95,7 @@ export default function AppThemeScreen() {
                 style={{
                   width: 44,
                   height: 44,
-                  borderRadius: 999,
+                  borderRadius: 9999,
                   overflow: 'hidden',
                   borderWidth: 1,
                   borderColor: '#D2D6D6' /* gray-300 */,

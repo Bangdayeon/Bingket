@@ -258,7 +258,7 @@ export default function FriendListScreen() {
           {pickedFriends.map((friend) => (
             <View key={friend.friendId} className="w-16 items-center gap-1">
               <View>
-                <ProfileAvatar avatarUrl={friend.avatarUrl} size={48} />
+                <ProfileAvatar avatarUrl={friend.avatarUrl} size={40} />
                 <Pressable
                   onPress={() => friendSelection.toggle(friend.friendId, maxSelect)}
                   hitSlop={8}

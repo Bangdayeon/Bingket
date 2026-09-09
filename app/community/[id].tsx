@@ -12,7 +12,8 @@ import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { Text } from '@/components/Text';
 import ArrowBackIcon from '@/assets/icons/ic_arrow_back.svg';
 import { Popover } from '@/components/Popover';
-import { PostHeader, HEADER_H } from '@/features/community/components/PostHeader';
+import { PostHeader } from '@/features/community/components/PostHeader';
+import { HEADER_HEIGHT } from '@/lib/layout';
 import { PostBody } from '@/features/community/components/PostBody';
 import { CommentSection } from '@/features/community/components/CommentSection';
 import { CommentInput } from '@/features/community/components/CommentInput';
@@ -166,7 +167,10 @@ export default function CommunityDetailScreen() {
   if (postLoading) {
     return (
       <SafeAreaView className="flex-1 bg-surface" edges={['top']}>
-        <View className="flex-row items-center border-b border-gray-300  " style={{ height: 60 }}>
+        <View
+          className="flex-row items-center border-b border-gray-300  "
+          style={{ height: HEADER_HEIGHT }}
+        >
           <View style={{ width: 56 }} className="pl-4">
             <Pressable onPress={() => router.back()} hitSlop={8}>
               <ArrowBackIcon width={24} height={24} color={iconColor} />
@@ -183,7 +187,10 @@ export default function CommunityDetailScreen() {
   if (!post) {
     return (
       <SafeAreaView className="flex-1 bg-surface" edges={['top']}>
-        <View className="flex-row items-center border-b border-gray-300  " style={{ height: 60 }}>
+        <View
+          className="flex-row items-center border-b border-gray-300  "
+          style={{ height: HEADER_HEIGHT }}
+        >
           <View style={{ width: 56 }} className="pl-4">
             <Pressable onPress={() => router.back()} hitSlop={8}>
               <ArrowBackIcon width={24} height={24} color={iconColor} />
@@ -398,7 +405,7 @@ export default function CommunityDetailScreen() {
         visible={showPostMenu}
         items={postMenuItems}
         onDismiss={() => setShowPostMenu(false)}
-        style={{ top: HEADER_H + 8, right: 16 }}
+        style={{ top: HEADER_HEIGHT + 8, right: 16 }}
       />
       <Popover
         visible={commentMenuId !== null}

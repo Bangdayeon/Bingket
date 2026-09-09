@@ -219,7 +219,6 @@ export default function ProfileEditPage() {
               value={name}
               onChangeText={handleNameChange}
               placeholder={`${NAME_MAX}자 이내로 입력해주세요.`}
-              rounded={12}
             />
             <Text
               className="text-right text-caption-sm"
@@ -236,7 +235,6 @@ export default function ProfileEditPage() {
               onChangeText={handleUserIdChange}
               placeholder={`영어, 언더바, 하이픈, 숫자로만 ${USER_ID_MAX}자 이내로 입력해주세요.`}
               autoCapitalize="none"
-              rounded={12}
             />
             <Text
               className="text-right text-caption-sm"
@@ -254,7 +252,6 @@ export default function ProfileEditPage() {
               placeholder={`${BIO_MAX}자 이내로 입력해주세요.`}
               maxLength={BIO_MAX}
               maxHeight={64}
-              rounded={12}
             />
             <Text
               className="text-right text-caption-sm"

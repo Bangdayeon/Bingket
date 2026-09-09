@@ -22,7 +22,7 @@ interface ProfileAvatarProps {
   size?: number; // px
 }
 
-export function ProfileAvatar({ avatarUrl, size = 98 }: ProfileAvatarProps) {
+export function ProfileAvatar({ avatarUrl, size = 40 }: ProfileAvatarProps) {
   // 유저 프로필이 없는 경우 → 회색 고정
   if (!avatarUrl) {
     const grayColor = '#D2D6D6';

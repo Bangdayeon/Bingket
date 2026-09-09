@@ -138,7 +138,7 @@ export function PostCard({ post, currentUserId, onBlock }: PostCardProps) {
       <View className="flex-row items-center justify-between">
         <View className="flex-row items-center gap-2">
           {post.isAnonymous ? (
-            <AnonymousProfile seed={post.id} size="md" />
+            <AnonymousProfile seed={post.id} />
           ) : (
             <ProfileAvatar avatarUrl={post.avatarUrl ?? null} size={40} />
           )}

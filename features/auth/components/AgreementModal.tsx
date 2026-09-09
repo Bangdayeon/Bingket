@@ -145,7 +145,7 @@ function CheckCircle({ checked }: CheckCircleProps) {
         checked ? 'bg-green-400' : 'border-2 border-gray-300  '
       }`}
     >
-      {checked && <CheckIcon width={14} height={14} color="#181C1C" />}
+      {checked && <CheckIcon width={16} height={16} color="#181C1C" />}
     </View>
   );
 }

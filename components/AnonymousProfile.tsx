@@ -1,5 +1,4 @@
 import ProfileMd from '@/assets/default_profiles/profile_md.svg';
-import ProfileSm from '@/assets/default_profiles/profile_sm.svg';
 
 const ANONYMOUS_COLORS = [
   '#F79A6E', // peach-400
@@ -17,11 +16,11 @@ function getColor(seed: string): string {
 
 interface AnonymousProfileProps {
   seed: string | null;
-  size: 'md' | 'sm';
 }
 
-export default function AnonymousProfile({ seed, size }: AnonymousProfileProps) {
+/** 익명 게시글·댓글의 기본 프로필. 크기는 32 하나뿐이다(시안 댓글 아바타와 같다). */
+export default function AnonymousProfile({ seed }: AnonymousProfileProps) {
   const color = seed === null ? '#9CA3AF' /* gray-400 */ : getColor(seed);
 
-  return size === 'md' ? <ProfileMd color={color} /> : <ProfileSm color={color} />;
+  return <ProfileMd color={color} />;
 }
