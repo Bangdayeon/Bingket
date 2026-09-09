@@ -94,16 +94,22 @@ iOS, Android를 동시 지원합니다.
 ├── assets/               # 아이콘, 이미지 등의 애셋
 │   └── icons/            # SVG 아이콘 파일
 ├── components/           # 재사용 가능한 공용 UI 컴포넌트
+├── constants/            # 색 토큰, 길이 상한, 캐시 키 등 상수
 ├── features/             # 기능별 모듈 (Vertical Slice)
+│   ├── app-update/       # 강제 업데이트 게이트
 │   ├── auth/             # 인증 관련 로직 (OAuth, 세션 등)
 │   ├── bingo/            # 빙고 기능
 │   │   ├── components/   # bingo feature 전용 컴포넌트
-│   │   ├── bingo-add/    # 빙고 추가 화면 컴포넌트
-│   │   ├── bingo-modify/ # 빙고 수정 화면 컴포넌트
+│   │   ├── bingo-edit/   # 추가·수정 화면이 함께 쓰는 컴포넌트
 │   │   └── lib/          # bingo feature API 호출
+│   ├── coachmark/        # 첫 사용 안내
 │   ├── community/        # 커뮤니티 기능
+│   ├── friend/           # 친구 검색·요청·목록
 │   ├── mypage/           # 마이페이지 기능
-│   └── onboarding/       # 온보딩 기능
+│   ├── notifications/    # 알림 목록·안읽음 컨텍스트
+│   ├── onboarding/       # 온보딩 기능
+│   ├── profile/          # 내·타인 프로필과 피드
+│   └── team/             # 같이하기(팀 빙고)
 ├── lib/                  # 공용 유틸리티 (HTTP 클라이언트, 날짜 포맷터 등)
 ├── mocks/                # 개발용 mock 데이터 (API 연동 후 제거)
 ├── store/                # Zustand 전역 상태 (미도입, 예정)
