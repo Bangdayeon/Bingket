@@ -2,13 +2,15 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Sentry from '@sentry/react-native';
 import { supabase } from '@/lib/supabase';
 import { router } from 'expo-router';
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { Animated, View } from 'react-native';
 import { Logo } from '@/components/Logo';
 import { Text } from '@/components/Text';
 
 export default function SplashScreen() {
-  const opacity = useRef(new Animated.Value(0)).current;
+  // useRef(...).current는 렌더 중 ref 읽기라 React 규칙 위반이다.
+  // useState 초기화 함수도 최초 1회만 실행되므로 값은 그대로 유지된다.
+  const [opacity] = useState(() => new Animated.Value(0));
 
   useEffect(() => {
     Animated.timing(opacity, {
@@ -45,7 +47,7 @@ export default function SplashScreen() {
     }, 2000);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [opacity]);
 
   return (
     <View className="h-full w-full flex-1 items-center justify-center bg-surface">

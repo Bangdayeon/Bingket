@@ -37,9 +37,12 @@ export function AddEachBingo({
   const [image, setImage] = useState<string | null>(null);
   const [fgColor, setFgColor] = useState<string>(FIXED.boardForeground);
 
-  useEffect(() => {
+  // prop이 바뀌면 렌더 중에 맞춘다(효과로 미러링하면 렌더가 한 번 더 돈다).
+  const [prevCells, setPrevCells] = useState(cells);
+  if (cells !== prevCells) {
+    setPrevCells(cells);
     setLocalCells(cells);
-  }, [cells]);
+  }
 
   useEffect(() => {
     const load = async () => {

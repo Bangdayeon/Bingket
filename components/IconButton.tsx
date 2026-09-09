@@ -61,7 +61,7 @@ export default function IconButton({
       stiffness: 180,
       mass: 0.4,
     });
-  }, [active]);
+  }, [active, scale]);
 
   const animatedBgStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],

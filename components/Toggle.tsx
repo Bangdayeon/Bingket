@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useColors } from '@/lib/use-colors';
 import { Animated, Pressable } from 'react-native';
 
@@ -16,7 +16,7 @@ const KNOB_MARGIN = 4;
 
 export function Toggle({ value, onValueChange, disabled = false }: ToggleProps) {
   const colors = useColors();
-  const anim = useRef(new Animated.Value(value ? 1 : 0)).current;
+  const [anim] = useState(() => new Animated.Value(value ? 1 : 0));
 
   useEffect(() => {
     Animated.timing(anim, {
@@ -24,7 +24,7 @@ export function Toggle({ value, onValueChange, disabled = false }: ToggleProps) 
       duration: 180,
       useNativeDriver: false,
     }).start();
-  }, [value]);
+  }, [value, anim]);
 
   const translateX = anim.interpolate({
     inputRange: [0, 1],

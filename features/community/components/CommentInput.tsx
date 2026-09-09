@@ -33,9 +33,12 @@ export function CommentInput({
 }: CommentInputProps) {
   const inputRef = useRef<RNTextInput>(null);
 
+  // replyTo 객체가 아니라 id를 본다. 부모가 리렌더될 때마다 새 객체가 와도
+  // 답글 대상이 그대로면 포커스를 다시 뺏지 않는다.
+  const replyToId = replyTo?.id;
   useEffect(() => {
-    if (replyTo) inputRef.current?.focus();
-  }, [replyTo?.id]);
+    if (replyToId) inputRef.current?.focus();
+  }, [replyToId]);
 
   const anonymousClass = isAnonymous ? 'text-green-400' : 'text-gray-400';
   const [pressed, setPressed] = useState(false);
