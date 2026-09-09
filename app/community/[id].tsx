@@ -475,7 +475,7 @@ export default function CommunityDetailScreen() {
         }
         variant="default" // 확인 + 취소 버튼 둘 다 사용
         confirmLabel="신고하기"
-        cancelLabel="취소하기"
+        cancelLabel="취소"
         onConfirm={async () => {
           if (!selectedReason || !reportTarget) return;
           setIsReporting(true);

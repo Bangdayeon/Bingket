@@ -162,10 +162,12 @@ export function PostCard({ post, currentUserId, onBlock }: PostCardProps) {
         style={{ top: 52, right: 10 }}
       />
 
-      {/* 미디어 썸네일 (빙고 우선, 없으면 첫 이미지) */}
+      {/* 미디어 썸네일 (빙고 우선, 없으면 첫 이미지).
+          빙고는 목록에서 정사각형으로 자른다 — 3:4 그대로 두면 카드 하나가 화면을 거의 다
+          먹어 다음 글이 안 보인다. 전체 판은 게시글 상세에서 보여준다. */}
       {bingoData ? (
-        <View className="mt-4">
-          <BingoPreview bingo={bingoData} size="md" />
+        <View className="mt-4 overflow-hidden rounded-2xl">
+          <BingoPreview bingo={bingoData} size="md" square />
         </View>
       ) : firstImageUrl ? (
         <Image
@@ -225,7 +227,7 @@ export function PostCard({ post, currentUserId, onBlock }: PostCardProps) {
         }
         variant="default"
         confirmLabel="신고하기"
-        cancelLabel="취소하기"
+        cancelLabel="취소"
         confirmDisabled={!selectedReason}
         onConfirm={async () => {
           if (!selectedReason) return;

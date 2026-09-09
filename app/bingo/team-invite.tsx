@@ -280,7 +280,7 @@ export default function TeamInviteScreen() {
         title="초대를 거절할까요?"
         body="거절하면 이 팀 빙고에 참여할 수 없어요."
         variant="warning"
-        cancelLabel="취소하기"
+        cancelLabel="취소"
         confirmLabel="거절하기"
         onCancel={() => setShowRejectModal(false)}
         onDismiss={() => setShowRejectModal(false)}

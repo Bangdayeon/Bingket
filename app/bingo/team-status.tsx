@@ -404,7 +404,7 @@ export default function TeamStatusScreen() {
         }
         variant="warning"
         confirmLabel="나가기"
-        cancelLabel="취소하기"
+        cancelLabel="취소"
         onCancel={() => setShowLeaveModal(false)}
         onDismiss={() => setShowLeaveModal(false)}
         onConfirm={async () => {
