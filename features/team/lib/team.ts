@@ -862,10 +862,6 @@ export const saveMyRetrospective = async (teamId: string, content: string): Prom
   if (error) throw new Error(error.message);
 };
 
-// ============================================================
-// 활동 알림
-// ============================================================
-
 /**
  * 같이 채우기 공유판 중 내가 만들지 않은 판.
  *

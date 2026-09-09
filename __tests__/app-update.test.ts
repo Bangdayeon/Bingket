@@ -28,10 +28,19 @@ jest.mock('expo-constants', () => ({
   },
 }));
 
-let mockExpoConfig: { version?: string } | null = { version: '1.0.7' };
+/**
+ * 설치된 앱 버전으로 가정하는 값. **실제 출시 버전과 무관한 임의의 값이다.**
+ * app.json 의 version 을 올릴 때 이 파일은 건드리지 말 것.
+ * (예전에는 출시 버전과 같은 값을 박아두어 버전을 올릴 때마다 이 테스트가 깨졌다)
+ */
+const APP_VERSION = '2.0.0';
+const HIGHER = '2.0.1';
+const LOWER = '1.9.9';
+
+let mockExpoConfig: { version?: string } | null = { version: APP_VERSION };
 
 beforeEach(() => {
-  mockExpoConfig = { version: '1.0.7' };
+  mockExpoConfig = { version: APP_VERSION };
   mockMaybeSingle.mockReset();
 });
 
@@ -40,17 +49,17 @@ const respond = (min: string) =>
 
 describe('isUpdateRequired', () => {
   it('앱이 최소 버전보다 낮으면 막는다', async () => {
-    respond('1.1.0');
+    respond(HIGHER);
     await expect(isUpdateRequired()).resolves.toBe(true);
   });
 
   it('최소 버전과 같으면 통과', async () => {
-    respond('1.0.7');
+    respond(APP_VERSION);
     await expect(isUpdateRequired()).resolves.toBe(false);
   });
 
   it('최소 버전보다 높으면 통과', async () => {
-    respond('1.0.0');
+    respond(LOWER);
     await expect(isUpdateRequired()).resolves.toBe(false);
   });
 

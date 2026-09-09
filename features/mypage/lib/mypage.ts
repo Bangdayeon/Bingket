@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
+import { CACHE_KEY_ALERT_SETTINGS, CACHE_KEY_PROFILE } from '@/constants/cache_key';
 import { supabase } from '@/lib/supabase';
 import { withNetworkRetry } from '@/lib/network-retry';
 
@@ -283,7 +284,11 @@ export const deleteAccount = async (): Promise<void> => {
   }
 
   // 탈퇴 시 모든 로컬 캐시 제거
-  await AsyncStorage.multiRemove(['@bingket/cache-my-profile', '@bingket/draft-bingo']);
+  await AsyncStorage.multiRemove([
+    CACHE_KEY_PROFILE,
+    '@bingket/draft-bingo',
+    CACHE_KEY_ALERT_SETTINGS,
+  ]);
 
   await AsyncStorage.removeItem('@bingket/terms-agreed');
 

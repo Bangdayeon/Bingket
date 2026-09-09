@@ -331,6 +331,7 @@ export function BingoAll() {
         onlyIfUnchecked: isTeamBoard && isChecking,
       })
         .then(({ applied }) => {
+          // 팀원에게 가는 칸 체크 알림은 bingo_cells 의 trg_notify_team_cell_checked 가 만든다
           if (isTeamBoard && isChecking && !applied) {
             // 내가 늦었다 -- 화면을 실제 상태로 되돌린다
             setNotice({
@@ -338,10 +339,7 @@ export function BingoAll() {
               body: '한발 늦었어요! 이미 다른 팀원이 채운 칸이에요.',
             });
             loadData();
-            return;
           }
-          // 팀원에게 가는 칸 체크 알림은 bingo_cells UPDATE 트리거
-          // (notify_on_team_cell_checked)가 만든다
         })
         .catch((error) => handleSaveFailure(error, true));
     }

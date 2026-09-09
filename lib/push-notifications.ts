@@ -111,11 +111,12 @@ export async function savePushToken(token: string): Promise<void> {
   if (!user) return;
 
   const platform = Platform.OS === 'ios' ? 'ios' : 'android';
+  // (user_id, token) 복합 PK -- 유저당 기기 여러 대를 허용한다 (20260830000002)
   const { error } = await supabase
     .from('push_tokens')
     .upsert(
       { user_id: user.id, token, platform, updated_at: new Date().toISOString() },
-      { onConflict: 'user_id' },
+      { onConflict: 'user_id,token' },
     );
 
   if (error) reportPushFailure('push_tokens upsert 실패', error);
@@ -136,9 +137,37 @@ export async function syncPushToken(): Promise<PushRegistrationResult> {
 }
 
 /**
+ * 이미 권한이 있을 때만 현재 기기의 토큰을 돌려준다.
+ * registerForPushNotifications 와 달리 **권한을 요청하지 않는다** --
+ * 로그아웃 도중에 권한 팝업이 뜨면 안 되기 때문이다.
+ */
+const currentDeviceToken = async (): Promise<string | null> => {
+  if (!Device.isDevice) return null;
+
+  const projectId = getProjectId();
+  if (!projectId) return null;
+
+  try {
+    const { status } = await Notifications.getPermissionsAsync();
+    if (status !== 'granted') return null;
+
+    const { data: token } = await Notifications.getExpoPushTokenAsync({ projectId });
+    return token;
+  } catch (error) {
+    reportPushFailure('현재 기기 토큰 조회 실패', error);
+    return null;
+  }
+};
+
+/**
  * 로그아웃 직전에 호출해야 한다.
  * push_tokens RLS가 auth.uid() = user_id이므로 세션이 끊긴 뒤에는 0행만 삭제된다.
  * 정리하지 않으면 같은 기기에 다른 계정이 로그인했을 때 이전 계정 알림이 이 기기로 온다.
+ *
+ * 다기기를 지원하므로 **이 기기의 토큰만** 지운다. 전부 지우면 로그아웃한 적도 없는
+ * 다른 기기가 알림을 못 받는다.
+ * 토큰을 못 구하면(권한 거부, 시뮬레이터 등) 이 유저의 행을 전부 지운다 --
+ * 그 기기에 남은 낡은 토큰을 치울 다른 방법이 없고, 남의 알림이 새는 쪽이 더 나쁘다.
  */
 export async function deletePushToken(): Promise<void> {
   const {
@@ -146,7 +175,12 @@ export async function deletePushToken(): Promise<void> {
   } = await supabase.auth.getUser();
   if (!user) return;
 
-  const { error } = await supabase.from('push_tokens').delete().eq('user_id', user.id);
+  const token = await currentDeviceToken();
+
+  let query = supabase.from('push_tokens').delete().eq('user_id', user.id);
+  if (token) query = query.eq('token', token);
+
+  const { error } = await query;
   if (error) reportPushFailure('push_tokens 삭제 실패', error);
 }
 
@@ -171,20 +205,41 @@ const handleNotificationTap = (raw: unknown): void => {
 };
 
 /**
+ * 이미 처리한 알림 응답 id.
+ * 리스너와 콜드스타트 경로가 같은 탭을 두 번 잡아 화면이 두 번 밀리는 것을 막는다.
+ */
+const handledResponseIds = new Set<string>();
+
+/**
+ * getLastNotificationResponseAsync 는 "가장 최근" 응답을 앱 실행 원인과 무관하게 돌려준다.
+ * 매 마운트마다 확인하면 푸시로 연 게 아닌 실행에서도 예전에 탭했던 알림으로 이동한다.
+ * 그래서 프로세스당 1회만 본다.
+ */
+let coldStartResponseChecked = false;
+
+const handleResponse = (response: Notifications.NotificationResponse): void => {
+  const id = response.notification.request.identifier;
+  if (handledResponseIds.has(id)) return;
+  handledResponseIds.add(id);
+  handleNotificationTap(response.notification.request.content.data);
+};
+
+/**
  * 푸시를 탭했을 때의 화면 이동을 등록한다.
  * 반환된 함수를 useEffect cleanup에서 호출할 것.
  */
 export function addNotificationTapListener(): () => void {
-  const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
-    handleNotificationTap(response.notification.request.content.data);
-  });
+  const subscription = Notifications.addNotificationResponseReceivedListener(handleResponse);
 
   // 앱이 완전히 종료된 상태에서 푸시로 실행된 경우 리스너가 잡지 못하므로 별도 확인
-  void Notifications.getLastNotificationResponseAsync()
-    .then((response) => {
-      if (response) handleNotificationTap(response.notification.request.content.data);
-    })
-    .catch((error: unknown) => reportPushFailure('getLastNotificationResponseAsync 실패', error));
+  if (!coldStartResponseChecked) {
+    coldStartResponseChecked = true;
+    void Notifications.getLastNotificationResponseAsync()
+      .then((response) => {
+        if (response) handleResponse(response);
+      })
+      .catch((error: unknown) => reportPushFailure('getLastNotificationResponseAsync 실패', error));
+  }
 
   return () => subscription.remove();
 }

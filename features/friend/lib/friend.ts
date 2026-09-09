@@ -122,6 +122,11 @@ export const checkIncomingConflict = async (
 
 // ─── Send Friend Request ──────────────────────────────────────
 
+/**
+ * 알림 행은 여기서 만들지 않는다.
+ * friend_requests INSERT 에 붙은 trg_notify_friend_request 트리거가 만든다
+ * (20260830000001). 클라이언트는 타인에게 알림을 넣을 권한이 없다.
+ */
 export const sendFriendRequest = async (params: {
   receiverId: string;
   receiverDisplayName: string;
@@ -140,29 +145,11 @@ export const sendFriendRequest = async (params: {
       .eq('receiver_id', params.receiverId);
   }
 
-  const { data: requestData, error } = await supabase
+  const { error } = await supabase
     .from('friend_requests')
-    .insert({ sender_id: user.id, receiver_id: params.receiverId })
-    .select('id')
-    .single();
+    .insert({ sender_id: user.id, receiver_id: params.receiverId });
 
   if (error) throw error;
-
-  if (requestData) {
-    const { data: sender } = await supabase
-      .from('users')
-      .select('display_name')
-      .eq('id', user.id)
-      .single();
-
-    await supabase.from('notifications').insert({
-      user_id: params.receiverId,
-      type: 'friend_request',
-      message: `${sender?.display_name ?? '누군가'}님이 친구 요청을 보냈어요`,
-      target_id: requestData.id,
-      target_type: null,
-    });
-  }
 };
 
 // ─── Respond to Friend Request ────────────────────────────────

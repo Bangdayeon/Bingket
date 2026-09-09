@@ -1,7 +1,8 @@
 import * as Sentry from '@sentry/react-native';
+import * as Notifications from 'expo-notifications';
 import { PageHeader } from '@/components/PageHeader';
 import { useEffect, useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import { Linking, Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Toggle } from '@/components/Toggle';
 import { Text } from '@/components/Text';
@@ -43,6 +44,7 @@ export default function AlertSettingScreen() {
   const [loading, setLoading] = useState(true);
   const [saveFailed, setSaveFailed] = useState(false);
   const [loadFailed, setLoadFailed] = useState(false);
+  const [osDenied, setOsDenied] = useState(false);
 
   useEffect(() => {
     // 1. AsyncStorage 캐시 → 즉시 표시
@@ -59,6 +61,12 @@ export default function AlertSettingScreen() {
         setLoadFailed(true);
       })
       .finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => {
+    Notifications.getPermissionsAsync()
+      .then(({ status }) => setOsDenied(status !== 'granted'))
+      .catch((error: unknown) => Sentry.captureException(error));
   }, []);
 
   const update = (patch: Partial<NotificationSettings>) => {
@@ -78,21 +86,27 @@ export default function AlertSettingScreen() {
       <PageHeader title="알림 설정" right={loading ? <Loading /> : undefined} />
 
       <ScrollView className="flex-1">
+        {osDenied ? (
+          <Pressable
+            onPress={() => void Linking.openSettings()}
+            className="mx-4 mt-4 rounded-xl bg-gray-100 px-4 py-3"
+          >
+            <Text className="text-body-md font-pretendard-medium">기기 알림이 꺼져 있어요</Text>
+            <Text className="mt-0.5 text-caption-sm text-gray-500">
+              아래 설정과 무관하게 알림이 오지 않아요. 눌러서 기기 설정에서 켜주세요.
+            </Text>
+          </Pressable>
+        ) : null}
+
         <GroupCaption label="빙고" />
         <ToggleRow
           label="기간 임박 알림"
           value={settings.bingoDeadline}
           onValueChange={(v) => update({ bingoDeadline: v })}
         />
-        <ToggleRow
-          label="데일리 알림"
-          value={settings.bingoDaily}
-          onValueChange={(v) => update({ bingoDaily: v })}
-        />
 
         <Divider />
 
-        {/* 팀 빙고는 시안에 없지만 기능이 살아 있어 남긴다 */}
         <GroupCaption label="팀 빙고" />
         <ToggleRow
           label="팀원 활동 알림"
@@ -118,15 +132,6 @@ export default function AlertSettingScreen() {
           value={settings.communityLike}
           onValueChange={(v) => update({ communityLike: v })}
         />
-
-        <Divider />
-
-        <GroupCaption label="이벤트 및 혜택" />
-        <ToggleRow
-          label="이벤트 알림"
-          value={settings.eventPush}
-          onValueChange={(v) => update({ eventPush: v })}
-        />
       </ScrollView>
 
       <Toast
@@ -134,7 +139,6 @@ export default function AlertSettingScreen() {
         visible={saveFailed}
         onDismiss={() => setSaveFailed(false)}
       />
-      {/* 조회 실패는 화면의 토글이 실제 설정과 다르다는 뜻이라 반드시 알려야 한다. */}
       <Toast
         message="알림 설정을 불러오지 못했어요. 화면의 값이 실제와 다를 수 있어요."
         visible={loadFailed}
