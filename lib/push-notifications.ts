@@ -1,4 +1,5 @@
 import * as Sentry from '@sentry/react-native';
+import { LIGHT } from '@/constants/color-tokens.cjs';
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
@@ -69,7 +70,9 @@ export async function registerForPushNotifications(): Promise<PushRegistrationRe
       name: '기본 알림',
       importance: Notifications.AndroidImportance.MAX,
       vibrationPattern: [0, 250, 250, 250],
-      lightColor: '#F07840',
+      // 예전 팔레트(주황)가 남아 있었다. green-400은 라이트/다크에서 같은 값이라
+      // 안드로이드 알림 LED 색으로 그대로 쓸 수 있다.
+      lightColor: LIGHT.green[400],
     });
   }
 

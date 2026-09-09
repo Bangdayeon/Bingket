@@ -22,6 +22,7 @@
     "@react-native-community/netinfo": "11.5.2",
     "@react-native-firebase/analytics": "^26.3.3",
     "@react-native-firebase/app": "^26.3.3",
+    "@react-navigation/native": "^7.1.33",
     "@sentry/react-native": "~7.11.0",
     "@supabase/supabase-js": "^2.100.1",
     "babel-preset-expo": "~55.0.8",
