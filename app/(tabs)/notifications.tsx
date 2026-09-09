@@ -59,7 +59,9 @@ function NotificationItem({ item, onRead, onAction, onFriendResponse }: Notifica
 
   return (
     <Pressable
-      className={`justify-center border-b border-gray-300 p-4 ${
+      // 좌우는 화면 여백(16)에 맞추고 세로만 넉넉히 준다. 알림이 두세 줄씩이라
+      // 사방 16으로는 줄끼리 붙어 보인다.
+      className={`justify-center border-b border-gray-300 px-4 py-6 ${
         item.is_read ? '' : 'bg-green-100'
       }`}
       onPress={handlePress}
