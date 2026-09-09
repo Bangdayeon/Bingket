@@ -69,7 +69,7 @@ export default function MyPageScreen() {
       {/* 시안에는 화면 제목이 없다 — 설정 아이콘만 우측 */}
       <View className="h-[60px] flex-row items-center justify-end border-b border-gray-300 px-4">
         <Pressable onPress={() => router.push('/mypage/settings')} hitSlop={8}>
-          <SettingsIcon width={36} height={36} color="#4C5252" /* gray-700 */ />
+          <SettingsIcon width={36} height={36} className="text-gray-700" />
         </Pressable>
       </View>
 

@@ -66,9 +66,7 @@ export function Toast({ message, visible, onDismiss }: ToastProps) {
               paddingVertical: 10,
             }}
           >
-            <Text className="text-body-sm" style={{ color: '#FDFDFD' /* white */ }}>
-              {message}
-            </Text>
+            <Text className="text-body-sm text-white">{message}</Text>
           </Animated.View>
         </Animated.View>
       </Pressable>

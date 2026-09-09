@@ -113,7 +113,7 @@ export default function CommunityScreen() {
         style={{ position: 'absolute', bottom: fabBottom, right: 16 }}
         className="h-[52px] w-[52px] items-center justify-center rounded-full bg-green-400 shadow-gray-100"
       >
-        <EditIcon width={36} height={36} color="#FDFDFD" /* white */ />
+        <EditIcon width={36} height={36} className="text-white" />
       </Pressable>
     </SafeAreaView>
   );

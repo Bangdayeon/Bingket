@@ -9,7 +9,6 @@ import { ErrorState } from '@/components/ErrorState';
 interface CommentSectionProps {
   comments: Comment[];
   postAuthorId: string;
-  iconColor: string;
   onMenuPress: (id: string, pageY: number) => void;
   onReplyPress: (id: string, author: string) => void;
   isLoading?: boolean;
@@ -24,7 +23,6 @@ interface CommentSectionProps {
 export function CommentSection({
   comments,
   postAuthorId,
-  iconColor,
   onMenuPress,
   onReplyPress,
   isLoading = false,
@@ -44,12 +42,8 @@ export function CommentSection({
       ) : comments.length === 0 ? (
         <View className="items-center py-12 gap-5">
           <MascotImage width={130} height={100} className="" />
-          <Text className="text-body-md" style={{ color: '#929898' /* gray-500 */ }}>
-            첫 댓글을 남겨주세요.
-          </Text>
-          <Text className="text-body-md" style={{ color: '#929898' /* gray-500 */ }}>
-            부적절한 내용은 제재를 받을 수 있어요.
-          </Text>
+          <Text className="text-body-md text-gray-500">첫 댓글을 남겨주세요.</Text>
+          <Text className="text-body-md text-gray-500">부적절한 내용은 제재를 받을 수 있어요.</Text>
         </View>
       ) : (
         <View className="gap-5">
@@ -58,7 +52,6 @@ export function CommentSection({
               key={c.id}
               comment={c}
               postAuthorId={postAuthorId}
-              iconColor={iconColor}
               onMenuPress={onMenuPress}
               onReplyPress={onReplyPress}
             />

@@ -1,6 +1,7 @@
 import '@/global.css';
+// SVG 아이콘이 className으로 색을 받게 하는 등록. import만으로 동작한다.
+import '@/lib/svg-interop';
 import * as Sentry from '@sentry/react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { hasConsent, loadConsent } from '@/lib/consent';
 
 Sentry.init({
@@ -21,8 +22,12 @@ import { addNotificationTapListener, syncPushToken } from '@/lib/push-notificati
 import { applyAnalyticsConsent, logScreenView } from '@/lib/analytics';
 import { router, Stack, useSegments } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Appearance } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
+import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { useColorScheme } from 'nativewind';
+import { applyAppTheme, loadAppTheme } from '@/lib/app-theme';
+import { useColors } from '@/lib/use-colors';
 import { ForceUpdateGate } from '@/features/app-update/ForceUpdateGate';
 import { PortalHost } from '@/components/PortalHost';
 import { OfflineBanner } from '@/components/OfflineBanner';
@@ -56,13 +61,7 @@ function RootLayout() {
   }, []);
 
   useEffect(() => {
-    AsyncStorage.getItem('@bingket/app-theme').then((saved) => {
-      if (saved === 'light' || saved === 'dark') {
-        Appearance.setColorScheme(saved);
-      } else {
-        Appearance.setColorScheme('unspecified');
-      }
-    });
+    void loadAppTheme().then(applyAppTheme);
   }, []);
 
   useEffect(() => {
@@ -105,39 +104,63 @@ function RootLayout() {
     void logScreenView(segments.join('/') || 'index').catch(Sentry.captureException);
   }, [segments, consentLoaded]);
 
+  const { colorScheme } = useColorScheme();
+  const colors = useColors();
+  // 화면 전환 애니메이션 중 react-navigation의 기본 흰 배경이 비치지 않게 한다.
+  const navigationTheme = {
+    ...(colorScheme === 'dark' ? DarkTheme : DefaultTheme),
+    colors: {
+      ...(colorScheme === 'dark' ? DarkTheme : DefaultTheme).colors,
+      background: colors.surface,
+      card: colors.white,
+      text: colors.gray[900],
+      border: colors.gray[300],
+      primary: colors.green[500],
+    },
+  };
+
   return (
-    <SafeAreaProvider>
-      <Stack>
-        <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="(auth)/login" options={{ headerShown: false }} />
-        <Stack.Screen name="(auth)/onboarding" options={{ headerShown: false }} />
-        <Stack.Screen name="(auth)/email-login" options={{ headerShown: false }} />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="bingo/add" options={{ headerShown: false }} />
-        <Stack.Screen name="bingo/modify" options={{ headerShown: false }} />
-        <Stack.Screen name="bingo/view" options={{ headerShown: false }} />
-        <Stack.Screen name="mypage/profile-edit" options={{ headerShown: false }} />
-        <Stack.Screen name="mypage/account" options={{ headerShown: false }} />
-        <Stack.Screen name="mypage/alert-setting" options={{ headerShown: false }} />
-        <Stack.Screen name="mypage/app-theme" options={{ headerShown: false }} />
-        <Stack.Screen name="mypage/my-posts" options={{ headerShown: false }} />
-        <Stack.Screen name="mypage/friend-list" options={{ headerShown: false }} />
-        <Stack.Screen name="mypage/settings" options={{ headerShown: false }} />
-        <Stack.Screen name="profile/[id]" options={{ headerShown: false }} />
-        <Stack.Screen name="bingo/friend-view" options={{ headerShown: false }} />
-        <Stack.Screen name="bingo/team-mode" options={{ headerShown: false }} />
-        <Stack.Screen name="bingo/team-create" options={{ headerShown: false }} />
-        <Stack.Screen name="bingo/team-invite" options={{ headerShown: false }} />
-        <Stack.Screen name="bingo/team-status" options={{ headerShown: false }} />
-        <Stack.Screen name="community/search" options={{ headerShown: false }} />
-        <Stack.Screen name="community/write" options={{ headerShown: false }} />
-        <Stack.Screen name="community/[id]" options={{ headerShown: false }} />
-      </Stack>
-      <OfflineBanner />
-      <ForceUpdateGate />
-      {/* 다이얼로그 오버레이가 Stack 위에 그려지도록 마지막에 둔다 */}
-      <PortalHost />
-    </SafeAreaProvider>
+    <ThemeProvider value={navigationTheme}>
+      <SafeAreaProvider>
+        {/* style="auto"는 배경 밝기에 맞춰 상태바 아이콘 명암을 뒤집는다. */}
+        <StatusBar style="auto" />
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            contentStyle: { backgroundColor: colors.surface },
+          }}
+        >
+          <Stack.Screen name="index" />
+          <Stack.Screen name="(auth)/login" />
+          <Stack.Screen name="(auth)/onboarding" />
+          <Stack.Screen name="(auth)/email-login" />
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="bingo/add" />
+          <Stack.Screen name="bingo/modify" />
+          <Stack.Screen name="bingo/view" />
+          <Stack.Screen name="mypage/profile-edit" />
+          <Stack.Screen name="mypage/account" />
+          <Stack.Screen name="mypage/alert-setting" />
+          <Stack.Screen name="mypage/app-theme" />
+          <Stack.Screen name="mypage/my-posts" />
+          <Stack.Screen name="mypage/friend-list" />
+          <Stack.Screen name="mypage/settings" />
+          <Stack.Screen name="profile/[id]" />
+          <Stack.Screen name="bingo/friend-view" />
+          <Stack.Screen name="bingo/team-mode" />
+          <Stack.Screen name="bingo/team-create" />
+          <Stack.Screen name="bingo/team-invite" />
+          <Stack.Screen name="bingo/team-status" />
+          <Stack.Screen name="community/search" />
+          <Stack.Screen name="community/write" />
+          <Stack.Screen name="community/[id]" />
+        </Stack>
+        <OfflineBanner />
+        <ForceUpdateGate />
+        {/* 다이얼로그 오버레이가 Stack 위에 그려지도록 마지막에 둔다 */}
+        <PortalHost />
+      </SafeAreaProvider>
+    </ThemeProvider>
   );
 }
 

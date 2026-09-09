@@ -44,10 +44,9 @@ function parseBlocks(content: string): StoredBlock[] | null {
 
 interface PostBodyProps {
   post: CommunityPost;
-  iconColor: string;
 }
 
-export function PostBody({ post, iconColor }: PostBodyProps) {
+export function PostBody({ post }: PostBodyProps) {
   const blocks = parseBlocks(post.body);
   const bingoData = post.bingo ? postBingoToBingoData(post.bingo) : null;
 
@@ -117,14 +116,9 @@ export function PostBody({ post, iconColor }: PostBodyProps) {
 
       {/* 좋아요 / 댓글 */}
       <View className="flex-row items-center gap-4 mt-3">
-        <LikeButton
-          count={post.likeCount}
-          iconColor={iconColor}
-          postId={post.id}
-          initialLiked={post.likedByMe}
-        />
+        <LikeButton count={post.likeCount} postId={post.id} initialLiked={post.likedByMe} />
         <View className="flex-row items-center gap-1">
-          <SMSIcon width={ICON_SIZE} height={ICON_SIZE} color={iconColor} />
+          <SMSIcon width={ICON_SIZE} height={ICON_SIZE} className="text-gray-700" />
           <Text className="text-body-sm text-gray-700">{post.commentCount}</Text>
         </View>
       </View>

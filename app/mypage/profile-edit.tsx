@@ -204,7 +204,7 @@ export default function ProfileEditPage() {
               <IconButton
                 variant="secondary"
                 size={40}
-                icon={<CameraIcon width={24} height={24} color="#6E7575" /* gray-600 */ />}
+                icon={<CameraIcon width={24} height={24} className="text-gray-600" />}
                 onClick={handleCameraPress}
               />
             </View>
@@ -220,10 +220,7 @@ export default function ProfileEditPage() {
               onChangeText={handleNameChange}
               placeholder={`${NAME_MAX}자 이내로 입력해주세요.`}
             />
-            <Text
-              className="text-right text-caption-sm"
-              style={{ color: '#929898' /* gray-500 */ }}
-            >
+            <Text className="text-right text-caption-sm text-gray-500">
               {name.length}/{NAME_MAX}
             </Text>
           </View>
@@ -236,10 +233,7 @@ export default function ProfileEditPage() {
               placeholder={`영어, 언더바, 하이픈, 숫자로만 ${USER_ID_MAX}자 이내로 입력해주세요.`}
               autoCapitalize="none"
             />
-            <Text
-              className="text-right text-caption-sm"
-              style={{ color: '#929898' /* gray-500 */ }}
-            >
+            <Text className="text-right text-caption-sm text-gray-500">
               {userId.length}/{USER_ID_MAX}
             </Text>
           </View>
@@ -253,10 +247,7 @@ export default function ProfileEditPage() {
               maxLength={BIO_MAX}
               maxHeight={64}
             />
-            <Text
-              className="text-right text-caption-sm"
-              style={{ color: '#929898' /* gray-500 */ }}
-            >
+            <Text className="text-right text-caption-sm text-gray-500">
               {bio.length}/{BIO_MAX}
             </Text>
           </View>

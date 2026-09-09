@@ -167,7 +167,7 @@ export default function BingoModifyScreen() {
         onBack={handleBack}
         right={
           <Pressable onPress={() => setShowDeleteModal(true)} hitSlop={8}>
-            <DeleteIcon width={24} height={24} color="#CD5353" /* danger */ />
+            <DeleteIcon width={24} height={24} className="text-danger" />
           </Pressable>
         }
       />

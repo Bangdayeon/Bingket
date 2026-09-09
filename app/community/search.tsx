@@ -23,7 +23,6 @@ const Separator = () => <View className="h-px bg-gray-300  " />;
 
 export default function CommunitySearchScreen() {
   const router = useRouter();
-  const iconColor = '#4C5252'; /* gray-700 */
   const inputRef = useRef<RNTextInput>(null);
 
   const [value, setValue] = useState('');
@@ -83,7 +82,7 @@ export default function CommunitySearchScreen() {
       {/* 헤더 — 시안에는 구분선이 없다 */}
       <View className="h-[60px] flex-row items-center gap-3 px-4">
         <Pressable onPress={() => router.back()} hitSlop={8}>
-          <ArrowBackIcon width={24} height={24} color={iconColor} />
+          <ArrowBackIcon width={24} height={24} className="text-gray-700" />
         </Pressable>
         <SearchInput
           ref={inputRef}
@@ -148,10 +147,7 @@ export default function CommunitySearchScreen() {
             )}
           </View>
           {searches.length === 0 ? (
-            <Text
-              className="text-body-sm w-full text-center"
-              style={{ color: '#929898' /* gray-500 */ }}
-            >
+            <Text className="text-body-sm w-full text-center text-gray-500">
               최근 검색어가 없습니다.
             </Text>
           ) : (

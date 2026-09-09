@@ -10,19 +10,15 @@ import SubIcon from '@/assets/icons/ic_subdirectory.svg';
 interface ReplyItemProps {
   reply: CommentReply;
   postAuthorId: string;
-  iconColor: string;
   onMenuPress: (id: string, pageY: number) => void;
 }
 
-export function ReplyItem({ reply, postAuthorId, iconColor, onMenuPress }: ReplyItemProps) {
+export function ReplyItem({ reply, postAuthorId, onMenuPress }: ReplyItemProps) {
   const isPostAuthor = reply.userId === postAuthorId;
   return (
     <View className="flex-row mt-2 mb-3">
-      <SubIcon color="#929898" /* gray-500 */ style={{ marginRight: 4 }} />
-      <View
-        className="flex-1 rounded-lg px-3 pt-2 pb-2"
-        style={{ backgroundColor: '#F5F8ED' /* green-50 */ }}
-      >
+      <SubIcon className="text-gray-500" style={{ marginRight: 4 }} />
+      <View className="flex-1 rounded-lg px-3 pt-2 pb-2 bg-green-50">
         <View className="flex-row items-center">
           {reply.isAnonymous ? (
             <AnonymousProfile seed={reply.userId} />
@@ -33,10 +29,7 @@ export function ReplyItem({ reply, postAuthorId, iconColor, onMenuPress }: Reply
             {reply.author}
           </Text>
           {isPostAuthor && (
-            <View
-              className="ml-1.5 px-1.5 py-1 rounded-full"
-              style={{ backgroundColor: '#DCE5B0' /* green-200 */ }}
-            >
+            <View className="ml-1.5 px-1.5 py-1 rounded-full bg-green-200">
               <Text className="text-caption-sm text-green-800">작성자</Text>
             </View>
           )}
@@ -45,22 +38,16 @@ export function ReplyItem({ reply, postAuthorId, iconColor, onMenuPress }: Reply
             <LikeButton
               size="sm"
               count={reply.likeCount}
-              iconColor={iconColor}
               commentId={reply.id}
               initialLiked={reply.likedByMe}
             />
             <Pressable hitSlop={8} onPress={(e) => onMenuPress(reply.id, e.nativeEvent.pageY)}>
-              <MoreVertIcon width={24} height={24} color={iconColor} />
+              <MoreVertIcon width={24} height={24} className="text-gray-700" />
             </Pressable>
           </View>
         </View>
         <Text className="text-body-sm mt-1">{reply.body}</Text>
-        <Text
-          className="text-caption-sm mt-1 text-right"
-          style={{ color: '#929898' /* gray-500 */ }}
-        >
-          {reply.createdAt}
-        </Text>
+        <Text className="text-caption-sm mt-1 text-right text-gray-500">{reply.createdAt}</Text>
       </View>
     </View>
   );

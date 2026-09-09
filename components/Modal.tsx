@@ -121,8 +121,7 @@ export function Modal({
           behavior={Platform.select({ ios: 'padding', android: 'height' })}
         >
           <Pressable
-            className="flex-1 items-center justify-center px-5"
-            style={{ backgroundColor: 'rgba(88,88,88,0.7)' }} /* 시안 #585858 70% */
+            className="flex-1 items-center justify-center bg-scrim/70 px-5"
             onPress={onDismiss}
           >
             <Pressable className="w-full rounded-3xl bg-white p-6 md:max-w-[480px]">

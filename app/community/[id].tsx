@@ -52,7 +52,6 @@ export default function CommunityDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const iconColor = '#4C5252'; /* gray-700 */
 
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [post, setPost] = useState<CommunityPost | null>(null);
@@ -173,7 +172,7 @@ export default function CommunityDetailScreen() {
         >
           <View style={{ width: 56 }} className="pl-4">
             <Pressable onPress={() => router.back()} hitSlop={8}>
-              <ArrowBackIcon width={24} height={24} color={iconColor} />
+              <ArrowBackIcon width={24} height={24} className="text-gray-700" />
             </Pressable>
           </View>
         </View>
@@ -193,7 +192,7 @@ export default function CommunityDetailScreen() {
         >
           <View style={{ width: 56 }} className="pl-4">
             <Pressable onPress={() => router.back()} hitSlop={8}>
-              <ArrowBackIcon width={24} height={24} color={iconColor} />
+              <ArrowBackIcon width={24} height={24} className="text-gray-700" />
             </Pressable>
           </View>
         </View>
@@ -395,11 +394,7 @@ export default function CommunityDetailScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-surface" edges={['top']}>
-      <PostHeader
-        iconColor={iconColor}
-        onBack={() => router.back()}
-        onMenuPress={() => setShowPostMenu((v) => !v)}
-      />
+      <PostHeader onBack={() => router.back()} onMenuPress={() => setShowPostMenu((v) => !v)} />
 
       <Popover
         visible={showPostMenu}
@@ -420,11 +415,10 @@ export default function CommunityDetailScreen() {
         keyboardVerticalOffset={0}
       >
         <ScrollView style={{ flex: 1 }} keyboardShouldPersistTaps="handled">
-          <PostBody post={post} iconColor={iconColor} />
+          <PostBody post={post} />
           <CommentSection
             comments={localComments}
             postAuthorId={post.userId}
-            iconColor={iconColor}
             onMenuPress={handleCommentMenuPress}
             onReplyPress={(replyId, author) => setReplyTo({ id: replyId, author })}
             isLoading={commentsLoading}

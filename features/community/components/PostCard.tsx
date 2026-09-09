@@ -76,7 +76,6 @@ interface PostCardProps {
 
 export function PostCard({ post, currentUserId, onBlock }: PostCardProps) {
   const router = useRouter();
-  const iconColor = '#4C5252'; /* gray-700 */
 
   const [showMenu, setShowMenu] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
@@ -151,7 +150,7 @@ export function PostCard({ post, currentUserId, onBlock }: PostCardProps) {
         </View>
         {ownership !== 'unknown' && (
           <Pressable onPress={() => setShowMenu((v) => !v)} hitSlop={8}>
-            <MoreIcon width={24} height={24} color="#929898" /* gray-500 */ />
+            <MoreIcon width={24} height={24} className="text-gray-500" />
           </Pressable>
         )}
       </View>
@@ -186,14 +185,9 @@ export function PostCard({ post, currentUserId, onBlock }: PostCardProps) {
 
       {/* 좋아요 / 댓글 */}
       <View className="flex-row items-center gap-4 mt-3">
-        <LikeButton
-          count={post.likeCount}
-          iconColor={iconColor}
-          postId={post.id}
-          initialLiked={post.likedByMe}
-        />
+        <LikeButton count={post.likeCount} postId={post.id} initialLiked={post.likedByMe} />
         <View className="flex-row items-center gap-1">
-          <SMSIcon width={ICON_SIZE} height={ICON_SIZE} color="#B4BBBB" /* gray-400 */ />
+          <SMSIcon width={ICON_SIZE} height={ICON_SIZE} className="text-gray-400" />
           <Text className="text-body-sm text-gray-700">{post.commentCount}</Text>
         </View>
       </View>

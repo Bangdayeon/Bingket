@@ -1,4 +1,36 @@
 /** @type {import('tailwindcss').Config} */
+const plugin = require('tailwindcss/plugin');
+const { LIGHT, DARK, FIXED } = require('./constants/color-tokens.cjs');
+
+const toChannels = (hex) =>
+  `${parseInt(hex.slice(1, 3), 16)} ${parseInt(hex.slice(3, 5), 16)} ${parseInt(hex.slice(5, 7), 16)}`;
+
+/**
+ * 색을 CSS 변수로 한 단계 돌려서 참조한다. Tailwind가 <alpha-value> 자리에 1이나
+ * /50 같은 수식어 값을 채우고, NativeWind 런타임이 var를 현재 테마 값으로 푼다.
+ * 덕분에 화면에 흩어진 bg-surface / text-gray-900 300여 곳을 한 줄도 안 고치고
+ * 테마가 바뀐다.
+ */
+const ref = (name) => `rgb(var(--c-${name}) / <alpha-value>)`;
+
+const varsFor = (palette) => ({
+  '--c-surface': toChannels(palette.surface),
+  '--c-white': toChannels(palette.white),
+  '--c-black': toChannels(palette.black),
+  '--c-scrim': toChannels(palette.scrim),
+  '--c-danger': toChannels(palette.danger),
+  '--c-danger-light': toChannels(palette.dangerLight),
+  ...Object.fromEntries(
+    Object.entries(palette.gray).map(([k, v]) => [`--c-gray-${k}`, toChannels(v)]),
+  ),
+  ...Object.fromEntries(
+    Object.entries(palette.green).map(([k, v]) => [`--c-green-${k}`, toChannels(v)]),
+  ),
+});
+
+const rampRefs = (ramp, prefix) =>
+  Object.fromEntries(Object.keys(ramp).map((k) => [k, ref(`${prefix}-${k}`)]));
+
 module.exports = {
   content: [
     './app/**/*.{js,jsx,ts,tsx}',
@@ -6,7 +38,9 @@ module.exports = {
     './features/**/*.{js,jsx,ts,tsx}',
   ],
   presets: [require('nativewind/preset')],
-  darkMode: 'media',
+  // 'media'로 두면 .dark:root 블록이 조용히 무시되고 colorScheme.set이 throw한다.
+  // RN에서는 .dark 클래스를 어디에도 붙일 필요가 없다.
+  darkMode: 'class',
   theme: {
     fontFamily: {
       pretendard: ['Pretendard-Regular'],
@@ -19,38 +53,24 @@ module.exports = {
     // 시안 COLOR SYSTEM에 없는 색(blue-500 같은)은 아예 존재하지 않게 된다.
     colors: {
       transparent: 'transparent',
-      black: '#000000',
-      white: '#FDFDFD',
-      surface: '#FAFAFA',
-      danger: '#CD5353',
-      'danger-light': '#FFCCCC',
-      // 카카오 로그인 버튼 전용 브랜드 색. 카카오 가이드라인이 색을 강제하므로
-      // 색상 시스템 밖이지만 남겨 둔다.
-      kakao: '#FEE500',
-      gray: {
-        50: '#FBFBFB',
-        100: '#F6F7F7',
-        200: '#EFEFEF',
-        300: '#D2D6D6',
-        400: '#B4BBBB',
-        500: '#929898',
-        600: '#6E7575',
-        700: '#4C5252',
-        800: '#2E3333',
-        900: '#181C1C',
-      },
-      green: {
-        50: '#F5F8ED',
-        100: '#ECF1D5',
-        200: '#DCE5B0',
-        300: '#C6D47A',
-        400: '#94BD52', // main
-        500: '#759E38',
-        600: '#628C2F',
-        700: '#517627',
-        800: '#3F5C1D',
-        900: '#2A4114',
-      },
+      surface: ref('surface'),
+      white: ref('white'),
+      black: ref('black'),
+      // 모달·시트 딤. 투명도는 bg-scrim/70 처럼 수식어로 준다.
+      scrim: ref('scrim'),
+      danger: ref('danger'),
+      'danger-light': ref('danger-light'),
+      gray: rampRefs(LIGHT.gray, 'gray'),
+      green: rampRefs(LIGHT.green, 'green'),
+      // 테마 무관 고정색 — 변수를 거치지 않고 값을 그대로 쓴다.
+      kakao: FIXED.kakao,
+      'on-brand': FIXED.onBrand,
+      'on-danger': FIXED.onDanger,
+      'on-social': FIXED.onSocial,
+      'social-border': FIXED.socialBorder,
+      'fixed-white': FIXED.fixedWhite,
+      'fixed-black': FIXED.fixedBlack,
+      'overlay-media': FIXED.overlayMedia,
     },
     textColor: ({ theme }) => ({
       ...theme('colors'),
@@ -78,5 +98,9 @@ module.exports = {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    plugin(({ addBase }) => {
+      addBase({ ':root': varsFor(LIGHT), '.dark:root': varsFor(DARK) });
+    }),
+  ],
 };

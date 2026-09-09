@@ -68,16 +68,14 @@ export function FeedGrid({
                 item.status === 'done' ? 'bg-green-400' : 'bg-gray-200'
               }`}
             >
-              <Text className="text-caption-sm" style={{ color: '#181C1C' /* gray-900 */ }}>
+              <Text className="text-caption-sm text-gray-900">
                 {item.status === 'done' ? '완료' : '진행 중'}
               </Text>
             </View>
 
             {teamBoardIds?.has(item.id) && (
               <View className="px-2 py-0.5 rounded-full bg-green-50">
-                <Text className="text-caption-sm" style={{ color: '#3F5C1D' /* green-800 */ }}>
-                  함께
-                </Text>
+                <Text className="text-caption-sm text-green-800">함께</Text>
               </View>
             )}
 

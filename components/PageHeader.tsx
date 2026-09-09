@@ -37,7 +37,7 @@ export function PageHeader({
           <View />
         ) : (
           <Pressable onPress={onBack ?? (() => router.back())} hitSlop={12}>
-            <BackArrowIcon width={24} height={24} color="#181C1C" /* gray-900 */ />
+            <BackArrowIcon width={24} height={24} className="text-gray-900" />
           </Pressable>
         )}
         {right}

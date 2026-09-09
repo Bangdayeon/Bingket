@@ -130,7 +130,7 @@ export function BadgesPage() {
               ))}
             </View>
 
-            <Text className="text-body-sm text-center mt-10" style={{ color: '#B4BBBB' }}>
+            <Text className="text-body-sm text-center mt-10 text-gray-400">
               더 많은 뱃지가 추가될 예정이에요
             </Text>
           </View>

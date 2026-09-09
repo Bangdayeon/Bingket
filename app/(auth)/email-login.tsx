@@ -154,7 +154,7 @@ export default function EmailLoginScreen() {
                 value={password}
                 rightIcon={
                   <Pressable onPress={() => setShowPassword((v) => !v)} hitSlop={8}>
-                    <VisibilityIcon width={24} height={24} color="#6E7575" /* gray-600 */ />
+                    <VisibilityIcon width={24} height={24} className="text-gray-600" />
                   </Pressable>
                 }
                 onChangeText={(v) => {
@@ -175,7 +175,7 @@ export default function EmailLoginScreen() {
                 value={passwordConfirm}
                 rightIcon={
                   <Pressable onPress={() => setShowPasswordConfirm((v) => !v)} hitSlop={8}>
-                    <VisibilityIcon width={24} height={24} color="#6E7575" /* gray-600 */ />
+                    <VisibilityIcon width={24} height={24} className="text-gray-600" />
                   </Pressable>
                 }
                 onFocus={() => setPasswordConfirmTouched(true)}

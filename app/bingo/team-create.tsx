@@ -207,7 +207,7 @@ export default function TeamCreateScreen() {
         )}
 
         {mode === 'competition' && (
-          <View className="mt-8 px-4">
+          <View className="mt-8 px-4 placeholder:text-gray-500">
             <SectionLabel label="내기 내용" />
             <TextInput
               value={betText}
@@ -216,7 +216,6 @@ export default function TeamCreateScreen() {
                 setBetText(v.slice(0, BET_MAX_LENGTH));
               }}
               placeholder="메모를 입력해주세요."
-              placeholderTextColor="#929898" /* gray-500 */
               multiline
               className="h-20 rounded-2xl bg-gray-200 p-3 text-body-md"
               style={{ textAlignVertical: 'top' }}

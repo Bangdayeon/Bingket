@@ -113,8 +113,7 @@ export default function BingoPreview({
                 }}
               >
                 <Text
-                  className="text-caption-sm text-center md:text-body-md "
-                  style={{ color: '#181C1C' }}
+                  className="text-caption-sm text-center md:text-body-md  text-gray-900"
                   numberOfLines={2}
                 >
                   {bingo.cells[i] ?? ''}
@@ -157,11 +156,7 @@ export default function BingoPreview({
             padding: 4,
           }}
         >
-          <Text
-            className="text-caption-sm text-center"
-            style={{ color: '#181C1C' }}
-            numberOfLines={2}
-          >
+          <Text className="text-caption-sm text-center text-gray-900" numberOfLines={2}>
             {text}
           </Text>
         </View>

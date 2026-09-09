@@ -45,11 +45,11 @@ export default function IconButton({
 }: IconButtonProps) {
   const { default: defaultStyle, active: activeStyle } = variantStyles[variant];
 
-  const iconColor = '#181C1C'; /* gray-900 */
-
+  // 아이콘이 색을 직접 정하지 않았을 때만 기본색을 씌운다.
+  // 색은 className으로 오므로 className이 있는지로 판단한다.
   const coloredIcon = React.isValidElement(icon)
-    ? React.cloneElement(icon as React.ReactElement<{ color?: string }>, {
-        color: (icon.props as { color?: string }).color ?? iconColor,
+    ? React.cloneElement(icon as React.ReactElement<{ className?: string }>, {
+        className: (icon.props as { className?: string }).className ?? 'text-gray-900',
       })
     : icon;
 
@@ -69,10 +69,8 @@ export default function IconButton({
 
   const isDisabled = disabled || loading;
 
-  const loadingColor =
-    variant === 'secondary' || variant === 'ghost'
-      ? '#2E3333' /* gray-800 */
-      : '#F6F7F7'; /* gray-100 */
+  const loadingClass =
+    variant === 'secondary' || variant === 'ghost' ? 'text-gray-800' : 'text-on-brand';
 
   return (
     <TouchableOpacity
@@ -94,10 +92,10 @@ export default function IconButton({
               width: size,
               height: size,
               borderRadius: size / 2,
-              backgroundColor: '#ECF1D5' /* green-100 */,
             },
             animatedBgStyle,
           ]}
+          className="bg-green-100"
         />
       )}
 
@@ -109,7 +107,7 @@ export default function IconButton({
       {/* 로딩 (정중앙 overlay) */}
       {loading && (
         <View className="absolute inset-0 items-center justify-center">
-          <Loading color={loadingColor} />
+          <Loading className={loadingClass} />
         </View>
       )}
     </TouchableOpacity>

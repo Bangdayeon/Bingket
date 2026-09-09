@@ -180,11 +180,7 @@ export function BingoCard({
                 padding: 8,
               }}
             >
-              <Text
-                className={`${textStyle} text-center`}
-                style={{ color: '#181C1C' }}
-                numberOfLines={3}
-              >
+              <Text className={`${textStyle} text-center text-gray-900`} numberOfLines={3}>
                 {bingo.cells[i] ?? ''}
               </Text>
 

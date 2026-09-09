@@ -161,7 +161,7 @@ export default function TeamStatusScreen() {
         right={
           detail?.isFinished ? undefined : (
             <Pressable onPress={() => setShowMenu(true)} hitSlop={8}>
-              <MenuIcon width={24} height={24} color="#4C5252" /* gray-700 */ />
+              <MenuIcon width={24} height={24} className="text-gray-700" />
             </Pressable>
           )
         }
@@ -348,7 +348,7 @@ export default function TeamStatusScreen() {
           )}
 
           <View className="flex-row items-center gap-2 mx-5 bg-gray-200 rounded-2xl p-3 mt-8">
-            <InfoIcon width={20} height={20} color="#4C5252" />
+            <InfoIcon width={20} height={20} className="text-gray-700" />
             <Text className="text-caption-md md:text-body-md flex-1">
               {isShared
                 ? '먼저 누른 사람이 그 칸의 주인이 돼요. 채운 칸은 그 사람만 해제할 수 있어요.'
@@ -363,7 +363,7 @@ export default function TeamStatusScreen() {
       {/* 확대 오버레이 */}
       <RNModal visible={!!selectedBoard} transparent animationType="fade">
         <Pressable
-          className="flex-1 bg-black/80 items-center justify-center"
+          className="flex-1 bg-scrim/80 items-center justify-center"
           onPress={() => setSelectedBoard(null)}
         >
           {selectedBoard && detail && (

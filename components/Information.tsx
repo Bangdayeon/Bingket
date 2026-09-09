@@ -12,7 +12,6 @@ export function Information({ content }: InformationProps) {
   const [visible, setVisible] = useState(false);
   const [anchor, setAnchor] = useState({ x: 0, y: 0, width: 0, height: 0 });
   const iconRef = useRef<View>(null);
-  const iconColor = '#2E3333'; /* gray-800 */
 
   const handlePress = () => {
     iconRef.current?.measureInWindow((x, y, width, height) => {
@@ -24,7 +23,7 @@ export function Information({ content }: InformationProps) {
   return (
     <>
       <Pressable ref={iconRef} onPress={handlePress} hitSlop={8}>
-        <IcInfo width={20} height={20} color={iconColor} />
+        <IcInfo width={20} height={20} className="text-gray-800" />
       </Pressable>
 
       <Modal transparent visible={visible} onRequestClose={() => setVisible(false)}>

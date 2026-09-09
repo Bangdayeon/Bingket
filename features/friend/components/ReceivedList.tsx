@@ -38,9 +38,7 @@ export function ReceivedList({ pendingRequests, handleIncomingResponse }: Props)
                   onPress={() => handleIncomingResponse(req.id, true)}
                   className="px-4 py-2 rounded-full bg-green-400"
                 >
-                  <Text className="text-label-sm" style={{ color: '#181C1C' }}>
-                    수락
-                  </Text>
+                  <Text className="text-label-sm text-gray-900">수락</Text>
                 </Pressable>
               </View>
             </View>

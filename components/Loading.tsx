@@ -1,13 +1,14 @@
 import { ActivityIndicator } from 'react-native';
 
 interface LoadingProps {
-  /** 채워진 버튼 위처럼 회색이 묻히는 곳에서만 넘긴다. 기본은 회색. */
-  color?: string;
+  /**
+   * 스피너 색. 채워진 버튼 위처럼 회색이 묻히는 곳에서만 바꾼다.
+   * NativeWind가 ActivityIndicator의 className color를 color prop으로 넘겨준다.
+   */
+  className?: string;
 }
 
-const DEFAULT_COLOR = '#929898'; /* gray-500 */
-
 /** 앱 공통 로딩 표시. 플랫폼 기본 스피너를 쓴다. */
-export default function Loading({ color = DEFAULT_COLOR }: LoadingProps) {
-  return <ActivityIndicator size="small" color={color} />;
+export default function Loading({ className = 'text-gray-500' }: LoadingProps) {
+  return <ActivityIndicator size="small" className={className} />;
 }

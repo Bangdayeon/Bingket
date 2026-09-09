@@ -58,17 +58,11 @@ function MemoFooter({ length, saveState }: { length: number; saveState?: MemoSav
     <View className="flex-row items-center justify-end gap-2 mt-2">
       {saveState === 'saved' && (
         <View className="flex-row items-center gap-0.5">
-          <Text className="text-caption-md" style={{ color: '#759E38' /* green-500 */ }}>
-            저장됨
-          </Text>
-          <DoneIcon width={16} height={16} color="#759E38" /* green-500 */ />
+          <Text className="text-caption-md text-green-500">저장됨</Text>
+          <DoneIcon width={16} height={16} className="text-green-500" />
         </View>
       )}
-      {saveState === 'error' && (
-        <Text className="text-caption-md" style={{ color: '#CD5353' /* danger */ }}>
-          저장 실패
-        </Text>
-      )}
+      {saveState === 'error' && <Text className="text-caption-md text-danger">저장 실패</Text>}
       <Text
         className="text-caption-md"
         style={{
@@ -185,17 +179,7 @@ export function BingoCellModal({
         tint="dark"
         style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
       />
-      <Pressable
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(88,88,88,0.7)' /* 시안 #585858 70% */,
-        }}
-        onPress={onClose}
-      />
+      <Pressable className="absolute bottom-0 left-0 right-0 top-0 bg-scrim/70" onPress={onClose} />
 
       {/* Centered content — 메모 편집 중에는 숨긴다.
           언마운트하면 FlatList가 첫 칸으로 돌아가므로 투명하게만 만든다. */}
@@ -249,8 +233,7 @@ export function BingoCellModal({
               {/* Title + check button */}
               <View className="flex-row items-start mb-5 ">
                 <Text
-                  className="mr-3 flex-1 py-2.5 text-title-sm font-pretendard-semibold"
-                  style={{ color: '#181C1C' /* gray-900 */ }}
+                  className="mr-3 flex-1 py-2.5 text-title-sm font-pretendard-semibold text-gray-900"
                   numberOfLines={2}
                   ellipsizeMode="tail"
                 >
@@ -265,7 +248,7 @@ export function BingoCellModal({
                   >
                     {item.completed ? (
                       // ic_done은 원 안에서 체크가 파인 모양이라 그대로 두면 채워진 녹색 원이 된다
-                      <DoneIcon width={28} height={28} color="#94BD52" /* green-400 */ />
+                      <DoneIcon width={28} height={28} className="text-green-400" />
                     ) : (
                       // 빈 테두리 원은 에셋이 없어 View로 만든다
                       <View
@@ -286,11 +269,7 @@ export function BingoCellModal({
               {team && item.completed && item.completedBy && (
                 <View className="flex-row items-center gap-2 mb-4">
                   <ProfileAvatar avatarUrl={memberOf(item.completedBy)?.avatarUrl} size={24} />
-                  <Text
-                    className="flex-1 text-body-sm"
-                    style={{ color: '#4C5252' /* gray-700 */ }}
-                    numberOfLines={1}
-                  >
+                  <Text className="flex-1 text-body-sm text-gray-700" numberOfLines={1}>
                     {item.completedBy === team.currentUserId
                       ? '내가 채웠어요'
                       : `${memberOf(item.completedBy)?.displayName ?? '탈퇴한 멤버'}님이 채웠어요`}
@@ -314,27 +293,27 @@ export function BingoCellModal({
               )}
 
               {/* 메모 */}
-              <Text className="mb-2 text-body-md text-gray-900">메모</Text>
+              <Text className="mb-2 text-body-md text-gray-900 placeholder:text-gray-500">
+                메모
+              </Text>
               {/* 여기서는 미리보기만 한다. 실제 입력은 아래 메모 편집 오버레이에서. */}
               <Pressable onPress={() => setEditingMemoCellId(item.id)}>
                 <RNTextInput
                   value={item.memo}
                   placeholder="메모를 입력해주세요."
-                  placeholderTextColor="#929898" /* gray-500 */
                   multiline
                   scrollEnabled={false}
                   editable={false}
                   pointerEvents="none"
                   textAlignVertical="top"
-                  className="h-[190px] rounded-2xl bg-gray-200 p-3 text-body-md"
-                  style={{ color: '#181C1C' /* gray-900 */ }}
+                  className="h-[190px] rounded-2xl bg-gray-200 p-3 text-body-md text-gray-900"
                 />
                 <MemoFooter length={item.memo?.length ?? 0} saveState={memoSaveState[item.id]} />
               </Pressable>
 
               {/* 팀 메모는 전원이 고칠 수 있어, 조용히 바뀌지 않도록 마지막 수정자를 남긴다 */}
               {team && item.memoUpdatedBy && item.memoUpdatedBy !== team.currentUserId && (
-                <Text className="text-caption-sm mt-2" style={{ color: '#929898' /* gray-500 */ }}>
+                <Text className="text-caption-sm mt-2 text-gray-500">
                   마지막 수정: {memberOf(item.memoUpdatedBy)?.displayName ?? '탈퇴한 멤버'}
                 </Text>
               )}
@@ -349,7 +328,7 @@ export function BingoCellModal({
             hitSlop={8}
             className="h-11 w-11 items-center justify-center rounded-full bg-white"
           >
-            <CloseIcon width={24} height={24} color="#181C1C" /* gray-900 */ />
+            <CloseIcon width={24} height={24} className="text-gray-900" />
           </Pressable>
         </View>
       </View>
@@ -375,20 +354,13 @@ export function BingoCellModal({
               }}
             >
               <View className="flex-row justify-between items-center mb-2">
-                <Text
-                  className="text-title-sm font-pretendard-medium"
-                  style={{ color: '#181C1C' /* gray-900 */ }}
-                >
-                  메모
-                </Text>
+                <Text className="text-title-sm font-pretendard-medium text-gray-900">메모</Text>
                 <Pressable onPress={closeMemoEditor} hitSlop={8}>
-                  <Text className="text-title-sm" style={{ color: '#759E38' /* green-500 */ }}>
-                    완료
-                  </Text>
+                  <Text className="text-title-sm text-green-500">완료</Text>
                 </Pressable>
               </View>
 
-              <Text className="text-body-sm mb-3" style={{ color: '#929898' /* gray-500 */ }}>
+              <Text className="text-body-sm mb-3 text-gray-500 placeholder:text-gray-500">
                 {normalizeTitle(editingMemoCell.title)}
               </Text>
 
@@ -398,7 +370,6 @@ export function BingoCellModal({
                   value={editingMemoCell.memo}
                   onChangeText={(v) => onUpdate(editingMemoCell.id, { memo: v })}
                   placeholder="메모를 입력해주세요."
-                  placeholderTextColor="#929898" /* gray-500 */
                   multiline
                   scrollEnabled
                   textAlignVertical="top"
@@ -428,9 +399,7 @@ export function BingoCellModal({
             <View className="flex-row justify-between items-center mb-2">
               <Text className="text-title-sm">완료일 선택</Text>
               <Pressable onPress={handleDateConfirm}>
-                <Text className="text-title-sm" style={{ color: '#759E38' /* green-500 */ }}>
-                  확인
-                </Text>
+                <Text className="text-title-sm text-green-500">확인</Text>
               </Pressable>
             </View>
             <View style={{ height: 216 }}>

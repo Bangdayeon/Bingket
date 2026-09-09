@@ -29,7 +29,6 @@ const PARTICLES: Particle[] = Array.from({ length: PARTICLE_COUNT }, (_, i) => (
 
 interface LikeButtonProps {
   count: number;
-  iconColor: string;
   size?: keyof typeof SIZES;
   postId?: string;
   commentId?: string;
@@ -38,7 +37,6 @@ interface LikeButtonProps {
 
 export function LikeButton({
   count,
-  iconColor,
   size = 'md',
   postId,
   commentId,
@@ -151,9 +149,9 @@ export function LikeButton({
     <Pressable onPress={handlePress} className="flex-row items-center gap-1">
       <View style={{ width: iconSize, height: iconSize }}>
         {liked ? (
-          <LikeOnIcon width={iconSize} height={iconSize} color="#CD5353" /* danger */ />
+          <LikeOnIcon width={iconSize} height={iconSize} className="text-danger" />
         ) : (
-          <LikeOffIcon width={iconSize} height={iconSize} color={iconColor} />
+          <LikeOffIcon width={iconSize} height={iconSize} className="text-gray-700" />
         )}
 
         {/* 폭죽 파티클 */}

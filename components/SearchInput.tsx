@@ -34,7 +34,7 @@ export const SearchInput = forwardRef<RNTextInput, SearchInputProps>(function Se
       />
       {onClear && value ? (
         <Pressable onPress={onClear} hitSlop={8} className="ml-1">
-          <CloseIcon width={24} height={24} color="#2E3333" /* gray-800 */ />
+          <CloseIcon width={24} height={24} className="text-gray-800" />
         </Pressable>
       ) : null}
     </View>

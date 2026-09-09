@@ -29,17 +29,7 @@ export function BadgeModal({ visible, badge, onClose }: BadgeModalProps) {
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       {/* Backdrop */}
-      <Pressable
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(115,115,115,0.7)',
-        }}
-        onPress={onClose}
-      />
+      <Pressable className="absolute bottom-0 left-0 right-0 top-0 bg-scrim/70" onPress={onClose} />
 
       {/* Centered card */}
       <View
@@ -75,15 +65,11 @@ export function BadgeModal({ visible, badge, onClose }: BadgeModalProps) {
           )}
 
           {/* 뱃지 이름 */}
-          <Text className="text-title-lg text-center" style={{ color: '#181C1C' }}>
-            {displayName}
-          </Text>
+          <Text className="text-title-lg text-center text-gray-900">{displayName}</Text>
 
           {/* 설명 */}
           {message ? (
-            <Text className="text-body-md text-center" style={{ color: '#4C5252' }}>
-              {message}
-            </Text>
+            <Text className="text-body-md text-center text-gray-700">{message}</Text>
           ) : null}
 
           {/* 획득일 */}
@@ -95,9 +81,7 @@ export function BadgeModal({ visible, badge, onClose }: BadgeModalProps) {
               paddingVertical: 8,
             }}
           >
-            <Text className="text-body-sm" style={{ color: '#929898' }}>
-              {formatDate(badge.earnedAt)} 획득
-            </Text>
+            <Text className="text-body-sm text-gray-500">{formatDate(badge.earnedAt)} 획득</Text>
           </View>
 
           {/* 닫기 */}

@@ -264,7 +264,7 @@ export default function FriendListScreen() {
                   hitSlop={8}
                   className="absolute -right-1 -top-1 rounded-full bg-gray-300"
                 >
-                  <CloseIcon width={18} height={18} color="#2E3333" /* gray-800 */ />
+                  <CloseIcon width={18} height={18} className="text-gray-800" />
                 </Pressable>
               </View>
               <Text className="text-caption-sm text-gray-700" numberOfLines={1}>

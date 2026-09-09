@@ -29,9 +29,9 @@ const sizeStyles: Record<Size, { container: string; text: string }> = {
 };
 
 const variantStyles: Record<Variant, { container: string; text: string }> = {
-  primary: { container: 'bg-green-500', text: 'text-gray-100' },
+  primary: { container: 'bg-green-500', text: 'text-on-brand' },
   secondary: { container: 'border border-gray-300', text: 'text-gray-800' },
-  danger: { container: 'bg-danger', text: 'text-white' },
+  danger: { container: 'bg-danger', text: 'text-on-danger' },
   ghost: { container: '', text: 'text-gray-800' },
 };
 
@@ -46,11 +46,11 @@ const fontFor = (size: Size, variant: Variant) => {
     : 'font-pretendard-medium';
 };
 
-const LOADING_COLOR: Record<Variant, string> = {
-  primary: '#F6F7F7', // gray-100
-  secondary: '#2E3333', // gray-800
-  danger: '#FDFDFD', // white
-  ghost: '#2E3333', // gray-800
+const LOADING_CLASS: Record<Variant, string> = {
+  primary: 'text-on-brand',
+  secondary: 'text-gray-800',
+  danger: 'text-on-danger',
+  ghost: 'text-gray-800',
 };
 
 export default function Button({
@@ -95,7 +95,7 @@ export default function Button({
       {/* 로딩 (정중앙 absolute) */}
       {loading && (
         <View className="absolute inset-0 items-center justify-center">
-          <Loading color={LOADING_COLOR[variant]} />
+          <Loading className={LOADING_CLASS[variant]} />
         </View>
       )}
     </TouchableOpacity>

@@ -77,7 +77,7 @@ export function KakaoButton({ requireAgreement, onError }: KakaoButtonProps) {
       className="h-12 w-full rounded-2xl bg-kakao items-center justify-center"
     >
       {loading ? (
-        <Loading color="#000000" />
+        <Loading className="text-fixed-black" />
       ) : (
         <>
           <Image
@@ -86,12 +86,8 @@ export function KakaoButton({ requireAgreement, onError }: KakaoButtonProps) {
             className="absolute left-4"
             resizeMode="contain"
           />
-          <Text
-            className="text-label-sm font-pretendard-semibold md:text-label-md"
-            style={{
-              color: 'rgba(0,0,0,0.85)',
-            }} /* 카카오 가이드가 강제하는 라벨 색 */
-          >
+          {/* 카카오 가이드가 라벨 색을 강제한다 (on-social) */}
+          <Text className="text-label-sm font-pretendard-semibold text-on-social md:text-label-md">
             카카오로 시작하기
           </Text>
         </>

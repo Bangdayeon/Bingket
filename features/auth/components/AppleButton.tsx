@@ -98,14 +98,11 @@ export function AppleButton({ requireAgreement, onError }: AppleButtonProps) {
     <TouchableOpacity
       onPress={handlePress}
       disabled={loading}
-      className="h-12 w-full items-center justify-center rounded-2xl bg-black"
-      style={{
-        borderWidth: 0.5,
-        borderColor: '#C9CCCF',
-      }} /* Apple·Google 브랜드 가이드가 강제하는 색이라 토큰 밖이어도 그대로 쓴다 */
+      className="h-12 w-full items-center justify-center rounded-2xl border-social-border bg-fixed-black dark:bg-fixed-white"
+      style={{ borderWidth: 0.5 }}
     >
       {loading ? (
-        <Loading color="#ffffff" />
+        <Loading className="text-fixed-white dark:text-fixed-black" />
       ) : (
         <>
           <Image
@@ -114,10 +111,7 @@ export function AppleButton({ requireAgreement, onError }: AppleButtonProps) {
             className="absolute left-4"
             resizeMode="contain"
           />
-          <Text
-            className="text-label-sm font-pretendard-semibold md:text-label-md"
-            style={{ color: '#ffffff' }}
-          >
+          <Text className="text-label-sm font-pretendard-semibold text-fixed-white dark:text-fixed-black md:text-label-md">
             Apple로 시작하기
           </Text>
         </>

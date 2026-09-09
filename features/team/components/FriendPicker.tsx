@@ -85,7 +85,7 @@ export function FriendPicker({ selectedIds, onChange, maxCount }: FriendPickerPr
         <Text className="text-body-md text-gray-500">
           {selected.length > 0 ? `${selected.length}명 선택함` : '친구 고르기'}
         </Text>
-        <ArrowForwardIcon width={24} height={24} color="#6E7575" /* gray-600 */ />
+        <ArrowForwardIcon width={24} height={24} className="text-gray-600" />
       </Pressable>
 
       <View className="pt-2">
@@ -102,7 +102,7 @@ export function FriendPicker({ selectedIds, onChange, maxCount }: FriendPickerPr
               onPress={() => onChange(selectedIds.filter((id) => id !== friend.friendId))}
               hitSlop={8}
             >
-              <CloseIcon width={24} height={24} color="#4C5252" /* gray-700 */ />
+              <CloseIcon width={24} height={24} className="text-gray-700" />
             </Pressable>
           </View>
         ))}

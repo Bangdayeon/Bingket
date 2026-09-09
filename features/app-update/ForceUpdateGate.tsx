@@ -66,7 +66,7 @@ export function ForceUpdateGate() {
         <Text className="text-title-md font-pretendard-semibold text-center">
           업데이트가 필요해요
         </Text>
-        <Text className="text-body-sm text-center mt-3" style={{ color: '#4C5252' /* gray-700 */ }}>
+        <Text className="text-body-sm text-center mt-3 text-gray-700">
           새 버전으로 업데이트해야{'\n'}계속 사용할 수 있어요
         </Text>
         <Button label="업데이트하러 가기" onClick={openStore} className="w-full mt-8" />

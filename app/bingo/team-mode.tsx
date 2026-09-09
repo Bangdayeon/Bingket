@@ -29,7 +29,7 @@ function ModeCard({ label, description, onPress }: ModeCardProps) {
         <Text className="text-body-md font-pretendard-medium text-gray-800">{label}</Text>
         <Text className="text-body-sm text-gray-700">{description}</Text>
       </View>
-      <ArrowForwardIcon width={24} height={24} color="#2E3333" /* gray-800 */ />
+      <ArrowForwardIcon width={24} height={24} className="text-gray-800" />
     </Pressable>
   );
 }

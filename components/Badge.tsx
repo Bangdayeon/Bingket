@@ -43,7 +43,7 @@ export function Badge({ label, tone = 'default', onPress, onDelete, className = 
       )}
       {onDelete && (
         <Pressable onPress={onDelete} hitSlop={8}>
-          <CloseIcon width={18} height={18} color="#6E7575" /* gray-600 */ />
+          <CloseIcon width={18} height={18} className="text-gray-600" />
         </Pressable>
       )}
     </View>

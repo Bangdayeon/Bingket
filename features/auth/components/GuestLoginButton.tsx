@@ -24,10 +24,8 @@ export function GuestLoginButton({ requireAgreement }: GuestLoginButtonProps) {
         className="absolute left-4"
         resizeMode="contain"
       />
-      <Text
-        className="text-label-sm font-pretendard-semibold md:text-label-md"
-        style={{ color: 'rgba(0,0,0,0.85)' }} /* 소셜 버튼과 같은 라벨 색 (시안) */
-      >
+      {/* 소셜 버튼과 같은 라벨 색 (시안) */}
+      <Text className="text-label-sm font-pretendard-semibold text-on-social md:text-label-md">
         이메일로 시작하기
       </Text>
     </TouchableOpacity>

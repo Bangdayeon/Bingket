@@ -72,7 +72,7 @@ export function SearchList({
               }`}
             >
               {isSending ? (
-                <Loading color="#2E3333" />
+                <Loading className="text-gray-800" />
               ) : (
                 <Text className="text-caption-sm text-gray-900">{label}</Text>
               )}

@@ -30,7 +30,7 @@ export function CollapsibleSection({
         <Text className="text-title-sm font-pretendard-semibold text-gray-900">{title}</Text>
         {count !== undefined && <Text className="text-body-md text-gray-600">{count}</Text>}
         <View style={{ transform: [{ rotate: expanded ? '90deg' : '0deg' }] }}>
-          <ArrowForwardIcon width={24} height={24} color="#2E3333" /* gray-800 */ />
+          <ArrowForwardIcon width={24} height={24} className="text-gray-800" />
         </View>
       </Pressable>
 

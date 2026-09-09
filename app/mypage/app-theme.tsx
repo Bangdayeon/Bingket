@@ -1,24 +1,20 @@
 import { PageHeader } from '@/components/PageHeader';
 import CheckIcon from '@/assets/icons/ic_check.svg';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 // import { setAppIcon, getAppIcon } from 'expo-dynamic-app-icon';
 import { useEffect, useState } from 'react';
-import { Appearance, Pressable, ScrollView, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
+import { applyAppTheme, loadAppTheme, saveAppTheme, type AppTheme } from '@/lib/app-theme';
+import { FIXED, useColors } from '@/lib/use-colors';
 import { Text } from '@/components/Text';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-type AppTheme = 'system' | 'light' | 'dark';
 // type IconTheme = '기본' | '네온' | '노을' | '태닝';
 
+// 미리보기 반원은 라이트/다크 견본을 동시에 보여야 하므로 테마를 따라가면 안 된다.
 const APP_THEMES: { value: AppTheme; label: string; leftBg: string; rightBg: string }[] = [
-  {
-    value: 'system',
-    label: '시스템',
-    leftBg: '#181C1C',
-    rightBg: '#FDFDFD',
-  } /* gray-900 : white */,
-  { value: 'light', label: '라이트', leftBg: '#FDFDFD', rightBg: '#FDFDFD' } /* white : white */,
-  { value: 'dark', label: '다크', leftBg: '#181C1C', rightBg: '#181C1C' } /* gray-900 : gray-900 */,
+  { value: 'system', label: '시스템', leftBg: FIXED.preview.dark, rightBg: FIXED.preview.light },
+  { value: 'light', label: '라이트', leftBg: FIXED.preview.light, rightBg: FIXED.preview.light },
+  { value: 'dark', label: '다크', leftBg: FIXED.preview.dark, rightBg: FIXED.preview.dark },
 ];
 
 // const ICON_THEMES: { value: IconTheme; iconName: string; image: number }[] = [
@@ -40,23 +36,15 @@ const APP_THEMES: { value: AppTheme; label: string; leftBg: string; rightBg: str
 //   },
 // ];
 
-const THEME_STORAGE_KEY = '@bingket/app-theme';
 // const ICON_THEME_STORAGE_KEY = '@bingket/icon-theme';
-
-function applyTheme(theme: AppTheme) {
-  Appearance.setColorScheme((theme === 'system' ? null : theme) as unknown as 'light' | 'dark');
-}
 
 export default function AppThemeScreen() {
   const insets = useSafeAreaInsets();
   const [appTheme, setAppTheme] = useState<AppTheme>('system');
+  const colors = useColors();
 
   useEffect(() => {
-    AsyncStorage.getItem(THEME_STORAGE_KEY).then((saved) => {
-      if (saved === 'light' || saved === 'dark' || saved === 'system') {
-        setAppTheme(saved);
-      }
-    });
+    void loadAppTheme().then(setAppTheme);
 
     // const currentIconName: string = getAppIcon();
     // const matched = ICON_THEMES.find((t) => t.iconName === currentIconName);
@@ -65,8 +53,8 @@ export default function AppThemeScreen() {
 
   const handleThemeChange = (theme: AppTheme) => {
     setAppTheme(theme);
-    applyTheme(theme);
-    AsyncStorage.setItem(THEME_STORAGE_KEY, theme);
+    applyAppTheme(theme);
+    void saveAppTheme(theme);
   };
 
   // const handleIconThemeChange = async (value: IconTheme) => {
@@ -98,7 +86,7 @@ export default function AppThemeScreen() {
                   borderRadius: 9999,
                   overflow: 'hidden',
                   borderWidth: 1,
-                  borderColor: '#D2D6D6' /* gray-300 */,
+                  borderColor: colors.gray[300],
                   flexDirection: 'row',
                 }}
               >
@@ -108,7 +96,7 @@ export default function AppThemeScreen() {
               <Text className="flex-1 text-body-md">{label}</Text>
               {appTheme === value && (
                 <View className="h-6 w-6 items-center justify-center rounded-full bg-green-400">
-                  <CheckIcon width={16} height={16} color="#FDFDFD" /* white */ />
+                  <CheckIcon width={16} height={16} className="text-on-brand" />
                 </View>
               )}
             </Pressable>

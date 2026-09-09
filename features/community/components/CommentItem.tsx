@@ -11,7 +11,6 @@ import { Comment } from '@/types/community';
 interface CommentItemProps {
   comment: Comment;
   postAuthorId: string;
-  iconColor: string;
   onMenuPress: (id: string, pageY: number) => void;
   onReplyPress: (id: string, author: string) => void;
 }
@@ -19,7 +18,6 @@ interface CommentItemProps {
 export function CommentItem({
   comment,
   postAuthorId,
-  iconColor,
   onMenuPress,
   onReplyPress,
 }: CommentItemProps) {
@@ -28,20 +26,11 @@ export function CommentItem({
   if (comment.isDeleted) {
     return (
       <View>
-        <Text
-          className="text-body-sm pb-6 border-b px-4 border-gray-200"
-          style={{ color: '#B4BBBB' /* gray-400 */ }}
-        >
+        <Text className="text-body-sm pb-6 border-b px-4 border-gray-200 text-gray-400">
           (삭제된 댓글입니다.)
         </Text>
         {comment.replies?.map((r) => (
-          <ReplyItem
-            key={r.id}
-            reply={r}
-            postAuthorId={postAuthorId}
-            iconColor={iconColor}
-            onMenuPress={onMenuPress}
-          />
+          <ReplyItem key={r.id} reply={r} postAuthorId={postAuthorId} onMenuPress={onMenuPress} />
         ))}
       </View>
     );
@@ -59,10 +48,7 @@ export function CommentItem({
           {comment.author}
         </Text>
         {isPostAuthor && (
-          <View
-            className="ml-1.5 px-1.5 py-1 rounded-full"
-            style={{ backgroundColor: '#DCE5B0' /* green-200 */ }}
-          >
+          <View className="ml-1.5 px-1.5 py-1 rounded-full bg-green-200">
             <Text className="text-caption-sm text-green-800">작성자</Text>
           </View>
         )}
@@ -71,31 +57,22 @@ export function CommentItem({
           <LikeButton
             size="sm"
             count={comment.likeCount}
-            iconColor={iconColor}
             commentId={comment.id}
             initialLiked={comment.likedByMe}
           />
           <Pressable hitSlop={8} onPress={() => onReplyPress(comment.id, comment.author)}>
-            <SMSIcon width={24} height={24} color={iconColor} />
+            <SMSIcon width={24} height={24} className="text-gray-700" />
           </Pressable>
           <Pressable hitSlop={8} onPress={(e) => onMenuPress(comment.id, e.nativeEvent.pageY)}>
-            <MoreVertIcon width={24} height={24} color={iconColor} />
+            <MoreVertIcon width={24} height={24} className="text-gray-700" />
           </Pressable>
         </View>
       </View>
       <Text className="text-body-sm mt-1">{comment.body}</Text>
-      <Text className="text-caption-sm mt-1 text-right" style={{ color: '#929898' /* gray-500 */ }}>
-        {comment.createdAt}
-      </Text>
+      <Text className="text-caption-sm mt-1 text-right text-gray-500">{comment.createdAt}</Text>
 
       {comment.replies?.map((r) => (
-        <ReplyItem
-          key={r.id}
-          reply={r}
-          postAuthorId={postAuthorId}
-          iconColor={iconColor}
-          onMenuPress={onMenuPress}
-        />
+        <ReplyItem key={r.id} reply={r} postAuthorId={postAuthorId} onMenuPress={onMenuPress} />
       ))}
     </View>
   );

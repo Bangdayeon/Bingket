@@ -46,7 +46,7 @@ export function CommentInput({
         <View className="flex-row items-center justify-between bg-green-50 px-4 py-2">
           <Text className="text-caption-sm text-gray-500">{replyTo.author}에게 답글 작성 중</Text>
           <Pressable hitSlop={8} onPress={onCancelReply}>
-            <CloseIcon width={18} height={18} color="#929898" /* gray-500 */ />
+            <CloseIcon width={18} height={18} className="text-gray-500" />
           </Pressable>
         </View>
       )}
