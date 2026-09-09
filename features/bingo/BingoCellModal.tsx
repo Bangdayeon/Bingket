@@ -1,5 +1,6 @@
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { FIXED, useColors } from '@/lib/use-colors';
+import { useResolvedScheme } from '@/lib/color-scheme';
 import { DateInput } from '@/components/DateInput';
 import DoneIcon from '@/assets/icons/ic_done.svg';
 import CloseIcon from '@/assets/icons/ic_close.svg';
@@ -101,6 +102,7 @@ export function BingoCellModal({
 }: BingoCellModalProps) {
   const insets = useSafeAreaInsets();
   const colors = useColors();
+  const scheme = useResolvedScheme();
   const { width } = useWindowDimensions();
   const CARD_WIDTH = Math.min(width, TABLET_MAX_CONTENT_WIDTH) - PEEK * 2;
   const SNAP_INTERVAL = CARD_WIDTH + CARD_MARGIN * 2;
@@ -405,6 +407,8 @@ export function BingoCellModal({
                 }}
                 locale="ko-KR"
                 textColor={colors.gray[900]}
+                // 글자색만 주면 스피너 선택 바와 컬럼 배경은 밝은 채로 남는다.
+                themeVariant={scheme}
                 style={{ flex: 1 }}
               />
             </View>

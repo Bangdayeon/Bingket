@@ -1,21 +1,13 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { colorScheme } from 'nativewind';
 
-export type AppTheme = 'system' | 'light' | 'dark';
+// 적용은 lib/color-scheme.ts가 한다. 이 파일은 저장/복원만 맡는다.
+// 임포트 경로를 바꾸지 않으려고 여기서 그대로 다시 내보낸다.
+export { applyAppTheme } from '@/lib/color-scheme';
+export type { AppTheme } from '@/lib/color-scheme';
+
+import type { AppTheme } from '@/lib/color-scheme';
 
 export const APP_THEME_STORAGE_KEY = '@bingket/app-theme';
-
-/**
- * 테마를 적용한다.
- *
- * 예전에는 화면과 루트 레이아웃이 각자 `Appearance.setColorScheme`을 부르면서
- * 한쪽은 `null as unknown as ...`, 다른 쪽은 `'unspecified'`를 넘겼다.
- * RN 0.83 타입에는 null이 없다. nativewind의 colorScheme.set은 'system'을 받아
- * 버전별 차이를 라이브러리 쪽에서 처리하므로 여기 한 곳으로 모은다.
- */
-export function applyAppTheme(theme: AppTheme): void {
-  colorScheme.set(theme);
-}
 
 export async function loadAppTheme(): Promise<AppTheme> {
   const saved = await AsyncStorage.getItem(APP_THEME_STORAGE_KEY);

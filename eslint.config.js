@@ -84,6 +84,48 @@ export default defineConfig([
     },
   },
   {
+    // 테마 값은 lib/color-scheme.ts 한 곳에서만 나온다.
+    // nativewind의 colorScheme은 'unspecified'를 그대로 흘려보내는데, className은
+    // 그 값을 "light가 아니면 다크"로, useColors()는 "dark일 때만 다크"로 읽는다.
+    // 두 판정이 갈리면 어두운 시트 위에 검은 글씨가 깔린다 — 실제로 그렇게 깨졌었다.
+    files: [
+      'app/**/*.{ts,tsx}',
+      'components/**/*.{ts,tsx}',
+      'features/**/*.{ts,tsx}',
+      'lib/**/*.{ts,tsx}',
+      'store/**/*.{ts,tsx}',
+    ],
+    ignores: ['lib/color-scheme.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: 'nativewind',
+              importNames: ['useColorScheme', 'colorScheme'],
+              message:
+                '테마 값은 @/lib/color-scheme의 useResolvedScheme() 또는 @/lib/use-colors의 useColors()에서만 읽으세요.',
+            },
+            {
+              name: 'react-native-css-interop/dist/runtime/native/appearance-observables',
+              message: 'systemColorScheme은 lib/color-scheme.ts만 건드립니다.',
+            },
+          ],
+        },
+      ],
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector:
+            "MemberExpression[object.name='Appearance'][property.name=/^(setColorScheme|getColorScheme)$/]",
+          message:
+            'Appearance를 직접 부르지 마세요 — applyAppTheme()/useResolvedScheme()을 씁니다. 직접 부르면 RN의 JS 캐시가 오염돼 테마가 다크로 굳습니다.',
+        },
+      ],
+    },
+  },
+  {
     files: ['**/*.json'],
     plugins: { json },
     language: 'json/json',
