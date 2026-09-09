@@ -591,10 +591,12 @@ export function BingoAll() {
             </Text>
             <View className="h-10" />
             <CreateBingoButtons onCreate={navigateOnce} hasFriends={hasFriends} />
-            {/* 원본 757×638. contain 으로 비율을 지킨다 */}
+            {/* 원본 757×638. contain 으로 비율을 지킨다.
+                간격은 숫자로 준다 — tailwind 의 mt-* 는 rem 기반이라 metro 의
+                inlineRem(기본 14) 때문에 의도한 px 보다 작게 인라인된다. */}
             <Image
               source={require('@/assets/mascots/3D_01.png')}
-              style={{ width: 160, height: 135, marginTop: 32 }}
+              style={{ width: 160, height: 135, marginTop: 72 }}
               resizeMode="contain"
             />
           </View>
