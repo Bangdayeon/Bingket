@@ -56,7 +56,7 @@ export const deleteFriend = async (friendUserId: string): Promise<void> => {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) throw new Error('로그인이 필요합니다.');
+  if (!user) throw new Error('로그인이 필요해요.');
 
   // 양방향 행을 함께 지운다
   const { error } = await supabase
@@ -154,7 +154,7 @@ export const sendFriendRequest = async (params: {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) throw new Error('로그인이 필요합니다.');
+  if (!user) throw new Error('로그인이 필요해요.');
 
   if (params.existingStatus !== null) {
     await supabase

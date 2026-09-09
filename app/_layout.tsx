@@ -29,6 +29,7 @@ import { applyAppTheme, loadAppTheme } from '@/lib/app-theme';
 import { useColors } from '@/lib/use-colors';
 import { useResolvedScheme } from '@/lib/color-scheme';
 import { ForceUpdateGate } from '@/features/app-update/ForceUpdateGate';
+import { CoachMarkHost } from '@/features/coachmark/CoachMarkHost';
 import { PortalHost } from '@/components/PortalHost';
 import { OfflineBanner } from '@/components/OfflineBanner';
 import { useFonts } from 'expo-font';
@@ -165,6 +166,7 @@ function RootLayout() {
         </Stack>
         <OfflineBanner />
         <ForceUpdateGate />
+        <CoachMarkHost />
         {/* 다이얼로그 오버레이가 Stack 위에 그려지도록 마지막에 둔다 */}
         <PortalHost />
       </SafeAreaProvider>

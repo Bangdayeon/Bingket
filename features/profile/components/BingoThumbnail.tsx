@@ -22,6 +22,9 @@ import type { FeedCell } from '@/features/profile/lib/profile';
 // FIGMA 좌표계 기준 폰트 크기. BingoCard의 tailwind 값을 환산한 것
 // (전체 폭 렌더 시 title-md 20px, body-sm 14px, caption-md 12px)
 const TITLE_FIGMA_SIZE = 60;
+// BingoCard 는 제목을 왼쪽 px-5(=20)에 붙인다. 전체 폭에서 같은 자리에 오도록
+// FIGMA 좌표로 환산해 둔 값 — 피드 썸네일에서는 폭에 비례해 함께 줄어든다.
+const TITLE_FIGMA_LEFT = 55;
 const CELL_FIGMA_SIZE: Record<string, number> = { '3x3': 42, '4x3': 36, '4x4': 36 };
 
 // 2열 그리드에서는 비례 축소만 하면 글자가 읽히지 않아 하한을 둔다
@@ -34,9 +37,11 @@ interface Props {
   theme: BingoTheme;
   title: string;
   cells: FeedCell[];
+  /** 피드 그리드에서는 모서리를 둥글게 깎는다. 상세 화면처럼 판만 보여줄 때는 끈다. */
+  rounded?: boolean;
 }
 
-export function BingoThumbnail({ width, grid, theme, title, cells }: Props) {
+export function BingoThumbnail({ width, grid, theme, title, cells, rounded = true }: Props) {
   const [image, setImage] = useState<string | null>(null);
   const [checkImage, setCheckImage] = useState<string | null>(null);
   const [fgColor, setFgColor] = useState<string>(FIXED.boardForeground);
@@ -61,9 +66,10 @@ export function BingoThumbnail({ width, grid, theme, title, cells }: Props) {
   }, [theme, grid]);
 
   const height = width * (FIGMA_H / FIGMA_W);
+  const radius = rounded ? 8 : 0;
 
   if (!image) {
-    return <View style={{ width, height, borderRadius: 8 }} className="bg-gray-100" />;
+    return <View style={{ width, height, borderRadius: radius }} className="bg-gray-100" />;
   }
 
   const scale = width / FIGMA_W;
@@ -76,7 +82,7 @@ export function BingoThumbnail({ width, grid, theme, title, cells }: Props) {
   const titleFont = Math.max(TITLE_FIGMA_SIZE * scale, MIN_TITLE_FONT);
 
   return (
-    <View style={{ width, height, borderRadius: 8, overflow: 'hidden' }}>
+    <View style={{ width, height, borderRadius: radius, overflow: 'hidden' }}>
       <Image
         source={{ uri: image }}
         style={{ position: 'absolute', width: '100%', height: '100%' }}
@@ -89,9 +95,9 @@ export function BingoThumbnail({ width, grid, theme, title, cells }: Props) {
         style={{
           position: 'absolute',
           top: height * 0.045,
-          left: 0,
-          right: 0,
-          textAlign: 'center',
+          left: TITLE_FIGMA_LEFT * scale,
+          right: TITLE_FIGMA_LEFT * scale,
+          textAlign: 'left',
           color: fgColor,
           fontSize: titleFont,
           lineHeight: titleFont * 1.2,

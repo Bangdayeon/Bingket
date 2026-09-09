@@ -117,11 +117,11 @@ export default function AlertSettingScreen() {
         <Divider />
 
         <GroupCaption label="게시판" />
-        <ToggleRow
+        {/* <ToggleRow
           label="인기글 알림"
           value={settings.communityPopular}
           onValueChange={(v) => update({ communityPopular: v })}
-        />
+        /> */}
         <ToggleRow
           label="댓글 알림"
           value={settings.communityComment}

@@ -65,7 +65,9 @@ export function BingoCard({
 
   const { isTablet, contentWidth } = useResponsive();
   const [cols, rows] = bingo.grid.split('x').map(Number);
-  const textStyle = bingo.grid === '3x3' ? 'text-body-sm' : 'text-caption-md';
+  // 3x3(14px)과 4x4(14px)는 원래 크기가 같고 line-height만 달랐다. 한 단계 줄이면서
+  // 토큰 하나로 합친다. 작성 화면(AddEachBingo)과 같은 값이어야 한다.
+  const textStyle = 'text-caption-sm';
   const screenWidth = contentWidth;
 
   // 시작일 - 종료일. 둘 중 하나만 있으면 있는 쪽만 보여준다 (제작 중 빙고는 비어 있을 수 있다)

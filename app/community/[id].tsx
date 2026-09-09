@@ -199,7 +199,7 @@ export default function CommunityDetailScreen() {
         {postFailed ? (
           <ErrorState onRetry={loadPost} />
         ) : (
-          <EmptyState message="게시글을 찾을 수 없습니다." />
+          <EmptyState message="게시글을 찾을 수 없어요." />
         )}
       </SafeAreaView>
     );
@@ -220,7 +220,7 @@ export default function CommunityDetailScreen() {
       setShowDeleteModal(false);
       setAlertModal({
         title: '삭제 실패',
-        message: e instanceof Error ? e.message : '게시글 삭제에 실패했습니다.',
+        message: e instanceof Error ? e.message : '게시글 삭제에 실패했어요.',
       });
     }
   };
@@ -243,7 +243,7 @@ export default function CommunityDetailScreen() {
     } catch (e) {
       setAlertModal({
         title: '오류',
-        message: e instanceof Error ? e.message : '댓글 작성에 실패했습니다.',
+        message: e instanceof Error ? e.message : '댓글 작성에 실패했어요.',
       });
     } finally {
       setCommentSubmitting(false);
@@ -269,7 +269,7 @@ export default function CommunityDetailScreen() {
       setDeleteCommentTargetId(null);
       setAlertModal({
         title: '오류',
-        message: e instanceof Error ? e.message : '댓글 삭제에 실패했습니다.',
+        message: e instanceof Error ? e.message : '댓글 삭제에 실패했어요.',
       });
     } finally {
       setIsDeletingComment(false);
@@ -288,13 +288,13 @@ export default function CommunityDetailScreen() {
       await blockUser(blockTargetUserId);
       setShowBlockModal(false);
       setBlockTargetUserId(null);
-      setAlertModal({ title: '차단 완료', message: '해당 사용자를 차단했습니다.' });
+      setAlertModal({ title: '차단 완료', message: '해당 사용자를 차단했어요.' });
     } catch (e) {
       setShowBlockModal(false);
       setBlockTargetUserId(null);
       setAlertModal({
         title: '오류',
-        message: e instanceof Error ? e.message : '차단에 실패했습니다.',
+        message: e instanceof Error ? e.message : '차단에 실패했어요.',
       });
     } finally {
       setIsBlocking(false);
@@ -450,7 +450,7 @@ export default function CommunityDetailScreen() {
         body={
           <View className="gap-3">
             <Text className="text-body-sm text-gray-700">
-              누적 신고 횟수가 3회 이상인 유저는 커뮤니티 이용 제한이 있을 수 있습니다.
+              누적 신고 횟수가 3회 이상인 유저는 커뮤니티 이용 제한이 있을 수 있어요.
             </Text>
             {/* 선택지끼리는 바깥 gap-3을 받지 않는다. 줄마다 py-1.5만 줘서 간격 12,
                 터치 영역은 32를 유지한다. */}
@@ -488,11 +488,11 @@ export default function CommunityDetailScreen() {
             setShowReportModal(false);
             setSelectedReason(null);
             setReportTarget(null);
-            setAlertModal({ title: '신고 완료', message: '신고 내용은 24시간 이내에 조치됩니다.' });
+            setAlertModal({ title: '신고 완료', message: '신고 내용은 24시간 이내에 조치돼요.' });
           } catch (e) {
             setAlertModal({
               title: '오류',
-              message: e instanceof Error ? e.message : '신고에 실패했습니다.',
+              message: e instanceof Error ? e.message : '신고에 실패했어요.',
             });
           } finally {
             setIsReporting(false);
@@ -553,7 +553,7 @@ export default function CommunityDetailScreen() {
           <>
             <Text className="text-body-sm text-gray-500">
               이 사용자를 차단하시겠어요?{'\n'}
-              차단된 사용자의 게시글과 댓글이 보이지 않습니다.
+              차단된 사용자의 게시글과 댓글이 보이지 않아요.
             </Text>
           </>
         }

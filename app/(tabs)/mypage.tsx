@@ -84,7 +84,7 @@ export default function MyPageScreen() {
         onPostsPress={() => router.push('/mypage/my-posts')}
       />
 
-      <ProfileTabs value={tab} onChange={setTab} />
+      <ProfileTabs value={tab} onChange={setTab} feedCount={loading ? undefined : feed.length} />
 
       {tab === '피드' ? (
         loading ? (

@@ -7,6 +7,7 @@ import { Text } from '@/components/Text';
 import { TextInput } from '@/components/TextInput';
 import Button from '@/components/Button';
 import VisibilityIcon from '@/assets/icons/ic_visibility.svg';
+import VisibilityOffIcon from '@/assets/icons/ic_visibility_off.svg';
 import { PageHeader } from '@/components/PageHeader';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -26,6 +27,16 @@ export default function EmailLoginScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
 
+  // 계속하기는 형식이 맞을 때만 연다. 비어 있는지만 보면 이메일 형식이 틀리거나
+  // 비밀번호가 어긋난 채로 눌러야 에러를 받아 알게 된다.
+  // 비밀번호 길이·강도는 여기서 막지 않는다 — 그 규칙은 신규 가입일 때만 적용돼서,
+  // 버튼을 잠그면 이유를 알려줄 자리 없이 멈춰 보인다.
+  const canSubmit =
+    EMAIL_REGEX.test(email.trim()) &&
+    !!password &&
+    !!passwordConfirm &&
+    password === passwordConfirm;
+
   const validate = () => {
     const next = { email: '', password: '', passwordConfirm: '' };
 
@@ -38,13 +49,13 @@ export default function EmailLoginScreen() {
     if (!password) {
       next.password = '비밀번호를 입력해주세요.';
     } else if (password.length < 6) {
-      next.password = '비밀번호는 6자 이상이어야 합니다.';
+      next.password = '비밀번호는 6자 이상이어야 해요.';
     }
 
     if (!passwordConfirm) {
       next.passwordConfirm = '비밀번호 확인을 입력해주세요.';
     } else if (password !== passwordConfirm) {
-      next.passwordConfirm = '비밀번호가 일치하지 않습니다.';
+      next.passwordConfirm = '비밀번호가 일치하지 않아요.';
     }
 
     setErrors(next);
@@ -87,24 +98,24 @@ export default function EmailLoginScreen() {
         }
 
         if (signUpError.message.includes('already registered')) {
-          setErrors((prev) => ({ ...prev, password: '비밀번호가 올바르지 않습니다.' }));
+          setErrors((prev) => ({ ...prev, password: '비밀번호가 올바르지 않아요.' }));
         } else if (
           signUpError.code === 'over_email_send_rate_limit' ||
           signUpError.status === 429
         ) {
           setErrors((prev) => ({ ...prev, email: '잠시 후 다시 시도해주세요.' }));
         } else {
-          setErrors((prev) => ({ ...prev, email: '오류가 발생했습니다. 다시 시도해주세요.' }));
+          setErrors((prev) => ({ ...prev, email: '오류가 발생했어요. 다시 시도해주세요.' }));
           Sentry.captureException(signUpError);
         }
       } else {
-        setErrors((prev) => ({ ...prev, email: '오류가 발생했습니다. 다시 시도해주세요.' }));
+        setErrors((prev) => ({ ...prev, email: '오류가 발생했어요. 다시 시도해주세요.' }));
         Sentry.captureException(signInError);
       }
     } catch (e) {
       console.error('[EmailLogin] handleSubmit threw:', e);
       Sentry.captureException(e);
-      setErrors((prev) => ({ ...prev, email: '오류가 발생했습니다. 다시 시도해주세요.' }));
+      setErrors((prev) => ({ ...prev, email: '오류가 발생했어요. 다시 시도해주세요.' }));
     } finally {
       setLoading(false);
     }
@@ -154,7 +165,12 @@ export default function EmailLoginScreen() {
                 value={password}
                 rightIcon={
                   <Pressable onPress={() => setShowPassword((v) => !v)} hitSlop={8}>
-                    <VisibilityIcon width={24} height={24} className="text-gray-600" />
+                    {/* 아이콘은 누르면 일어날 일을 가리킨다 — 가려진 동안은 뜬 눈(보기), 보이는 동안은 감은 눈(가리기) */}
+                    {showPassword ? (
+                      <VisibilityOffIcon width={24} height={24} className="text-gray-600" />
+                    ) : (
+                      <VisibilityIcon width={24} height={24} className="text-gray-600" />
+                    )}
                   </Pressable>
                 }
                 onChangeText={(v) => {
@@ -175,7 +191,11 @@ export default function EmailLoginScreen() {
                 value={passwordConfirm}
                 rightIcon={
                   <Pressable onPress={() => setShowPasswordConfirm((v) => !v)} hitSlop={8}>
-                    <VisibilityIcon width={24} height={24} className="text-gray-600" />
+                    {showPasswordConfirm ? (
+                      <VisibilityOffIcon width={24} height={24} className="text-gray-600" />
+                    ) : (
+                      <VisibilityIcon width={24} height={24} className="text-gray-600" />
+                    )}
                   </Pressable>
                 }
                 onFocus={() => setPasswordConfirmTouched(true)}
@@ -184,7 +204,7 @@ export default function EmailLoginScreen() {
                   if (passwordConfirmTouched) {
                     setErrors((prev) => ({
                       ...prev,
-                      passwordConfirm: v !== password ? '비밀번호가 일치하지 않습니다.' : '',
+                      passwordConfirm: v !== password ? '비밀번호가 일치하지 않아요.' : '',
                     }));
                   }
                 }}
@@ -203,7 +223,7 @@ export default function EmailLoginScreen() {
             label="계속하기"
             onClick={() => void handleSubmit()}
             loading={loading}
-            disabled={!email || !password || !passwordConfirm}
+            disabled={!canSubmit}
           />
         </View>
       </KeyboardAvoidingView>

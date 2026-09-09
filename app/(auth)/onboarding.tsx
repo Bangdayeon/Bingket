@@ -5,7 +5,6 @@ import { FlatList, Image, View, useWindowDimensions } from 'react-native';
 import { Text } from '@/components/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Button from '@/components/Button';
-import { Logo } from '@/components/Logo';
 import { Dot } from '@/features/onboarding/Dot';
 
 import onboarding1 from '@/assets/onboarding/onboarding_1.png';
@@ -20,12 +19,7 @@ const slides = [
   { id: '2', title: '혼자서 의지가 안 생긴다면\n친구와 가족과 함께해요', img: onboarding2 },
   { id: '3', title: '사람들과 목표를 공유하고\n서로의 도전을 응원해요', img: onboarding3 },
   { id: '4', title: '차근차근 목표를 이뤄나가며\n뱃지를 수집해요', img: onboarding4 },
-  {
-    id: '5',
-    title: '빙고에 채우는 나만의 도전,\n빙킷에서 시작해봐요',
-    img: onboarding5,
-    isLast: true,
-  },
+  { id: '5', title: '빙고에 채우는 나만의 도전,\n빙킷에서 시작해봐요', img: onboarding5 },
 ];
 
 const goToLogin = async () => {
@@ -33,15 +27,14 @@ const goToLogin = async () => {
   router.replace('/(auth)/login');
 };
 
-// 시안: 카드 358×480, 좌우 여백 16, 상단 136, 문구는 카드 상단에서 28.
+// 시안: 카드 358 폭, 좌우 여백 16, 상단 136, 문구는 카드 상단에서 28.
+// 높이는 시안의 480 대신 남는 공간을 다 쓴다 — 이미지가 세로에 갇혀 작아지던 걸 푼다.
 const CARD_MAX_WIDTH = 358;
-const CARD_HEIGHT = 480;
 
 export default function OnboardingScreen() {
   const { width } = useWindowDimensions();
   const isTablet = width >= 768;
   const cardWidth = Math.min(width - 32, isTablet ? 560 : CARD_MAX_WIDTH);
-  const cardHeight = Math.round(cardWidth * (CARD_HEIGHT / CARD_MAX_WIDTH));
   const [currentIndex, setCurrentIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
 
@@ -69,30 +62,12 @@ export default function OnboardingScreen() {
         onMomentumScrollEnd={handleMomentumScrollEnd}
         renderItem={({ item }) => (
           <View style={{ width }} className="flex-1 items-center pt-[100px]">
-            <View
-              className="items-center rounded-[20px] bg-white px-6 pt-7"
-              style={{ width: cardWidth, height: cardHeight }}
-            >
-              <Text className="text-center text-body-md text-gray-800">{item.title}</Text>
+            {/* 배경 없이 바탕 위에 그대로 얹는다. 좌우 여백은 문구에만 남긴다 —
+                이미지까지 px-6 을 받으면 48 만큼 좁아진다. */}
+            <View className="flex-1 items-center pt-7" style={{ width: cardWidth }}>
+              <Text className="px-6 text-center text-title-sm text-gray-800">{item.title}</Text>
 
-              {item.isLast ? (
-                // 마지막 슬라이드는 일러스트 대신 로고 + 워드마크
-                <View className="flex-1 items-center justify-center">
-                  <Logo size={150} />
-                  <Text
-                    className="mt-5 font-pretendard-bold text-green-500"
-                    style={{ fontSize: 48, lineHeight: 48 }}
-                  >
-                    빙킷
-                  </Text>
-                </View>
-              ) : (
-                <Image
-                  source={item.img}
-                  style={{ width: cardWidth - 48, flex: 1 }}
-                  resizeMode="contain"
-                />
-              )}
+              <Image source={item.img} style={{ width: cardWidth, flex: 1 }} resizeMode="contain" />
             </View>
           </View>
         )}

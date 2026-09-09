@@ -218,7 +218,7 @@ export default function AccountScreen() {
         body={`• 작성한 모든 빙고가 삭제돼요.\n• 글과 댓글은 남아요.\n• 계정과 프로필은 유지돼요.`}
         variant="warning"
         cancelLabel="취소"
-        confirmLabel="빙고 초기화 하기"
+        confirmLabel="초기화 하기"
         onCancel={() => setShowResetModal(false)}
         onConfirm={handleResetBingos}
         onDismiss={() => setShowResetModal(false)}
@@ -248,7 +248,7 @@ export default function AccountScreen() {
         body={`• 계정과 프로필 정보, 프로필 사진이 삭제돼요.\n• 계정 삭제 후 데이터 복구가 불가능해요.\n• 작성한 글과 댓글은 첨부한 사진과 함께 (알 수 없음)으로 남아요`}
         variant="warning"
         cancelLabel="취소"
-        confirmLabel="회원 탈퇴하기"
+        confirmLabel="탈퇴하기"
         onCancel={() => setShowSecessionModal(false)}
         onConfirm={handleDeleteAccount}
         onDismiss={() => setShowSecessionModal(false)}

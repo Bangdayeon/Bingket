@@ -4,6 +4,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SvgProps } from 'react-native-svg';
 import { useEffect } from 'react';
 import { useUnreadNotifications } from '@/features/notifications/unread-context';
+import { CoachMarkTarget } from '@/features/coachmark/CoachMarkTarget';
+import type { CoachMarkTargetId } from '@/features/coachmark/lib/coach-mark-steps';
 import { TABLET_MAX_CONTENT_WIDTH } from '@/lib/use-responsive';
 
 import HomeOff from '@/assets/icons/home_off.svg';
@@ -23,6 +25,16 @@ const TAB_ICONS: Record<
   community: { on: CommunityOn, off: CommunityOff, label: '게시판' },
   notifications: { on: BellOn, off: BellOff, label: '알림' },
   mypage: { on: MypageOn, off: MypageOff, label: '내 공간' },
+};
+
+/**
+ * 첫 실행 안내가 가리키는 탭. 알림은 안내 대상이 아니라 빠져 있고, 그래도 래퍼는
+ * 네 탭 모두에 똑같이 씌운다 — 하나만 감싸면 그 탭의 레이아웃만 미묘하게 달라진다.
+ */
+const TAB_COACH_MARK_IDS: Record<string, CoachMarkTargetId> = {
+  index: 'tab-home',
+  community: 'tab-community',
+  mypage: 'tab-mypage',
 };
 
 /** 시안이 그려진 화면 폭. 좌우 여백을 이 비율로 환산한다 */
@@ -99,23 +111,25 @@ export function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarP
               accessibilityState={isFocused ? { selected: true } : {}}
               accessibilityLabel={options.tabBarAccessibilityLabel}
             >
-              <View
-                style={{
-                  width: 28,
-                  height: 28,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  position: 'relative',
-                }}
-              >
-                {Icon && <Icon width={28} height={28} className={labelClass} />}
-                {isNotifications && hasUnread && (
-                  <View
-                    className="absolute -right-0.5 -top-0.5 rounded-full bg-danger"
-                    style={{ width: 6, height: 6 }}
-                  />
-                )}
-              </View>
+              <CoachMarkTarget id={TAB_COACH_MARK_IDS[route.name]}>
+                <View
+                  style={{
+                    width: 28,
+                    height: 28,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    position: 'relative',
+                  }}
+                >
+                  {Icon && <Icon width={28} height={28} className={labelClass} />}
+                  {isNotifications && hasUnread && (
+                    <View
+                      className="absolute -right-0.5 -top-0.5 rounded-full bg-danger"
+                      style={{ width: 6, height: 6 }}
+                    />
+                  )}
+                </View>
+              </CoachMarkTarget>
               {/* lineHeight를 폰트 크기에 붙여 아이콘과의 간격을 gap으로만 통제한다.
                 20을 주면 글자 위아래로 4px씩 빈 공간이 더 생겨 간격이 흐려진다. */}
               <Text className={`text-caption-sm font-pretendard ${labelClass}`}>{tab?.label}</Text>

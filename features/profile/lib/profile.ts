@@ -55,6 +55,9 @@ export interface BoardDetail {
   grid: string;
   theme: BingoTheme;
   status: 'progress' | 'done';
+  /** 진행 기간. 제작 중 빙고는 비어 있을 수 있다 */
+  startDate: string | null;
+  targetDate: string | null;
   cells: FeedCell[];
 }
 
@@ -126,7 +129,7 @@ export const fetchUserFeed = async (userId: string): Promise<FeedItem[]> => {
   }));
 };
 
-/** 타인 빙고 상세. 메모와 회고는 애초에 내려오지 않는다 */
+/** 타인 빙고 상세. 진행 기간까지 내려오고, 메모와 회고는 애초에 내려오지 않는다 */
 export const fetchBoardDetail = async (boardId: string): Promise<BoardDetail | null> => {
   const { data, error } = await supabase.rpc('get_board_detail', { p_board_id: boardId });
   if (error) throw error;
@@ -141,6 +144,8 @@ export const fetchBoardDetail = async (boardId: string): Promise<BoardDetail | n
     grid: row.grid,
     theme: row.theme as BingoTheme,
     status: row.status as 'progress' | 'done',
+    startDate: row.start_date ?? null,
+    targetDate: row.target_date ?? null,
     cells: mapCells(row.cells),
   };
 };
@@ -159,7 +164,7 @@ export const updateAccountVisibility = async (visibility: AccountVisibility): Pr
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) throw new Error('로그인이 필요합니다.');
+  if (!user) throw new Error('로그인이 필요해요.');
 
   const { error } = await supabase
     .from('users')

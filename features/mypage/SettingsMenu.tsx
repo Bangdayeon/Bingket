@@ -85,7 +85,7 @@ export function SettingsMenu() {
       });
     } catch (e) {
       Sentry.captureException(e);
-      setResultModal({ title: '오류', body: '문의 접수에 실패했습니다. 다시 시도해주세요.' });
+      setResultModal({ title: '오류', body: '문의 접수에 실패했어요. 다시 시도해주세요.' });
     } finally {
       setIsReportLoading(false);
     }
@@ -224,7 +224,7 @@ export function SettingsMenu() {
         />
       </ScrollView>
       <Toast
-        message="이메일이 복사되었습니다."
+        message="이메일을 복사했어요."
         visible={emailToastVisible}
         onDismiss={() => setEmailToastVisible(false)}
       />

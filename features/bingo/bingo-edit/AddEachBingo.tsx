@@ -60,7 +60,8 @@ export function AddEachBingo({
   const [cols, rows] = selectedGrid.split('x').map(Number);
   // 시안: 판은 좌우 여백 없이 화면 폭 전체를 쓴다
   const availableWidth = contentWidth;
-  const textStyle = selectedGrid === '3x3' ? 'text-body-sm' : 'text-caption-md';
+  // 완성된 판(BingoCard)과 같은 크기로 보여야 작성 중과 결과가 어긋나지 않는다
+  const textStyle = 'text-caption-sm';
 
   const handleCellPress = (index: number) => {
     if (disabledCells?.[index]) return;
@@ -98,7 +99,7 @@ export function AddEachBingo({
       }
       variant="default"
       cancelLabel="취소"
-      confirmLabel="저장하기"
+      confirmLabel="저장"
       onCancel={handleCancel}
       onConfirm={handleSave}
       onDismiss={handleCancel}

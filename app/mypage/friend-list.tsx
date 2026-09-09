@@ -347,6 +347,9 @@ export default function FriendListScreen() {
                 searchResults={searchResults}
                 sending={sending}
                 handleRequest={handleRequest}
+                handleProfilePress={(item) =>
+                  router.push({ pathname: '/profile/[id]', params: { id: item.id } })
+                }
               />
             </CollapsibleSection>
           )}

@@ -11,7 +11,7 @@ export function ConflictModal({ conflictModal, handleConflictResponse }: Props) 
     <Modal
       visible={!!conflictModal}
       title="친구 요청"
-      body="상대방이 보낸 친구 요청이 있습니다.\n수락할까요?"
+      body="상대방이 보낸 친구 요청이 있어요.\n수락할까요?"
       variant="warning"
       confirmLabel="수락"
       cancelLabel="거절"

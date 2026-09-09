@@ -280,8 +280,8 @@ export default function CommunityWriteScreen() {
         err instanceof Error
           ? err.message
           : isEditMode
-            ? '게시글 수정에 실패했습니다.'
-            : '게시글 작성에 실패했습니다.',
+            ? '게시글 수정에 실패했어요.'
+            : '게시글 작성에 실패했어요.',
       );
     } finally {
       setIsSubmitting(false);
@@ -515,7 +515,7 @@ export default function CommunityWriteScreen() {
               }}
             />
           ) : myBingos.length === 0 ? (
-            <EmptyState message="빙고가 없습니다." />
+            <EmptyState message="빙고가 없어요." />
           ) : (
             <ScrollView>
               {myBingos.map((bingo) => {

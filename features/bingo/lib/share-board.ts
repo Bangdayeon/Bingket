@@ -22,7 +22,7 @@ export async function shareBingoBoard(
   size: CaptureSize,
 ): Promise<void> {
   if (!(await Sharing.isAvailableAsync())) {
-    throw new Error('이 기기에서는 공유 시트를 쓸 수 없습니다.');
+    throw new Error('이 기기에서는 공유 시트를 쓸 수 없어요.');
   }
 
   const uri = await captureRef(ref, {

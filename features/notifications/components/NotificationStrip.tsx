@@ -40,7 +40,7 @@ export function NotificationStrip({
         return (
           <View
             key={item.id}
-            className="flex-row items-center gap-3 bg-gray-300 px-4"
+            className="flex-row items-center gap-3 border-b border-gray-300 bg-white px-4"
             style={{ minHeight: 60 }}
           >
             <Text className="flex-1 text-body-sm text-gray-900" numberOfLines={1}>

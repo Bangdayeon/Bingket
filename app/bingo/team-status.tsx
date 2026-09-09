@@ -329,7 +329,7 @@ export default function TeamStatusScreen() {
                   placeholder="회고를 남겨보세요."
                   multiline
                   maxLength={500}
-                  className="h-[140px] bg-gray-100 rounded-2xl p-4 text-body-md"
+                  className="h-[140px] bg-gray-100 rounded-2xl p-4 text-body-md text-gray-900 placeholder:text-gray-500"
                   style={{ textAlignVertical: 'top', paddingBottom: 28 }}
                 />
                 <Text

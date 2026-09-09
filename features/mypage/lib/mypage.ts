@@ -77,7 +77,7 @@ export const updateMyProfile = async (data: {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) throw new Error('로그인이 필요합니다.');
+  if (!user) throw new Error('로그인이 필요해요.');
 
   const updates: Record<string, string> = {
     display_name: data.displayName,
@@ -109,7 +109,7 @@ export const uploadProfileImage = async (uri: string, filename: string): Promise
   const {
     data: { session },
   } = await supabase.auth.getSession();
-  if (!session) throw new Error('로그인이 필요합니다.');
+  if (!session) throw new Error('로그인이 필요해요.');
 
   return withNetworkRetry(async () => {
     const { data, error } = await supabase.functions.invoke('r2-presign', {
@@ -172,7 +172,7 @@ export const resetMyBingos = async (): Promise<void> => {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) throw new Error('로그인이 필요합니다.');
+  if (!user) throw new Error('로그인이 필요해요.');
 
   const { error } = await supabase
     .from('bingo_boards')
@@ -253,7 +253,7 @@ export const submitReport = async (content: string): Promise<void> => {
   const {
     data: { session },
   } = await supabase.auth.getSession();
-  if (!session) throw new Error('로그인이 필요합니다.');
+  if (!session) throw new Error('로그인이 필요해요.');
 
   const { error } = await supabase.functions.invoke('submit-report', {
     headers: { Authorization: `Bearer ${session.access_token}` },
@@ -272,7 +272,7 @@ export const deleteAccount = async (): Promise<void> => {
   const {
     data: { session },
   } = await supabase.auth.getSession();
-  if (!session) throw new Error('로그인이 필요합니다.');
+  if (!session) throw new Error('로그인이 필요해요.');
 
   const { error } = await supabase.functions.invoke('delete-account', {
     headers: {

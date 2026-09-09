@@ -8,6 +8,7 @@ import MoreIcon from '@/assets/icons/ic_more_vert.svg';
 import { CommunityPost } from '@/types/community';
 import type { StoredBlock } from '@/types/community';
 import { LikeButton } from './LikeButton';
+import { AuthorLink } from './AuthorLink';
 import AnonymousProfile from '@/components/AnonymousProfile';
 import { ProfileAvatar } from '@/components/ProfileAvatar';
 import BingoPreview from '@/components/BingoPreview';
@@ -134,15 +135,19 @@ export function PostCard({ post, currentUserId, onBlock }: PostCardProps) {
       {/* 작성자 */}
       <View className="flex-row items-center justify-between">
         <View className="flex-row items-center gap-2">
-          {post.isAnonymous ? (
-            <AnonymousProfile seed={post.id} />
-          ) : (
-            <ProfileAvatar avatarUrl={post.avatarUrl ?? null} size={40} />
-          )}
+          <AuthorLink userId={post.userId} isAnonymous={post.isAnonymous}>
+            {post.isAnonymous ? (
+              <AnonymousProfile seed={post.id} />
+            ) : (
+              <ProfileAvatar avatarUrl={post.avatarUrl ?? null} size={40} />
+            )}
+          </AuthorLink>
           <View className="shrink flex-row items-center gap-0.5">
-            <Text className="shrink text-body-md text-gray-800" numberOfLines={1}>
-              {post.author}{' '}
-            </Text>
+            <AuthorLink userId={post.userId} isAnonymous={post.isAnonymous} className="shrink">
+              <Text className="shrink text-body-md text-gray-800" numberOfLines={1}>
+                {post.author}{' '}
+              </Text>
+            </AuthorLink>
             <Text className="text-caption-sm text-gray-600">· {post.timeAgo}</Text>
           </View>
         </View>
@@ -245,7 +250,7 @@ export function PostCard({ post, currentUserId, onBlock }: PostCardProps) {
           } catch (e) {
             setAlertModal({
               title: '오류',
-              message: e instanceof Error ? e.message : '신고에 실패했습니다.',
+              message: e instanceof Error ? e.message : '신고에 실패했어요.',
             });
           } finally {
             setIsReporting(false);
@@ -270,7 +275,7 @@ export function PostCard({ post, currentUserId, onBlock }: PostCardProps) {
         body={
           <Text className="text-body-sm text-gray-500">
             이 사용자를 차단하시겠어요?{'\n'}
-            차단된 사용자의 게시글과 댓글이 보이지 않습니다.
+            차단된 사용자의 게시글과 댓글이 보이지 않아요.
           </Text>
         }
         variant="error" // danger 단일 버튼
@@ -285,7 +290,7 @@ export function PostCard({ post, currentUserId, onBlock }: PostCardProps) {
             setShowBlockModal(false);
             setAlertModal({
               title: '오류',
-              message: e instanceof Error ? e.message : '차단에 실패했습니다.',
+              message: e instanceof Error ? e.message : '차단에 실패했어요.',
             });
           } finally {
             setIsBlocking(false);
