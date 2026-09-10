@@ -13,17 +13,9 @@ import {
 import type { BingoTheme } from '@/types/bingo';
 import type { FeedCell } from '@/features/profile/lib/profile';
 
-/**
- * 피드 그리드용 빙고판 축소 렌더.
- * BingoCard와 같은 FIGMA 좌표계(1080x1440, 3:4)를 쓰되
- * 인터랙션·편집 버튼·통계를 뺀 표시 전용 컴포넌트다.
- */
+// 피드 그리드용 빙고판 축소 렌더
 
-// FIGMA 좌표계 기준 폰트 크기. BingoCard의 tailwind 값을 환산한 것
-// (전체 폭 렌더 시 title-md 20px, body-sm 14px, caption-md 12px)
 const TITLE_FIGMA_SIZE = 60;
-// BingoCard 는 제목을 왼쪽 px-5(=20)에 붙인다. 전체 폭에서 같은 자리에 오도록
-// FIGMA 좌표로 환산해 둔 값 — 피드 썸네일에서는 폭에 비례해 함께 줄어든다.
 const TITLE_FIGMA_LEFT = 55;
 const CELL_FIGMA_SIZE: Record<string, number> = { '3x3': 42, '4x3': 36, '4x4': 36 };
 

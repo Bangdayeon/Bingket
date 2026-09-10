@@ -96,16 +96,16 @@ export function BingoCard({
   const gapY = cfg.gapY * scale;
 
   const handleSharePress = () => {
-    // 배경이 아직 안 왔으면 빈 판이 찍힌다. 버튼도 이때는 안 그리지만 한 번 더 막는다.
+    // 배경이 아직 안 왔으면 빈 판이 찍힌다. 버튼도 이때는 안 그리지만 한 번 더 막음
     if (!image) return;
     setCapturing(true);
     // 버튼을 감춘 프레임이 실제로 그려진 뒤에 찍어야 이미지에 버튼이 남지 않는다
     InteractionManager.runAfterInteractions(async () => {
       try {
         await shareBingoBoard(boardRef, bingo.title, {
-          // 화면 폭 그대로 뽑으면 저해상도라 2배로 키워 캡처한다
-          width: screenWidth * 2,
-          height: cardHeight * 2,
+          // 화면 폭 그대로 뽑으면 저해상도라 1.5배로 키워 캡처한다
+          width: screenWidth * 1.5,
+          height: cardHeight * 1.5,
         });
       } catch (e) {
         Sentry.captureException(e);

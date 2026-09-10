@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useRouter } from 'expo-router';
 import * as Sentry from '@sentry/react-native';
@@ -94,7 +94,7 @@ export default function MyPageScreen() {
         ) : loadFailed ? (
           <ErrorState onRetry={() => void load()} />
         ) : (
-          <ScrollView className="flex-1" contentContainerStyle={{ paddingTop: 16 }}>
+          <View className="flex-1">
             <FeedGrid
               items={feed}
               teamBoardIds={teamBoardIds}
@@ -102,7 +102,7 @@ export default function MyPageScreen() {
                 router.push({ pathname: '/bingo/view', params: { bingoId: item.id } })
               }
             />
-          </ScrollView>
+          </View>
         )
       ) : (
         <BadgesPage />

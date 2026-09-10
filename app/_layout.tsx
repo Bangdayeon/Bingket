@@ -43,7 +43,6 @@ function RootLayout() {
     'Pretendard-Medium': require('../assets/fonts/Pretendard-Medium.otf'),
     'Pretendard-SemiBold': require('../assets/fonts/Pretendard-SemiBold.otf'),
     'Pretendard-Bold': require('../assets/fonts/Pretendard-Bold.otf'),
-    'Pretendard-ExtraBold': require('../assets/fonts/Pretendard-ExtraBold.otf'),
   });
 
   // 저장된 테마를 적용하기 전에 첫 프레임이 나가면 OS 테마로 그려졌다가 뒤집힌다.

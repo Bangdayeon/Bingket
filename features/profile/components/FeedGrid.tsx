@@ -1,4 +1,4 @@
-import { Pressable, View } from 'react-native';
+import { FlatList, Pressable, View } from 'react-native';
 import { Text } from '@/components/Text';
 import { useResponsive } from '@/lib/use-responsive';
 import { BingoThumbnail } from './BingoThumbnail';
@@ -35,16 +35,25 @@ export function FeedGrid({
   }
 
   return (
-    <View
-      style={{
+    <FlatList
+      data={items}
+      numColumns={COLUMNS}
+      keyExtractor={(item) => item.id}
+      contentContainerStyle={{
         paddingHorizontal: H_PADDING,
-        flexDirection: 'row',
-        flexWrap: 'wrap',
+        paddingTop: 16,
+      }}
+      columnWrapperStyle={{
         gap: GAP,
       }}
-    >
-      {items.map((item) => (
-        <Pressable key={item.id} onPress={() => onItemPress(item)} style={{ width: itemWidth }}>
+      renderItem={({ item }) => (
+        <Pressable
+          onPress={() => onItemPress(item)}
+          style={{
+            width: itemWidth,
+            marginBottom: GAP,
+          }}
+        >
           <BingoThumbnail
             width={itemWidth}
             grid={item.grid}
@@ -53,7 +62,6 @@ export function FeedGrid({
             cells={item.cells}
           />
 
-          {/* 뱃지와 제목을 한 줄에 좌측정렬로 둔다. 카드 폭이 좁아 제목은 말줄임한다. */}
           <View className="mt-2 flex-row items-center gap-1.5">
             <View
               className={`px-2 py-0.5 rounded-full ${
@@ -61,7 +69,9 @@ export function FeedGrid({
               }`}
             >
               <Text
-                className={`text-caption-sm ${item.status === 'done' ? 'text-on-brand-dark' : 'text-gray-800'}`}
+                className={`text-caption-sm ${
+                  item.status === 'done' ? 'text-on-brand-dark' : 'text-gray-800'
+                }`}
               >
                 {item.status === 'done' ? '완료' : '진행 중'}
               </Text>
@@ -78,7 +88,7 @@ export function FeedGrid({
             </Text>
           </View>
         </Pressable>
-      ))}
-    </View>
+      )}
+    />
   );
 }

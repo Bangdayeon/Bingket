@@ -13,7 +13,6 @@ import onboarding3 from '@/assets/onboarding/onboarding_3.png';
 import onboarding4 from '@/assets/onboarding/onboarding_4.png';
 import onboarding5 from '@/assets/onboarding/onboarding_5.png';
 
-// 시안 문구 그대로 (마침표 없음). 4번은 시안에 프레임이 없어 기존 문구를 다듬어 유지한다.
 const slides = [
   { id: '1', title: '이루기 어려웠던 목표를\n빙고판에 채워봐요', img: onboarding1 },
   { id: '2', title: '혼자서 의지가 안 생긴다면\n친구와 가족과 함께해요', img: onboarding2 },
@@ -27,8 +26,6 @@ const goToLogin = async () => {
   router.replace('/(auth)/login');
 };
 
-// 시안: 카드 358 폭, 좌우 여백 16, 상단 136, 문구는 카드 상단에서 28.
-// 높이는 시안의 480 대신 남는 공간을 다 쓴다 — 이미지가 세로에 갇혀 작아지던 걸 푼다.
 const CARD_MAX_WIDTH = 358;
 
 export default function OnboardingScreen() {
@@ -62,8 +59,6 @@ export default function OnboardingScreen() {
         onMomentumScrollEnd={handleMomentumScrollEnd}
         renderItem={({ item }) => (
           <View style={{ width }} className="flex-1 items-center pt-[100px]">
-            {/* 배경 없이 바탕 위에 그대로 얹는다. 좌우 여백은 문구에만 남긴다 —
-                이미지까지 px-6 을 받으면 48 만큼 좁아진다. */}
             <View className="flex-1 items-center pt-7" style={{ width: cardWidth }}>
               <Text className="px-6 text-center text-title-sm text-gray-800">{item.title}</Text>
 
@@ -80,7 +75,6 @@ export default function OnboardingScreen() {
           ))}
         </View>
 
-        {/* 시안의 버튼은 내용에 맞춰 줄어드는 폭이다 */}
         <Button
           label={isLast ? '시작하기' : '다음'}
           className="px-6"

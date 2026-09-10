@@ -47,7 +47,6 @@ module.exports = {
       'pretendard-medium': ['Pretendard-Medium'],
       'pretendard-semibold': ['Pretendard-SemiBold'],
       'pretendard-bold': ['Pretendard-Bold'],
-      'pretendard-extrabold': ['Pretendard-ExtraBold'],
     },
     // extend가 아니라 theme.colors로 둬서 tailwind 기본 팔레트를 통째로 대체한다.
     // 시안 COLOR SYSTEM에 없는 색(blue-500 같은)은 아예 존재하지 않게 된다.

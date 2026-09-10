@@ -25,13 +25,7 @@ const twMerge = extendTailwindMerge({
       ],
       'font-family': [
         {
-          font: [
-            'pretendard',
-            'pretendard-medium',
-            'pretendard-semibold',
-            'pretendard-bold',
-            'pretendard-extrabold',
-          ],
+          font: ['pretendard', 'pretendard-medium', 'pretendard-semibold', 'pretendard-bold'],
         },
       ],
     },

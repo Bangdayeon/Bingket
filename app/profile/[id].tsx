@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import * as Sentry from '@sentry/react-native';
@@ -153,10 +153,7 @@ export default function ProfileScreen() {
             <>
               <ProfileTabs value={tab} onChange={setTab} className="mt-4" />
               {tab === '피드' ? (
-                <ScrollView
-                  className="flex-1"
-                  contentContainerStyle={{ paddingTop: 16, paddingBottom: insets.bottom + 32 }}
-                >
+                <View className="flex-1">
                   <FeedGrid
                     items={feed}
                     onItemPress={(item) =>
@@ -164,7 +161,7 @@ export default function ProfileScreen() {
                     }
                     emptyText="아직 공개된 빙고가 없어요."
                   />
-                </ScrollView>
+                </View>
               ) : (
                 // 내 프로필을 이 화면으로 열었으면 RPC 대신 기존 본인 조회 경로를 태운다.
                 // 여기엔 플로팅 탭바가 없어서 내 공간처럼 80을 비워둘 이유도 없다.

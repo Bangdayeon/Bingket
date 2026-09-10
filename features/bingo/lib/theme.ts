@@ -1,5 +1,3 @@
-// features/bingo/lib/theme.ts (수정 - GRID, FIGMA 포함)
-
 import { FIXED } from '@/lib/use-colors';
 import { supabase } from '@/lib/supabase';
 import { GridType } from '@/types/bingo-cell';
@@ -66,6 +64,5 @@ export async function getThemeImageUrl(theme: string, grid: GridType): Promise<s
 
 export async function getThemeForegroundColor(theme: string): Promise<string> {
   const themes = await fetchThemes();
-  // 빙고판 배경이 서버 이미지라 이 색은 다크 대응 대상이 아니다.
   return themes[theme]?.foregroundColor ?? FIXED.boardForeground;
 }

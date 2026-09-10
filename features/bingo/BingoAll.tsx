@@ -546,10 +546,7 @@ export function BingoAll() {
       <ScrollView
         ref={scrollRef}
         className="flex-1"
-        // 판 사이 간격. 카드가 아니라 여기서 준다 — 같은 카드를 상세 화면도 쓴다.
         contentContainerStyle={{ gap: 40 }}
-        // 안내 4단계는 구멍으로 터치가 통과해 드래그가 그대로 스크롤이 된다.
-        // 멎을 때마다 다시 재야 구멍이 버튼을 따라간다.
         {...coachScroll}
         refreshControl={
           <RefreshControl

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { Pressable, View } from 'react-native';
 import { Image } from 'expo-image';
@@ -91,25 +91,42 @@ export function PostCard({ post, currentUserId, onBlock }: PostCardProps) {
   const ownership =
     currentUserId == null ? 'unknown' : post.userId === currentUserId ? 'mine' : 'others';
 
-  // blocks 기반 첫 번째 미디어 탐색
-  const blocks = parseBlocks(post.body);
-  let firstImageUrl: string | null = null;
-  let hasBingo = false;
+  const { firstImageUrl, bingoData, preview } = useMemo(() => {
+    const blocks = parseBlocks(post.body);
 
-  if (blocks) {
-    for (const b of blocks) {
-      if (b.type === 'image' && !firstImageUrl) {
-        firstImageUrl = (post.imageUrls ?? [])[b.index] ?? null;
+    let firstImageUrl: string | null = null;
+    let hasBingo = false;
+
+    if (blocks) {
+      for (const block of blocks) {
+        if (block.type === 'image' && firstImageUrl === null) {
+          firstImageUrl = (post.imageUrls ?? [])[block.index] ?? null;
+        }
+
+        if (block.type === 'bingo') {
+          hasBingo = true;
+        }
       }
-      if (b.type === 'bingo') hasBingo = true;
+    } else {
+      if (post.bingo) {
+        hasBingo = true;
+      } else if (post.imageUrls?.length) {
+        firstImageUrl = post.imageUrls[0];
+      }
     }
-  } else {
-    if (post.bingo) hasBingo = true;
-    else if (post.imageUrls?.length) firstImageUrl = post.imageUrls[0];
-  }
 
-  const bingoData = hasBingo && post.bingo ? postBingoToBingoData(post.bingo) : null;
-  const preview = bodyPreview(blocks, post.body);
+    const bingoData = hasBingo && post.bingo ? postBingoToBingoData(post.bingo) : null;
+
+    const preview = bodyPreview(blocks, post.body);
+
+    return {
+      blocks,
+      firstImageUrl,
+      hasBingo,
+      bingoData,
+      preview,
+    };
+  }, [post.body, post.imageUrls, post.bingo]);
 
   const menuItems =
     ownership === 'mine'
@@ -178,6 +195,7 @@ export function PostCard({ post, currentUserId, onBlock }: PostCardProps) {
           style={{ width: '100%', aspectRatio: 1, borderRadius: 16, marginTop: 16 }}
           contentFit="contain"
           cachePolicy="memory"
+          recyclingKey={post.id}
         />
       ) : null}
 
