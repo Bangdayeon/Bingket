@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { memo, useMemo, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { Pressable, View } from 'react-native';
 import { Image } from 'expo-image';
@@ -73,7 +73,7 @@ interface PostCardProps {
   onBlock?: (userId: string) => void;
 }
 
-export function PostCard({ post, currentUserId, onBlock }: PostCardProps) {
+export const PostCard = memo(function PostCard({ post, currentUserId, onBlock }: PostCardProps) {
   const router = useRouter();
 
   const [showMenu, setShowMenu] = useState(false);
@@ -328,4 +328,4 @@ export function PostCard({ post, currentUserId, onBlock }: PostCardProps) {
       />
     </View>
   );
-}
+});
