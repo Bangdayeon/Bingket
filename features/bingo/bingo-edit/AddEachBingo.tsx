@@ -98,7 +98,7 @@ export function AddEachBingo({
         />
       }
       variant="default"
-      cancelLabel="취소"
+      cancelLabel={t('common.cancel')}
       confirmLabel="저장"
       onCancel={handleCancel}
       onConfirm={handleSave}

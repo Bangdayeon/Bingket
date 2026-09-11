@@ -13,13 +13,7 @@ import onboarding3 from '@/assets/onboarding/onboarding_3.png';
 import onboarding4 from '@/assets/onboarding/onboarding_4.png';
 import onboarding5 from '@/assets/onboarding/onboarding_5.png';
 
-const slides = [
-  { id: '1', title: '이루기 어려웠던 목표를\n빙고판에 채워봐요', img: onboarding1 },
-  { id: '2', title: '혼자서 의지가 안 생긴다면\n친구와 가족과 함께해요', img: onboarding2 },
-  { id: '3', title: '사람들과 목표를 공유하고\n서로의 도전을 응원해요', img: onboarding3 },
-  { id: '4', title: '차근차근 목표를 이뤄나가며\n뱃지를 수집해요', img: onboarding4 },
-  { id: '5', title: '빙고에 채우는 나만의 도전,\n빙킷에서 시작해봐요', img: onboarding5 },
-];
+import { useTranslation } from 'react-i18next';
 
 const goToLogin = async () => {
   await AsyncStorage.setItem('@bingket/onboarding-seen', '1');
@@ -29,6 +23,15 @@ const goToLogin = async () => {
 const CARD_MAX_WIDTH = 358;
 
 export default function OnboardingScreen() {
+  const { t } = useTranslation();
+  const slides = [
+    { id: '1', title: t('onboarding.msg1'), img: onboarding1 },
+    { id: '2', title: t('onboarding.msg2'), img: onboarding2 },
+    { id: '3', title: t('onboarding.msg3'), img: onboarding3 },
+    { id: '4', title: t('onboarding.msg4'), img: onboarding4 },
+    { id: '5', title: t('onboarding.msg5'), img: onboarding5 },
+  ];
+
   const { width } = useWindowDimensions();
   const isTablet = width >= 768;
   const cardWidth = Math.min(width - 32, isTablet ? 560 : CARD_MAX_WIDTH);
@@ -76,7 +79,7 @@ export default function OnboardingScreen() {
         </View>
 
         <Button
-          label={isLast ? '시작하기' : '다음'}
+          label={isLast ? t('common.start') : t('common.next')}
           className="px-6"
           onClick={() => {
             if (isLast) {

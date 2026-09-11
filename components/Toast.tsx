@@ -15,8 +15,6 @@ export function Toast({ message, visible, onDismiss }: ToastProps) {
   const [translateY] = useState(() => new Animated.Value(-12));
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // onDismiss가 매 렌더 새 함수로 와도 animateOut의 참조는 그대로여야 한다.
-  // animateOut이 바뀌면 아래 효과가 다시 돌면서 등장 애니메이션과 3초 타이머가 리셋된다.
   const onDismissRef = useRef(onDismiss);
   useEffect(() => {
     onDismissRef.current = onDismiss;

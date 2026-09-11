@@ -12,11 +12,6 @@ import { useOnlineRestore } from '@/lib/use-online';
 
 export default function CommunityScreen() {
   const router = useRouter();
-  /**
-   * 탭바는 absolute가 아니라 화면과 나란한 flex 형제다(BottomTabView가 column으로
-   * [화면, 탭바]를 쌓는다). 그래서 이 화면의 bottom: 0 이 이미 탭바 바로 위다.
-   * 탭바 높이나 safe-area를 더하면 그만큼 공중에 뜬다 — 실제로 그랬다.
-   */
   const fabBottom = 16;
   const [posts, setPosts] = useState<CommunityPost[]>([]);
   const [page, setPage] = useState(0);
@@ -25,15 +20,13 @@ export default function CommunityScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [loadFailed, setLoadFailed] = useState(false);
   const loadingRef = useRef(false);
-  const isFocused = useRef(false); // 현재 포커스 상태
+  const isFocused = useRef(false);
 
   const loadPosts = useCallback(async (pageNum: number, reset: boolean) => {
     if (loadingRef.current) return;
     loadingRef.current = true;
     setLoading(true);
 
-    // 조회가 throw하면 loadingRef가 true로 잠겨 이후 새로고침·무한스크롤이
-    // 통째로 무시된다. 해제는 반드시 finally에서 한다.
     try {
       const fetched = await fetchPosts(pageNum);
       setPosts((prev) => (reset ? fetched : [...prev, ...fetched]));
@@ -86,7 +79,6 @@ export default function CommunityScreen() {
     }
   }, []);
 
-  // 연결이 돌아오면 실패했던 첫 페이지를 자동으로 다시 받는다.
   useOnlineRestore(() => {
     if (loadFailed) loadPosts(0, true);
   });

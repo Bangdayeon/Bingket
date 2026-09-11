@@ -38,17 +38,22 @@ import Loading from '@/components/Loading';
 import { ErrorState } from '@/components/ErrorState';
 import { EmptyState } from '@/components/EmptyState';
 import { useOnlineRestore } from '@/lib/use-online';
+import { useTranslation } from 'react-i18next';
 
-const REPORT_REASONS = [
-  '상업적 광고 및 판매',
-  '욕설/비하',
-  '음란물/성적인 내용',
-  '도배',
-  '사칭/사기',
-  '기타',
-];
+const REPORT_REASON_KEYS = [
+  'community.reportReasonAd',
+  'community.reportReasonAbuse',
+  'community.reportReasonSexual',
+  'community.reportReasonSpam',
+  'community.reportReasonImpersonation',
+  'community.reportReasonOther',
+] as const;
 
 export default function CommunityDetailScreen() {
+  const { t } = useTranslation();
+
+  const REPORT_REASONS = REPORT_REASON_KEYS.map((key) => t(key));
+
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -64,7 +69,7 @@ export default function CommunityDetailScreen() {
 
   const [keyboardShown, setKeyboardShown] = useState(false);
 
-  // ── 모달 상태 ──────────────────────────────────────────────
+  // MODAL STATE
   const [alertModal, setAlertModal] = useState<{ title: string; message: string } | null>(null);
 
   const [showPostMenu, setShowPostMenu] = useState(false);
@@ -119,7 +124,7 @@ export default function CommunityDetailScreen() {
 
   useFocusEffect(loadPost);
 
-  // 항상 처음부터 limit개를 받는다. 더 보기로 늘려도 익명 번호가 흔들리지 않는다.
+  // awayas get limit, if add 'see more', not move anony num
   const [commentLimit, setCommentLimit] = useState(COMMENT_PAGE_SIZE);
   const [commentTotal, setCommentTotal] = useState(0);
 
@@ -139,7 +144,10 @@ export default function CommunityDetailScreen() {
       .finally(() => setCommentsLoading(false));
   }, [id, commentLimit]);
 
-  useEffect(loadComments, [loadComments]);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadComments();
+  }, [loadComments]);
 
   useOnlineRestore(() => {
     if (postFailed) loadPost();
@@ -199,7 +207,7 @@ export default function CommunityDetailScreen() {
         {postFailed ? (
           <ErrorState onRetry={loadPost} />
         ) : (
-          <EmptyState message="게시글을 찾을 수 없어요." />
+          <EmptyState message={t('community.postNotFound')} />
         )}
       </SafeAreaView>
     );
@@ -207,7 +215,7 @@ export default function CommunityDetailScreen() {
 
   const isOwnPost = post.userId === currentUserId;
 
-  // ── 핸들러 ─────────────────────────────────────────────────
+  // ── Handlers ─────────────────────────────────────
 
   const handleDeletePost = async () => {
     setIsDeleting(true);
@@ -219,8 +227,8 @@ export default function CommunityDetailScreen() {
       setIsDeleting(false);
       setShowDeleteModal(false);
       setAlertModal({
-        title: '삭제 실패',
-        message: e instanceof Error ? e.message : '게시글 삭제에 실패했어요.',
+        title: t('community.postDeleteFailTitle'),
+        message: e instanceof Error ? e.message : t('community.postDeleteFail'),
       });
     }
   };
@@ -242,8 +250,8 @@ export default function CommunityDetailScreen() {
       await refreshComments();
     } catch (e) {
       setAlertModal({
-        title: '오류',
-        message: e instanceof Error ? e.message : '댓글 작성에 실패했어요.',
+        title: t('common.error.general'),
+        message: e instanceof Error ? e.message : t('community.commentAddFail'),
       });
     } finally {
       setCommentSubmitting(false);
@@ -268,8 +276,8 @@ export default function CommunityDetailScreen() {
       setShowDeleteCommentModal(false);
       setDeleteCommentTargetId(null);
       setAlertModal({
-        title: '오류',
-        message: e instanceof Error ? e.message : '댓글 삭제에 실패했어요.',
+        title: t('common.error.general'),
+        message: e instanceof Error ? e.message : t('community.commentDeleteFail'),
       });
     } finally {
       setIsDeletingComment(false);
@@ -288,24 +296,27 @@ export default function CommunityDetailScreen() {
       await blockUser(blockTargetUserId);
       setShowBlockModal(false);
       setBlockTargetUserId(null);
-      setAlertModal({ title: '차단 완료', message: '해당 사용자를 차단했어요.' });
+      setAlertModal({
+        title: t('community.blockSuccessTitle'),
+        message: t('community.blockSuccessBody'),
+      });
     } catch (e) {
       setShowBlockModal(false);
       setBlockTargetUserId(null);
       setAlertModal({
-        title: '오류',
-        message: e instanceof Error ? e.message : '차단에 실패했어요.',
+        title: t('common.error.general'),
+        message: e instanceof Error ? e.message : t('community.blockFail'),
       });
     } finally {
       setIsBlocking(false);
     }
   };
 
-  // ── 팝오버 메뉴 아이템 ─────────────────────────────────────
+  // ── Popover menu items ─────────────────────────────────────
   const postMenuItems = isOwnPost
     ? [
         {
-          label: '수정하기',
+          label: t('community.editPost'),
           onPress: () => {
             setShowPostMenu(false);
             router.push({
@@ -322,7 +333,7 @@ export default function CommunityDetailScreen() {
           },
         },
         {
-          label: '삭제하기',
+          label: t('community.deletePost'),
           danger: true as const,
           onPress: () => {
             setShowPostMenu(false);
@@ -332,7 +343,7 @@ export default function CommunityDetailScreen() {
       ]
     : [
         {
-          label: '신고하기',
+          label: t('community.report'),
           onPress: () => {
             setShowPostMenu(false);
             setReportTarget({ type: 'post', id: post.id });
@@ -343,7 +354,7 @@ export default function CommunityDetailScreen() {
           ? []
           : [
               {
-                label: '차단하기',
+                label: t('community.blockUser'),
                 danger: true as const,
                 onPress: () => {
                   setShowPostMenu(false);
@@ -358,14 +369,14 @@ export default function CommunityDetailScreen() {
   const commentMenuItems = isOwnComment
     ? [
         {
-          label: '삭제',
+          label: t('common.delete'),
           danger: true as const,
           onPress: () => commentMenuId && handleDeleteComment(commentMenuId),
         },
       ]
     : [
         {
-          label: '신고하기',
+          label: t('community.report'),
           onPress: () => {
             if (commentMenuId) setReportTarget({ type: 'comment', id: commentMenuId });
             setCommentMenuId(null);
@@ -373,7 +384,7 @@ export default function CommunityDetailScreen() {
           },
         },
         {
-          label: '차단하기',
+          label: t('community.blockUser'),
           danger: true as const,
           onPress: () => {
             const uid = commentMenuTargetUserId;
@@ -442,18 +453,16 @@ export default function CommunityDetailScreen() {
         />
       </KeyboardAvoidingView>
 
-      {/* ── 신고하기 모달 ── */}
+      {/* ── Report modal ── */}
       <Modal
         visible={showReportModal}
         confirmLoading={isReporting}
-        title="신고하기"
+        title={t('community.report')}
         body={
           <View className="gap-3">
-            <Text className="text-body-sm text-gray-700">
-              누적 신고 횟수가 3회 이상인 유저는 커뮤니티 이용 제한이 있을 수 있어요.
-            </Text>
-            {/* 선택지끼리는 바깥 gap-3을 받지 않는다. 줄마다 py-1.5만 줘서 간격 12,
-                터치 영역은 32를 유지한다. */}
+            <Text className="text-body-sm text-gray-700">{t('community.reportExplanation')}</Text>
+            {/* Options don't inherit the outer gap-3. Each row uses py-1.5 for 12px
+                spacing while keeping a 32px touch target. */}
             <View>
               {REPORT_REASONS.map((reason) => (
                 <Pressable
@@ -477,9 +486,9 @@ export default function CommunityDetailScreen() {
             </View>
           </View>
         }
-        variant="warning" // danger 확인 + 취소 버튼 둘 다 사용
-        confirmLabel="신고하기"
-        cancelLabel="취소"
+        variant="warning" // Uses both a danger confirm button and a cancel button
+        confirmLabel={t('community.report')}
+        cancelLabel={t('common.cancel')}
         onConfirm={async () => {
           if (!selectedReason || !reportTarget) return;
           setIsReporting(true);
@@ -488,11 +497,14 @@ export default function CommunityDetailScreen() {
             setShowReportModal(false);
             setSelectedReason(null);
             setReportTarget(null);
-            setAlertModal({ title: '신고 완료', message: '신고 내용은 24시간 이내에 조치돼요.' });
+            setAlertModal({
+              title: t('community.reportSuccessTitle'),
+              message: t('community.reportSuccessBody'),
+            });
           } catch (e) {
             setAlertModal({
-              title: '오류',
-              message: e instanceof Error ? e.message : '신고에 실패했어요.',
+              title: t('common.error.general'),
+              message: e instanceof Error ? e.message : t('community.reportFail'),
             });
           } finally {
             setIsReporting(false);
@@ -510,60 +522,61 @@ export default function CommunityDetailScreen() {
         }}
       />
 
-      {/* ── 게시글 삭제 확인 모달 ── */}
+      {/* ── Post delete confirmation modal ── */}
       <Modal
         visible={showDeleteModal}
-        title="게시글을 삭제할까요?"
+        title={t('community.deletePostConfirmTitle')}
         confirmLoading={isDeleting}
         body={
           <>
-            <Text className="text-body-sm text-gray-500">삭제된 게시글은 복구할 수 없어요.</Text>
+            <Text className="text-body-sm text-gray-500">
+              {t('community.deletePostConfirmBody')}
+            </Text>
           </>
         }
-        // 'error'는 단일 버튼은 그대로 두고 확인 버튼만 danger로 만든다.
-        // 'single'은 primary(초록)라 되돌릴 수 없는 동작인데 색으로 경고가 안 됐다.
+        // 'error' keeps a single button but makes the confirm button danger-colored.
+        // 'single' is primary (green), which didn't visually warn for an irreversible action.
         variant="error"
-        confirmLabel="삭제"
+        confirmLabel={t('common.delete')}
         onConfirm={handleDeletePost}
         onDismiss={() => !isDeleting && setShowDeleteModal(false)}
       />
 
-      {/* ── 댓글 삭제 확인 모달 ── */}
+      {/* ── Comment delete confirmation modal ── */}
       <Modal
         visible={showDeleteCommentModal}
-        title="댓글 삭제"
+        title={t('community.deleteCommentTitle')}
         confirmLoading={isDeletingComment}
         body={
           <>
-            <Text className="text-body-sm text-gray-500">댓글을 삭제할까요?</Text>
+            <Text className="text-body-sm text-gray-500">{t('community.deleteCommentBody')}</Text>
           </>
         }
-        variant="error" // 확인 버튼만 쓰되 danger 색으로
-        confirmLabel="삭제"
+        variant="error" // Single confirm button, styled danger
+        confirmLabel={t('common.delete')}
         onConfirm={confirmDeleteComment}
         onDismiss={() => !isDeletingComment && setShowDeleteCommentModal(false)}
       />
 
-      {/* ── 사용자 차단 확인 모달 ── */}
+      {/* ── Block user confirmation modal ── */}
       <Modal
         visible={showBlockModal}
-        title="차단하기"
+        title={t('community.blockUser')}
         confirmLoading={isBlocking}
         body={
           <>
             <Text className="text-body-sm text-gray-500">
-              이 사용자를 차단하시겠어요?{'\n'}
-              차단된 사용자의 게시글과 댓글이 보이지 않아요.
+              {t('community.blockUserConfirmBody')}
             </Text>
           </>
         }
-        variant="error" // danger 단일 버튼
-        confirmLabel="차단"
+        variant="error" // Single danger button
+        confirmLabel={t('community.block')}
         onConfirm={confirmBlockUser}
         onDismiss={() => !isBlocking && setShowBlockModal(false)}
       />
 
-      {/* ── 범용 알림 모달 ── */}
+      {/* ── Generic alert modal ── */}
       <Modal
         visible={alertModal !== null}
         title={alertModal?.title ?? ''}
@@ -573,7 +586,7 @@ export default function CommunityDetailScreen() {
         onDismiss={() => setAlertModal(null)}
       />
       <Toast
-        message="올바르지 않은 표현을 사용했어요"
+        message={t('community.badWordToast')}
         visible={toastVisible}
         onDismiss={() => setToastVisible(false)}
       />

@@ -15,6 +15,7 @@ import { LIMITS } from '@/constants/limits';
 import { ErrorState } from '@/components/ErrorState';
 import { EmptyState } from '@/components/EmptyState';
 import * as Sentry from '@sentry/react-native';
+import { useTranslation } from 'react-i18next';
 
 const MAX_RECENT = 10;
 const RECENT_SEARCHES_KEY = '@bingket/recent-searches';
@@ -22,6 +23,7 @@ const RECENT_SEARCHES_KEY = '@bingket/recent-searches';
 const Separator = () => <View className="h-px bg-gray-300  " />;
 
 export default function CommunitySearchScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const inputRef = useRef<RNTextInput>(null);
 
@@ -46,7 +48,7 @@ export default function CommunitySearchScreen() {
       const trimmed = query.trim();
       if (!trimmed) return;
 
-      // 최근 검색어 맨 앞에 추가 (중복 제거, 최대 10개)
+      // Add to the front of recent searches (dedupe, cap at 10)
       const updated = [trimmed, ...searches.filter((s) => s !== trimmed)].slice(0, MAX_RECENT);
       setSearches(updated);
       persistSearches(updated);
@@ -79,7 +81,7 @@ export default function CommunitySearchScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-surface" edges={['top']}>
-      {/* 헤더 — 시안에는 구분선이 없다 */}
+      {/* Header — no divider in the design */}
       <View className="h-[60px] flex-row items-center gap-3 px-4">
         <Pressable onPress={() => router.back()} hitSlop={8}>
           <ArrowBackIcon width={24} height={24} className="text-gray-700" />
@@ -94,7 +96,7 @@ export default function CommunitySearchScreen() {
           }}
           onSubmitEditing={() => runSearch(value)}
           returnKeyType="search"
-          placeholder="검색어"
+          placeholder={t('friends.searchPlaceholder')}
           maxLength={LIMITS.searchKeyword}
           className="flex-1"
           onClear={() => {
@@ -105,20 +107,20 @@ export default function CommunitySearchScreen() {
         />
       </View>
 
-      {/* 로딩 */}
+      {/* Loading */}
       {loading && (
         <View className="flex-1 items-center justify-center">
           <Loading />
         </View>
       )}
 
-      {/* 검색 결과 */}
+      {/* Search results */}
       {!loading &&
         results !== null &&
         (searchFailed ? (
-          <ErrorState message="검색하지 못했어요" onRetry={() => void runSearch(value)} />
+          <ErrorState message={t('community.searchFailed')} onRetry={() => void runSearch(value)} />
         ) : results.length === 0 ? (
-          <EmptyState message="검색 결과가 없어요." />
+          <EmptyState message={t('common.noSearchResult')} />
         ) : (
           <FlatList
             data={results}
@@ -133,22 +135,22 @@ export default function CommunitySearchScreen() {
           />
         ))}
 
-      {/* 최근 검색어 (검색 전) */}
+      {/* Recent searches (before searching) */}
       {!loading && results === null && (
         <View className="px-4 pt-5">
           <View className="flex-row items-center justify-between mb-4">
             <Text className="text-title-sm font-pretendard-semibold text-gray-900">
-              최근 검색어
+              {t('community.recentSearches')}
             </Text>
             {searches.length > 0 && (
               <Pressable onPress={handleDeleteAll} hitSlop={8}>
-                <Text className="text-body-md text-gray-800">전체 삭제</Text>
+                <Text className="text-body-md text-gray-800">{t('community.deleteAll')}</Text>
               </Pressable>
             )}
           </View>
           {searches.length === 0 ? (
             <Text className="text-body-sm w-full text-center text-gray-500">
-              최근 검색어가 없어요.
+              {t('community.noRecentSearches')}
             </Text>
           ) : (
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', columnGap: 4, rowGap: 8 }}>

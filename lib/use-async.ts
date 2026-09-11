@@ -40,6 +40,7 @@ export function useAsync<T>(fetcher: () => Promise<T>, deps: readonly unknown[])
   });
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     setError(null);
 

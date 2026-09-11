@@ -45,11 +45,9 @@ export default function IconButton({
 }: IconButtonProps) {
   const { default: defaultStyle, active: activeStyle } = variantStyles[variant];
 
-  // 아이콘이 색을 직접 정하지 않았을 때만 기본색을 씌운다.
-  // 색은 className으로 오므로 className이 있는지로 판단한다.
   const coloredIcon = React.isValidElement(icon)
     ? React.cloneElement(icon as React.ReactElement<{ className?: string }>, {
-        className: (icon.props as { className?: string }).className ?? 'text-gray-900',
+        className: (icon.props as { className?: string }).className ?? 'text-gray-700',
       })
     : icon;
 
@@ -99,12 +97,12 @@ export default function IconButton({
         />
       )}
 
-      {/* 아이콘 */}
+      {/* icon */}
       {!loading && (
         <View style={{ alignItems: 'center', justifyContent: 'center' }}>{coloredIcon}</View>
       )}
 
-      {/* 로딩 (정중앙 overlay) */}
+      {/* loading (center overlay) */}
       {loading && (
         <View className="absolute inset-0 items-center justify-center">
           <Loading className={loadingClass} />

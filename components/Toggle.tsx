@@ -8,7 +8,6 @@ interface ToggleProps {
   disabled?: boolean;
 }
 
-// 시안: 트랙 59×30, 손잡이 24, 좌우 여백 4.
 const TRACK_WIDTH = 59;
 const TRACK_HEIGHT = 30;
 const KNOB_SIZE = 24;

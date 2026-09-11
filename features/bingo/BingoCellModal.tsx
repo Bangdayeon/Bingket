@@ -120,6 +120,7 @@ export function BingoCellModal({
 
   useEffect(() => {
     if (!visible) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setEditingMemoCellId(null);
       return;
     }

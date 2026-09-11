@@ -19,8 +19,11 @@ import { Text } from '@/components/Text';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Chip } from '@/components/Chip';
 import Loading from '@/components/Loading';
+import { useTranslation } from 'react-i18next';
 
 export default function BingoModifyScreen() {
+  const { t } = useTranslation();
+
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { bingoId } = useLocalSearchParams<{ bingoId: string }>();
@@ -49,8 +52,6 @@ export default function BingoModifyScreen() {
       );
       setThemes(uniqueThemes.map((t) => ({ id: t.id, displayName: t.displayName })));
 
-      // bingoId 없이 들어오거나 판을 못 찾으면, 예전에는 로딩 해제도 안 하고
-      // 말없이 뒤로 튕겼다. 이유를 보여주고 돌아갈 수단을 남긴다.
       if (!bingoId) {
         setLoadFailed(true);
         return;
@@ -77,8 +78,9 @@ export default function BingoModifyScreen() {
       setLoading(false);
     }
   }, [bingoId]);
-
+  // Effect for initing screen state after server data loading
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void init();
   }, [init]);
 
@@ -89,8 +91,6 @@ export default function BingoModifyScreen() {
 
   const [alertMessage, setAlertMessage] = useState<string | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  // 저장·삭제 모두 네트워크 왕복이 있고, 삭제는 최대 3번이다(팀 조회 → 탈퇴 → 삭제).
-  // 표시가 없으면 사용자는 눌린 줄 모르고 다시 누른다.
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [showLeaveModal, setShowLeaveModal] = useState(false);
@@ -101,7 +101,7 @@ export default function BingoModifyScreen() {
   };
 
   const handleSave = async () => {
-    if (!title.trim()) return setAlertMessage('제목을 입력해주세요.');
+    if (!title.trim()) return setAlertMessage(t('home.enterTitle'));
     if (saving) return;
     setSaving(true);
     try {
@@ -116,10 +116,9 @@ export default function BingoModifyScreen() {
       router.replace('/(tabs)');
     } catch (e) {
       Sentry.captureException(e);
-      setAlertMessage('저장에 실패했어요. 잠시 후 다시 시도해주세요.');
+      setAlertMessage(t('home.saveFail'));
       setSaving(false);
     }
-    // 성공하면 router.replace로 화면이 통째로 바뀌므로 해제하지 않는다.
   };
 
   const handleDelete = async () => {
@@ -128,11 +127,8 @@ export default function BingoModifyScreen() {
     try {
       const team = await fetchTeamByBoardId(bingoId);
 
-      // 진행 중인 팀에 속한 판이면 먼저 팀에서 빠진다.
-      // 종료된 팀은 다른 사람의 기록이기도 하므로 건드리지 않는다.
       if (team && !team.isFinished) await leaveTeam(team.teamId);
 
-      // 같이 채우기 판은 팀 공용이라 나 혼자 지울 수 없다 -- 팀에서 나가는 것으로 끝낸다
       if (!team || team.mode !== 'shared') await deleteBingo(bingoId);
 
       router.replace('/(tabs)');
@@ -140,9 +136,8 @@ export default function BingoModifyScreen() {
       Sentry.captureException(e);
       setDeleting(false);
       setShowDeleteModal(false);
-      setAlertMessage('삭제에 실패했어요. 잠시 후 다시 시도해주세요.');
+      setAlertMessage(t('home.deleteFail'));
     }
-    // 성공 경로는 router.replace로 화면이 사라지므로 해제하지 않는다.
   };
 
   const isUnlimited = maxEdits === 9999 || maxEdits === -1;
@@ -166,15 +161,14 @@ export default function BingoModifyScreen() {
   if (loadFailed) {
     return (
       <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
-        <PageHeader title="빙고 수정하기" />
-        <ErrorState message="빙고를 불러오지 못했어요" onRetry={() => void init()} />
+        <PageHeader title={t('home.modifyBingo')} />
+        <ErrorState message={t('home.loadFail')} onRetry={() => void init()} />
       </View>
     );
   }
 
   return (
     <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
-      {/* 뒤로가기 줄만 고정한다. 제목과 저장 버튼은 내용과 함께 스크롤된다. */}
       <PageHeader
         onBack={handleBack}
         right={
@@ -186,10 +180,7 @@ export default function BingoModifyScreen() {
 
       <ScrollView
         className="flex-1"
-        // 섹션 간격은 여기 한 곳에서 준다. 섹션마다 자기 패딩을 들면 제각각이 된다.
         contentContainerStyle={{ gap: 32, paddingBottom: insets.bottom + 32 }}
-        // 저장 버튼이 스크롤 안에 있다. 이게 없으면 제목 입력 중 저장하기를 누를 때
-        // 첫 탭이 키보드 dismiss에 먹혀 두 번 눌러야 한다.
         keyboardShouldPersistTaps="handled"
       >
         <View className="px-4 pb-2 pt-7">
@@ -204,11 +195,10 @@ export default function BingoModifyScreen() {
           }}
         />
 
-        {/* gap-8은 rem 기반이라 28로 인라인된다. 바깥과 맞추려면 숫자로 준다. */}
         <View style={{ gap: 32 }}>
           <View>
             <View className="px-4">
-              <SectionLabel label="테마 선택" />
+              <SectionLabel label={t('home.selectTheme')} />
             </View>
             <ScrollView
               horizontal
@@ -229,12 +219,9 @@ export default function BingoModifyScreen() {
             </ScrollView>
           </View>
 
-          {/* 수정 횟수는 판에 대한 설명이라 판과 한 덩어리로 둔다.
-              바깥 gap-8을 그대로 받으면 판에서 32px 떨어져 따로 노는 줄로 보인다. */}
           <View className="gap-2">
-            {/* 시안: 남은 수정 횟수는 판 위, 좌측 정렬 */}
             <Text className="px-4 text-body-sm text-gray-600">
-              빙고 수정 가능 횟수 {totalUsedEdits}/{isUnlimited ? '무제한' : maxEdits}
+              {t('home.modifyCount')} {totalUsedEdits}/{isUnlimited ? t('home.infinite') : maxEdits}
             </Text>
 
             <AddEachBingo
@@ -259,10 +246,9 @@ export default function BingoModifyScreen() {
 
         <VisibilitySelector value={visibility} onChange={setVisibility} />
 
-        {/* 저장 버튼도 고정하지 않는다 — 화면이 짧아 보이고 스크롤 영역을 먹는다. */}
         <View className="px-4">
           <Button
-            label="저장하기"
+            label={t('home.save')}
             variant="primary"
             size="md"
             onClick={handleSave}
@@ -276,19 +262,18 @@ export default function BingoModifyScreen() {
         visible={alertMessage !== null}
         title={alertMessage ?? ''}
         variant="single"
-        confirmLabel="확인"
+        confirmLabel={t('common.confirm')}
         onConfirm={() => setAlertMessage(null)}
       />
 
       <Modal
         visible={showDeleteModal}
-        title="빙고를 정말로 삭제할까요?"
-        body="삭제된 빙고는 되돌릴 수 없어요."
+        title={t('home.deleteConfirm')}
+        body={t('home.deleteBody')}
         variant="warning"
-        cancelLabel="취소"
-        confirmLabel="삭제"
+        cancelLabel={t('common.cancel')}
+        confirmLabel={t('common.delete')}
         confirmLoading={deleting}
-        // 삭제가 도는 중에 모달이 닫히면 사용자는 끝난 줄 알고 화면을 떠난다.
         onCancel={deleting ? undefined : () => setShowDeleteModal(false)}
         onConfirm={handleDelete}
         onDismiss={deleting ? undefined : () => setShowDeleteModal(false)}
@@ -296,10 +281,10 @@ export default function BingoModifyScreen() {
 
       <Modal
         visible={showLeaveModal}
-        title="저장하지 않은 변경사항이 있어요"
-        body="지금 나가면 변경 사항이 저장되지 않아요."
-        cancelLabel="계속 수정"
-        confirmLabel="나가기"
+        title={t('home.leaveTitle')}
+        body={t('home.leaveBody')}
+        cancelLabel={t('home.leaveCancel')}
+        confirmLabel={t('home.leaveConfirm')}
         onCancel={() => setShowLeaveModal(false)}
         onConfirm={() => {
           setShowLeaveModal(false);

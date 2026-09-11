@@ -20,11 +20,12 @@ import { fetchMyTeams } from '@/features/team/lib/team';
 import type { TeamAvatarMember } from '@/features/team/components/TeamAvatars';
 import Loading from '@/components/Loading';
 import { Modal } from '@/components/Modal';
+import { useTranslation } from 'react-i18next';
 
-// 시안: 완료 빙고의 메모는 300자까지
 const MEMO_MAX_LENGTH = 300;
 
 export default function BingoViewScreen() {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { bingoId } = useLocalSearchParams<{ bingoId: string }>();
@@ -37,7 +38,6 @@ export default function BingoViewScreen() {
   const [retrospective, setRetrospective] = useState('');
   const [saveFailed, setSaveFailed] = useState(false);
   const memoDebounceRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
-  /** 아직 서버에 못 보낸 메모. 닫을 때 밀어넣고, 실패하면 여기 남는다 */
   const pendingMemoRef = useRef<Record<string, string>>({});
   const [memoSaveState, setMemoSaveState] = useState<Record<string, MemoSaveState | undefined>>({});
   const retroDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -62,7 +62,6 @@ export default function BingoViewScreen() {
           setLoadFailed(true);
         }
       })
-      // 연결이 끊겨 조회에 실패해도 로딩 스피너에 갇히지 않게 한다
       .catch((e: unknown) => {
         Sentry.captureException(e);
         setLoadFailed(true);
@@ -71,6 +70,7 @@ export default function BingoViewScreen() {
   }, [bingoId]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadBoard();
   }, [loadBoard]);
 
@@ -84,10 +84,6 @@ export default function BingoViewScreen() {
       .catch(Sentry.captureException);
   }, [bingoId]);
 
-  /**
-   * 저장이 끝내 실패하면 화면만 채워진 채로 남아 다음 진입에 되돌아간다.
-   * 그 전에 알려준다. rollback을 받은 경우 저장 전 상태로 되돌린다.
-   */
   const handleSaveFailure = (error: unknown, rollback?: () => void) => {
     Sentry.captureException(error);
     rollback?.();
@@ -115,7 +111,6 @@ export default function BingoViewScreen() {
     }
   };
 
-  /** 메모는 입력 중일 수 있어 실패해도 되돌리지 않고 알리기만 한다 */
   const saveMemo = (cellId: string) => {
     const memo = pendingMemoRef.current[cellId];
     if (memo === undefined) return;
@@ -123,17 +118,12 @@ export default function BingoViewScreen() {
     updateCell(cellId, { memo })
       .then(() => setMemoSaveState((prev) => ({ ...prev, [cellId]: 'saved' })))
       .catch((error) => {
-        // 실패한 텍스트를 되살릴 수 있게 다시 대기열에 넣는다
         pendingMemoRef.current[cellId] = memo;
         setMemoSaveState((prev) => ({ ...prev, [cellId]: 'error' }));
         handleSaveFailure(error);
       });
   };
 
-  /**
-   * 대기 중인 메모를 즉시 저장한다. 모달을 닫는 순간 500ms를 더 기다릴 이유가 없고,
-   * 그 사이 화면을 떠나면 저장 결과를 받을 곳이 없어진다.
-   */
   const flushPendingMemos = () => {
     for (const cellId of Object.keys(pendingMemoRef.current)) {
       clearTimeout(memoDebounceRef.current[cellId]);
@@ -157,12 +147,11 @@ export default function BingoViewScreen() {
     );
   }
 
-  // 예전에는 여기서 null을 돌려줘 헤더도 없는 백지가 됐다. 뒤로 갈 수단조차 없었다.
   if (!data || loadFailed) {
     return (
       <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
         <PageHeader />
-        <ErrorState message="빙고를 불러오지 못했어요" onRetry={loadBoard} />
+        <ErrorState message={t('home.loadFail')} onRetry={loadBoard} />
       </View>
     );
   }
@@ -184,7 +173,6 @@ export default function BingoViewScreen() {
 
       <ScrollView
         className="flex-1"
-        // 뒤로가기 줄 바로 아래 판이 붙어 있었다. 다른 화면에서 제목이 차지하던 만큼 띄운다.
         contentContainerStyle={{ paddingTop: 24, paddingBottom: insets.bottom + 40 }}
       >
         <BingoCard
@@ -207,14 +195,11 @@ export default function BingoViewScreen() {
 
         {isDone && (
           <View className="mt-8 px-4">
-            <Text className="mb-2 text-body-md text-gray-900">메모</Text>
-            {/* react-native 의 TextInput 을 그대로 쓰는 자리다. 공용 TextInput 과 달리
-                배경·글자색이 하나도 안 붙어서, 칸 메모(BingoCellModal)와 같은 클래스를 준다.
-                색까지 같이 주는 이유는 기본 글자색이 검정이라 다크모드에서 사라지기 때문. */}
+            <Text className="mb-2 text-body-md text-gray-900">{t('home.memo')}</Text>
             <TextInput
               value={retrospective}
               onChangeText={handleRetrospectiveChange}
-              placeholder="메모를 입력해주세요."
+              placeholder={t('home.memoPlaceholder')}
               multiline
               maxLength={MEMO_MAX_LENGTH}
               textAlignVertical="top"
@@ -242,10 +227,10 @@ export default function BingoViewScreen() {
 
       <Modal
         visible={saveFailed}
-        title="저장하지 못했어요"
-        body="네트워크 연결이 불안정해요. 연결을 확인한 뒤 다시 시도해 주세요."
+        title={t('home.saveFail')}
+        body={t('common.error.retry')}
         variant="single"
-        confirmLabel="확인"
+        confirmLabel={t('common.confirm')}
         onConfirm={() => setSaveFailed(false)}
         onDismiss={() => setSaveFailed(false)}
       />

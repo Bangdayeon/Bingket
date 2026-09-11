@@ -15,13 +15,10 @@ import { calcBingoCount } from '@/features/bingo/lib/bingo';
 import { calcMaxBingo } from '@/lib/calcMaxBingo';
 import { getBingoPeriod } from '@/lib/bingo-period';
 import { useResponsive } from '@/lib/use-responsive';
+import { useTranslation } from 'react-i18next';
 
-/**
- * 타인 빙고판 열람 (읽기 전용).
- * 달성 현황과 진행 기간까지 보여주되 메모와 회고는 RPC 응답에 아예 포함되지 않는다.
- * 제목은 헤더가 아니라 빙고판 위에만 둔다 — 같은 제목이 두 번 나오지 않게.
- */
 export default function FriendBingoViewScreen() {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const { contentWidth } = useResponsive();
   const { boardId } = useLocalSearchParams<{ boardId: string }>();
@@ -41,7 +38,7 @@ export default function FriendBingoViewScreen() {
         if (!cancelled) setBoard(b);
       })
       .catch((e: unknown) => {
-        // 권한 문제와 네트워크 실패는 다른 상황이다. 같은 문구로 뭉뚱그리지 않는다.
+        // auth problem and network fail is diffrent
         Sentry.captureException(e);
         if (!cancelled) setLoadFailed(true);
       })
@@ -57,11 +54,9 @@ export default function FriendBingoViewScreen() {
 
   const renderBoard = (b: BoardDetail) => {
     const [cols, rows] = b.grid.split('x').map(Number);
-    // cells 는 position 순으로 정렬돼 오지만 빠진 칸이 있을 수 있어 격자 크기에 맞춰 채운다
     const checked = Array.from({ length: cols * rows }, (_, i) => b.cells[i]?.isChecked ?? false);
     const achieved = checked.filter(Boolean).length;
     const { elapsed, total, formatted } = getBingoPeriod(b.startDate, b.targetDate);
-    // 끝난 빙고에 남은 기간을 보여줄 이유가 없다. 진행 기간은 아래 날짜 줄에 남는다.
     const showDeadline = b.status === 'progress';
 
     return (
@@ -77,17 +72,18 @@ export default function FriendBingoViewScreen() {
           />
         </View>
 
-        {/* 항목이 둘로 줄면 justify-between 은 양 끝으로 벌어져 허전해진다 */}
         <View
           className={`mt-6 flex-row px-10 ${showDeadline ? 'justify-between' : 'justify-around'}`}
         >
-          <BingoStat label="달성" current={achieved} total={cols * rows} />
+          <BingoStat label={t('common.achieve')} current={achieved} total={cols * rows} />
           <BingoStat
-            label="빙고"
+            label={t('common.bingo')}
             current={calcBingoCount(checked, cols, rows)}
             total={calcMaxBingo(cols, rows)}
           />
-          {showDeadline && <BingoStat label="종료일" current={elapsed} total={total} />}
+          {showDeadline && (
+            <BingoStat label={t('common.endDate')} current={elapsed} total={total} />
+          )}
         </View>
 
         {formatted ? (
@@ -99,7 +95,6 @@ export default function FriendBingoViewScreen() {
 
   return (
     <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
-      {/* 제목은 빙고판 위에만 둔다 — 헤더에도 넣으면 같은 제목이 두 번 나온다 */}
       <PageHeader />
 
       {loading ? (
@@ -109,7 +104,7 @@ export default function FriendBingoViewScreen() {
       ) : loadFailed ? (
         <ErrorState onRetry={() => void load()} />
       ) : !board ? (
-        <EmptyState message="볼 수 없는 빙고예요." />
+        <EmptyState message={t('common.emptyBingo')} />
       ) : (
         <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 32 }}>
           {renderBoard(board)}

@@ -45,7 +45,10 @@ export function FriendPicker({ selectedIds, onChange, maxCount }: FriendPickerPr
       .finally(() => setLoading(false));
   }, []);
 
-  useEffect(load, [load]);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void load();
+  }, [load]);
 
   const selected = selectedIds
     .map((id) => friends.find((f) => f.friendId === id))

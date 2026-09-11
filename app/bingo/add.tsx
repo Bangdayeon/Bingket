@@ -17,8 +17,11 @@ import { ScrollView, View } from 'react-native';
 import { CoachMarkTarget } from '@/features/coachmark/CoachMarkTarget';
 import { useCoachMarkScrollIntoView } from '@/features/coachmark/use-coach-mark-scroll';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 
 export default function BingoAddScreen() {
+  const { t } = useTranslation();
+
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { loadDraft } = useLocalSearchParams<{
@@ -30,7 +33,6 @@ export default function BingoAddScreen() {
   const [selectedGrid, setSelectedGrid] = useState<string>('3x3');
   const cellsRef = useRef<string[]>([]);
   const scrollRef = useRef<ScrollView>(null);
-  // 빙고 정보는 맨 위, 임시 저장 버튼은 맨 아래다. 「이전」으로 되돌아올 때도 따라와야 한다.
   const coachScroll = useCoachMarkScrollIntoView(scrollRef, {
     'add-info': 'top',
     'add-temp-save': 'end',
@@ -55,7 +57,7 @@ export default function BingoAddScreen() {
   const [showLeaveModal, setShowLeaveModal] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
 
-  // 드래프트 불러오기
+  // LOAD DRAFT
   useEffect(() => {
     if (!loadDraft) return;
     AsyncStorage.getItem('@bingket/draft-bingo').then((raw) => {
@@ -79,24 +81,24 @@ export default function BingoAddScreen() {
 
   const calcEndDate = (start: Date, duration: string): Date => {
     const d = new Date(start);
-    if (duration === '1개월') d.setMonth(d.getMonth() + 1);
-    else if (duration === '3개월') d.setMonth(d.getMonth() + 3);
-    else if (duration === '6개월') d.setMonth(d.getMonth() + 6);
-    else if (duration === '1년') d.setFullYear(d.getFullYear() + 1);
+    if (duration === t('home.oneMonth')) d.setMonth(d.getMonth() + 1);
+    else if (duration === t('home.threeMonths')) d.setMonth(d.getMonth() + 3);
+    else if (duration === t('home.sixMonths')) d.setMonth(d.getMonth() + 6);
+    else if (duration === t('home.oneYear')) d.setFullYear(d.getFullYear() + 1);
     return d;
   };
 
   const handleDurationSelect = (opt: string) => {
     markDirty();
     setSelectedDuration(opt);
-    if (opt !== '직접 지정' && startDate) setEndDate(calcEndDate(startDate, opt));
-    if (opt === '직접 지정') setEndDate(null);
+    if (opt !== t('home.custom') && startDate) setEndDate(calcEndDate(startDate, opt));
+    if (opt === t('home.custom')) setEndDate(null);
   };
 
   const handleStartDateConfirm = (date: Date) => {
     markDirty();
     setStartDate(date);
-    if (selectedDuration && selectedDuration !== '직접 지정') {
+    if (selectedDuration && selectedDuration !== t('home.custom')) {
       setEndDate(calcEndDate(date, selectedDuration));
     }
   };
@@ -110,7 +112,7 @@ export default function BingoAddScreen() {
     setPickerTarget(null);
   };
 
-  const isEndDateDisabled = selectedDuration !== null && selectedDuration !== '직접 지정';
+  const isEndDateDisabled = selectedDuration !== null && selectedDuration !== t('home.custom');
 
   const [cols, rows] = selectedGrid.split('x').map(Number);
   const totalCells = cols * rows;
@@ -126,12 +128,12 @@ export default function BingoAddScreen() {
   };
 
   const handleSave = () => {
-    if (!title.trim()) return showAlert('제목을 입력해주세요.');
-    if (!selectedDuration) return showAlert('목표 기간을 선택해주세요.');
-    if (!startDate) return showAlert('시작일을 선택해주세요.');
-    if (!endDate) return showAlert('종료일을 선택해주세요.');
+    if (!title.trim()) return showAlert(t('home.enterTitle'));
+    if (!selectedDuration) return showAlert(t('home.selectDuration'));
+    if (!startDate) return showAlert(t('home.selectStartDate'));
+    if (!endDate) return showAlert(t('home.selectEndDate'));
     if (cellsRef.current.filter((c) => c?.trim()).length < totalCells)
-      return showAlert('빙고 칸을 모두 채워주세요.');
+      return showAlert(t('home.fillAllCells'));
     setShowConfirmModal(true);
   };
 
@@ -153,12 +155,12 @@ export default function BingoAddScreen() {
       router.replace('/(tabs)');
     } catch (e) {
       Sentry.captureException(e);
-      showAlert('저장에 실패했어요. 잠시 후 다시 시도해주세요.');
+      showAlert(t('home.saveFail'));
     }
   };
 
   const handleTempSave = async () => {
-    if (!title.trim()) return showAlert('제목을 입력해주세요.');
+    if (!title.trim()) return showAlert(t('home.enterTitle'));
     const data = {
       title,
       selectedDuration,
@@ -171,34 +173,27 @@ export default function BingoAddScreen() {
       cells: cellsRef.current,
     };
     await AsyncStorage.setItem('@bingket/draft-bingo', JSON.stringify(data));
-    showAlert('임시 저장되었어요.\n홈 화면에서 이어서 만들 수 있어요.', () =>
-      router.replace('/(tabs)'),
-    );
+    showAlert(t('home.temporarySave'), () => router.replace('/(tabs)'));
   };
 
   return (
     <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
-      {/* 뒤로가기 줄만 고정한다. 제목과 저장 버튼은 내용과 함께 스크롤된다. */}
       <PageHeader onBack={handleBack} />
 
       <ScrollView
         ref={scrollRef}
         {...coachScroll}
         className="flex-1"
-        // 섹션 간격은 여기 한 곳에서 준다. 섹션마다 자기 패딩을 들면 제각각이 된다.
         contentContainerStyle={{ gap: 32, paddingBottom: insets.bottom + 32 }}
         keyboardShouldPersistTaps="handled"
-        // 저장 버튼이 하단 고정 바였을 땐 false가 맞았다(고정 바가 키보드에 밀려 튐).
-        // 버튼이 스크롤 안으로 들어온 지금은 반대로, 키보드 위로 올릴 수 없게 막는다.
         automaticallyAdjustKeyboardInsets
       >
-        {/* 제목은 내용과 함께 스크롤된다. 화면 위에 고정되는 건 뒤로가기 줄뿐이다. */}
         <View className="px-4 pb-2 pt-7">
-          <Text className="text-title-lg font-pretendard-medium text-gray-900">빙고 추가하기</Text>
+          <Text className="text-title-lg font-pretendard-medium text-gray-900">
+            {t('home.addBingo')}
+          </Text>{' '}
         </View>
 
-        {/* 첫 실행 안내 5단계가 가리키는 '빙고 정보'. 두 섹션을 한 자식으로 묶으므로
-            바깥 contentContainerStyle의 gap 32를 래퍼가 대신 준다. */}
         <CoachMarkTarget id="add-info" className="gap-8">
           <BingoTitle
             value={title}
@@ -258,13 +253,10 @@ export default function BingoAddScreen() {
           }}
         />
 
-        {/* 저장 버튼도 고정하지 않는다 — 화면이 짧아 보이고 스크롤 영역을 먹는다. */}
         <View className="flex-row gap-2 px-4">
-          {/* 첫 실행 안내 5단계가 가리키는 버튼. 래퍼가 flex-1을 이어받아야
-              두 버튼이 반씩 나눠 갖는 배치가 유지된다. */}
           <CoachMarkTarget id="add-temp-save" className="flex-1">
             <Button
-              label="임시 저장"
+              label={t('home.temporarySave')}
               variant="secondary"
               size="md"
               onClick={handleTempSave}
@@ -272,7 +264,7 @@ export default function BingoAddScreen() {
             />
           </CoachMarkTarget>
           <Button
-            label="저장하기"
+            label={t('home.save')}
             variant="primary"
             size="md"
             onClick={handleSave}
@@ -285,7 +277,7 @@ export default function BingoAddScreen() {
         visible={alertMessage !== null}
         title={alertMessage ?? ''}
         variant="single"
-        confirmLabel="확인"
+        confirmLabel={t('common.confirm')}
         onConfirm={() => {
           setAlertMessage(null);
           afterAlertAction?.();
@@ -296,12 +288,10 @@ export default function BingoAddScreen() {
       <Modal
         visible={showConfirmModal}
         title={title}
-        body={
-          '목표 기간, 칸 개수, 수정 가능 횟수는\n저장 후에는 수정할 수 없어요.\n이대로 빙고를 만들까요?'
-        }
+        body={t('home.saveConfirmBody')}
         variant="default"
-        cancelLabel="한 번 더 보기"
-        confirmLabel="빙고 만들기"
+        cancelLabel={t('home.saveConfirmCancel')}
+        confirmLabel={t('home.saveConfirm')}
         onCancel={() => setShowConfirmModal(false)}
         onConfirm={handleConfirmSave}
         onDismiss={() => setShowConfirmModal(false)}
@@ -309,10 +299,10 @@ export default function BingoAddScreen() {
 
       <Modal
         visible={showLeaveModal}
-        title="저장하지 않은 변경사항이 있어요"
-        body="지금 나가면 변경 사항이 저장되지 않아요."
-        cancelLabel="계속 수정"
-        confirmLabel="나가기"
+        title={t('home.leaveTitle')}
+        body={t('home.leaveBody')}
+        cancelLabel={t('home.leaveCancel')}
+        confirmLabel={t('home.leaveConfirm')}
         onCancel={() => setShowLeaveModal(false)}
         onConfirm={() => {
           setShowLeaveModal(false);

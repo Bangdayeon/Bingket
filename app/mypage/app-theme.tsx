@@ -7,15 +7,9 @@ import { applyAppTheme, loadAppTheme, saveAppTheme, type AppTheme } from '@/lib/
 import { FIXED, useColors } from '@/lib/use-colors';
 import { Text } from '@/components/Text';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 
 // type IconTheme = '기본' | '네온' | '노을' | '태닝';
-
-// 미리보기 반원은 라이트/다크 견본을 동시에 보여야 하므로 테마를 따라가면 안 된다.
-const APP_THEMES: { value: AppTheme; label: string; leftBg: string; rightBg: string }[] = [
-  { value: 'system', label: '시스템', leftBg: FIXED.preview.dark, rightBg: FIXED.preview.light },
-  { value: 'light', label: '라이트', leftBg: FIXED.preview.light, rightBg: FIXED.preview.light },
-  { value: 'dark', label: '다크', leftBg: FIXED.preview.dark, rightBg: FIXED.preview.dark },
-];
 
 // const ICON_THEMES: { value: IconTheme; iconName: string; image: number }[] = [
 //   {
@@ -39,9 +33,31 @@ const APP_THEMES: { value: AppTheme; label: string; leftBg: string; rightBg: str
 // const ICON_THEME_STORAGE_KEY = '@bingket/icon-theme';
 
 export default function AppThemeScreen() {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const [appTheme, setAppTheme] = useState<AppTheme>('system');
   const colors = useColors();
+
+  const APP_THEMES: { value: AppTheme; label: string; leftBg: string; rightBg: string }[] = [
+    {
+      value: 'system',
+      label: t('settings.theme.system'),
+      leftBg: FIXED.preview.dark,
+      rightBg: FIXED.preview.light,
+    },
+    {
+      value: 'light',
+      label: t('settings.theme.light'),
+      leftBg: FIXED.preview.light,
+      rightBg: FIXED.preview.light,
+    },
+    {
+      value: 'dark',
+      label: t('settings.theme.dark'),
+      leftBg: FIXED.preview.dark,
+      rightBg: FIXED.preview.dark,
+    },
+  ];
 
   useEffect(() => {
     void loadAppTheme().then(setAppTheme);
@@ -68,10 +84,9 @@ export default function AppThemeScreen() {
 
   return (
     <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
-      <PageHeader title="앱 테마" />
+      <PageHeader title={t('settings.theme.appTitle')} />
 
       <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}>
-        {/* 앱 테마 */}
         <View className="px-4 pt-6 pb-4">
           {APP_THEMES.map(({ value, label, leftBg, rightBg }) => (
             <Pressable
@@ -103,9 +118,9 @@ export default function AppThemeScreen() {
           ))}
         </View>
 
-        {/* 아이콘 테마 */}
+        {/* ICON THEME */}
         {/* <View className="px-5 pt-6">
-          <Text className="text-title-md mb-4">아이콘 테마</Text>
+          <Text className="text-title-md mb-4">{t('settings.theme.iconTitle')}</Text>
           {ICON_THEMES.map(({ value, image }) => (
             <Pressable
               key={value}

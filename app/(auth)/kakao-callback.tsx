@@ -7,11 +7,12 @@ import * as Sentry from '@sentry/react-native';
 import { supabase } from '@/lib/supabase';
 import Loading from '@/components/Loading';
 import { ErrorState } from '@/components/ErrorState';
+import { useTranslation } from 'react-i18next';
 
 WebBrowser.maybeCompleteAuthSession();
 
 function extractParam(url: string, key: string): string | undefined {
-  // fragment (#access_token=...) 또는 query (?access_token=...) 모두 대응
+  // fragment (#access_token=...) or query (?access_token=...)
   const fragment = url.split('#')[1] ?? '';
   const query = url.split('?')[1]?.split('#')[0] ?? '';
   const fromFragment = new URLSearchParams(fragment).get(key);
@@ -20,7 +21,8 @@ function extractParam(url: string, key: string): string | undefined {
 }
 
 export default function KakaoCallback() {
-  // 토큰을 못 받거나 세션 설정이 실패하면 예전에는 스피너만 도는 화면에 갇혔다.
+  const { t } = useTranslation();
+
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
@@ -33,7 +35,7 @@ export default function KakaoCallback() {
           setFailed(true);
           return;
         }
-        // 세션 설정 → _layout.tsx onAuthStateChange(SIGNED_IN) → /(tabs)
+        // session setting → _layout.tsx onAuthStateChange(SIGNED_IN) → /(tabs)
         await supabase.auth.setSession({ access_token, refresh_token });
       } catch (e) {
         Sentry.captureException(e);
@@ -41,10 +43,10 @@ export default function KakaoCallback() {
       }
     };
 
-    // 앱이 종료 후 딥링크로 열린 경우
+    // open by deeplink after closing app
     Linking.getInitialURL().then(handle);
 
-    // 앱이 포그라운드인 상태에서 딥링크가 들어온 경우
+    // get deeplink in foreground
     const sub = Linking.addEventListener('url', ({ url }) => handle(url));
     return () => sub.remove();
   }, []);
@@ -53,7 +55,7 @@ export default function KakaoCallback() {
     return (
       <View className="flex-1 bg-surface">
         <ErrorState
-          message="로그인을 마치지 못했어요"
+          message={`${t('auth.login.loginFailed')} ${t('common.error.retry')}`}
           onRetry={() => router.replace('/(auth)/login')}
         />
       </View>

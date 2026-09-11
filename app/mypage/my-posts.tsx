@@ -9,11 +9,11 @@ import Loading from '@/components/Loading';
 import { ErrorState } from '@/components/ErrorState';
 import { EmptyState } from '@/components/EmptyState';
 import * as Sentry from '@sentry/react-native';
+import { useTranslation } from 'react-i18next';
 
 function PostItem({ post, onPress }: { post: MyPost; onPress: () => void }) {
   return (
     <Pressable onPress={onPress} className="px-4 pb-4 pt-4">
-      {/* 시안: 시각은 제목과 같은 줄 뒤에 붙는다 */}
       <View className="flex-row items-baseline gap-2">
         <Text className="flex-shrink text-body-md text-gray-900" numberOfLines={1}>
           {post.title}
@@ -28,6 +28,7 @@ function PostItem({ post, onPress }: { post: MyPost; onPress: () => void }) {
 }
 
 export default function MyPostsScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [posts, setPosts] = useState<MyPost[]>([]);
@@ -50,7 +51,7 @@ export default function MyPostsScreen() {
 
   return (
     <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
-      <PageHeader title="게시글" />
+      <PageHeader title={t('settings.post.title')} />
 
       {loading ? (
         <View className="flex-1 items-center justify-center">
@@ -61,8 +62,8 @@ export default function MyPostsScreen() {
       ) : posts.length === 0 ? (
         <EmptyState
           align="top"
-          message="아직 작성한 글이 없어요"
-          actionLabel="게시판 둘러보기"
+          message={t('settings.post.empty')}
+          actionLabel={t('settings.post.emptyBtn')}
           onAction={() => router.replace('/(tabs)/community')}
         />
       ) : (

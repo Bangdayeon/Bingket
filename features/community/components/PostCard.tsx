@@ -16,6 +16,7 @@ import type { BingoData } from '@/types/bingo';
 import { Popover } from '@/components/Popover';
 import { Modal } from '@/components/Modal';
 import { submitReport, blockUser } from '@/features/community/lib/community';
+import { useTranslation } from 'react-i18next';
 
 const REPORT_REASONS = [
   '상업적 광고 및 판매',
@@ -74,6 +75,7 @@ interface PostCardProps {
 }
 
 export const PostCard = memo(function PostCard({ post, currentUserId, onBlock }: PostCardProps) {
+  const { t } = useTranslation();
   const router = useRouter();
 
   const [showMenu, setShowMenu] = useState(false);
@@ -252,7 +254,7 @@ export const PostCard = memo(function PostCard({ post, currentUserId, onBlock }:
         }
         variant="warning" // danger 확인 + 취소 버튼 둘 다 사용
         confirmLabel="신고"
-        cancelLabel="취소"
+        cancelLabel={t('common.cancel')}
         confirmDisabled={!selectedReason}
         onConfirm={async () => {
           if (!selectedReason) return;

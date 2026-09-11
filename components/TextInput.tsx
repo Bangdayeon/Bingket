@@ -13,7 +13,6 @@ export const TextInput = forwardRef<RNTextInput, Props>(function TextInput(
 ) {
   const isMultiline = rest.multiline || maxHeight !== undefined;
 
-  // 시안 Input: 높이 48, radius 12(rounded-xl), gray-200 배경, 좌우 여백 16, body-md / gray-800.
   return (
     <View
       className={`

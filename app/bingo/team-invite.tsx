@@ -1,8 +1,13 @@
 import * as Sentry from '@sentry/react-native';
+
 import { useEffect, useRef, useState } from 'react';
+
 import { ScrollView, View } from 'react-native';
+
 import { useLocalSearchParams, useRouter } from 'expo-router';
+
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
 import Button from '@/components/Button';
 import { Modal } from '@/components/Modal';
 import { Text } from '@/components/Text';
@@ -22,11 +27,10 @@ import {
 import { calcDaysUntilStart, calcTeamDday, isTeamStarted } from '@/features/team/lib/team-result';
 import { TEAM_MODE_LABEL } from '@/types/team';
 import type { BingoData } from '@/types/bingo';
-
-const editCountKey = (maxEdits: number): string =>
-  maxEdits === 9999 || maxEdits === -1 ? '무제한' : String(maxEdits);
+import { useTranslation } from 'react-i18next';
 
 export default function TeamInviteScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { teamId } = useLocalSearchParams<{ teamId: string }>();
@@ -34,28 +38,36 @@ export default function TeamInviteScreen() {
   const [invite, setInvite] = useState<TeamInviteItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [acting, setActing] = useState(false);
-  /** 경쟁하기에서 내 빙고 작성 단계로 넘어갔는지 */
+
+  // check before writing my bingo
   const [composing, setComposing] = useState(false);
   const [alertMessage, setAlertMessage] = useState<string | null>(null);
   const [showRejectModal, setShowRejectModal] = useState(false);
 
-  // 경쟁하기 모드에서 직접 쓰는 내 빙고
+  // write my bingo
   const [myTitle, setMyTitle] = useState('');
   const [selectedGrid, setSelectedGrid] = useState('3x3');
   const [selectedEditCount, setSelectedEditCount] = useState('0');
   const [selectedTheme, setSelectedTheme] = useState('default');
   const cellsRef = useRef<string[]>([]);
 
+  const editCountKey = (maxEdits: number): string =>
+    maxEdits === 9999 || maxEdits === -1 ? t('home.infinite') : String(maxEdits);
+
   useEffect(() => {
     if (!teamId) return;
+
     fetchTeamInvite(teamId)
       .then((data) => {
         setInvite(data);
-        if (data) setMyTitle(data.title);
+
+        if (data) {
+          setMyTitle(data.title);
+        }
       })
-      .catch(() => setAlertMessage('초대를 불러오지 못했어요.'))
+      .catch(() => setAlertMessage(`${t('home.loadInviteError')} ${t('common.error.retry')}`))
       .finally(() => setLoading(false));
-  }, [teamId]);
+  }, [teamId, t]);
 
   if (loading) {
     return (
@@ -87,22 +99,18 @@ export default function TeamInviteScreen() {
       }
     : null;
 
-  /**
-   * 경쟁하기는 수락하면 내 빙고를 새로 만들어야 한다. 시안에는 작성 화면이 없어서
-   * 같은 화면에서 2단계로 나눴다 — '수락하고 빙고 만들기'를 누르면 작성 UI가 펼쳐지고,
-   * 거기서 한 번 더 눌러야 실제로 합류한다.
-   */
   const confirmLabel = isCompetition
     ? composing
-      ? '빙고 만들기'
-      : '수락하고 빙고 만들기'
-    : '같이하기';
+      ? t('home.saveConfirm')
+      : t('home.okAndCreate')
+    : t('home.doWith');
 
   const handleConfirm = () => {
     if (isCompetition && !composing) {
       setComposing(true);
       return;
     }
+
     void handleAccept();
   };
 
@@ -111,12 +119,18 @@ export default function TeamInviteScreen() {
 
     if (isCompetition) {
       const [cols, rows] = selectedGrid.split('x').map(Number);
-      if (!myTitle.trim()) return setAlertMessage('제목을 입력해주세요.');
-      if (cellsRef.current.filter((c) => c?.trim()).length < cols * rows)
-        return setAlertMessage('빙고 칸을 모두 채워주세요.');
+
+      if (!myTitle.trim()) {
+        return setAlertMessage(t('home.enterTitle'));
+      }
+
+      if (cellsRef.current.filter((cell) => cell?.trim()).length < cols * rows) {
+        return setAlertMessage(t('home.fillAllCells'));
+      }
     }
 
     setActing(true);
+
     try {
       await acceptTeamInvite({
         teamId,
@@ -138,7 +152,11 @@ export default function TeamInviteScreen() {
               }
             : undefined,
       });
-      router.replace({ pathname: '/bingo/team-status', params: { teamId } });
+
+      router.replace({
+        pathname: '/bingo/team-status',
+        params: { teamId },
+      });
     } catch (e) {
       Sentry.captureException(e);
       setAlertMessage(acceptErrorMessage(e));
@@ -150,11 +168,14 @@ export default function TeamInviteScreen() {
   const handleReject = async () => {
     setShowRejectModal(false);
     setActing(true);
+
     try {
       await rejectTeamInvite(teamId);
       router.back();
     } catch (e) {
-      setAlertMessage(e instanceof Error ? e.message : '거절에 실패했어요.');
+      setAlertMessage(
+        e instanceof Error ? e.message : `${t('home.failReject')} ${t('common.error.retry')}`,
+      );
     } finally {
       setActing(false);
     }
@@ -162,45 +183,62 @@ export default function TeamInviteScreen() {
 
   return (
     <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
-      <PageHeader title={invite ? TEAM_MODE_LABEL[invite.mode] : '초대'} />
+      <PageHeader title={invite ? TEAM_MODE_LABEL[invite.mode] : t('home.invite')} />
 
       {!invite ? (
         <View className="flex-1 items-center justify-center">
-          <Text className="text-body-md text-gray-400">초대를 찾을 수 없어요.</Text>
+          <Text className="text-body-md text-gray-400">
+            {t('home.loadInviteError')} {t('common.error.retry')}
+          </Text>
         </View>
       ) : (
         <ScrollView
           className="flex-1"
-          contentContainerStyle={{ paddingBottom: insets.bottom + 100 }}
+          contentContainerStyle={{
+            paddingBottom: insets.bottom + 100,
+          }}
           keyboardShouldPersistTaps="handled"
         >
           <View className="mt-6 gap-3 px-4">
             <View className="flex-row items-center gap-3">
               <ProfileAvatar avatarUrl={invite.ownerAvatarUrl} size={32} />
+
               <Text className="flex-1 text-body-md text-gray-900">
-                {invite.ownerDisplayName}님이 빙고
-                {isCompetition ? '로 경쟁하고' : '를 함께하고'} 싶어해요
+                {t(isCompetition ? 'home.inviteCompetitionMessage' : 'home.inviteTogetherMessage', {
+                  name: invite.ownerDisplayName,
+                })}
               </Text>
             </View>
 
             <Text className="text-body-md text-gray-800">
-              진행 기간: {invite.startDate.replaceAll('-', '.')} ~{' '}
-              {invite.endDate.replaceAll('-', '.')}
+              {t('home.period', {
+                startDate: invite.startDate.replaceAll('-', '.'),
+                endDate: invite.endDate.replaceAll('-', '.'),
+              })}
             </Text>
+
             <View>
               <Text className="text-body-sm text-gray-700">
                 {started
-                  ? `종료일까지 ${calcTeamDday(invite.endDate)}일 남았어요`
-                  : `${calcDaysUntilStart(invite.startDate)}일 후 다 같이 시작해요`}
+                  ? t('home.daysUntilEnd', {
+                      days: calcTeamDday(invite.endDate),
+                    })
+                  : t('home.daysUntilStart', {
+                      days: calcDaysUntilStart(invite.startDate),
+                    })}
               </Text>
+
               <Text className="text-body-sm text-gray-700">
-                지금 {invite.memberCount}명이 참여 중이에요
+                {t('home.currentMemberCount', {
+                  count: invite.memberCount,
+                })}
               </Text>
             </View>
 
             {invite.betText && (
               <View className="rounded-2xl bg-gray-200 px-4 py-3">
-                <Text className="mb-1 text-caption-md text-gray-700">내기 내용</Text>
+                <Text className="mb-1 text-caption-md text-gray-700">{t('home.betContent')}</Text>
+
                 <Text className="text-body-md text-gray-900">{invite.betText}</Text>
               </View>
             )}
@@ -216,13 +254,14 @@ export default function TeamInviteScreen() {
             </View>
           )}
 
-          {/* own: 수락 버튼을 누른 뒤에 내 빙고를 쓴다 */}
           {composing && (
             <View className="mt-8">
               <Text className="px-4 pb-2 text-caption-md text-gray-700">
-                기간은 초대한 사람이 정한 그대로예요. 목표만 자유롭게 정하면 돼요.
+                {t('home.composingDescription')}
               </Text>
+
               <BingoTitle value={myTitle} onChange={setMyTitle} />
+
               <WriteBingo
                 title={myTitle}
                 selectedGrid={selectedGrid}
@@ -232,8 +271,8 @@ export default function TeamInviteScreen() {
                 selectedTheme={selectedTheme}
                 onThemeSelect={setSelectedTheme}
                 cells={[]}
-                onCellsChange={(v) => {
-                  cellsRef.current = v;
+                onCellsChange={(value) => {
+                  cellsRef.current = value;
                 }}
               />
             </View>
@@ -247,14 +286,15 @@ export default function TeamInviteScreen() {
           style={{ paddingBottom: insets.bottom + 8 }}
         >
           <Button
-            label={composing ? '이전' : '거절하기'}
+            label={composing ? t('common.previous') : t('home.rejectInvite')}
             variant="secondary"
             size="md"
             onClick={composing ? () => setComposing(false) : () => setShowRejectModal(true)}
             className="flex-1"
           />
+
           <Button
-            label={acting ? '처리 중...' : confirmLabel}
+            label={acting ? t('home.processing') : confirmLabel}
             variant="primary"
             size="md"
             onClick={handleConfirm}
@@ -265,11 +305,11 @@ export default function TeamInviteScreen() {
 
       <Modal
         visible={showRejectModal}
-        title="초대를 거절할까요?"
-        body="거절하면 이 팀 빙고에 참여할 수 없어요."
+        title={t('home.rejectInviteTitle')}
+        body={t('home.rejectInviteBody')}
         variant="warning"
-        cancelLabel="취소"
-        confirmLabel="거절하기"
+        cancelLabel={t('common.cancel')}
+        confirmLabel={t('home.rejectInvite')}
         onCancel={() => setShowRejectModal(false)}
         onDismiss={() => setShowRejectModal(false)}
         onConfirm={handleReject}
@@ -279,7 +319,7 @@ export default function TeamInviteScreen() {
         visible={alertMessage !== null}
         title={alertMessage ?? ''}
         variant="single"
-        confirmLabel="확인"
+        confirmLabel={t('common.confirm')}
         onConfirm={() => setAlertMessage(null)}
       />
     </View>

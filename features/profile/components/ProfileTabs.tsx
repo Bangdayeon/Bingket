@@ -1,7 +1,8 @@
 import { Pressable, View } from 'react-native';
 import { Text } from '@/components/Text';
+import { useTranslation } from 'react-i18next';
 
-export const PROFILE_TABS = ['피드', '뱃지'] as const;
+export const PROFILE_TABS = ['feed', 'badge'] as const;
 export type ProfileTab = (typeof PROFILE_TABS)[number];
 
 interface Props {
@@ -14,6 +15,7 @@ interface Props {
 
 /** 내 공간과 타인 프로필이 같은 탭을 쓴다. 시안: 밑줄 44×1.5. */
 export function ProfileTabs({ value, onChange, feedCount, className = '' }: Props) {
+  const { t } = useTranslation();
   return (
     <View className={`flex-row gap-6 border-b border-gray-300 px-4 ${className}`}>
       {PROFILE_TABS.map((tab) => (
@@ -27,9 +29,9 @@ export function ProfileTabs({ value, onChange, feedCount, className = '' }: Prop
                   : 'text-body-md font-pretendard-medium text-gray-400'
               }
             >
-              {tab}
+              {t(`my.${tab}`)}
             </Text>
-            {tab === '피드' && feedCount !== undefined && (
+            {tab === 'feed' && feedCount !== undefined && (
               <Text className="text-caption-sm text-gray-700">{feedCount}</Text>
             )}
           </View>

@@ -18,15 +18,16 @@ import { DatePicker } from '@/features/bingo/bingo-edit/DatePicker';
 import { FriendPicker } from '@/features/team/components/FriendPicker';
 import { createTeam } from '@/features/team/lib/team';
 import { TEAM_MAX_MEMBERS, TEAM_MODE_LABEL, type TeamMode, TEAM_MODE_GUIDE } from '@/types/team';
+import { useTranslation } from 'react-i18next';
 
 const MAX_INVITES = TEAM_MAX_MEMBERS - 1;
-// 시안: 내기 내용은 50자까지
 const BET_MAX_LENGTH = 50;
 
 const isTeamMode = (value: string | undefined): value is TeamMode =>
   value === 'shared' || value === 'copied' || value === 'competition';
 
 export default function TeamCreateScreen() {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { mode: modeParam } = useLocalSearchParams<{ mode?: string }>();
@@ -41,15 +42,12 @@ export default function TeamCreateScreen() {
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [pickerTarget, setPickerTarget] = useState<'start' | 'end' | null>(null);
   const [tempDate, setTempDate] = useState(new Date());
-  // 친구 고르기는 친구 목록 화면에서 하고, 그 선택을 공용 저장소로 주고받는다.
   const friendIds = useFriendSelection();
 
-  // 저장소는 화면 밖에 있으므로 새로 들어올 때마다 비운다.
   useEffect(() => {
     friendSelection.set([]);
   }, []);
   const [betText, setBetText] = useState('');
-  // 시안: 공개 범위는 경쟁하기 제작 화면에만 있다. 함께하기는 공유판이라 의미가 없다.
   const [visibility, setVisibility] = useState<BoardVisibility>('friends');
   const cellsRef = useRef<string[]>([]);
 
@@ -65,25 +63,25 @@ export default function TeamCreateScreen() {
 
   const calcEndDate = (start: Date, duration: string): Date => {
     const d = new Date(start);
-    if (duration === '1개월') d.setMonth(d.getMonth() + 1);
-    else if (duration === '3개월') d.setMonth(d.getMonth() + 3);
-    else if (duration === '6개월') d.setMonth(d.getMonth() + 6);
-    else if (duration === '1년') d.setFullYear(d.getFullYear() + 1);
+    if (duration === t('home.oneMonth')) d.setMonth(d.getMonth() + 1);
+    else if (duration === t('home.threeMonths')) d.setMonth(d.getMonth() + 3);
+    else if (duration === t('home.sixMonths')) d.setMonth(d.getMonth() + 6);
+    else if (duration === t('home.oneYear')) d.setFullYear(d.getFullYear() + 1);
     return d;
   };
 
   const handleDurationSelect = (opt: string) => {
     markDirty();
     setSelectedDuration(opt);
-    if (opt !== '직접 지정' && startDate) setEndDate(calcEndDate(startDate, opt));
-    if (opt === '직접 지정') setEndDate(null);
+    if (opt !== t('home.custom') && startDate) setEndDate(calcEndDate(startDate, opt));
+    if (opt === t('home.custom')) setEndDate(null);
   };
 
   const handlePickerConfirm = () => {
     markDirty();
     if (pickerTarget === 'start') {
       setStartDate(tempDate);
-      if (selectedDuration && selectedDuration !== '직접 지정') {
+      if (selectedDuration && selectedDuration !== t('home.custom')) {
         setEndDate(calcEndDate(tempDate, selectedDuration));
       }
     } else {
@@ -92,18 +90,18 @@ export default function TeamCreateScreen() {
     setPickerTarget(null);
   };
 
-  const isEndDateDisabled = selectedDuration !== null && selectedDuration !== '직접 지정';
+  const isEndDateDisabled = selectedDuration !== null && selectedDuration !== t('home.custom');
   const [cols, rows] = selectedGrid.split('x').map(Number);
   const totalCells = cols * rows;
 
   const handleSave = () => {
-    if (!title.trim()) return setAlertMessage('제목을 입력해주세요.');
-    if (!selectedDuration) return setAlertMessage('목표 기간을 선택해주세요.');
-    if (!startDate) return setAlertMessage('시작일을 선택해주세요.');
-    if (!endDate) return setAlertMessage('종료일을 선택해주세요.');
+    if (!title.trim()) return setAlertMessage(t('home.enterTitle'));
+    if (!selectedDuration) return setAlertMessage(t('home.selectDuration'));
+    if (!startDate) return setAlertMessage(t('home.selectStartDate'));
+    if (!endDate) return setAlertMessage(t('common.endDate'));
     if (cellsRef.current.filter((c) => c?.trim()).length < totalCells)
-      return setAlertMessage('빙고 칸을 모두 채워주세요.');
-    if (friendIds.length === 0) return setAlertMessage('함께할 친구를 한 명 이상 선택해주세요.');
+      return setAlertMessage(t('home.fillAllCells'));
+    if (friendIds.length === 0) return setAlertMessage(t('home.selectFriends'));
     setShowConfirmModal(true);
   };
 
@@ -131,7 +129,7 @@ export default function TeamCreateScreen() {
       router.replace({ pathname: '/bingo/team-status', params: { teamId } });
     } catch (e) {
       Sentry.captureException(e);
-      setAlertMessage(e instanceof Error ? e.message : '저장에 실패했어요.');
+      setAlertMessage(e instanceof Error ? e.message : t('home.saveFail'));
     } finally {
       setSaving(false);
     }
@@ -146,13 +144,10 @@ export default function TeamCreateScreen() {
 
       <ScrollView
         className="flex-1"
-        // 섹션 간격은 여기 한 곳에서 준다. 빙고 추가 화면(app/bingo/add.tsx)과 같은 값이라야
-        // 제목·목표 기간·빙고 칸 수·공개 범위가 두 화면에서 같은 리듬으로 떨어진다.
         contentContainerStyle={{ gap: 32, paddingBottom: insets.bottom + 100 }}
         keyboardShouldPersistTaps="handled"
         automaticallyAdjustKeyboardInsets={false}
       >
-        {/* PageHeader 가 제목 아래 8을 이미 주므로 여기 pt 만큼이 실제 간격이 된다 */}
         <Text className="px-4 pb-2 pt-8 text-caption-md text-gray-700">
           {TEAM_MODE_GUIDE[mode]}
         </Text>
@@ -211,14 +206,14 @@ export default function TeamCreateScreen() {
 
         {mode === 'competition' && (
           <View className="px-4">
-            <SectionLabel label="내기 내용" />
+            <SectionLabel label={t('home.betContent')} />
             <TextInput
               value={betText}
               onChangeText={(v) => {
                 markDirty();
                 setBetText(v.slice(0, BET_MAX_LENGTH));
               }}
-              placeholder="메모를 입력해주세요."
+              placeholder={t('home.memoPlaceholder')}
               multiline
               className="h-20 rounded-2xl bg-gray-200 p-3 text-body-md text-gray-900 placeholder:text-gray-500"
               style={{ textAlignVertical: 'top' }}
@@ -231,7 +226,7 @@ export default function TeamCreateScreen() {
 
         <View className="px-4">
           <SectionLabel
-            label={mode === 'competition' ? '친구 선택하기' : '초대할 친구'}
+            label={mode === 'competition' ? t('home.selectFriend') : t('home.inviteFriend')}
             hint={`(${friendIds.length}/${MAX_INVITES})`}
           />
           <FriendPicker
@@ -249,17 +244,17 @@ export default function TeamCreateScreen() {
         visible={alertMessage !== null}
         title={alertMessage ?? ''}
         variant="single"
-        confirmLabel="확인"
+        confirmLabel={t('common.confirm')}
         onConfirm={() => setAlertMessage(null)}
       />
 
       <Modal
         visible={showConfirmModal}
         title={title}
-        body={`기간과 칸 내용은 만든 뒤에 바꿀 수 없어요.\n친구 ${friendIds.length}명에게 초대를 보낼까요?`}
+        body={t('home.confirmFriendBingo', { count: friendIds.length })}
         variant="default"
-        cancelLabel="한 번 더 보기"
-        confirmLabel="초대 보내기"
+        cancelLabel={t('home.friendBingoCancel')}
+        confirmLabel={t('home.friendBingoConfirm')}
         onCancel={() => setShowConfirmModal(false)}
         onConfirm={handleConfirmSave}
         onDismiss={() => setShowConfirmModal(false)}
@@ -267,11 +262,11 @@ export default function TeamCreateScreen() {
 
       <Modal
         visible={showLeaveModal}
-        title="작성 중인 내용이 있어요"
-        body="나가면 지금까지 쓴 내용이 사라져요."
+        title={t('home.leaveTitle')}
+        body={t('home.leaveBody')}
         variant="warning"
-        cancelLabel="이어서 쓰기"
-        confirmLabel="나가기"
+        cancelLabel={t('home.leaveCancel')}
+        confirmLabel={t('home.leaveConfirm')}
         onCancel={() => setShowLeaveModal(false)}
         onConfirm={() => {
           setShowLeaveModal(false);
@@ -297,7 +292,7 @@ export default function TeamCreateScreen() {
         style={{ paddingBottom: insets.bottom + 8 }}
       >
         <Button
-          label={saving ? '만드는 중...' : '함께 빙고 시작하기'}
+          label={saving ? t('home.creating') : t('home.startBingoWith')}
           variant="primary"
           size="md"
           onClick={handleSave}

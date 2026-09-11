@@ -12,7 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function LoginScreen() {
   const { requireAgreement, modalVisible, onAgree, onDismiss } = useAgreement();
-  // 로그인 실패는 Sentry로만 가고 화면에는 아무 변화가 없었다. 첫 진입 이탈 지점이다.
+  // login fail sent only to Sentry, and now it's fist exit point
   const [errorMessage, setErrorMessage] = useState('');
 
   return (

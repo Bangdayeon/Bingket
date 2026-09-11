@@ -15,6 +15,7 @@ import {
 } from '@/features/mypage/lib/notification-settings';
 import Loading from '@/components/Loading';
 import { Toast } from '@/components/Toast';
+import { useTranslation } from 'react-i18next';
 
 interface ToggleRowProps {
   label: string;
@@ -31,7 +32,6 @@ function ToggleRow({ label, value, onValueChange }: ToggleRowProps) {
   );
 }
 
-/** 시안: 그룹 이름은 작은 회색 캡션이다 */
 function GroupCaption({ label }: { label: string }) {
   return <Text className="px-4 pb-1 pt-6 text-caption-md text-gray-500">{label}</Text>;
 }
@@ -39,6 +39,7 @@ function GroupCaption({ label }: { label: string }) {
 const Divider = () => <View className="h-px bg-gray-300" />;
 
 export default function AlertSettingScreen() {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const [settings, setSettings] = useState<NotificationSettings>(DEFAULT_NOTIFICATION_SETTINGS);
   const [loading, setLoading] = useState(true);
@@ -47,13 +48,11 @@ export default function AlertSettingScreen() {
   const [osDenied, setOsDenied] = useState(false);
 
   useEffect(() => {
-    // 1. AsyncStorage 캐시 → 즉시 표시
+    // 1. AsyncStorage cash → show exactly
     loadCachedNotificationSettings().then((cached) => {
       if (cached) setSettings(cached);
     });
-    // 2. Supabase → 최신값으로 업데이트.
-    //    실패하면 헤더 스피너가 영영 돌고, 토글은 서버값이 아닌 기본값으로 굳어
-    //    실제 설정과 화면이 달라진다.
+    // 2. Supabase → update newest value
     fetchNotificationSettings()
       .then(setSettings)
       .catch((error: unknown) => {
@@ -73,7 +72,6 @@ export default function AlertSettingScreen() {
     const prev = settings;
     const next = { ...settings, ...patch };
     setSettings(next);
-    // 저장 실패 시 토글이 켜진 것처럼 보이는데 실제로는 반영되지 않는 상황을 막는다
     saveNotificationSettings(next).catch((error: unknown) => {
       Sentry.captureException(error);
       setSettings(prev);
@@ -83,7 +81,10 @@ export default function AlertSettingScreen() {
 
   return (
     <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
-      <PageHeader title="알림 설정" right={loading ? <Loading /> : undefined} />
+      <PageHeader
+        title={t('settings.notificationSettings')}
+        right={loading ? <Loading /> : undefined}
+      />
 
       <ScrollView className="flex-1">
         {osDenied ? (
@@ -91,56 +92,58 @@ export default function AlertSettingScreen() {
             onPress={() => void Linking.openSettings()}
             className="mx-4 mt-4 rounded-xl bg-gray-100 px-4 py-3"
           >
-            <Text className="text-body-md font-pretendard-medium">기기 알림이 꺼져 있어요</Text>
+            <Text className="text-body-md font-pretendard-medium">
+              {t('settings.notification.blockTitle')}
+            </Text>
             <Text className="mt-0.5 text-caption-sm text-gray-500">
-              아래 설정과 무관하게 알림이 오지 않아요. 눌러서 기기 설정에서 켜주세요.
+              {t('settings.notification.blockBody')}
             </Text>
           </Pressable>
         ) : null}
 
-        <GroupCaption label="빙고" />
+        <GroupCaption label={t('common.bingo')} />
         <ToggleRow
-          label="기간 임박 알림"
+          label={t('settings.notification.dedline')}
           value={settings.bingoDeadline}
           onValueChange={(v) => update({ bingoDeadline: v })}
         />
 
         <Divider />
 
-        <GroupCaption label="팀 빙고" />
+        <GroupCaption label={t('settings.notification.teamBingo')} />
         <ToggleRow
-          label="팀원 활동 알림"
+          label={t('settings.notification.teamAction')}
           value={settings.teamActivity}
           onValueChange={(v) => update({ teamActivity: v })}
         />
 
         <Divider />
 
-        <GroupCaption label="게시판" />
+        <GroupCaption label={t('community.title')} />
         {/* <ToggleRow
           label="인기글 알림"
           value={settings.communityPopular}
           onValueChange={(v) => update({ communityPopular: v })}
         /> */}
         <ToggleRow
-          label="댓글 알림"
+          label={t('settings.notification.comment')}
           value={settings.communityComment}
           onValueChange={(v) => update({ communityComment: v })}
         />
         <ToggleRow
-          label="좋아요 알림"
+          label={t('settings.notification.like')}
           value={settings.communityLike}
           onValueChange={(v) => update({ communityLike: v })}
         />
       </ScrollView>
 
       <Toast
-        message="알림 설정 저장에 실패했어요. 잠시 후 다시 시도해주세요."
+        message={t('settings.notification.saveFail')}
         visible={saveFailed}
         onDismiss={() => setSaveFailed(false)}
       />
       <Toast
-        message="알림 설정을 불러오지 못했어요. 화면의 값이 실제와 다를 수 있어요."
+        message={t('settings.notification.loadError')}
         visible={loadFailed}
         onDismiss={() => setLoadFailed(false)}
       />

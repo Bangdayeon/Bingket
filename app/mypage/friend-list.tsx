@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
+
 import { Text } from '@/components/Text';
 import { ProfileAvatar } from '@/components/ProfileAvatar';
 import CloseIcon from '@/assets/icons/ic_close.svg';
@@ -35,9 +37,12 @@ import Loading from '@/components/Loading';
 import { LIMITS } from '@/constants/limits';
 
 export default function FriendListScreen() {
+  const { t } = useTranslation();
+
   const router = useRouter();
   const { mode, max } = useLocalSearchParams<{ mode?: string; max?: string }>();
   const insets = useSafeAreaInsets();
+
   const isSelectMode = mode === 'select';
   const maxSelect = Number(max) || TEAM_MAX_MEMBERS - 1;
   const picked = useFriendSelection();
@@ -63,48 +68,68 @@ export default function FriendListScreen() {
 
   const loadLists = useCallback(async () => {
     setListLoading(true);
+
     try {
       const [friendsData, incomingData] = await Promise.all([
         fetchFriends(),
         fetchIncomingRequests(),
       ]);
+
       setFriends(friendsData);
       setPendingRequests(incomingData);
     } catch (e) {
-      setErrorMessage(e instanceof Error ? e.message : '데이터를 불러오지 못했어요.');
+      setErrorMessage(e instanceof Error ? e.message : t('friends.loadFailed'));
     } finally {
       setListLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
-    loadLists();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void loadLists();
   }, [loadLists]);
 
   // Search
-  const runSearch = useCallback(async (keyword: string) => {
-    const trimmed = keyword.trim();
-    if (!trimmed) {
+  const runSearch = useCallback(
+    async (keyword: string) => {
+      const trimmed = keyword.trim();
+
+      if (!trimmed) {
+        setSearchResults(null);
+        setSearchError(null);
+        return;
+      }
+
+      setSearchLoading(true);
+      setSearchError(null);
+
+      try {
+        setSearchResults(await searchUsers(trimmed));
+      } catch (e) {
+        setSearchError(e instanceof Error ? e.message : t('friends.searchFailed'));
+      } finally {
+        setSearchLoading(false);
+      }
+    },
+    [t],
+  );
+
+  const handleFriendSearchChange = (value: string) => {
+    setFriendSearch(value);
+
+    if (value.trim().length < 2) {
       setSearchResults(null);
       setSearchError(null);
-      return;
     }
-    setSearchLoading(true);
-    setSearchError(null);
-    try {
-      setSearchResults(await searchUsers(trimmed));
-    } catch (e) {
-      setSearchError(e instanceof Error ? e.message : '검색에 실패했어요.');
-    } finally {
-      setSearchLoading(false);
-    }
-  }, []);
+  };
 
   // Send friend request
   const handleRequest = async (item: UserSearchResult) => {
     setSending(item.id);
+
     try {
       const conflict = await checkIncomingConflict(item.id);
+
       if (conflict) {
         setConflictModal(conflict);
         return;
@@ -120,7 +145,7 @@ export default function FriendListScreen() {
         prev ? prev.map((r) => (r.id === item.id ? { ...r, request_status: 'pending' } : r)) : prev,
       );
     } catch (e) {
-      setErrorMessage(e instanceof Error ? e.message : '친구 요청에 실패했어요.');
+      setErrorMessage(e instanceof Error ? e.message : t('friends.requestFailed'));
     } finally {
       setSending(null);
     }
@@ -130,30 +155,39 @@ export default function FriendListScreen() {
   const handleIncomingResponse = async (requestId: string, accept: boolean) => {
     try {
       await respondToFriendRequest(requestId, accept);
+
       setPendingRequests((prev) => prev.filter((r) => r.id !== requestId));
-      if (accept) await loadLists();
+
+      if (accept) {
+        await loadLists();
+      }
     } catch (e) {
-      setErrorMessage(e instanceof Error ? e.message : '처리에 실패했어요.');
+      setErrorMessage(e instanceof Error ? e.message : t('friends.processFailed'));
     }
   };
 
   // Conflict modal response
   const handleConflictResponse = async (accept: boolean) => {
     if (!conflictModal) return;
+
     await handleIncomingResponse(conflictModal.requestId, accept);
     setConflictModal(null);
   };
 
   // Delete friend
-  const handleDeleteFriend = (friend: Friend) => setDeletingFriend(friend);
+  const handleDeleteFriend = (friend: Friend) => {
+    setDeletingFriend(friend);
+  };
 
   const confirmDeleteFriend = async () => {
     if (!deletingFriend) return;
+
     try {
       await deleteFriend(deletingFriend.friendId);
+
       setFriends((prev) => prev.filter((f) => f.friendId !== deletingFriend.friendId));
     } catch {
-      setErrorMessage('친구 삭제에 실패했어요.');
+      setErrorMessage(t('friends.deleteFailed'));
     } finally {
       setDeletingFriend(null);
     }
@@ -163,13 +197,12 @@ export default function FriendListScreen() {
 
   const handleInvite = async () => {
     try {
-      // 네이티브 모듈 초기화가 화면 진입 시점에 일어나지 않도록 버튼 클릭 시에만 로드
       const { default: KakaoShareLink } = await import('react-native-kakao-share-link');
 
       await KakaoShareLink.sendFeed({
         content: {
-          title: '빙킷에서 친구와 목표를 함께 이뤄봐요!',
-          description: '빙고 형태로 목표를 세우고 커뮤니티에서 함께 달성해보세요.',
+          title: t('friends.inviteShareTitle'),
+          description: t('friends.inviteShareDescription'),
           imageUrl: 'https://pub-ce1a524f861f4062a6ec96dd100c4aec.r2.dev/etc/og_image.png',
           link: {
             webUrl: APP_STORE_URL,
@@ -178,7 +211,7 @@ export default function FriendListScreen() {
         },
         buttons: [
           {
-            title: '앱에서 열기',
+            title: t('friends.openApp'),
             link: {
               androidExecutionParams: [{ key: 'screen', value: 'invite' }],
               iosExecutionParams: [{ key: 'screen', value: 'invite' }],
@@ -187,7 +220,7 @@ export default function FriendListScreen() {
         ],
       });
     } catch (e) {
-      setErrorMessage(e instanceof Error ? e.message : '초대 링크 공유에 실패했어요.');
+      setErrorMessage(e instanceof Error ? e.message : t('friends.inviteFailed'));
     }
   };
 
@@ -209,22 +242,20 @@ export default function FriendListScreen() {
     setSearchError(null);
   };
 
-  // 입력이 멎으면 전체 사용자에서도 찾아 아래 '전체 유저'에 붙인다.
   useEffect(() => {
     const keyword = friendSearch.trim();
-    if (keyword.length < 2) {
-      setSearchResults(null);
-      setSearchError(null);
-      return;
-    }
+
+    if (keyword.length < 2) return;
+
     const timer = setTimeout(() => void runSearch(keyword), 400);
+
     return () => clearTimeout(timer);
   }, [friendSearch, runSearch]);
 
   return (
     <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
       <PageHeader
-        title={isSelectMode ? '친구 선택' : '친구'}
+        title={isSelectMode ? t('friends.select') : t('friends.friend')}
         titleRight={
           isSelectMode ? (
             <Text className="text-body-md text-gray-600">
@@ -237,24 +268,22 @@ export default function FriendListScreen() {
         right={
           isSelectMode ? (
             <Pressable onPress={() => router.back()} hitSlop={8}>
-              <Text className="text-body-md font-pretendard-medium text-green-600">완료</Text>
+              <Text className="text-body-md font-pretendard-medium text-green-600">
+                {t('friends.complete')}
+              </Text>
             </Pressable>
           ) : undefined
         }
       />
 
-      {/* 고르기로 들어왔을 때만: 검색창 위에 고른 사람을 띄운다 */}
       {isSelectMode && pickedFriends.length === 0 && (
-        <Text className="px-4 pb-4 text-body-sm text-gray-500">
-          함께할 친구를 골라주세요. 고른 사람이 여기에 보여요.
-        </Text>
+        <Text className="px-4 pb-4 text-body-sm text-gray-500">{t('friends.selectFriend')}</Text>
       )}
+
       {isSelectMode && pickedFriends.length > 0 && (
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          // 아바타(32) + 이름 한 줄이 들어갈 만큼만. 여백을 크게 두면 검색창이
-          // 화면 아래로 밀려난다. 위쪽 6은 x 배지가 아바타 밖으로 나가서 필요하다.
           contentContainerStyle={{
             gap: 12,
             paddingHorizontal: 16,
@@ -266,6 +295,7 @@ export default function FriendListScreen() {
             <View key={friend.friendId} className="w-[52px] items-center gap-1">
               <View>
                 <ProfileAvatar avatarUrl={friend.avatarUrl} size={32} />
+
                 <Pressable
                   onPress={() => friendSelection.toggle(friend.friendId, maxSelect)}
                   hitSlop={8}
@@ -274,6 +304,7 @@ export default function FriendListScreen() {
                   <CloseIcon width={16} height={16} className="text-gray-800" />
                 </Pressable>
               </View>
+
               <Text className="text-caption-sm text-gray-700" numberOfLines={1}>
                 {friend.displayName}
               </Text>
@@ -282,14 +313,13 @@ export default function FriendListScreen() {
         </ScrollView>
       )}
 
-      {/* 검색창 하나가 위 '친구'를 거르고, 동시에 아래 '전체 유저'를 채운다. */}
       <View className="px-4 pb-4">
         <SearchInput
           value={friendSearch}
-          onChangeText={setFriendSearch}
+          onChangeText={handleFriendSearchChange}
           onSubmitEditing={() => void runSearch(friendSearch)}
           returnKeyType="search"
-          placeholder="검색어"
+          placeholder={t('friends.searchPlaceholder')}
           maxLength={LIMITS.searchKeyword}
           autoCapitalize="none"
           onClear={clearSearch}
@@ -297,10 +327,9 @@ export default function FriendListScreen() {
       </View>
 
       <View className="mx-4 mb-2 h-16 flex-row items-center justify-between gap-2 rounded-2xl bg-green-100 px-4">
-        <Text className="text-body-sm text-gray-800">
-          {'아직 앱을 사용하지 않는 친구가 있나요?\n친구를 초대해서 함께해요.'}
-        </Text>
-        <Button label="초대하기" onClick={handleInvite} size="sm" />
+        <Text className="text-body-sm text-gray-800">{t('friends.inviteMessage')}</Text>
+
+        <Button label={t('friends.invite')} onClick={handleInvite} size="sm" />
       </View>
 
       {listLoading ? (
@@ -308,14 +337,18 @@ export default function FriendListScreen() {
           <Loading />
         </View>
       ) : (
-        <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 16 }}>
+        <ScrollView
+          contentContainerStyle={{
+            paddingBottom: insets.bottom + 16,
+          }}
+        >
           <ReceivedList
             pendingRequests={pendingRequests}
             handleIncomingResponse={handleIncomingResponse}
           />
 
           <CollapsibleSection
-            title="친구"
+            title={t('friends.friend')}
             count={filteredFriends.length}
             expanded={friendsExpanded}
             onToggle={() => setFriendsExpanded((v) => !v)}
@@ -329,15 +362,17 @@ export default function FriendListScreen() {
               handleProfilePress={(friend) =>
                 isSelectMode
                   ? friendSelection.toggle(friend.friendId, maxSelect)
-                  : router.push({ pathname: '/profile/[id]', params: { id: friend.friendId } })
+                  : router.push({
+                      pathname: '/profile/[id]',
+                      params: { id: friend.friendId },
+                    })
               }
             />
           </CollapsibleSection>
 
-          {/* 검색 중일 때만 의미가 있어서, 검색어가 있을 때만 그린다. */}
           {friendSearch.trim().length >= 2 && (
             <CollapsibleSection
-              title="전체 유저"
+              title={t('friends.allUsers')}
               expanded={othersExpanded}
               onToggle={() => setOthersExpanded((v) => !v)}
             >
@@ -348,7 +383,10 @@ export default function FriendListScreen() {
                 sending={sending}
                 handleRequest={handleRequest}
                 handleProfilePress={(item) =>
-                  router.push({ pathname: '/profile/[id]', params: { id: item.id } })
+                  router.push({
+                    pathname: '/profile/[id]',
+                    params: { id: item.id },
+                  })
                 }
               />
             </CollapsibleSection>
@@ -360,7 +398,9 @@ export default function FriendListScreen() {
         conflictModal={conflictModal}
         handleConflictResponse={handleConflictResponse}
       />
+
       <ErrorModal message={errorMessage} onDismiss={() => setErrorMessage(null)} />
+
       <DeleteFriendModal
         friend={deletingFriend}
         onConfirm={confirmDeleteFriend}

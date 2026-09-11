@@ -20,7 +20,7 @@ import { fetchMyTeams, type TeamListEntry } from '@/features/team/lib/team';
 
 export default function MyPageScreen() {
   const router = useRouter();
-  const [tab, setTab] = useState<ProfileTab>('피드');
+  const [tab, setTab] = useState<ProfileTab>('feed');
   const [profile, setProfile] = useState<ProfileSummary | null>(null);
   const [feed, setFeed] = useState<FeedItem[]>([]);
   const [teams, setTeams] = useState<TeamListEntry[]>([]);
@@ -44,7 +44,6 @@ export default function MyPageScreen() {
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
-    // 함께하는 빙고는 여기서만 볼 수 있다 (홈의 '함께' 탭이 없어졌다)
     fetchMyTeams()
       .then((t) => {
         if (!cancelled) setTeams(t);
@@ -57,21 +56,18 @@ export default function MyPageScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      // 탭 화면이라 다른 페이지에 갔다 와도 언마운트되지 않아 뱃지 탭이 그대로 남는다.
-      // 돌아올 때는 항상 피드부터 보여준다.
-      setTab('피드');
+      // always show feed tab first
+      setTab('feed');
       return load();
     }, [load]),
   );
 
-  // 팀에 속한 내 빙고판. 피드 항목에 '함께' 뱃지를 붙이는 데 쓴다.
   const teamBoardIds = new Set(
     teams.filter((t) => !t.isInvite && t.myBoardId).map((t) => t.myBoardId as string),
   );
 
   return (
     <SafeAreaView className="flex-1 bg-surface" edges={['top']}>
-      {/* 시안에는 화면 제목이 없다 — 설정 아이콘만 우측 */}
       <View className="h-[60px] flex-row items-center justify-end border-b border-gray-300 px-4">
         <Pressable onPress={() => router.push('/mypage/settings')} hitSlop={8}>
           <SettingsIcon width={36} height={36} className="text-gray-700" />
@@ -86,7 +82,7 @@ export default function MyPageScreen() {
 
       <ProfileTabs value={tab} onChange={setTab} feedCount={loading ? undefined : feed.length} />
 
-      {tab === '피드' ? (
+      {tab === 'feed' ? (
         loading ? (
           <View className="flex-1 items-center justify-center">
             <Loading />

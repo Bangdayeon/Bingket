@@ -6,15 +6,12 @@ type Tone = 'default' | 'colored';
 
 interface BadgeProps {
   label: string;
-  /** 라벨을 누를 수 있게 한다. 최근 검색어처럼 눌러서 재검색하는 곳에 쓴다. */
   onPress?: () => void;
   tone?: Tone;
-  /** 넘기면 시안의 canDel 변형 — 테두리와 삭제 버튼이 붙는다. */
   onDelete?: () => void;
   className?: string;
 }
 
-// 시안 bage: 높이 40 / 좌우 12 / 위아래 4.
 const SIZE_CONTAINER = 'h-10 px-3 py-1';
 
 const toneStyles: Record<Tone, { container: string; text: string }> = {
@@ -25,7 +22,6 @@ const toneStyles: Record<Tone, { container: string; text: string }> = {
 export function Badge({ label, tone = 'default', onPress, onDelete, className = '' }: BadgeProps) {
   const { container, text } = toneStyles[tone];
 
-  // 기본은 body-sm(Regular), colored만 label-sm(SemiBold)로 강조된다.
   const typography = tone === 'colored' ? 'text-label-sm font-pretendard-semibold' : 'text-body-sm';
 
   return (

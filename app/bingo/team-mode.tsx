@@ -11,6 +11,7 @@ import {
   TEAM_MODE_LABEL,
   type TeamMode,
 } from '@/types/team';
+import { useTranslation } from 'react-i18next';
 
 interface ModeCardProps {
   label: string;
@@ -18,7 +19,6 @@ interface ModeCardProps {
   onPress: () => void;
 }
 
-// 시안: 358×70, radius 16, 테두리만(배경 없음), 우측에 화살표.
 function ModeCard({ label, description, onPress }: ModeCardProps) {
   return (
     <Pressable
@@ -35,6 +35,7 @@ function ModeCard({ label, description, onPress }: ModeCardProps) {
 }
 
 export default function TeamModeScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
@@ -48,7 +49,9 @@ export default function TeamModeScreen() {
 
       <ScrollView className="flex-1 px-4">
         <Text className="pb-6 text-caption-md text-gray-700">
-          친구는 최대 {TEAM_MAX_MEMBERS - 1}명까지 같이할 수 있어요.
+          {t('home.selectFriendsDescription', {
+            count: TEAM_MAX_MEMBERS - 1,
+          })}
         </Text>
 
         <View className="gap-4">

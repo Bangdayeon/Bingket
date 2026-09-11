@@ -16,8 +16,10 @@ import { Toast } from '@/components/Toast';
 
 import { TextInput } from '@/components/TextInput';
 import { ANDROID_PACKAGE_NAME, IOS_APP_ID } from '@/constants/store';
+import { useTranslation } from 'react-i18next';
 
 export function SettingsMenu() {
+  const { t } = useTranslation();
   const router = useRouter();
   const isNavigatingRef = useRef(false);
   const navigate = (path: Parameters<typeof router.push>[0]) => {
@@ -80,12 +82,12 @@ export function SettingsMenu() {
       setShowAskModal(false);
       setReportInputText('');
       setResultModal({
-        title: '문의가 접수되었습니다',
-        body: '빠른 시간 내에 검토 후 조치하겠습니다.',
+        title: t('settings.inquirySuccessTitle'),
+        body: t('settings.inquirySuccessBody'),
       });
     } catch (e) {
       Sentry.captureException(e);
-      setResultModal({ title: '오류', body: '문의 접수에 실패했어요. 다시 시도해주세요.' });
+      setResultModal({ title: '오류', body: t('settings.inquiryErrorBody') });
     } finally {
       setIsReportLoading(false);
     }
@@ -96,21 +98,33 @@ export function SettingsMenu() {
       <ScrollView className="flex-1 bg-surface md:w-full md:max-w-[600px] md:self-center">
         <View className="gap-3 px-4 py-3">
           <MenuItem
-            label="프로필 편집"
+            label={t('settings.profileEdit')}
             onPress={() => navigate('/mypage/profile-edit')}
             showArrow
           />
-          <MenuItem label="계정 관리" onPress={() => navigate('/mypage/account')} showArrow />
-          <MenuItem label="알림 설정" onPress={() => navigate('/mypage/alert-setting')} showArrow />
-          <MenuItem label="앱 테마" onPress={() => navigate('/mypage/app-theme')} showArrow />
+          <MenuItem
+            label={t('settings.profileEdit')}
+            onPress={() => navigate('/mypage/account')}
+            showArrow
+          />
+          <MenuItem
+            label={t('settings.notificationSettings')}
+            onPress={() => navigate('/mypage/alert-setting')}
+            showArrow
+          />
+          <MenuItem
+            label={t('settings.appTheme')}
+            onPress={() => navigate('/mypage/app-theme')}
+            showArrow
+          />
         </View>
 
         <View className="h-px bg-gray-300" />
 
         <View className="gap-3 px-4 py-3">
-          <MenuItem label="앱 리뷰 남기기" onPress={openReviewPage} />
+          <MenuItem label={t('settings.writeReview')} onPress={openReviewPage} />
           <MenuItem
-            label="자주 묻는 질문"
+            label={t('settings.faq')}
             onPress={() =>
               openUrl(
                 'https://aback-shirt-867.notion.site/32eadd99c04280feb05bd33b3e011d0f?source=copy_link',
@@ -118,7 +132,7 @@ export function SettingsMenu() {
             }
           />
           <MenuItem
-            label="이용 약관"
+            label={t('settings.terms')}
             onPress={() =>
               openUrl(
                 'https://aback-shirt-867.notion.site/32eadd99c0428005b2e0e2437d6cd91a?source=copy_link',
@@ -126,7 +140,7 @@ export function SettingsMenu() {
             }
           />
           <MenuItem
-            label="개인정보 처리방침"
+            label={t('settings.privacyPolicy')}
             onPress={() =>
               openUrl(
                 'https://aback-shirt-867.notion.site/32eadd99c04280558920e3c684d4bd9a?source=copy_link',
@@ -134,14 +148,18 @@ export function SettingsMenu() {
             }
           />
           <MenuItem
-            label="업데이트 내역"
+            label={t('settings.updateHistory')}
             onPress={() =>
               openUrl(
                 'https://aback-shirt-867.notion.site/32eadd99c04280b9843ded4a5c8f3fff?source=copy_link',
               )
             }
           />
-          <MenuItem label="빠른 문의" onPress={() => setShowAskModal(true)} showArrow />
+          <MenuItem
+            label={t('settings.quickInquiry')}
+            onPress={() => setShowAskModal(true)}
+            showArrow
+          />
         </View>
 
         <View className="h-px bg-gray-300" />
@@ -149,7 +167,7 @@ export function SettingsMenu() {
         {/* 시안: 개발자 이메일이 버전 정보보다 위이고, 둘은 별도 구획이다 */}
         <View className="gap-3 px-4 py-3">
           <MenuItem
-            label="개발자 이메일"
+            label={t('settings.developerEmail')}
             onPress={async () => {
               await Clipboard.setStringAsync('dybang00@gmail.com');
               setEmailToastVisible(true);
@@ -157,7 +175,7 @@ export function SettingsMenu() {
             rightText="dybang00@gmail.com"
           />
           <MenuItem
-            label="버전 정보"
+            label={t('settings.versionInfo')}
             onPress={() => {}}
             rightText={`v ${Constants.expoConfig?.version}`}
           />
@@ -166,16 +184,16 @@ export function SettingsMenu() {
         <View className="h-px bg-gray-300" />
 
         <View className="gap-3 px-4 py-3">
-          <MenuItem label="로그아웃" muted onPress={() => setShowLogoutModal(true)} />
+          <MenuItem label={t('settings.logout')} muted onPress={() => setShowLogoutModal(true)} />
         </View>
         <View className="h-40" />
 
         <Modal
           visible={showLogoutModal}
-          title="로그아웃 하시겠어요?"
+          title={t('settings.logoutConfirm')}
           variant="warning"
-          cancelLabel="취소"
-          confirmLabel="로그아웃"
+          cancelLabel={t('common.cancel')}
+          confirmLabel={t('settings.logout')}
           onCancel={() => setShowLogoutModal(false)}
           onConfirm={handleLogout}
           onDismiss={() => setShowLogoutModal(false)}
@@ -185,15 +203,15 @@ export function SettingsMenu() {
           title={resultModal?.title ?? ''}
           body={resultModal?.body}
           variant="single"
-          confirmLabel="확인"
+          confirmLabel={t('common.confirm')}
           onConfirm={() => setResultModal(null)}
         />
         {/* 빠른 문의 모달 */}
         <Modal
           visible={showAskModal}
-          title="문의/신고하기"
-          confirmLabel="제출"
-          cancelLabel="취소"
+          title={t('settings.inquiryReport')}
+          confirmLabel={t('settings.submit')}
+          cancelLabel={t('common.cancel')}
           confirmDisabled={!reportInputText.trim()}
           confirmLoading={isReportLoading}
           onConfirm={() => void handleReport()}
@@ -210,7 +228,7 @@ export function SettingsMenu() {
               <TextInput
                 value={reportInputText}
                 onChangeText={(v) => setReportInputText(v.slice(0, 500))}
-                placeholder="문의/신고하실 내용을 입력하세요."
+                placeholder={t('settings.inquiryPlaceholder')}
                 maxLength={500}
                 maxHeight={120}
                 className="min-h-[72px]"
@@ -224,7 +242,7 @@ export function SettingsMenu() {
         />
       </ScrollView>
       <Toast
-        message="이메일을 복사했어요."
+        message={t('settings.emailCopied')}
         visible={emailToastVisible}
         onDismiss={() => setEmailToastVisible(false)}
       />

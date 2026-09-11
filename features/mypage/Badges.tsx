@@ -102,7 +102,10 @@ export function BadgesPage({ userId, bottomGap = 0 }: BadgesPageProps = {}) {
       .finally(() => setLoading(false));
   }, [userId]);
 
-  useEffect(load, [load]);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    load();
+  }, [load]);
 
   const slots: (EarnedBadge | null)[] = [
     ...earned,

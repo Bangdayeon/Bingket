@@ -30,18 +30,9 @@ interface ModalProps {
 const FADE_IN_MS = 180;
 const FADE_OUT_MS = 140;
 
-/**
- * 시안 ConfirmModal: white 카드 / radius 24 / 안쪽 여백 24,
- * 제목(title-md)과 본문(body-md) 사이 16, 본문과 버튼 줄 사이 22.
- * 버튼은 오른쪽 정렬에 간격 8이고 md 크기를 쓴다.
- * 취소 버튼은 시안 인스턴스에서 surface 배경을 덮어쓰고 있어 그대로 따랐다.
- *
- * 네이티브 Modal이 아니라 Portal로 띄우는 인트리 오버레이다.
- * RN의 Modal은 iOS에서 visible이 false가 돼도 dismiss 애니메이션이 끝날 때까지
- * 호스트 뷰가 트리에 남고(Modal.js의 _shouldShowModal), Android도 Dialog 윈도우를
- * 걷어내며 포커스를 돌려받는 동안 터치를 먹는다. 그래서 모달을 닫자마자 빠르게 탭하면
- * 첫 터치가 통째로 사라졌다. 오버레이는 닫기 시작하는 순간 pointerEvents를 none으로
- * 내려 아래로 터치를 흘려보낼 수 있어서, 사라지는 애니메이션 중에도 탭이 먹히지 않는다.
+/* PAST PROBLEM
+ * default RN Modal block first fast touch by dismiss animation and native work
+ * so use Portal Overlay and use pointerEvents: when start to modal closing, set pointerEvents="none"
  */
 export function Modal({
   visible,
@@ -59,18 +50,17 @@ export function Modal({
   const confirmVariant = variant === 'warning' || variant === 'error' ? 'danger' : 'primary';
   const isSingleButton = variant === 'single' || variant === 'success' || variant === 'error';
 
-  // 초기화 함수는 마운트 때 한 번만 돈다. useRef(...).current와 값은 같고,
-  // 렌더 중 ref를 읽지 않는다.
   const [opacity] = useState(() => new Animated.Value(visible ? 1 : 0));
-  // 애니메이션이 끝나야 트리에서 내린다
+  // take down from tree when animation end
   const [mounted, setMounted] = useState(visible);
   const mountedRef = useRef(visible);
-  // 닫히는 동안에는 터치를 아래로 통과시킨다
+  // closing, send touch to below
   const [interactive, setInteractive] = useState(visible);
 
   useEffect(() => {
     if (visible) {
       mountedRef.current = true;
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setMounted(true);
       setInteractive(true);
       Animated.timing(opacity, {
@@ -81,7 +71,6 @@ export function Modal({
       return;
     }
 
-    // 한 번도 열린 적 없으면 닫기 애니메이션을 돌릴 이유가 없다
     if (!mountedRef.current) return;
 
     setInteractive(false);
@@ -96,7 +85,7 @@ export function Modal({
     });
   }, [visible, opacity]);
 
-  // 네이티브 Modal의 onRequestClose를 대신한다
+  // instead of Native Modal's onRequestClose
   useEffect(() => {
     if (!visible) return;
     const close = onDismiss ?? onCancel;
@@ -117,7 +106,7 @@ export function Modal({
         style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity }}
         pointerEvents={interactive ? 'auto' : 'none'}
       >
-        {/* 네이티브 Modal 창이 해주던 키보드 회피를 직접 해야 한다 */}
+        {/* Native Modal's keyboard miss */}
         <KeyboardAvoidingView
           style={{ flex: 1 }}
           behavior={Platform.select({ ios: 'padding', android: 'height' })}

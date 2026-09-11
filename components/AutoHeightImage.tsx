@@ -8,10 +8,6 @@ interface AutoHeightImageProps {
   marginTop?: number;
 }
 
-/**
- * 이미지 원본 비율 그대로 표시하는 컴포넌트.
- * onLoad에서 실제 width/height를 읽어 aspectRatio를 동적으로 적용한다.
- */
 export function AutoHeightImage({ uri, borderRadius = 12, marginTop = 0 }: AutoHeightImageProps) {
   const [aspectRatio, setAspectRatio] = useState<number | null>(null);
 
@@ -22,7 +18,6 @@ export function AutoHeightImage({ uri, borderRadius = 12, marginTop = 0 }: AutoH
         borderRadius,
         overflow: 'hidden',
         marginTop,
-        // 로드 전에는 최소 높이 유지 (레이아웃 점프 최소화)
         minHeight: aspectRatio ? undefined : 180,
         aspectRatio: aspectRatio ?? undefined,
       }}

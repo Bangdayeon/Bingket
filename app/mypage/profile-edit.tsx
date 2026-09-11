@@ -20,6 +20,7 @@ import {
 } from '@/components/ProfileAvatar';
 import { fetchMyProfile, updateMyProfile, uploadProfileImage } from '@/features/mypage/lib/mypage';
 import Button from '@/components/Button';
+import { useTranslation } from 'react-i18next';
 
 const NAME_MAX = 12;
 const USER_ID_MAX = 20;
@@ -29,6 +30,7 @@ const NAME_INVALID = /[^\uAC00-\uD7A3\u1100-\u11FF\u3130-\u318Fa-zA-Z0-9]/g;
 const USER_ID_INVALID = /[^a-zA-Z0-9_-]/g;
 
 export default function ProfileEditPage() {
+  const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [name, setName] = useState('');
@@ -275,7 +277,7 @@ export default function ProfileEditPage() {
         visible={showPhotoModal}
         title="프로필 사진"
         variant="default"
-        cancelLabel="취소"
+        cancelLabel={t('common.cancel')}
         confirmLabel="카메라"
         onCancel={() => setShowPhotoModal(false)}
         onConfirm={() => {

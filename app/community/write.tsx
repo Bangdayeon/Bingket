@@ -36,28 +36,17 @@ import { ensurePhotoLibraryPermission } from '@/lib/photo-library';
 import Loading from '@/components/Loading';
 import { ErrorState } from '@/components/ErrorState';
 import { EmptyState } from '@/components/EmptyState';
+import { useTranslation } from 'react-i18next';
 
-// 시안: 하단 툴바 높이 84
+// Design spec: bottom toolbar height is 84
 const TOOLBAR_H = 84;
 const MAX_IMAGES = 5;
-
-const STATE_LABELS: Record<BingoState, string> = {
-  draft: '제작 중',
-  progress: '진행 중',
-  done: '완료',
-};
-
-const STATE_CLASSES: Record<BingoState, string> = {
-  draft: 'text-gray-500',
-  progress: 'text-green-500',
-  done: 'text-green-400',
-};
 
 function newId() {
   return `block-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
 }
 
-/** 수정 모드 진입 시 DB content(JSON)에서 초기 상태 복원 */
+/** Restore the initial state from the DB content (JSON) when entering edit mode */
 function parseInitialState(
   initContent?: string,
   initImageUrls?: string,
@@ -122,6 +111,20 @@ function parseInitialState(
 }
 
 export default function CommunityWriteScreen() {
+  const { t } = useTranslation();
+
+  const STATE_LABELS: Record<BingoState, string> = {
+    draft: t('common.stateDraft'),
+    progress: t('common.stateProgress'),
+    done: t('common.stateDone'),
+  };
+
+  const STATE_CLASSES: Record<BingoState, string> = {
+    draft: 'text-gray-500',
+    progress: 'text-green-500',
+    done: 'text-green-400',
+  };
+
   const router = useRouter();
   const params = useLocalSearchParams<{
     postId?: string;
@@ -162,11 +165,13 @@ export default function CommunityWriteScreen() {
   const canSubmit = title.trim().length > 0 && textValue.trim().length > 0 && !isSubmitting;
 
   /**
-   * 키보드가 올라오면 하단 툴바를 감춘다. 글을 쓰는 동안에는 본문에 집중하고,
-   * 이미지·빙고를 붙일 때만 키보드를 내려 툴바를 쓰는 흐름이다.
+   * Hide the bottom toolbar when the keyboard comes up. While typing, focus stays
+   * on the body text; the toolbar is only used after dismissing the keyboard to
+   * attach an image or bingo.
    *
-   * 안드로이드는 adjustResize로 창 자체가 줄어 툴바가 키보드 위로 밀려 올라오므로,
-   * 위치를 조정하는 대신 아예 렌더에서 빼야 양쪽 플랫폼이 같게 동작한다.
+   * On Android, adjustResize shrinks the window itself, which pushes the toolbar
+   * up above the keyboard. So instead of repositioning it, we remove it from the
+   * render entirely to make both platforms behave the same way.
    */
   const [keyboardShown, setKeyboardShown] = useState(false);
   useEffect(() => {
@@ -180,7 +185,7 @@ export default function CommunityWriteScreen() {
     };
   }, []);
 
-  // ── 빙고 ─────────────────────────────────────────────────
+  // ── Bingo ─────────────────────────────────────────────────
   const handleOpenBingoModal = async () => {
     setShowBingoModal(true);
     if (bingosLoadedRef.current) return;
@@ -191,7 +196,7 @@ export default function CommunityWriteScreen() {
       setMyBingos(bingos);
       bingosLoadedRef.current = true;
     } catch (e) {
-      // catch가 없으면 조회 실패가 "빙고가 없습니다"로 보인다.
+      // Without this catch, a fetch failure would look like "no bingos".
       Sentry.captureException(e);
       setBingosFailed(true);
     } finally {
@@ -201,11 +206,11 @@ export default function CommunityWriteScreen() {
 
   const handleSelectBingo = (bingo: BingoData) => {
     setMediaBlocks((prev) => {
-      // 이미 빙고가 있으면 교체
+      // Replace if a bingo block already exists
       if (prev.some((b) => b.type === 'bingo')) {
         return prev.map((b) => (b.type === 'bingo' ? { id: b.id, type: 'bingo', bingo } : b));
       }
-      // 빙고는 맨 앞에 추가
+      // Insert bingo at the front
       return [{ id: newId(), type: 'bingo', bingo }, ...prev];
     });
     setShowBingoModal(false);
@@ -213,13 +218,13 @@ export default function CommunityWriteScreen() {
 
   const removeMedia = (id: string) => setMediaBlocks((prev) => prev.filter((b) => b.id !== id));
 
-  // ── 카메라 / 갤러리 ───────────────────────────────────────
+  // ── Camera / Gallery ───────────────────────────────────────
   const handleCameraCapture = async () => {
     setShowCameraMenu(false);
     if (imageBlockCount >= MAX_IMAGES) return;
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== 'granted') {
-      Alert.alert('카메라 권한 필요', '설정에서 카메라 접근을 허용해주세요.');
+      Alert.alert(t('common.permission.cameraTitle'), t('common.permission.cameraBody'));
       return;
     }
     const result = await ImagePicker.launchCameraAsync({ mediaTypes: ['images'], quality: 0.8 });
@@ -236,7 +241,7 @@ export default function CommunityWriteScreen() {
     setShowCameraMenu(false);
     if (imageBlockCount >= MAX_IMAGES) return;
     if (!(await ensurePhotoLibraryPermission())) {
-      Alert.alert('앨범 권한 필요', '설정에서 사진 접근을 허용해주세요.');
+      Alert.alert(t('common.permission.albumnBody'), t('common.permission.albumnBody'));
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -256,7 +261,7 @@ export default function CommunityWriteScreen() {
     }
   };
 
-  // ── 제출 ──────────────────────────────────────────────────
+  // ── Submit ──────────────────────────────────────────────────
   const handleSubmit = async () => {
     if (!canSubmit) return;
     if (containsBadWord(title) || containsBadWord(textValue)) {
@@ -264,7 +269,7 @@ export default function CommunityWriteScreen() {
       return;
     }
     setIsSubmitting(true);
-    // blocks = [빙고?, ...이미지들, text]
+    // blocks = [bingo?, ...images, text]
     const blocks: EditorBlock[] = [...mediaBlocks, { id: newId(), type: 'text', value: textValue }];
     try {
       if (isEditMode) {
@@ -276,12 +281,12 @@ export default function CommunityWriteScreen() {
       router.back();
     } catch (err) {
       Alert.alert(
-        '오류',
+        t('common.error.general'),
         err instanceof Error
           ? err.message
           : isEditMode
-            ? '게시글 수정에 실패했어요.'
-            : '게시글 작성에 실패했어요.',
+            ? t('community.editPostFail')
+            : t('community.createPostFail'),
       );
     } finally {
       setIsSubmitting(false);
@@ -290,7 +295,7 @@ export default function CommunityWriteScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-surface" edges={['top']}>
-      {/* 헤더 — 뒤로가기 / 등록 */}
+      {/* Header — back / submit */}
       <View className="flex-row items-center" style={{ height: HEADER_HEIGHT }}>
         <View style={{ width: 56 }} className="pl-4">
           <Pressable onPress={() => router.back()} hitSlop={8}>
@@ -300,7 +305,7 @@ export default function CommunityWriteScreen() {
         <View style={{ flex: 1 }} />
         <View className="pr-2">
           <Button
-            label="등록"
+            label={t('community.submit')}
             size="sm"
             variant="ghost"
             disabled={!canSubmit}
@@ -314,24 +319,24 @@ export default function CommunityWriteScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
       >
-        {/* 본문 */}
+        {/* Body */}
         <ScrollView style={{ flex: 1 }} keyboardShouldPersistTaps="handled">
-          {/* 화면 제목 */}
+          {/* Screen title */}
           <Text className="mb-4 px-4 text-title-sm font-pretendard-semibold text-gray-900">
-            {isEditMode ? '게시글 수정하기' : '게시글 작성하기'}
+            {isEditMode ? t('community.editPostTitle') : t('community.writePostTitle')}
           </Text>
 
-          {/* 제목 */}
+          {/* Title */}
           <View className="mb-4 px-6">
             <TextInput
               value={title}
               onChangeText={setTitle}
-              placeholder="제목을 입력해주세요."
+              placeholder={t('home.enterTitle')}
               maxLength={LIMITS.postTitle}
             />
           </View>
 
-          {/* 빙고 (맨 위) */}
+          {/* Bingo (top) */}
           {bingoBlock && (
             <View style={{ marginHorizontal: 24, marginTop: 16, marginBottom: 8 }}>
               <View className="flex-row items-center justify-between mb-2">
@@ -351,7 +356,7 @@ export default function CommunityWriteScreen() {
             </View>
           )}
 
-          {/* 이미지들 */}
+          {/* Images */}
           {imageBlocks.map((block) => {
             const uri =
               block.type === 'image'
@@ -370,11 +375,11 @@ export default function CommunityWriteScreen() {
             );
           })}
 
-          {/* 본문 텍스트 (항상 하단) */}
+          {/* Body text (always at the bottom) */}
           <RNTextInput
             value={textValue}
             onChangeText={setTextValue}
-            placeholder="내용을 입력해주세요."
+            placeholder={t('community.contentPlaceholder')}
             maxLength={LIMITS.postContent}
             multiline
             textAlignVertical="top"
@@ -389,13 +394,13 @@ export default function CommunityWriteScreen() {
           <View style={{ height: 40 }} />
         </ScrollView>
 
-        {/* 하단 툴바 — 키보드가 올라오면 감춘다 */}
+        {/* Bottom toolbar — hidden when the keyboard is up */}
         {!keyboardShown && (
           <View
             className="flex-row items-center gap-2 border-t border-gray-300 px-4"
             style={{ height: TOOLBAR_H, marginBottom: insets.bottom }}
           >
-            {/* 이미지 */}
+            {/* Image */}
             <Pressable
               onPress={() => {
                 if (imageBlockCount < MAX_IMAGES) setShowCameraMenu(true);
@@ -420,7 +425,7 @@ export default function CommunityWriteScreen() {
               )}
             </Pressable>
 
-            {/* 빙고 불러오기 — 누르는 동안, 그리고 빙고를 붙인 뒤에는 알약 배경 */}
+            {/* Load bingo — pill background while pressed, and after a bingo is attached */}
             <Pressable onPress={handleOpenBingoModal} hitSlop={8}>
               {({ pressed }) => (
                 <View
@@ -434,20 +439,20 @@ export default function CommunityWriteScreen() {
                     className={bingoBlock ? 'text-green-400' : 'text-gray-700'}
                   />
                   <Text className="text-body-md font-pretendard-medium text-gray-800">
-                    빙고 불러오기
+                    {t('community.loadBingo')}
                   </Text>
                 </View>
               )}
             </Pressable>
 
-            {/* 익명 */}
+            {/* Anonymous */}
             <Pressable
               onPress={() => setIsAnonymous((v) => !v)}
               className="flex-row items-center gap-1"
               hitSlop={8}
             >
               <Text className={`text-body-md ${isAnonymous ? 'text-green-400' : 'text-gray-400'}`}>
-                익명
+                {t('community.anonymous')}
               </Text>
               <CheckIcon
                 width={20}
@@ -459,7 +464,7 @@ export default function CommunityWriteScreen() {
         )}
       </KeyboardAvoidingView>
 
-      {/* 카메라 메뉴 */}
+      {/* Camera menu */}
       <Modal
         visible={showCameraMenu}
         transparent
@@ -472,21 +477,21 @@ export default function CommunityWriteScreen() {
             <View className="w-10 h-1 rounded-full bg-gray-300  " />
           </View>
           <Pressable onPress={handleCameraCapture} className="px-6 py-4 border-b border-gray-100  ">
-            <Text className="text-body-md">카메라로 촬영하기</Text>
+            <Text className="text-body-md">{t('community.takePhoto')}</Text>
           </Pressable>
           <Pressable onPress={handleGalleryPick} className="px-6 py-4">
-            <Text className="text-body-md">앨범에서 선택하기</Text>
+            <Text className="text-body-md">{t('community.pickFromAlbum')}</Text>
           </Pressable>
         </View>
       </Modal>
 
       <Toast
-        message="올바르지 않은 표현을 사용했어요"
+        message={t('community.badWordToast')}
         visible={toastVisible}
         onDismiss={() => setToastVisible(false)}
       />
 
-      {/* 빙고 선택 모달 */}
+      {/* Bingo selection modal */}
       <Modal
         visible={showBingoModal}
         transparent
@@ -499,7 +504,7 @@ export default function CommunityWriteScreen() {
           style={{ maxHeight: '60%', paddingBottom: insets.bottom + 16 }}
         >
           <View className="border-b border-gray-300 px-5 pb-4 pt-6">
-            <Text className="text-title-sm font-pretendard-medium">빙고 불러오기</Text>
+            <Text className="text-title-sm font-pretendard-medium">{t('community.loadBingo')}</Text>
           </View>
 
           {loadingBingos ? (
@@ -508,14 +513,14 @@ export default function CommunityWriteScreen() {
             </View>
           ) : bingosFailed ? (
             <ErrorState
-              message="빙고 목록을 불러오지 못했어요"
+              message={t('community.myBingosLoadFail')}
               onRetry={() => {
                 bingosLoadedRef.current = false;
                 void handleOpenBingoModal();
               }}
             />
           ) : myBingos.length === 0 ? (
-            <EmptyState message="빙고가 없어요." />
+            <EmptyState message={t('community.noBingos')} />
           ) : (
             <ScrollView>
               {myBingos.map((bingo) => {

@@ -4,15 +4,10 @@ import CloseIcon from '@/assets/icons/ic_close.svg';
 import SearchIcon from '@/assets/icons/ic_search.svg';
 
 interface SearchInputProps extends Omit<TextInputProps, 'placeholderTextColor'> {
-  /** 지우기 버튼. 넘기지 않으면 버튼 자체를 그리지 않는다. */
   onClear?: () => void;
   className?: string;
 }
 
-/**
- * 시안 SearchInput: 높이 48, radius 12, gray-200 배경, 안쪽 여백 12.
- * 돋보기와 입력값 사이 간격은 4, 지우기 버튼은 오른쪽 끝에 붙는다.
- */
 export const SearchInput = forwardRef<RNTextInput, SearchInputProps>(function SearchInput(
   { onClear, className = '', value, style, ...rest },
   ref,

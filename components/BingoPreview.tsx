@@ -30,15 +30,9 @@ const TITLE_STYLE: Record<
 interface BingoPreviewProps {
   bingo: BingoData;
   completedCells?: boolean[];
-  /** 제목 텍스트 크기 */
-  size?: PreviewSize;
-  /** 래퍼 너비 Tailwind 클래스 (e.g. 'w-full', 'w-48') */
+  size?: PreviewSize; // title text size
   className?: string;
-  /**
-   * 정사각형으로 잘라 보여준다. 판은 3:4라 아랫부분이 잘린다.
-   * 목록 카드처럼 세로를 아껴야 하는 자리에서 쓴다 — 상세에서는 전체를 보여준다.
-   */
-  square?: boolean;
+  square?: boolean; // use community
   onPress?: () => void;
 }
 
@@ -148,8 +142,6 @@ export default function BingoPreview({
     return (
       <Wrapper className={className} {...(onPress ? { onPress } : {})}>
         {square ? (
-          // 판은 3:4라 정사각형 틀보다 세로가 길다. 위를 맞추고 아랫부분을 잘라낸다.
-          // 안쪽을 absolute로 두는 건 부모 높이(정사각형)에 눌리지 않게 하려는 것이다.
           <View style={{ width: '100%', aspectRatio: 1, overflow: 'hidden' }}>
             <View
               style={{

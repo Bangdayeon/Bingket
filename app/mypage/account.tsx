@@ -22,32 +22,9 @@ import {
   updateAccountVisibility,
   type AccountVisibility,
 } from '@/features/profile/lib/profile';
+import { useTranslation } from 'react-i18next';
 
-const PROVIDER_CONFIG: Record<
-  string,
-  { label: string; bgColor: string; logo: ImageSourcePropType }
-> = {
-  google: {
-    label: 'Google',
-    bgColor: FIXED.fixedWhite,
-    logo: require('@/assets/icons/google_logo.png'),
-  },
-  apple: {
-    label: 'Apple',
-    bgColor: FIXED.fixedBlack,
-    logo: require('@/assets/icons/apple_logo.png'),
-  },
-  kakao: {
-    label: '카카오톡',
-    bgColor: FIXED.kakao,
-    logo: require('@/assets/icons/kakao_logo.png'),
-  },
-  email: {
-    label: '이메일',
-    bgColor: FIXED.fixedWhite,
-    logo: require('@/assets/icons/mail_logo.png'),
-  },
-};
+type ProviderConfig = Record<string, { label: string; bgColor: string; logo: ImageSourcePropType }>;
 
 interface RowItemProps {
   label: string;
@@ -63,8 +40,33 @@ function RowItem({ label, onPress }: RowItemProps) {
 }
 
 export default function AccountScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+
+  const PROVIDER_CONFIG: ProviderConfig = {
+    google: {
+      label: 'Google',
+      bgColor: FIXED.fixedWhite,
+      logo: require('@/assets/icons/google_logo.png'),
+    },
+    apple: {
+      label: 'Apple',
+      bgColor: FIXED.fixedBlack,
+      logo: require('@/assets/icons/apple_logo.png'),
+    },
+    kakao: {
+      label: t('my.kakaoLabel'),
+      bgColor: FIXED.kakao,
+      logo: require('@/assets/icons/kakao_logo.png'),
+    },
+    email: {
+      label: t('auth.email'),
+      bgColor: FIXED.fixedWhite,
+      logo: require('@/assets/icons/mail_logo.png'),
+    },
+  };
+
   const [accounts, setAccounts] = useState<LinkedAccount[]>([]);
   const [showResetModal, setShowResetModal] = useState(false);
   const [showSecessionModal, setShowSecessionModal] = useState(false);
@@ -72,8 +74,9 @@ export default function AccountScreen() {
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [loading, setLoading] = useState(false);
-  // 목록이 비었다는 것과 아직 못 받았다는 것은 다르다. 예전에는 둘 다
-  // accounts.length === 0 으로 판단해서, 연동 계정이 없으면 스피너가 영영 돌았다.
+  // An empty list and "not yet loaded" are different states. It used to check
+  // accounts.length === 0 for both, so the spinner spun forever when there
+  // were no linked accounts.
   const [accountsLoading, setAccountsLoading] = useState(true);
   const [accountsFailed, setAccountsFailed] = useState(false);
   const colors = useColors();
@@ -90,10 +93,13 @@ export default function AccountScreen() {
       .finally(() => setAccountsLoading(false));
   }, []);
 
-  useEffect(loadAccounts, [loadAccounts]);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadAccounts();
+  }, [loadAccounts]);
 
-  // 읽기 전에는 null이라 셀렉터를 그리지 않는다. 기본값으로 먼저 그리면
-  // 사용자가 고르지도 않은 값이 선택된 것처럼 보인다.
+  // null before the fetch resolves, so the selector isn't rendered yet.
+  // Rendering a default value first would look like the user already picked it.
   const [visibility, setVisibility] = useState<AccountVisibility | null>(null);
 
   useEffect(() => {
@@ -106,13 +112,13 @@ export default function AccountScreen() {
 
   const handleVisibilityChange = (next: AccountVisibility) => {
     const previous = visibility;
-    // 즉시 반영하고 실패하면 되돌린다. 저장 버튼이 없는 화면이라
-    // 응답을 기다리면 탭이 먹통처럼 느껴진다.
+    // Apply immediately and roll back on failure. There's no save button on
+    // this screen, so waiting for the response would make the tab feel frozen.
     setVisibility(next);
     updateAccountVisibility(next).catch((e: unknown) => {
       Sentry.captureException(e);
       setVisibility(previous);
-      setErrorMessage('공개 범위를 바꾸지 못했어요. 잠시 후 다시 시도해주세요.');
+      setErrorMessage(t('my.visibilityChangeFail'));
       setShowErrorModal(true);
     });
   };
@@ -125,7 +131,7 @@ export default function AccountScreen() {
       await AsyncStorage.removeItem('@bingket/draft-bingo');
       setShowResetDoneModal(true);
     } catch (e) {
-      setErrorMessage(e instanceof Error ? e.message : '다시 시도해주세요.');
+      setErrorMessage(e instanceof Error ? e.message : t('common.error.retry'));
       setShowErrorModal(true);
     } finally {
       setLoading(false);
@@ -137,9 +143,9 @@ export default function AccountScreen() {
     setLoading(true);
     try {
       await deleteAccount();
-      // _layout.tsx의 onAuthStateChange가 SIGNED_OUT 이벤트를 받아 login으로 이동
+      // _layout.tsx's onAuthStateChange picks up the SIGNED_OUT event and navigates to login
     } catch (e) {
-      setErrorMessage(e instanceof Error ? e.message : '다시 시도해주세요.');
+      setErrorMessage(e instanceof Error ? e.message : t('common.error.retry'));
       setShowErrorModal(true);
       setLoading(false);
     }
@@ -147,17 +153,17 @@ export default function AccountScreen() {
 
   return (
     <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
-      <PageHeader title="계정 관리" />
+      <PageHeader title={t('settings.accountManagement')} />
 
-      {/* 연동 계정 정보 */}
+      {/* Linked account info */}
       <View className="px-4 pt-6 pb-4">
-        <Text className="mb-4 text-caption-md text-gray-500">연동 계정 정보</Text>
+        <Text className="mb-4 text-caption-md text-gray-500">{t('my.linkedAccountsTitle')}</Text>
         {accountsLoading ? (
           <Loading />
         ) : accountsFailed ? (
-          <ErrorState message="연동 계정을 불러오지 못했어요" onRetry={loadAccounts} />
+          <ErrorState message={t('my.linkedAccountsLoadFail')} onRetry={loadAccounts} />
         ) : accounts.length === 0 ? (
-          <Text className="text-body-md text-gray-500">연동된 계정이 없어요</Text>
+          <Text className="text-body-md text-gray-500">{t('my.noLinkedAccounts')}</Text>
         ) : (
           accounts.map((account) => {
             const cfg = PROVIDER_CONFIG[account.provider];
@@ -176,8 +182,8 @@ export default function AccountScreen() {
                   )}
                 </View>
                 <Text className="text-body-md text-gray-900">{cfg?.label ?? account.provider}</Text>
-                {/* 가짜 주소가 새어 나가는 걸 막는 마지막 방어선.
-                    카카오는 진짜 이메일(없으면 닉네임)이 여기로 온다. */}
+                {/* Last line of defense against leaking a fake address.
+                    Kakao sends the real email here (or the nickname if none). */}
                 <Text className="ml-auto shrink text-body-md text-gray-500" numberOfLines={1}>
                   {account.email?.endsWith('@kakao.bingket') ? '' : (account.email ?? '')}
                 </Text>
@@ -189,10 +195,10 @@ export default function AccountScreen() {
 
       <View className="h-px bg-gray-300" />
 
-      {/* 계정 공개 범위 — 프로필 편집에 있던 것을 옮겨 왔다.
-          저장 버튼이 따로 없는 화면이라 고르는 즉시 저장한다. */}
+      {/* Account visibility — moved here from the profile edit screen.
+          There's no separate save button, so it saves as soon as you pick. */}
       <View className="px-4 py-6">
-        <Text className="mb-4 text-caption-md text-gray-500">계정 공개 범위</Text>
+        <Text className="mb-4 text-caption-md text-gray-500">{t('my.accountVisibilityTitle')}</Text>
         {visibility && (
           <AccountVisibilitySelector value={visibility} onChange={handleVisibilityChange} />
         )}
@@ -206,31 +212,31 @@ export default function AccountScreen() {
         </View>
       ) : (
         <>
-          <RowItem label="빙고 초기화" onPress={() => setShowResetModal(true)} />
-          <RowItem label="회원 탈퇴" onPress={() => setShowSecessionModal(true)} />
+          <RowItem label={t('my.resetBingos')} onPress={() => setShowResetModal(true)} />
+          <RowItem label={t('my.withdraw')} onPress={() => setShowSecessionModal(true)} />
         </>
       )}
 
-      {/* 빙고 초기화 확인 모달 */}
+      {/* Reset bingos confirmation modal */}
       <Modal
         visible={showResetModal}
-        title="정말로 빙고를 초기화 하시겠어요?"
-        body={`• 작성한 모든 빙고가 삭제돼요.\n• 글과 댓글은 남아요.\n• 계정과 프로필은 유지돼요.`}
+        title={t('my.resetConfirmTitle')}
+        body={t('my.resetConfirmBody')}
         variant="warning"
-        cancelLabel="취소"
-        confirmLabel="초기화 하기"
+        cancelLabel={t('common.cancel')}
+        confirmLabel={t('my.resetConfirmButton')}
         onCancel={() => setShowResetModal(false)}
         onConfirm={handleResetBingos}
         onDismiss={() => setShowResetModal(false)}
       />
 
-      {/* 빙고 초기화 완료 모달 */}
+      {/* Reset bingos done modal */}
       <Modal
         visible={showResetDoneModal}
-        title="초기화 완료"
-        body="모든 빙고가 삭제되었어요."
+        title={t('my.resetDoneTitle')}
+        body={t('my.resetDoneBody')}
         variant="single"
-        confirmLabel="확인"
+        confirmLabel={t('common.confirm')}
         onConfirm={() => {
           setShowResetDoneModal(false);
           router.back();
@@ -241,26 +247,26 @@ export default function AccountScreen() {
         }}
       />
 
-      {/* 회원 탈퇴 모달 */}
+      {/* Withdraw account modal */}
       <Modal
         visible={showSecessionModal}
-        title="정말로 탈퇴를 하시겠어요?"
-        body={`• 계정과 프로필 정보, 프로필 사진이 삭제돼요.\n• 계정 삭제 후 데이터 복구가 불가능해요.\n• 작성한 글과 댓글은 첨부한 사진과 함께 (알 수 없음)으로 남아요`}
+        title={t('my.withdrawConfirmTitle')}
+        body={t('my.withdrawConfirmBody')}
         variant="warning"
-        cancelLabel="취소"
-        confirmLabel="탈퇴하기"
+        cancelLabel={t('common.cancel')}
+        confirmLabel={t('my.withdrawButton')}
         onCancel={() => setShowSecessionModal(false)}
         onConfirm={handleDeleteAccount}
         onDismiss={() => setShowSecessionModal(false)}
       />
 
-      {/* 오류 모달 */}
+      {/* Error modal */}
       <Modal
         visible={showErrorModal}
-        title="오류가 발생했어요"
+        title={t('common.error.general')}
         body={errorMessage}
         variant="single"
-        confirmLabel="확인"
+        confirmLabel={t('common.confirm')}
         onConfirm={() => setShowErrorModal(false)}
         onDismiss={() => setShowErrorModal(false)}
       />

@@ -30,6 +30,7 @@ import { calcMaxBingo } from '@/lib/calcMaxBingo';
 import { useResponsive } from '@/lib/use-responsive';
 import { TEAM_MODE_DESCRIPTION } from '@/types/team';
 import type { BingoData } from '@/types/bingo';
+import { useTranslation } from 'react-i18next';
 
 function toBingoData(board: TeamBoardSummary, endDate: string): BingoData {
   return {
@@ -52,47 +53,8 @@ function toBingoData(board: TeamBoardSummary, endDate: string): BingoData {
 const percent = (achieved: number, total: number): number =>
   total > 0 ? Math.round((achieved / total) * 100) : 0;
 
-/** 기간 상태를 한 줄로 */
-function periodLabel(detail: TeamDetail): string {
-  if (detail.isFinished) return '종료';
-  if (!detail.isStarted) return `${calcDaysUntilStart(detail.startDate)}일 후 시작`;
-  return `D-${calcTeamDday(detail.endDate)}`;
-}
-
-interface MemberColumnProps {
-  member: TeamMemberEntry;
-  showRank: boolean;
-  isFinished: boolean;
-  /** 같이 채우기에서는 기여 칸 수만 보여준다 */
-  contributionOnly: boolean;
-}
-
-function MemberColumn({ member, showRank, isFinished, contributionOnly }: MemberColumnProps) {
-  const pending = member.status === 'invited';
-
-  return (
-    <View className="items-center gap-1 w-[72px]" style={{ opacity: pending ? 0.4 : 1 }}>
-      <View className="relative">
-        <WinnerCrown visible={showRank && isFinished && member.rank === 1} />
-        <ProfileAvatar avatarUrl={member.avatarUrl} size={32} />
-      </View>
-      <Text className="text-body-sm text-gray-800" numberOfLines={1}>
-        {member.displayName}
-      </Text>
-      {pending ? (
-        <Text className="text-caption-sm text-gray-400">수락 대기</Text>
-      ) : contributionOnly ? (
-        <Text className="text-caption-sm text-gray-700">{member.achievedCount}칸</Text>
-      ) : (
-        <Text className="text-caption-sm text-gray-700">
-          {percent(member.achievedCount, member.totalCount)}%
-        </Text>
-      )}
-    </View>
-  );
-}
-
 export default function TeamStatusScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { teamId } = useLocalSearchParams<{ teamId: string }>();
@@ -110,6 +72,48 @@ export default function TeamStatusScreen() {
   const [myRetrospective, setMyRetrospective] = useState('');
   const retroDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  function periodLabel(detail: TeamDetail): string {
+    if (detail.isFinished) return t('home.periodEnded');
+    if (!detail.isStarted)
+      return t('home.periodDaysUntilStart', { days: calcDaysUntilStart(detail.startDate) });
+    return t('home.periodDday', { days: calcTeamDday(detail.endDate) });
+  }
+
+  function MemberColumn({
+    member,
+    showRank,
+    isFinished,
+    contributionOnly,
+  }: {
+    member: TeamMemberEntry;
+    showRank: boolean;
+    isFinished: boolean;
+    contributionOnly: boolean;
+  }) {
+    const pending = member.status === 'invited';
+
+    return (
+      <View className="items-center gap-1 w-[72px]" style={{ opacity: pending ? 0.4 : 1 }}>
+        <View className="relative">
+          <WinnerCrown visible={showRank && isFinished && member.rank === 1} />
+          <ProfileAvatar avatarUrl={member.avatarUrl} size={32} />
+        </View>
+        <Text className="text-body-sm text-gray-800" numberOfLines={1}>
+          {member.displayName}
+        </Text>
+        {pending ? (
+          <Text className="text-caption-sm text-gray-400">{t('home.pendingAccept')}</Text>
+        ) : contributionOnly ? (
+          <Text className="text-caption-sm text-gray-700">{member.achievedCount}칸</Text>
+        ) : (
+          <Text className="text-caption-sm text-gray-700">
+            {percent(member.achievedCount, member.totalCount)}%
+          </Text>
+        )}
+      </View>
+    );
+  }
+
   useFocusEffect(
     useCallback(() => {
       if (!teamId) return;
@@ -119,9 +123,9 @@ export default function TeamStatusScreen() {
           setRetrospectives(retros);
           setMyRetrospective(retros.find((r) => r.isMe)?.content ?? '');
         })
-        .catch(() => setErrorMessage('팀 정보를 불러오지 못했어요.'))
+        .catch(() => setErrorMessage(t('home.teamInfoLoadFail')))
         .finally(() => setLoading(false));
-    }, [teamId]),
+    }, [teamId, t]),
   );
 
   const handleRetrospectiveChange = (value: string) => {
@@ -129,9 +133,8 @@ export default function TeamStatusScreen() {
     if (retroDebounceRef.current) clearTimeout(retroDebounceRef.current);
     retroDebounceRef.current = setTimeout(() => {
       saveMyRetrospective(teamId, value).catch((e: unknown) => {
-        // 저장 실패를 삼키면 화면만 채워진 채 남아 다음 진입에 되돌아간다.
         Sentry.captureException(e);
-        setErrorMessage('회고를 저장하지 못했어요. 잠시 후 다시 시도해주세요.');
+        setErrorMessage(t('home.retrospectiveSaveFail'));
       });
     }, 500);
   };
@@ -171,12 +174,18 @@ export default function TeamStatusScreen() {
         visible={showMenu}
         onDismiss={() => setShowMenu(false)}
         style={{ top: insets.top + 50, right: 16 }}
-        items={[{ label: '팀 나가기', danger: true, onPress: () => setShowLeaveModal(true) }]}
+        items={[
+          {
+            label: t('home.leaveTeamMenuItem'),
+            danger: true,
+            onPress: () => setShowLeaveModal(true),
+          },
+        ]}
       />
 
       {!detail ? (
         <View className="flex-1 items-center justify-center">
-          <Text className="text-body-md text-gray-400">팀 정보를 불러올 수 없어요.</Text>
+          <Text className="text-body-md text-gray-400">{t('home.teamStatusUnavailable')}</Text>
         </View>
       ) : (
         <ScrollView
@@ -187,50 +196,54 @@ export default function TeamStatusScreen() {
             {TEAM_MODE_DESCRIPTION[detail.mode]}
           </Text>
 
-          {/* 시작 전 안내 */}
+          {/* BEFORE START */}
           {!detail.isStarted && (
             <View className="mx-5 mb-6 bg-gray-200 rounded-2xl p-4">
               <Text className="text-body-md">
-                {calcDaysUntilStart(detail.startDate)}일 후 다 같이 시작해요. 그때부터 칸을 채울 수
-                있어요.
+                {t('home.teamStartCountdown', { days: calcDaysUntilStart(detail.startDate) })}
               </Text>
             </View>
           )}
 
-          {/* 종료 결과 */}
+          {/* RESULT */}
           {detail.isFinished && (
             <View className="mx-5 mb-6 items-center bg-green-200 rounded-2xl py-4 px-4">
               {isShared ? (
                 <Text className="text-title-md font-pretendard-semibold text-center">
                   {sharedBoard
-                    ? `우리 팀은 ${sharedBoard.totalCells}칸 중 ${sharedBoard.checkedCount}칸을 채웠어요 👏`
-                    : '팀 빙고가 끝났어요 👏'}
+                    ? t('home.teamEndedShared', {
+                        total: sharedBoard.totalCells,
+                        checked: sharedBoard.checkedCount,
+                      })
+                    : t('home.teamEndedNoWinner')}
                 </Text>
               ) : winners.length === 0 ? (
                 <Text className="text-title-md font-pretendard-semibold">
-                  팀 빙고가 끝났어요 👏
+                  {t('home.teamEndedNoWinner')}
                 </Text>
               ) : (
                 <Text className="text-title-md font-pretendard-semibold text-center">
-                  {winners.map((w) => w.displayName).join(', ')}님이 1등이에요! 👑
+                  {t('home.teamWinner', { names: winners.map((w) => w.displayName).join(', ') })}
                 </Text>
               )}
             </View>
           )}
 
-          {/* 내기 */}
+          {/* BET */}
           {detail.betText && (
             <View className="mx-5 mb-8">
-              <Text className="text-title-md mb-3 font-pretendard-semibold">내기 내용</Text>
+              <Text className="text-title-md mb-3 font-pretendard-semibold">
+                {t('home.betContent')}
+              </Text>
               <View className="p-4 bg-gray-100 rounded-2xl">
                 <Text className="text-body-md">{detail.betText}</Text>
               </View>
             </View>
           )}
 
-          {/* 멤버 나열: 1등이 왼쪽 */}
+          {/* MEMBER LIST */}
           <View className="mb-6">
-            <Text className="mb-3 px-4 text-body-md text-gray-900">참여자</Text>
+            <Text className="mb-3 px-4 text-body-md text-gray-900">{t('home.participants')}</Text>
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
@@ -248,7 +261,7 @@ export default function TeamStatusScreen() {
             </ScrollView>
           </View>
 
-          {/* 빙고판 */}
+          {/* BINGO */}
           {isShared ? (
             sharedBoard && (
               <BingoPreview
@@ -259,25 +272,21 @@ export default function TeamStatusScreen() {
               />
             )
           ) : detail.boardsFailed ? (
-            // 판 조회가 실패한 것과 "아직 아무도 안 들어왔다"는 완전히 다른 상황이다.
-            // 예전에는 둘 다 아무것도 안 그려서 구분이 안 됐다.
-            <EmptyState message={'빙고판을 불러오지 못했어요\n당겨서 새로고침해주세요'} />
+            <EmptyState message={t('home.boardLoadFailRefresh')} />
           ) : detail.members.filter((m) => m.status === 'joined').length === 0 ? (
-            <EmptyState message={'아직 참여한 사람이 없어요\n초대를 수락하면 여기에 보여요'} />
+            <EmptyState message={t('home.noJoinedMembers')} />
           ) : (
             <View className="flex-row flex-wrap gap-x-[14px] gap-y-8 px-4">
               {detail.members
                 .filter((m) => m.status === 'joined')
                 .map((member) => {
                   const board = detail.boards[member.userId];
-                  // 참여자는 있는데 판이 없다 = 아직 빙고를 만들지 않았다는 뜻이다.
-                  // 조용히 지우면 "참여자는 뜨는데 판이 안 뜬다"로만 보인다.
                   if (!board) {
                     return (
                       <View key={member.userId} className="items-center gap-2">
                         <View className="h-[172px] w-[172px] items-center justify-center rounded-2xl bg-gray-200 px-3">
                           <Text className="text-caption-md text-center text-gray-600">
-                            아직 빙고판을{'\n'}만들지 않았어요
+                            {t('home.boardNotCreated')}
                           </Text>
                         </View>
                       </View>
@@ -296,13 +305,13 @@ export default function TeamStatusScreen() {
                       </View>
                       <View className="flex-row gap-2">
                         <BingoStat
-                          label="달성"
+                          label={t('common.achieve')}
                           current={board.checkedCount}
                           total={board.totalCells}
                           size={statSize}
                         />
                         <BingoStat
-                          label="빙고"
+                          label={t('common.bingo')}
                           current={board.bingoCount}
                           total={calcMaxBingo(cols, rows)}
                           size={statSize}
@@ -314,19 +323,20 @@ export default function TeamStatusScreen() {
             </View>
           )}
 
-          {/* 회고: 사람마다 따로 쓴다 */}
           {detail.isFinished && (
             <View className="mx-5 mt-10">
-              <Text className="text-title-md mb-2 font-pretendard-semibold">회고</Text>
+              <Text className="text-title-md mb-2 font-pretendard-semibold">
+                {t('home.retrospectiveTitle')}
+              </Text>
               <Text className="text-caption-md text-gray-600 mb-3">
-                이 기간이 나에게 어땠는지 남겨보세요. 팀원들도 볼 수 있어요.
+                {t('home.retrospectiveDescription')}
               </Text>
 
               <View style={{ position: 'relative' }}>
                 <TextInput
                   value={myRetrospective}
                   onChangeText={handleRetrospectiveChange}
-                  placeholder="회고를 남겨보세요."
+                  placeholder={t('home.retrospectivePlaceholder')}
                   multiline
                   maxLength={500}
                   className="h-[140px] bg-gray-100 rounded-2xl p-4 text-body-md text-gray-900 placeholder:text-gray-500"
@@ -342,7 +352,7 @@ export default function TeamStatusScreen() {
 
               {retrospectives.filter((r) => !r.isMe && r.content.trim()).length === 0 && (
                 <Text className="mt-6 text-center text-body-sm text-gray-500">
-                  아직 다른 사람의 회고가 없어요
+                  {t('home.noOtherRetrospective')}
                 </Text>
               )}
 
@@ -366,16 +376,15 @@ export default function TeamStatusScreen() {
             <InfoIcon width={20} height={20} className="text-gray-700" />
             <Text className="text-caption-md md:text-body-md flex-1">
               {isShared
-                ? '먼저 누른 사람이 그 칸의 주인이 돼요. 채운 칸은 그 사람만 해제할 수 있어요.'
+                ? t('home.sharedModeInfo')
                 : detail.isResultFrozen
-                  ? '순위는 종료 시점 달성률로 확정됐어요.'
-                  : '순위는 달성률(채운 칸 ÷ 전체 칸)로 정해져요. 판 크기가 달라도 공평해요.'}
+                  ? t('home.rankFrozenInfo')
+                  : t('home.rankInfo')}
             </Text>
           </View>
         </ScrollView>
       )}
 
-      {/* 확대 오버레이 */}
       <RNModal visible={!!selectedBoard} transparent animationType="fade">
         <Pressable
           className="flex-1 bg-scrim/80 items-center justify-center"
@@ -396,15 +405,11 @@ export default function TeamStatusScreen() {
 
       <Modal
         visible={showLeaveModal}
-        title="팀에서 나갈까요?"
-        body={
-          isShared
-            ? '내가 채운 칸은 그대로 남아요. 방장이라면 다음 사람에게 넘어가요.'
-            : '내 빙고는 개인 빙고로 남아요. 팀 순위에서만 빠져요.'
-        }
+        title={t('home.leaveTeamTitle')}
+        body={isShared ? t('home.leaveTeamBodyShared') : t('home.leaveTeamBodySolo')}
         variant="warning"
-        confirmLabel="나가기"
-        cancelLabel="취소"
+        confirmLabel={t('home.leaveConfirm')}
+        cancelLabel={t('common.cancel')}
         onCancel={() => setShowLeaveModal(false)}
         onDismiss={() => setShowLeaveModal(false)}
         onConfirm={async () => {
@@ -415,7 +420,7 @@ export default function TeamStatusScreen() {
             await leaveTeam(teamId);
             router.back();
           } catch (e) {
-            setErrorMessage(e instanceof Error ? e.message : '팀 나가기에 실패했어요.');
+            setErrorMessage(e instanceof Error ? e.message : t('home.leaveTeamFail'));
           } finally {
             setLeaving(false);
           }
@@ -424,10 +429,10 @@ export default function TeamStatusScreen() {
 
       <Modal
         visible={!!errorMessage}
-        title="오류"
+        title={t('common.error.general')}
         body={errorMessage ?? ''}
         variant="error"
-        confirmLabel="확인"
+        confirmLabel={t('common.confirm')}
         onConfirm={() => setErrorMessage(null)}
         onDismiss={() => setErrorMessage(null)}
       />
