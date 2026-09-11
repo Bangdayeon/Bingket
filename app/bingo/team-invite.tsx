@@ -52,7 +52,7 @@ export default function TeamInviteScreen() {
   const cellsRef = useRef<string[]>([]);
 
   const editCountKey = (maxEdits: number): string =>
-    maxEdits === 9999 || maxEdits === -1 ? t('home.infinite') : String(maxEdits);
+    maxEdits === 9999 || maxEdits === -1 ? t('home.field.modifyCount.label') : String(maxEdits);
 
   useEffect(() => {
     if (!teamId) return;
@@ -65,7 +65,7 @@ export default function TeamInviteScreen() {
           setMyTitle(data.title);
         }
       })
-      .catch(() => setAlertMessage(`${t('home.loadInviteError')} ${t('common.error.retry')}`))
+      .catch(() => setAlertMessage(`${t('home.error.loadInvite')} ${t('common.error.retry')}`))
       .finally(() => setLoading(false));
   }, [teamId, t]);
 
@@ -101,7 +101,7 @@ export default function TeamInviteScreen() {
 
   const confirmLabel = isCompetition
     ? composing
-      ? t('home.saveConfirm')
+      ? t('home.modal.save.confirm')
       : t('home.okAndCreate')
     : t('home.doWith');
 
@@ -121,11 +121,11 @@ export default function TeamInviteScreen() {
       const [cols, rows] = selectedGrid.split('x').map(Number);
 
       if (!myTitle.trim()) {
-        return setAlertMessage(t('home.enterTitle'));
+        return setAlertMessage(t('home.field.title.label'));
       }
 
       if (cellsRef.current.filter((cell) => cell?.trim()).length < cols * rows) {
-        return setAlertMessage(t('home.fillAllCells'));
+        return setAlertMessage(t('home.alert.fillAllCells'));
       }
     }
 
@@ -174,7 +174,7 @@ export default function TeamInviteScreen() {
       router.back();
     } catch (e) {
       setAlertMessage(
-        e instanceof Error ? e.message : `${t('home.failReject')} ${t('common.error.retry')}`,
+        e instanceof Error ? e.message : `${t('home.error.reject')} ${t('common.error.retry')}`,
       );
     } finally {
       setActing(false);
@@ -188,7 +188,7 @@ export default function TeamInviteScreen() {
       {!invite ? (
         <View className="flex-1 items-center justify-center">
           <Text className="text-body-md text-gray-400">
-            {t('home.loadInviteError')} {t('common.error.retry')}
+            {t('home.error.loadInvite')} {t('common.error.retry')}
           </Text>
         </View>
       ) : (
@@ -237,7 +237,9 @@ export default function TeamInviteScreen() {
 
             {invite.betText && (
               <View className="rounded-2xl bg-gray-200 px-4 py-3">
-                <Text className="mb-1 text-caption-md text-gray-700">{t('home.betContent')}</Text>
+                <Text className="mb-1 text-caption-md text-gray-700">
+                  {t('home.field.bet.label')}
+                </Text>
 
                 <Text className="text-body-md text-gray-900">{invite.betText}</Text>
               </View>
@@ -294,7 +296,7 @@ export default function TeamInviteScreen() {
           />
 
           <Button
-            label={acting ? t('home.processing') : confirmLabel}
+            label={acting ? t('home.btnLabel.processing') : confirmLabel}
             variant="primary"
             size="md"
             onClick={handleConfirm}

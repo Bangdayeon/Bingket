@@ -49,7 +49,7 @@ export default function TeamModeScreen() {
 
       <ScrollView className="flex-1 px-4">
         <Text className="pb-6 text-caption-md text-gray-700">
-          {t('home.selectFriendsDescription', {
+          {t('home.field.friend.description', {
             count: TEAM_MAX_MEMBERS - 1,
           })}
         </Text>

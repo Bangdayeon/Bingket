@@ -16,10 +16,10 @@ export default function TabLayout() {
         tabBar={(props) => <FloatingTabBar {...props} />}
         screenOptions={{ headerShown: false }}
       >
-        <Tabs.Screen name="index" options={{ title: t('common.home') }} />
-        <Tabs.Screen name="community" options={{ title: t('common.board') }} />
-        <Tabs.Screen name="notifications" options={{ title: t('common.notifications') }} />
-        <Tabs.Screen name="mypage" options={{ title: t('common.mypage') }} />
+        <Tabs.Screen name="index" options={{ title: t('common.screen.home') }} />
+        <Tabs.Screen name="community" options={{ title: t('common.screen.board') }} />
+        <Tabs.Screen name="notifications" options={{ title: t('common.screen.notifications') }} />
+        <Tabs.Screen name="mypage" options={{ title: t('common.screen.mypage') }} />
       </Tabs>
     </UnreadNotificationsProvider>
   );

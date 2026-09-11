@@ -11,7 +11,7 @@ interface ErrorStateProps {
 
 export function ErrorState({ message, onRetry, className = '' }: ErrorStateProps) {
   const { t } = useTranslation();
-  const displayMessage = message ?? t('common.errorContent');
+  const displayMessage = message ?? `${t('common.error.general')} ${t('common.error.retry')}`;
 
   return (
     <View className={`flex-1 items-center justify-center gap-6 px-4 py-10 ${className}`}>

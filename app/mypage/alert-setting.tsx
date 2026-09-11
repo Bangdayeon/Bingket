@@ -101,7 +101,7 @@ export default function AlertSettingScreen() {
           </Pressable>
         ) : null}
 
-        <GroupCaption label={t('common.bingo')} />
+        <GroupCaption label={t('common.bingo.bingo')} />
         <ToggleRow
           label={t('settings.notification.dedline')}
           value={settings.bingoDeadline}
@@ -119,7 +119,7 @@ export default function AlertSettingScreen() {
 
         <Divider />
 
-        <GroupCaption label={t('community.title')} />
+        <GroupCaption label={t('common.screen.board')} />
         {/* <ToggleRow
           label="인기글 알림"
           value={settings.communityPopular}

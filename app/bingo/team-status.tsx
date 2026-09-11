@@ -123,7 +123,7 @@ export default function TeamStatusScreen() {
           setRetrospectives(retros);
           setMyRetrospective(retros.find((r) => r.isMe)?.content ?? '');
         })
-        .catch(() => setErrorMessage(t('home.teamInfoLoadFail')))
+        .catch(() => setErrorMessage(t('home.error.teamInfoLoad')))
         .finally(() => setLoading(false));
     }, [teamId, t]),
   );
@@ -185,7 +185,7 @@ export default function TeamStatusScreen() {
 
       {!detail ? (
         <View className="flex-1 items-center justify-center">
-          <Text className="text-body-md text-gray-400">{t('home.teamStatusUnavailable')}</Text>
+          <Text className="text-body-md text-gray-400">{t('home.error.teamStatus')}</Text>
         </View>
       ) : (
         <ScrollView
@@ -233,7 +233,7 @@ export default function TeamStatusScreen() {
           {detail.betText && (
             <View className="mx-5 mb-8">
               <Text className="text-title-md mb-3 font-pretendard-semibold">
-                {t('home.betContent')}
+                {t('home.field.bet.label')}
               </Text>
               <View className="p-4 bg-gray-100 rounded-2xl">
                 <Text className="text-body-md">{detail.betText}</Text>
@@ -305,13 +305,13 @@ export default function TeamStatusScreen() {
                       </View>
                       <View className="flex-row gap-2">
                         <BingoStat
-                          label={t('common.achieve')}
+                          label={t('common.bingo.achieve')}
                           current={board.checkedCount}
                           total={board.totalCells}
                           size={statSize}
                         />
                         <BingoStat
-                          label={t('common.bingo')}
+                          label={t('common.bingo.bingo')}
                           current={board.bingoCount}
                           total={calcMaxBingo(cols, rows)}
                           size={statSize}
@@ -405,11 +405,11 @@ export default function TeamStatusScreen() {
 
       <Modal
         visible={showLeaveModal}
-        title={t('home.leaveTeamTitle')}
-        body={isShared ? t('home.leaveTeamBodyShared') : t('home.leaveTeamBodySolo')}
+        title={t('home.modal.leaveTeam.title')}
+        body={isShared ? t('home.modal.leaveTeam.body_share') : t('home.modal.leaveTeam.body_solo')}
         variant="warning"
-        confirmLabel={t('home.leaveConfirm')}
-        cancelLabel={t('common.cancel')}
+        confirmLabel={t('home.modal.unsaved.confirm')}
+        cancelLabel={t('home.modal.unsaved.cancel')}
         onCancel={() => setShowLeaveModal(false)}
         onDismiss={() => setShowLeaveModal(false)}
         onConfirm={async () => {
@@ -420,7 +420,7 @@ export default function TeamStatusScreen() {
             await leaveTeam(teamId);
             router.back();
           } catch (e) {
-            setErrorMessage(e instanceof Error ? e.message : t('home.leaveTeamFail'));
+            setErrorMessage(e instanceof Error ? e.message : t('home.modal.leaveTeam.fail'));
           } finally {
             setLeaving(false);
           }

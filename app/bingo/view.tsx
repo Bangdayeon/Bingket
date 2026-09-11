@@ -151,7 +151,10 @@ export default function BingoViewScreen() {
     return (
       <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
         <PageHeader />
-        <ErrorState message={t('home.loadFail')} onRetry={loadBoard} />
+        <ErrorState
+          message={`${t('home.error.load')} ${t('common.error.retry')}`}
+          onRetry={loadBoard}
+        />
       </View>
     );
   }
@@ -199,7 +202,7 @@ export default function BingoViewScreen() {
             <TextInput
               value={retrospective}
               onChangeText={handleRetrospectiveChange}
-              placeholder={t('home.memoPlaceholder')}
+              placeholder={t('common.bingo.memoPlaceholder')}
               multiline
               maxLength={MEMO_MAX_LENGTH}
               textAlignVertical="top"
@@ -227,7 +230,7 @@ export default function BingoViewScreen() {
 
       <Modal
         visible={saveFailed}
-        title={t('home.saveFail')}
+        title={t('home.error.save')}
         body={t('common.error.retry')}
         variant="single"
         confirmLabel={t('common.confirm')}

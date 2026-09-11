@@ -1,14 +1,19 @@
 export default {
   common: {
-    bingo: '빙고',
+    screen: {
+      home: '홈',
+      board: '게시판',
+      notifications: '알림',
+      mypage: '내 공간',
+    },
 
-    home: '홈',
-    board: '게시판',
-    notifications: '알림',
-    mypage: '내 공간',
-
-    achieve: '달성',
-    endDate: '종료일',
+    bingo: {
+      bingo: '빙고',
+      achieve: '달성',
+      endDate: '종료일',
+      emptyBingo: '볼 수 없는 빙고예요.',
+      memoPlaceholder: '메모를 입력해주세요.',
+    },
 
     field: {
       email: '이메일',
@@ -31,7 +36,6 @@ export default {
     // States
     noSearchResult: '검색 결과가 없어요.',
     offline: '오프라인이에요 · 연결되면 자동으로 새로고침돼요',
-    emptyBingo: '볼 수 없는 빙고예요.',
 
     error: {
       general: '오류가 발생했어요.',
@@ -88,45 +92,75 @@ export default {
   },
 
   home: {
-    add: '추가하기',
-    modify: '수정하기',
     addBingo: '빙고 추가하기',
-    modifyBingo: '빙고 수정하기',
-    selectTheme: '테마 선택',
-    modifyCount: '빙고 수정 가능 횟수',
-    infinite: '무제한',
-    betContent: '내기 내용',
-    selectFriend: '친구 선택하기',
-    inviteFriend: '초대할 친구',
-    creating: '만드는 중...',
-    processing: '처리 중...',
-    startBingoWith: '함께 빙고 시작하기',
     invite: '초대',
     memo: '메모',
+    modifyBingo: '빙고 수정하기',
+
+    btnLabel: {
+      temporarySave: '임시저장',
+      save: '저장하기',
+      add: '추가하기',
+      modify: '수정하기',
+
+      creating: '만드는 중...',
+      processing: '처리 중...',
+      startBingoWith: '함께 빙고 시작하기',
+    },
+
+    field: {
+      title: {
+        label: '제목을 입력해주세요.',
+      },
+
+      duration: {
+        label: '목표 기간을 선택해주세요.',
+        oneMonth: '1개월',
+        threeMonths: '3개월',
+        sixMonths: '6개월',
+        oneYear: '1년',
+        custom: '직접 지정',
+        selectStartDate: '시작일을 선택해주세요.',
+        selectEndDate: '종료일을 선택해주세요.',
+      },
+
+      selectTheme: '테마 선택',
+      modifyCount: {
+        label: '빙고 수정 가능 횟수',
+        infinite: '무제한',
+      },
+
+      bet: {
+        label: '내기 내용',
+      },
+
+      friend: {
+        label: '친구 선택하기',
+        invite: '초대할 친구',
+        description: '친구는 최대 {{count}}명까지 같이할 수 있어요.',
+      },
+    },
+    alert: {
+      fillAllCells: '빙고 칸을 모두 채워주세요.',
+      selectFriends: '함께할 친구를 한 명 이상 선택해주세요.',
+    },
+
+    error: {
+      save: '저장에 실패했어요.',
+      delete: '삭제에 실패했어요..',
+      load: '빙고를 불러오지 못했어요',
+      loadInvite: '초대를 불러오지 못했어요.',
+      reject: '거절에 실패했어요.',
+      teamStatus: '팀 정보를 불러올 수 없어요.',
+      teamInfoLoad: '팀 정보를 불러오지 못했어요.',
+    },
 
     // 문장
     empty: '아직 버킷리스트가 없어요.',
-    enterTitle: '제목을 입력해주세요.',
-    selectDuration: '목표 기간을 선택해주세요.',
-    selectStartDate: '시작일을 선택해주세요.',
-    selectEndDate: '종료일을 선택해주세요.',
-    fillAllCells: '빙고 칸을 모두 채워주세요.',
-    selectFriends: '함께할 친구를 한 명 이상 선택해주세요.',
+
     temporarySaved: '임시 저장되었어요.\n홈 화면에서 이어서 만들 수 있어요.',
-    saveFail: '저장에 실패했어요.\n잠시 후 다시 시도해주세요.',
-    deleteFail: '삭제에 실패했어요. 잠시 후 다시 시도해주세요.',
-    loadFail: '빙고를 불러오지 못했어요. 잠시 후 다시 시도해주세요.',
     deleteConfirm: '빙고를 정말로 삭제할까요?',
     deleteBody: '삭제된 빙고는 되돌릴 수 없어요.',
-    memoPlaceholder: '메모를 입력해주세요.',
-
-    confirmFriendBingo:
-      '기간과 칸 내용은 만든 뒤에 바꿀 수 없어요.\n친구 {{count}}명에게 초대를 보낼까요?',
-    friendBingoCancel: '한 번 더 보기',
-    friendBingoConfirm: '초대 보내기',
-
-    loadInviteError: '초대를 불러오지 못했어요.',
-    failReject: '거절에 실패했어요.',
 
     // 팀 초대
     inviteCompetitionMessage: '{{name}}님이 빙고로 경쟁하고 싶어해요',
@@ -139,38 +173,42 @@ export default {
     rejectInvite: '거절하기',
     rejectInviteTitle: '초대를 거절할까요?',
     rejectInviteBody: '거절하면 이 팀 빙고에 참여할 수 없어요.',
-    selectFriendsDescription: '친구는 최대 {{count}}명까지 같이할 수 있어요.',
-    // 목표 기간
-    oneMonth: '1개월',
-    threeMonths: '3개월',
-    sixMonths: '6개월',
-    oneYear: '1년',
-    custom: '직접 지정',
-
-    // 저장
-    temporarySave: '임시저장',
-    save: '저장하기',
 
     // 저장 확인 모달
+    modal: {
+      save: {
+        title: '빙고 만들기',
+        body: '목표 기간, 칸 개수, 수정 가능 횟수는\n저장 후에는 수정할 수 없어요.\n이대로 빙고를 만들까요?',
+        cancel: '한 번 더 보기',
+        confirm: '빙고 만들기',
+      },
+      unsaved: {
+        title: '저장하지 않은 변경사항이 있어요',
+        body: '지금 나가면 변경 사항이 저장되지 않아요.',
+        cancel: '계속 수정',
+        confirm: '나가기',
+      },
+      friend: {
+        title: '기간과 칸 내용은 만든 뒤에 바꿀 수 없어요.\n친구 {{count}}명에게 초대를 보낼까요?',
+        cancel: '한 번 더 보기',
+        confirm: '초대 보내기',
+      },
+      leaveTeam: {
+        title: '팀에서 나갈까요?',
+        body_share: '내가 채운 칸은 그대로 남아요. 방장이라면 다음 사람에게 넘어가요.',
+        body_solo: '내 빙고는 개인 빙고로 남아요. 팀 순위에서만 빠져요.',
+        fail: '팀 나가기에 실패했어요.',
+      },
+    },
     saveConfirmTitle: '빙고 만들기',
-    saveConfirmBody:
-      '목표 기간, 칸 개수, 수정 가능 횟수는\n저장 후에는 수정할 수 없어요.\n이대로 빙고를 만들까요?',
     saveConfirmCancel: '한 번 더 보기',
-    saveConfirm: '빙고 만들기',
     okAndCreate: '수락하고 빙고 만들기',
     doWith: '같이하기',
-
-    // 나가기 확인 모달
-    leaveTitle: '저장하지 않은 변경사항이 있어요',
-    leaveBody: '지금 나가면 변경 사항이 저장되지 않아요.',
-    leaveCancel: '계속 수정',
-    leaveConfirm: '나가기',
 
     // 팀 현황 화면 (TeamStatusScreen)
     pendingAccept: '수락 대기',
     leaveTeamMenuItem: '팀 나가기',
-    teamStatusUnavailable: '팀 정보를 불러올 수 없어요.',
-    teamInfoLoadFail: '팀 정보를 불러오지 못했어요.',
+
     teamStartCountdown: '{{days}}일 후 다 같이 시작해요. 그때부터 칸을 채울 수 있어요.',
     teamEndedShared: '우리 팀은 {{total}}칸 중 {{checked}}칸을 채웠어요 👏',
     teamEndedNoWinner: '팀 빙고가 끝났어요 👏',
@@ -187,10 +225,7 @@ export default {
     sharedModeInfo: '먼저 누른 사람이 그 칸의 주인이 돼요. 채운 칸은 그 사람만 해제할 수 있어요.',
     rankFrozenInfo: '순위는 종료 시점 달성률로 확정됐어요.',
     rankInfo: '순위는 달성률(채운 칸 ÷ 전체 칸)로 정해져요. 판 크기가 달라도 공평해요.',
-    leaveTeamTitle: '팀에서 나갈까요?',
-    leaveTeamBodyShared: '내가 채운 칸은 그대로 남아요. 방장이라면 다음 사람에게 넘어가요.',
-    leaveTeamBodySolo: '내 빙고는 개인 빙고로 남아요. 팀 순위에서만 빠져요.',
-    leaveTeamFail: '팀 나가기에 실패했어요.',
+
     periodEnded: '종료',
     periodDaysUntilStart: '{{days}}일 후 시작',
     periodDday: 'D-{{days}}',

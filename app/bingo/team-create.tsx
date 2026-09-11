@@ -63,25 +63,26 @@ export default function TeamCreateScreen() {
 
   const calcEndDate = (start: Date, duration: string): Date => {
     const d = new Date(start);
-    if (duration === t('home.oneMonth')) d.setMonth(d.getMonth() + 1);
-    else if (duration === t('home.threeMonths')) d.setMonth(d.getMonth() + 3);
-    else if (duration === t('home.sixMonths')) d.setMonth(d.getMonth() + 6);
-    else if (duration === t('home.oneYear')) d.setFullYear(d.getFullYear() + 1);
+    if (duration === t('home.field.duration.oneMonth')) d.setMonth(d.getMonth() + 1);
+    else if (duration === t('home.field.duration.threeMonths')) d.setMonth(d.getMonth() + 3);
+    else if (duration === t('home.field.duration.sixMonths')) d.setMonth(d.getMonth() + 6);
+    else if (duration === t('home.field.duration.oneYear')) d.setFullYear(d.getFullYear() + 1);
     return d;
   };
 
   const handleDurationSelect = (opt: string) => {
     markDirty();
     setSelectedDuration(opt);
-    if (opt !== t('home.custom') && startDate) setEndDate(calcEndDate(startDate, opt));
-    if (opt === t('home.custom')) setEndDate(null);
+    if (opt !== t('home.field.duration.custom') && startDate)
+      setEndDate(calcEndDate(startDate, opt));
+    if (opt === t('home.field.duration.custom')) setEndDate(null);
   };
 
   const handlePickerConfirm = () => {
     markDirty();
     if (pickerTarget === 'start') {
       setStartDate(tempDate);
-      if (selectedDuration && selectedDuration !== t('home.custom')) {
+      if (selectedDuration && selectedDuration !== t('home.field.duration.custom')) {
         setEndDate(calcEndDate(tempDate, selectedDuration));
       }
     } else {
@@ -90,18 +91,19 @@ export default function TeamCreateScreen() {
     setPickerTarget(null);
   };
 
-  const isEndDateDisabled = selectedDuration !== null && selectedDuration !== t('home.custom');
+  const isEndDateDisabled =
+    selectedDuration !== null && selectedDuration !== t('home.field.duration.custom');
   const [cols, rows] = selectedGrid.split('x').map(Number);
   const totalCells = cols * rows;
 
   const handleSave = () => {
-    if (!title.trim()) return setAlertMessage(t('home.enterTitle'));
-    if (!selectedDuration) return setAlertMessage(t('home.selectDuration'));
-    if (!startDate) return setAlertMessage(t('home.selectStartDate'));
-    if (!endDate) return setAlertMessage(t('common.endDate'));
+    if (!title.trim()) return setAlertMessage(t('home.field.title.label'));
+    if (!selectedDuration) return setAlertMessage(t('home.field.duration.label'));
+    if (!startDate) return setAlertMessage(t('home.field.duration.selectStartDate'));
+    if (!endDate) return setAlertMessage(t('common.bingo.endDate'));
     if (cellsRef.current.filter((c) => c?.trim()).length < totalCells)
-      return setAlertMessage(t('home.fillAllCells'));
-    if (friendIds.length === 0) return setAlertMessage(t('home.selectFriends'));
+      return setAlertMessage(t('home.alert.fillAllCells'));
+    if (friendIds.length === 0) return setAlertMessage(t('home.alert.selectFriends'));
     setShowConfirmModal(true);
   };
 
@@ -129,7 +131,9 @@ export default function TeamCreateScreen() {
       router.replace({ pathname: '/bingo/team-status', params: { teamId } });
     } catch (e) {
       Sentry.captureException(e);
-      setAlertMessage(e instanceof Error ? e.message : t('home.saveFail'));
+      setAlertMessage(
+        e instanceof Error ? e.message : `${t('home.error.save')} ${t('common.error.retry')}`,
+      );
     } finally {
       setSaving(false);
     }
@@ -206,14 +210,14 @@ export default function TeamCreateScreen() {
 
         {mode === 'competition' && (
           <View className="px-4">
-            <SectionLabel label={t('home.betContent')} />
+            <SectionLabel label={t('home.field.bet.label')} />
             <TextInput
               value={betText}
               onChangeText={(v) => {
                 markDirty();
                 setBetText(v.slice(0, BET_MAX_LENGTH));
               }}
-              placeholder={t('home.memoPlaceholder')}
+              placeholder={t('common.bingo.memoPlaceholder')}
               multiline
               className="h-20 rounded-2xl bg-gray-200 p-3 text-body-md text-gray-900 placeholder:text-gray-500"
               style={{ textAlignVertical: 'top' }}
@@ -226,7 +230,9 @@ export default function TeamCreateScreen() {
 
         <View className="px-4">
           <SectionLabel
-            label={mode === 'competition' ? t('home.selectFriend') : t('home.inviteFriend')}
+            label={
+              mode === 'competition' ? t('home.field.friend.label') : t('home.field.friend.invite')
+            }
             hint={`(${friendIds.length}/${MAX_INVITES})`}
           />
           <FriendPicker
@@ -251,10 +257,10 @@ export default function TeamCreateScreen() {
       <Modal
         visible={showConfirmModal}
         title={title}
-        body={t('home.confirmFriendBingo', { count: friendIds.length })}
+        body={t('home.modal.friend.title', { count: friendIds.length })}
         variant="default"
-        cancelLabel={t('home.friendBingoCancel')}
-        confirmLabel={t('home.friendBingoConfirm')}
+        cancelLabel={t('home.modal.friend.cancel')}
+        confirmLabel={t('home.modal.friend.confirm')}
         onCancel={() => setShowConfirmModal(false)}
         onConfirm={handleConfirmSave}
         onDismiss={() => setShowConfirmModal(false)}
@@ -262,11 +268,11 @@ export default function TeamCreateScreen() {
 
       <Modal
         visible={showLeaveModal}
-        title={t('home.leaveTitle')}
-        body={t('home.leaveBody')}
+        title={t('home.modal.unsaved.title')}
+        body={t('home.modal.unsaved.body')}
         variant="warning"
-        cancelLabel={t('home.leaveCancel')}
-        confirmLabel={t('home.leaveConfirm')}
+        cancelLabel={t('home.modal.unsaved.cancel')}
+        confirmLabel={t('home.modal.unsaved.confirm')}
         onCancel={() => setShowLeaveModal(false)}
         onConfirm={() => {
           setShowLeaveModal(false);
@@ -292,7 +298,7 @@ export default function TeamCreateScreen() {
         style={{ paddingBottom: insets.bottom + 8 }}
       >
         <Button
-          label={saving ? t('home.creating') : t('home.startBingoWith')}
+          label={saving ? t('home.btnLabel.creating') : t('home.btnLabel.startBingoWith')}
           variant="primary"
           size="md"
           onClick={handleSave}

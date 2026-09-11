@@ -81,24 +81,25 @@ export default function BingoAddScreen() {
 
   const calcEndDate = (start: Date, duration: string): Date => {
     const d = new Date(start);
-    if (duration === t('home.oneMonth')) d.setMonth(d.getMonth() + 1);
-    else if (duration === t('home.threeMonths')) d.setMonth(d.getMonth() + 3);
-    else if (duration === t('home.sixMonths')) d.setMonth(d.getMonth() + 6);
-    else if (duration === t('home.oneYear')) d.setFullYear(d.getFullYear() + 1);
+    if (duration === t('home.field.duration.oneMonth')) d.setMonth(d.getMonth() + 1);
+    else if (duration === t('home.field.duration.threeMonths')) d.setMonth(d.getMonth() + 3);
+    else if (duration === t('home.field.duration.sixMonths')) d.setMonth(d.getMonth() + 6);
+    else if (duration === t('home.field.duration.oneYear')) d.setFullYear(d.getFullYear() + 1);
     return d;
   };
 
   const handleDurationSelect = (opt: string) => {
     markDirty();
     setSelectedDuration(opt);
-    if (opt !== t('home.custom') && startDate) setEndDate(calcEndDate(startDate, opt));
-    if (opt === t('home.custom')) setEndDate(null);
+    if (opt !== t('home.field.duration.custom') && startDate)
+      setEndDate(calcEndDate(startDate, opt));
+    if (opt === t('home.field.duration.custom')) setEndDate(null);
   };
 
   const handleStartDateConfirm = (date: Date) => {
     markDirty();
     setStartDate(date);
-    if (selectedDuration && selectedDuration !== t('home.custom')) {
+    if (selectedDuration && selectedDuration !== t('home.field.duration.custom')) {
       setEndDate(calcEndDate(date, selectedDuration));
     }
   };
@@ -112,7 +113,8 @@ export default function BingoAddScreen() {
     setPickerTarget(null);
   };
 
-  const isEndDateDisabled = selectedDuration !== null && selectedDuration !== t('home.custom');
+  const isEndDateDisabled =
+    selectedDuration !== null && selectedDuration !== t('home.field.duration.custom');
 
   const [cols, rows] = selectedGrid.split('x').map(Number);
   const totalCells = cols * rows;
@@ -128,12 +130,12 @@ export default function BingoAddScreen() {
   };
 
   const handleSave = () => {
-    if (!title.trim()) return showAlert(t('home.enterTitle'));
-    if (!selectedDuration) return showAlert(t('home.selectDuration'));
-    if (!startDate) return showAlert(t('home.selectStartDate'));
-    if (!endDate) return showAlert(t('home.selectEndDate'));
+    if (!title.trim()) return showAlert(t('home.field.title.label'));
+    if (!selectedDuration) return showAlert(t('home.field.duration.label'));
+    if (!startDate) return showAlert(t('home.field.duration.selectStartDate'));
+    if (!endDate) return showAlert(t('home.field.duration.selectEndDate'));
     if (cellsRef.current.filter((c) => c?.trim()).length < totalCells)
-      return showAlert(t('home.fillAllCells'));
+      return showAlert(t('home.alert.fillAllCells'));
     setShowConfirmModal(true);
   };
 
@@ -155,12 +157,12 @@ export default function BingoAddScreen() {
       router.replace('/(tabs)');
     } catch (e) {
       Sentry.captureException(e);
-      showAlert(t('home.saveFail'));
+      showAlert(`${t('home.error.save')} ${t('common.error.retry')}`);
     }
   };
 
   const handleTempSave = async () => {
-    if (!title.trim()) return showAlert(t('home.enterTitle'));
+    if (!title.trim()) return showAlert(t('home.field.title.label'));
     const data = {
       title,
       selectedDuration,
@@ -173,7 +175,7 @@ export default function BingoAddScreen() {
       cells: cellsRef.current,
     };
     await AsyncStorage.setItem('@bingket/draft-bingo', JSON.stringify(data));
-    showAlert(t('home.temporarySave'), () => router.replace('/(tabs)'));
+    showAlert(t('home.btnLabel.temporarySave'), () => router.replace('/(tabs)'));
   };
 
   return (
@@ -256,7 +258,7 @@ export default function BingoAddScreen() {
         <View className="flex-row gap-2 px-4">
           <CoachMarkTarget id="add-temp-save" className="flex-1">
             <Button
-              label={t('home.temporarySave')}
+              label={t('home.btnLabel.temporarySave')}
               variant="secondary"
               size="md"
               onClick={handleTempSave}
@@ -264,7 +266,7 @@ export default function BingoAddScreen() {
             />
           </CoachMarkTarget>
           <Button
-            label={t('home.save')}
+            label={t('home.btnLabel.save')}
             variant="primary"
             size="md"
             onClick={handleSave}
@@ -288,10 +290,10 @@ export default function BingoAddScreen() {
       <Modal
         visible={showConfirmModal}
         title={title}
-        body={t('home.saveConfirmBody')}
+        body={t('home.modal.save.body')}
         variant="default"
-        cancelLabel={t('home.saveConfirmCancel')}
-        confirmLabel={t('home.saveConfirm')}
+        cancelLabel={t('home.modal.save.cancel')}
+        confirmLabel={t('home.modal.save.confirm')}
         onCancel={() => setShowConfirmModal(false)}
         onConfirm={handleConfirmSave}
         onDismiss={() => setShowConfirmModal(false)}
@@ -299,10 +301,10 @@ export default function BingoAddScreen() {
 
       <Modal
         visible={showLeaveModal}
-        title={t('home.leaveTitle')}
-        body={t('home.leaveBody')}
-        cancelLabel={t('home.leaveCancel')}
-        confirmLabel={t('home.leaveConfirm')}
+        title={t('home.modal.unsaved.title')}
+        body={t('home.modal.unsaved.body')}
+        cancelLabel={t('home.modal.unsaved.cancel')}
+        confirmLabel={t('home.modal.unsaved.confirm')}
         onCancel={() => setShowLeaveModal(false)}
         onConfirm={() => {
           setShowLeaveModal(false);

@@ -101,7 +101,7 @@ export default function BingoModifyScreen() {
   };
 
   const handleSave = async () => {
-    if (!title.trim()) return setAlertMessage(t('home.enterTitle'));
+    if (!title.trim()) return setAlertMessage(t('home.field.title.label'));
     if (saving) return;
     setSaving(true);
     try {
@@ -116,7 +116,7 @@ export default function BingoModifyScreen() {
       router.replace('/(tabs)');
     } catch (e) {
       Sentry.captureException(e);
-      setAlertMessage(t('home.saveFail'));
+      setAlertMessage(`${t('home.error.save')} ${t('common.error.retry')}`);
       setSaving(false);
     }
   };
@@ -136,7 +136,7 @@ export default function BingoModifyScreen() {
       Sentry.captureException(e);
       setDeleting(false);
       setShowDeleteModal(false);
-      setAlertMessage(t('home.deleteFail'));
+      setAlertMessage(`${t('home.error.delete')} ${t('common.error.retry')}`);
     }
   };
 
@@ -161,8 +161,11 @@ export default function BingoModifyScreen() {
   if (loadFailed) {
     return (
       <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
-        <PageHeader title={t('home.modifyBingo')} />
-        <ErrorState message={t('home.loadFail')} onRetry={() => void init()} />
+        <PageHeader title={t('home.btnLabel.modifyBingo')} />
+        <ErrorState
+          message={`${t('home.error.load')} ${t('common.error.retry')}`}
+          onRetry={() => void init()}
+        />
       </View>
     );
   }
@@ -221,7 +224,8 @@ export default function BingoModifyScreen() {
 
           <View className="gap-2">
             <Text className="px-4 text-body-sm text-gray-600">
-              {t('home.modifyCount')} {totalUsedEdits}/{isUnlimited ? t('home.infinite') : maxEdits}
+              {t('home.btnLabel.modifyCount')} {totalUsedEdits}/
+              {isUnlimited ? t('home.infinite') : maxEdits}
             </Text>
 
             <AddEachBingo
@@ -248,7 +252,7 @@ export default function BingoModifyScreen() {
 
         <View className="px-4">
           <Button
-            label={t('home.save')}
+            label={t('home.btnLabel.save')}
             variant="primary"
             size="md"
             onClick={handleSave}
@@ -281,10 +285,10 @@ export default function BingoModifyScreen() {
 
       <Modal
         visible={showLeaveModal}
-        title={t('home.leaveTitle')}
-        body={t('home.leaveBody')}
-        cancelLabel={t('home.leaveCancel')}
-        confirmLabel={t('home.leaveConfirm')}
+        title={t('home.modal.unsaved.title')}
+        body={t('home.modal.unsaved.body')}
+        cancelLabel={t('home.modal.unsaved.cancel')}
+        confirmLabel={t('home.modal.unsaved.confirm')}
         onCancel={() => setShowLeaveModal(false)}
         onConfirm={() => {
           setShowLeaveModal(false);

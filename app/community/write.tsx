@@ -331,7 +331,7 @@ export default function CommunityWriteScreen() {
             <TextInput
               value={title}
               onChangeText={setTitle}
-              placeholder={t('home.enterTitle')}
+              placeholder={t('home.field.title.label')}
               maxLength={LIMITS.postTitle}
             />
           </View>

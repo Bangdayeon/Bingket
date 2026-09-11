@@ -39,10 +39,10 @@ export function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarP
     string,
     { on: React.FC<SvgProps>; off: React.FC<SvgProps>; label: string }
   > = {
-    index: { on: HomeOn, off: HomeOff, label: t('home.title') },
-    community: { on: CommunityOn, off: CommunityOff, label: t('community.title') },
-    notifications: { on: BellOn, off: BellOff, label: t('notifications.title') },
-    mypage: { on: MypageOn, off: MypageOff, label: t('my.title') },
+    index: { on: HomeOn, off: HomeOff, label: t('common.screen.home') },
+    community: { on: CommunityOn, off: CommunityOff, label: t('common.screen.board') },
+    notifications: { on: BellOn, off: BellOff, label: t('common.screen.notifications') },
+    mypage: { on: MypageOn, off: MypageOff, label: t('common.screen.mypage') },
   };
 
   const horizontalPadding =
