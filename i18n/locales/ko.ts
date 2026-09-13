@@ -231,79 +231,90 @@ export default {
     periodDday: 'D-{{days}}',
   },
 
-  community: {
-    postAuthor: '작성자',
-    comment: '댓글',
+  board: {
+    badWord: '올바르지 않은 표현을 사용했어요',
 
-    // 문장
-    reportExplanation: '누적 신고 횟수가 3회 이상인 유저는 커뮤니티 이용 제한이 있을 수 있어요.',
-    firstComment: '첫 댓글을 남겨주세요.',
-    commentWarning: '부적절한 내용은 제재를 받을 수 있어요.',
+    comment: {
+      label: '댓글',
+      firstComment: '첫 댓글을 남겨주세요.',
+      commentWarning: '부적절한 내용은 제재를 받을 수 있어요.',
 
-    // 게시글/댓글 상세 화면
-    postNotFound: '게시글을 찾을 수 없어요.',
-    postDeleteFailTitle: '삭제 실패',
-    postDeleteFail: '게시글 삭제에 실패했어요.',
-    commentAddFail: '댓글 작성에 실패했어요.',
-    commentDeleteFail: '댓글 삭제에 실패했어요.',
-    reportFail: '신고에 실패했어요.',
-    blockFail: '차단에 실패했어요.',
+      delete: {
+        title: '댓글 삭제',
+        body: '댓글을 삭제할까요?',
+      },
 
-    // 메뉴 라벨
-    editPost: '수정하기',
-    deletePost: '삭제하기',
-    report: '신고하기',
-    blockUser: '차단하기',
-    block: '차단',
-
-    // 신고 사유
-    reportReasonAd: '상업적 광고 및 판매',
-    reportReasonAbuse: '욕설/비하',
-    reportReasonSexual: '음란물/성적인 내용',
-    reportReasonSpam: '도배',
-    reportReasonImpersonation: '사칭/사기',
-    reportReasonOther: '기타',
-
-    // 신고 완료
-    reportSuccessTitle: '신고 완료',
-    reportSuccessBody: '신고 내용은 24시간 이내에 조치돼요.',
-
-    // 게시글 삭제 확인
-    deletePostConfirmTitle: '게시글을 삭제할까요?',
-    deletePostConfirmBody: '삭제된 게시글은 복구할 수 없어요.',
-
-    // 댓글 삭제 확인
-    deleteCommentTitle: '댓글 삭제',
-    deleteCommentBody: '댓글을 삭제할까요?',
-
-    // 차단 확인/완료
-    blockUserConfirmBody:
-      '이 사용자를 차단하시겠어요?\n차단된 사용자의 게시글과 댓글이 보이지 않아요.',
-    blockSuccessTitle: '차단 완료',
-    blockSuccessBody: '해당 사용자를 차단했어요.',
-
-    // 토스트
-    badWordToast: '올바르지 않은 표현을 사용했어요',
-
-    // 검색 화면
-    searchFailed: '검색하지 못했어요',
-    recentSearches: '최근 검색어',
-    deleteAll: '전체 삭제',
-    noRecentSearches: '최근 검색어가 없어요.',
+      error: {
+        post: '댓글 작성에 실패했어요.',
+        delete: '댓글 삭제에 실패했어요.',
+      },
+    },
 
     // 작성/수정 화면
-    editPostTitle: '게시글 수정하기',
-    writePostTitle: '게시글 작성하기',
-    submit: '등록',
-    contentPlaceholder: '내용을 입력해주세요.',
-    editPostFail: '게시글 수정에 실패했어요.',
-    createPostFail: '게시글 작성에 실패했어요.',
-    loadBingo: '빙고 불러오기',
-    anonymous: '익명',
-    takePhoto: '카메라로 촬영하기',
-    pickFromAlbum: '앨범에서 선택하기',
-    myBingosLoadFail: '빙고 목록을 불러오지 못했어요',
-    noBingos: '빙고가 없어요.',
+    post: {
+      postAuthor: '작성자',
+      submit: '등록',
+      anonymous: '익명',
+      writePostTitle: '게시글 작성하기',
+      contentPlaceholder: '내용을 입력해주세요.',
+      loadBingo: '빙고 불러오기',
+      takePhoto: '카메라로 촬영하기',
+      pickFromAlbum: '앨범에서 선택하기',
+      noBingos: '빙고가 없어요.',
+      addBingo: '빙고 만들기',
+
+      edit: {
+        menu: '수정하기',
+        title: '게시글 수정하기',
+      },
+      delete: {
+        menu: '삭제하기',
+        title: '게시글을 삭제할까요?',
+        body: '삭제된 게시글은 복구할 수 없어요.',
+      },
+
+      error: {
+        notFound: '게시글을 찾을 수 없어요.',
+        delete: '게시글 삭제에 실패했어요.',
+        edit: '게시글 수정에 실패했어요.',
+        create: '게시글 작성에 실패했어요.',
+        bigoLoad: '빙고 목록을 불러오지 못했어요',
+      },
+    },
+
+    report: {
+      menu: '신고하기',
+      explanation: '누적 신고 횟수가 3회 이상인 유저는 커뮤니티 이용 제한이 있을 수 있어요.',
+      reason: {
+        ad: '상업적 광고 및 판매',
+        abuse: '욕설/비하',
+        sexual: '음란물/성적인 내용',
+        spam: '도배',
+        impersonation: '사칭/사기',
+        other: '기타',
+      },
+
+      confirm: '신고하기',
+      successTitle: '신고 완료',
+      successBody: '신고 내용은 24시간 이내에 조치돼요.',
+      error: '신고에 실패했어요.',
+    },
+
+    block: {
+      menu: '차단하기',
+      body: '이 사용자를 차단하시겠어요?\n차단된 사용자의 게시글과 댓글이 보이지 않아요.',
+      successTitle: '해당 사용자를 차단했어요.',
+      successBody: '이제 이 사용자가 작성한 게시글과 댓글이 보이지 않아요.',
+      error: '차단에 실패했어요.',
+    },
+
+    search: {
+      placeholder: '검색어',
+      error: '검색하지 못했어요',
+      recent: '최근 검색어',
+      deleteAll: '전체 삭제',
+      noRecent: '최근 검색어가 없어요.',
+    },
   },
 
   notifications: {
@@ -374,7 +385,8 @@ export default {
       like: '좋아요 알림',
 
       blockTitle: '기기 알림이 꺼져 있어요.',
-      blockBody: '아래 설정과 무관하게 알림이 오지 않아요. 눌러서 기기 설정에서 켜주세요.',
+      blockBody:
+        '아래 설정과 무관하게 알림이 오지 않아요. 기기 설정에서 앱 푸시 알림을 켜주세요. >',
       saveFail: '알림 설정 저장에 실패했어요.',
       loadError: '알림 설정을 불러오지 못했어요. 화면의 값이 실제와 다를 수 있어요.',
     },
@@ -404,7 +416,7 @@ export default {
     loadFailed: '친구 목록을 불러오지 못했어요.',
     delete: '친구 삭제',
     deleteConfirm: '{{displayName}}님을 친구 목록에서 삭제할까요?',
-    searchPlaceholder: '검색어',
+    searchPlaceholder: '닉네임이나 아이디 검색',
     select: '친구 선택',
     complete: '완료',
     selectFriend: '함께할 친구를 골라주세요. 고른 사람이 여기에 보여요.',

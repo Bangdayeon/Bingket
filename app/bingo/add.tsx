@@ -193,7 +193,7 @@ export default function BingoAddScreen() {
         <View className="px-4 pb-2 pt-7">
           <Text className="text-title-lg font-pretendard-medium text-gray-900">
             {t('home.addBingo')}
-          </Text>{' '}
+          </Text>
         </View>
 
         <CoachMarkTarget id="add-info" className="gap-8">

@@ -35,7 +35,7 @@ export default function ProfileScreen() {
 
   const [profile, setProfile] = useState<ProfileSummary | null>(null);
   const [feed, setFeed] = useState<FeedItem[]>([]);
-  const [tab, setTab] = useState<ProfileTab>('피드');
+  const [tab, setTab] = useState<ProfileTab>('feed');
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [requesting, setRequesting] = useState(false);
@@ -136,14 +136,17 @@ export default function ProfileScreen() {
               <View className="h-px bg-gray-200 mx-5 mt-4" />
               <View className="py-20 items-center px-8 gap-2">
                 <LockIcon width={40} height={40} className="text-gray-400" />
+
                 <Text className="text-title-sm mt-1">
                   {unlockableByFriend ? '친구만 볼 수 있어요' : '비공개 계정이에요'}
                 </Text>
+
                 <Text className="text-body-sm text-gray-500 text-center">
                   {unlockableByFriend
                     ? '친구가 되면 빙고와 뱃지를 볼 수 있어요.'
                     : '이 계정은 빙고와 뱃지를 공개하지 않아요.'}
                 </Text>
+
                 {unlockableByFriend && canAddFriend && (
                   <View className="mt-4 w-full max-w-[240px]">{friendButton}</View>
                 )}
@@ -152,19 +155,28 @@ export default function ProfileScreen() {
           ) : (
             <>
               <ProfileTabs value={tab} onChange={setTab} className="mt-4" />
-              {tab === '피드' ? (
+
+              {tab === 'feed' ? (
                 <View className="flex-1">
-                  <FeedGrid
-                    items={feed}
-                    onItemPress={(item) =>
-                      router.push({ pathname: '/bingo/friend-view', params: { boardId: item.id } })
-                    }
-                    emptyText="아직 공개된 빙고가 없어요."
-                  />
+                  {feed.length === 0 ? (
+                    <View className="flex-1 items-center justify-center px-8">
+                      <Text className="text-body-md text-gray-400 text-center">
+                        아직 빙고가 없어요.
+                      </Text>
+                    </View>
+                  ) : (
+                    <FeedGrid
+                      items={feed}
+                      onItemPress={(item) =>
+                        router.push({
+                          pathname: '/bingo/friend-view',
+                          params: { boardId: item.id },
+                        })
+                      }
+                    />
+                  )}
                 </View>
               ) : (
-                // 내 프로필을 이 화면으로 열었으면 RPC 대신 기존 본인 조회 경로를 태운다.
-                // 여기엔 플로팅 탭바가 없어서 내 공간처럼 80을 비워둘 이유도 없다.
                 <BadgesPage userId={profile?.isMe ? undefined : id} bottomGap={insets.bottom} />
               )}
             </>

@@ -93,7 +93,7 @@ export const PostCard = memo(function PostCard({ post, currentUserId, onBlock }:
   const ownership =
     currentUserId == null ? 'unknown' : post.userId === currentUserId ? 'mine' : 'others';
 
-  const { firstImageUrl, bingoData, preview } = useMemo(() => {
+  const { firstImageUrl, bingoData } = useMemo(() => {
     const blocks = parseBlocks(post.body);
 
     let firstImageUrl: string | null = null;
@@ -201,12 +201,16 @@ export const PostCard = memo(function PostCard({ post, currentUserId, onBlock }:
         />
       ) : null}
 
+      <Text className="mt-3 text-label-md text-gray-800" numberOfLines={2}>
+        {post.title}
+      </Text>
+
       {/* 본문 미리보기 */}
-      {preview ? (
+      {/* {preview ? (
         <Text className="mt-3 text-body-sm text-gray-800" numberOfLines={2}>
           {preview}
         </Text>
-      ) : null}
+      ) : null} */}
 
       {/* 좋아요 / 댓글 */}
       <View className="flex-row items-center gap-4 mt-3">

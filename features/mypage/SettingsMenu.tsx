@@ -103,7 +103,7 @@ export function SettingsMenu() {
             showArrow
           />
           <MenuItem
-            label={t('settings.profileEdit')}
+            label={t('settings.accountManagement')}
             onPress={() => navigate('/mypage/account')}
             showArrow
           />

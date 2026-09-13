@@ -34,6 +34,7 @@ import { PortalHost } from '@/components/PortalHost';
 import { OfflineBanner } from '@/components/OfflineBanner';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
+import '@/i18n';
 
 SplashScreen.preventAutoHideAsync();
 

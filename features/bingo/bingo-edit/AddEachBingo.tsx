@@ -13,6 +13,7 @@ import {
   getThemeImageUrl,
   getThemeForegroundColor,
 } from '@/features/bingo/lib/theme';
+import { useTranslation } from 'react-i18next';
 
 interface AddEachBingoProps {
   selectedGrid: string;
@@ -31,6 +32,7 @@ export function AddEachBingo({
   onCellsChange,
   disabledCells,
 }: AddEachBingoProps) {
+  const { t } = useTranslation();
   const [localCells, setLocalCells] = useState<string[]>(cells);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [inputText, setInputText] = useState('');

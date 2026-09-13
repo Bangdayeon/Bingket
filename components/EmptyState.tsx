@@ -19,8 +19,9 @@ export function EmptyState({
   const alignClass = align === 'top' ? 'justify-start pt-24' : 'justify-center';
 
   return (
-    <View className={`flex-1 items-center gap-6 px-4 py-10 ${alignClass} ${className}`}>
+    <View className={`items-center gap-6 px-4 py-10 ${alignClass} ${className}`}>
       <Text className="text-center text-body-md text-gray-500">{message}</Text>
+
       {actionLabel && onAction && (
         <Button label={actionLabel} size="md" onClick={onAction} className="px-6" />
       )}

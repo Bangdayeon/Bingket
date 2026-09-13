@@ -41,12 +41,12 @@ import { useOnlineRestore } from '@/lib/use-online';
 import { useTranslation } from 'react-i18next';
 
 const REPORT_REASON_KEYS = [
-  'community.reportReasonAd',
-  'community.reportReasonAbuse',
-  'community.reportReasonSexual',
-  'community.reportReasonSpam',
-  'community.reportReasonImpersonation',
-  'community.reportReasonOther',
+  'board.report.reason.ad',
+  'board.report.reason.abuse',
+  'board.report.reason.sexual',
+  'board.report.reason.spam',
+  'board.report.reason.impersonation',
+  'board.report.reason.other',
 ] as const;
 
 export default function CommunityDetailScreen() {
@@ -207,7 +207,7 @@ export default function CommunityDetailScreen() {
         {postFailed ? (
           <ErrorState onRetry={loadPost} />
         ) : (
-          <EmptyState message={t('community.postNotFound')} />
+          <EmptyState message={t('board.post.error.notFound')} />
         )}
       </SafeAreaView>
     );
@@ -227,8 +227,8 @@ export default function CommunityDetailScreen() {
       setIsDeleting(false);
       setShowDeleteModal(false);
       setAlertModal({
-        title: t('community.postDeleteFailTitle'),
-        message: e instanceof Error ? e.message : t('community.postDeleteFail'),
+        title: t('board.post.error.notFound'),
+        message: e instanceof Error ? e.message : t('board.post.error.delete'),
       });
     }
   };
@@ -251,7 +251,7 @@ export default function CommunityDetailScreen() {
     } catch (e) {
       setAlertModal({
         title: t('common.error.general'),
-        message: e instanceof Error ? e.message : t('community.commentAddFail'),
+        message: e instanceof Error ? e.message : t('board.comment.error.post'),
       });
     } finally {
       setCommentSubmitting(false);
@@ -277,7 +277,7 @@ export default function CommunityDetailScreen() {
       setDeleteCommentTargetId(null);
       setAlertModal({
         title: t('common.error.general'),
-        message: e instanceof Error ? e.message : t('community.commentDeleteFail'),
+        message: e instanceof Error ? e.message : t('board.comment.error.delete'),
       });
     } finally {
       setIsDeletingComment(false);
@@ -297,15 +297,16 @@ export default function CommunityDetailScreen() {
       setShowBlockModal(false);
       setBlockTargetUserId(null);
       setAlertModal({
-        title: t('community.blockSuccessTitle'),
-        message: t('community.blockSuccessBody'),
+        title: t('board.block.successTitle'),
+        message: t('board.block.successBody'),
       });
     } catch (e) {
       setShowBlockModal(false);
       setBlockTargetUserId(null);
       setAlertModal({
         title: t('common.error.general'),
-        message: e instanceof Error ? e.message : t('community.blockFail'),
+        message:
+          e instanceof Error ? e.message : `${t('board.block.error')} ${t('common.error.retry')}`,
       });
     } finally {
       setIsBlocking(false);
@@ -316,7 +317,7 @@ export default function CommunityDetailScreen() {
   const postMenuItems = isOwnPost
     ? [
         {
-          label: t('community.editPost'),
+          label: t('board.post.edit.menu'),
           onPress: () => {
             setShowPostMenu(false);
             router.push({
@@ -333,7 +334,7 @@ export default function CommunityDetailScreen() {
           },
         },
         {
-          label: t('community.deletePost'),
+          label: t('board.post.delete.menu'),
           danger: true as const,
           onPress: () => {
             setShowPostMenu(false);
@@ -343,7 +344,7 @@ export default function CommunityDetailScreen() {
       ]
     : [
         {
-          label: t('community.report'),
+          label: t('board.report.menu'),
           onPress: () => {
             setShowPostMenu(false);
             setReportTarget({ type: 'post', id: post.id });
@@ -354,7 +355,7 @@ export default function CommunityDetailScreen() {
           ? []
           : [
               {
-                label: t('community.blockUser'),
+                label: t('board.block.menu'),
                 danger: true as const,
                 onPress: () => {
                   setShowPostMenu(false);
@@ -376,7 +377,7 @@ export default function CommunityDetailScreen() {
       ]
     : [
         {
-          label: t('community.report'),
+          label: t('board.report.menu'),
           onPress: () => {
             if (commentMenuId) setReportTarget({ type: 'comment', id: commentMenuId });
             setCommentMenuId(null);
@@ -384,7 +385,7 @@ export default function CommunityDetailScreen() {
           },
         },
         {
-          label: t('community.blockUser'),
+          label: t('board.block.menu'),
           danger: true as const,
           onPress: () => {
             const uid = commentMenuTargetUserId;
@@ -457,10 +458,10 @@ export default function CommunityDetailScreen() {
       <Modal
         visible={showReportModal}
         confirmLoading={isReporting}
-        title={t('community.report')}
+        title={t('board.report.menu')}
         body={
           <View className="gap-3">
-            <Text className="text-body-sm text-gray-700">{t('community.reportExplanation')}</Text>
+            <Text className="text-body-sm text-gray-700">{t('board.report.explanation')}</Text>
             {/* Options don't inherit the outer gap-3. Each row uses py-1.5 for 12px
                 spacing while keeping a 32px touch target. */}
             <View>
@@ -487,7 +488,7 @@ export default function CommunityDetailScreen() {
           </View>
         }
         variant="warning" // Uses both a danger confirm button and a cancel button
-        confirmLabel={t('community.report')}
+        confirmLabel={t('board.report.confirm')}
         cancelLabel={t('common.cancel')}
         onConfirm={async () => {
           if (!selectedReason || !reportTarget) return;
@@ -498,13 +499,16 @@ export default function CommunityDetailScreen() {
             setSelectedReason(null);
             setReportTarget(null);
             setAlertModal({
-              title: t('community.reportSuccessTitle'),
-              message: t('community.reportSuccessBody'),
+              title: t('board.report.successTitle'),
+              message: t('board.report.successBody'),
             });
           } catch (e) {
             setAlertModal({
               title: t('common.error.general'),
-              message: e instanceof Error ? e.message : t('community.reportFail'),
+              message:
+                e instanceof Error
+                  ? e.message
+                  : `${t('board.report.error')} ${t('common.error.retry')}`,
             });
           } finally {
             setIsReporting(false);
@@ -525,13 +529,11 @@ export default function CommunityDetailScreen() {
       {/* ── Post delete confirmation modal ── */}
       <Modal
         visible={showDeleteModal}
-        title={t('community.deletePostConfirmTitle')}
+        title={t('board.post.delete.title')}
         confirmLoading={isDeleting}
         body={
           <>
-            <Text className="text-body-sm text-gray-500">
-              {t('community.deletePostConfirmBody')}
-            </Text>
+            <Text className="text-body-sm text-gray-500">{t('board.post.delete.body')}</Text>
           </>
         }
         // 'error' keeps a single button but makes the confirm button danger-colored.
@@ -545,11 +547,11 @@ export default function CommunityDetailScreen() {
       {/* ── Comment delete confirmation modal ── */}
       <Modal
         visible={showDeleteCommentModal}
-        title={t('community.deleteCommentTitle')}
+        title={t('board.comment.delete.title')}
         confirmLoading={isDeletingComment}
         body={
           <>
-            <Text className="text-body-sm text-gray-500">{t('community.deleteCommentBody')}</Text>
+            <Text className="text-body-sm text-gray-500">{t('board.post.delete.body')}</Text>
           </>
         }
         variant="error" // Single confirm button, styled danger
@@ -561,17 +563,15 @@ export default function CommunityDetailScreen() {
       {/* ── Block user confirmation modal ── */}
       <Modal
         visible={showBlockModal}
-        title={t('community.blockUser')}
+        title={t('board.block.menu')}
         confirmLoading={isBlocking}
         body={
           <>
-            <Text className="text-body-sm text-gray-500">
-              {t('community.blockUserConfirmBody')}
-            </Text>
+            <Text className="text-body-sm text-gray-500">{t('board.block.body')}</Text>
           </>
         }
         variant="error" // Single danger button
-        confirmLabel={t('community.block')}
+        confirmLabel={t('board.block.menu')}
         onConfirm={confirmBlockUser}
         onDismiss={() => !isBlocking && setShowBlockModal(false)}
       />
@@ -586,7 +586,7 @@ export default function CommunityDetailScreen() {
         onDismiss={() => setAlertModal(null)}
       />
       <Toast
-        message={t('community.badWordToast')}
+        message={t('board.badWord')}
         visible={toastVisible}
         onDismiss={() => setToastVisible(false)}
       />

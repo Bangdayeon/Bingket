@@ -118,7 +118,7 @@ export default function CommunitySearchScreen() {
       {!loading &&
         results !== null &&
         (searchFailed ? (
-          <ErrorState message={t('community.searchFailed')} onRetry={() => void runSearch(value)} />
+          <ErrorState message={t('board.search.error')} onRetry={() => void runSearch(value)} />
         ) : results.length === 0 ? (
           <EmptyState message={t('common.noSearchResult')} />
         ) : (
@@ -140,17 +140,17 @@ export default function CommunitySearchScreen() {
         <View className="px-4 pt-5">
           <View className="flex-row items-center justify-between mb-4">
             <Text className="text-title-sm font-pretendard-semibold text-gray-900">
-              {t('community.recentSearches')}
+              {t('board.search.recent')}
             </Text>
             {searches.length > 0 && (
               <Pressable onPress={handleDeleteAll} hitSlop={8}>
-                <Text className="text-body-md text-gray-800">{t('community.deleteAll')}</Text>
+                <Text className="text-body-md text-gray-800">{t('board.search.deleteAll')}</Text>
               </Pressable>
             )}
           </View>
           {searches.length === 0 ? (
             <Text className="text-body-sm w-full text-center text-gray-500">
-              {t('community.noRecentSearches')}
+              {t('board.search.noRecent')}
             </Text>
           ) : (
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', columnGap: 4, rowGap: 8 }}>

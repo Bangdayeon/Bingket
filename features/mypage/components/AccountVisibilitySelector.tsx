@@ -36,7 +36,7 @@ interface Props {
  * 고른 것만 흰 배경 + 테두리로 떠 보이고, 아래에 설명 한 줄이 바뀐다.
  */
 export function AccountVisibilitySelector({ value, onChange, disabled = false }: Props) {
-  const selected = OPTIONS.find((opt) => opt.value === value) ?? OPTIONS[1];
+  const selected = OPTIONS.find((opt) => opt.value === value) ?? OPTIONS[0];
 
   return (
     <View>

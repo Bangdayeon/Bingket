@@ -285,8 +285,8 @@ export default function CommunityWriteScreen() {
         err instanceof Error
           ? err.message
           : isEditMode
-            ? t('community.editPostFail')
-            : t('community.createPostFail'),
+            ? t('board.post.error.edit')
+            : t('board.post.error.create'),
       );
     } finally {
       setIsSubmitting(false);
@@ -305,7 +305,7 @@ export default function CommunityWriteScreen() {
         <View style={{ flex: 1 }} />
         <View className="pr-2">
           <Button
-            label={t('community.submit')}
+            label={t('board.post.submit')}
             size="sm"
             variant="ghost"
             disabled={!canSubmit}
@@ -323,7 +323,7 @@ export default function CommunityWriteScreen() {
         <ScrollView style={{ flex: 1 }} keyboardShouldPersistTaps="handled">
           {/* Screen title */}
           <Text className="mb-4 px-4 text-title-sm font-pretendard-semibold text-gray-900">
-            {isEditMode ? t('community.editPostTitle') : t('community.writePostTitle')}
+            {isEditMode ? t('board.post.edit.title') : t('board.post.writePostTitle')}
           </Text>
 
           {/* Title */}
@@ -379,7 +379,7 @@ export default function CommunityWriteScreen() {
           <RNTextInput
             value={textValue}
             onChangeText={setTextValue}
-            placeholder={t('community.contentPlaceholder')}
+            placeholder={t('board.post.contentPlaceholder')}
             maxLength={LIMITS.postContent}
             multiline
             textAlignVertical="top"
@@ -439,7 +439,7 @@ export default function CommunityWriteScreen() {
                     className={bingoBlock ? 'text-green-400' : 'text-gray-700'}
                   />
                   <Text className="text-body-md font-pretendard-medium text-gray-800">
-                    {t('community.loadBingo')}
+                    {t('board.post.loadBingo')}
                   </Text>
                 </View>
               )}
@@ -452,7 +452,7 @@ export default function CommunityWriteScreen() {
               hitSlop={8}
             >
               <Text className={`text-body-md ${isAnonymous ? 'text-green-400' : 'text-gray-400'}`}>
-                {t('community.anonymous')}
+                {t('board.post.anonymous')}
               </Text>
               <CheckIcon
                 width={20}
@@ -477,16 +477,16 @@ export default function CommunityWriteScreen() {
             <View className="w-10 h-1 rounded-full bg-gray-300  " />
           </View>
           <Pressable onPress={handleCameraCapture} className="px-6 py-4 border-b border-gray-100  ">
-            <Text className="text-body-md">{t('community.takePhoto')}</Text>
+            <Text className="text-body-md">{t('board.post.takePhoto')}</Text>
           </Pressable>
           <Pressable onPress={handleGalleryPick} className="px-6 py-4">
-            <Text className="text-body-md">{t('community.pickFromAlbum')}</Text>
+            <Text className="text-body-md">{t('board.post.pickFromAlbum')}</Text>
           </Pressable>
         </View>
       </Modal>
 
       <Toast
-        message={t('community.badWordToast')}
+        message={t('board.badWord')}
         visible={toastVisible}
         onDismiss={() => setToastVisible(false)}
       />
@@ -504,7 +504,9 @@ export default function CommunityWriteScreen() {
           style={{ maxHeight: '60%', paddingBottom: insets.bottom + 16 }}
         >
           <View className="border-b border-gray-300 px-5 pb-4 pt-6">
-            <Text className="text-title-sm font-pretendard-medium">{t('community.loadBingo')}</Text>
+            <Text className="text-title-sm font-pretendard-medium">
+              {t('board.post.loadBingo')}
+            </Text>
           </View>
 
           {loadingBingos ? (
@@ -513,14 +515,21 @@ export default function CommunityWriteScreen() {
             </View>
           ) : bingosFailed ? (
             <ErrorState
-              message={t('community.myBingosLoadFail')}
+              message={t('board.post.error.bigoLoad')}
               onRetry={() => {
                 bingosLoadedRef.current = false;
                 void handleOpenBingoModal();
               }}
             />
           ) : myBingos.length === 0 ? (
-            <EmptyState message={t('community.noBingos')} />
+            <EmptyState
+              message={t('board.post.noBingos')}
+              actionLabel={t('board.post.addBingo')}
+              onAction={() => {
+                setShowBingoModal(false);
+                router.push('/bingo/add');
+              }}
+            />
           ) : (
             <ScrollView>
               {myBingos.map((bingo) => {

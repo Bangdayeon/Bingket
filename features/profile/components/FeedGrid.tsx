@@ -29,7 +29,7 @@ export function FeedGrid({
   if (items.length === 0) {
     return (
       <View className="py-20 items-center">
-        <Text className="text-body-md text-gray-400">{emptyText}</Text>
+        <Text className="text-body-md text-gray-400 text-center">{emptyText}</Text>
       </View>
     );
   }
