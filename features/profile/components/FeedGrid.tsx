@@ -1,3 +1,6 @@
+import { useRouter } from 'expo-router';
+import Button from '@/components/Button';
+import { CompletedBingoMenu } from './CompletedBingoMenu';
 import { FlatList, Pressable, View } from 'react-native';
 import { Text } from '@/components/Text';
 import { useResponsive } from '@/lib/use-responsive';
@@ -11,25 +14,26 @@ const COLUMNS = 2;
 
 interface Props {
   items: FeedItem[];
-  /** 팀에 속한 빙고판 id. 해당 항목에 '함께' 배지를 붙인다 */
-  teamBoardIds?: Set<string>;
   onItemPress: (item: FeedItem) => void;
   emptyText?: string;
+  onChanged?: () => void;
 }
 
 export function FeedGrid({
   items,
-  teamBoardIds,
+  onChanged,
   onItemPress,
   emptyText = '아직 빙고가 없어요.',
 }: Props) {
+  const router = useRouter();
   const { contentWidth } = useResponsive();
   const itemWidth = (contentWidth - H_PADDING * 2 - GAP * (COLUMNS - 1)) / COLUMNS;
 
   if (items.length === 0) {
     return (
-      <View className="py-20 items-center">
+      <View className="py-20 items-center gap-6">
         <Text className="text-body-md text-gray-400 text-center">{emptyText}</Text>
+        <Button label="빙고 추가하기" onClick={() => router.push('/bingo/add')} />
       </View>
     );
   }
@@ -77,15 +81,12 @@ export function FeedGrid({
               </Text>
             </View>
 
-            {teamBoardIds?.has(item.id) && (
-              <View className="px-2 py-0.5 rounded-full bg-green-50">
-                <Text className="text-caption-sm text-green-800">함께</Text>
-              </View>
-            )}
-
             <Text className="flex-1 text-body-sm text-gray-700" numberOfLines={1}>
               {item.title}
             </Text>
+            {item.status === 'done' && item.visibility !== null && onChanged && (
+              <CompletedBingoMenu item={item} onChanged={onChanged} />
+            )}
           </View>
         </Pressable>
       )}

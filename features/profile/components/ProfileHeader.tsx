@@ -10,10 +10,6 @@ interface Props {
   onPostsPress?: () => void;
 }
 
-/**
- * 시안: 아바타 80, 이름 16/20 Medium, @id 12/20, 게시글·친구는 라벨 12/20 + 값 14/18 SemiBold.
- * 한 줄 다짐은 라벨 없이 본문만 아바타 아래 왼쪽 끝(x=16)에 붙는다.
- */
 export function ProfileHeader({ profile, onFriendsPress, onPostsPress }: Props) {
   return (
     <View className="px-4 pt-4">
@@ -22,8 +18,6 @@ export function ProfileHeader({ profile, onFriendsPress, onPostsPress }: Props) 
 
         <View className="flex-1 gap-1.5">
           {profile ? (
-            // 이름과 @아이디는 한 덩어리다. 바깥 gap-1.5 를 그대로 받으면 둘 사이가
-            // 아래 카운터 줄과 같은 간격이 돼 따로 노는 두 줄로 보인다.
             <View className="gap-0.5">
               <Text className="text-body-md font-pretendard-medium text-gray-800" numberOfLines={1}>
                 {profile.displayName}

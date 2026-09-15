@@ -7,12 +7,13 @@ import { BingoTitle } from '@/features/bingo/bingo-edit/BingoTitle';
 import { BingoGoal } from '@/features/bingo/bingo-edit/BingoGoal';
 import { WriteBingo } from '@/features/bingo/bingo-edit/WriteBingo';
 import { DatePicker } from '@/features/bingo/bingo-edit/DatePicker';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useBingoDraft } from '@/features/bingo/lib/use-bingo-draft';
+import Loading from '@/components/Loading';
 import { createBingo } from '@/features/bingo/lib/bingo';
 import { VisibilitySelector } from '@/features/bingo/bingo-edit/VisibilitySelector';
 import type { BoardVisibility } from '@/features/profile/lib/profile';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'expo-router';
+import { useRef, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { CoachMarkTarget } from '@/features/coachmark/CoachMarkTarget';
 import { useCoachMarkScrollIntoView } from '@/features/coachmark/use-coach-mark-scroll';
@@ -24,21 +25,15 @@ export default function BingoAddScreen() {
 
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { loadDraft } = useLocalSearchParams<{
-    loadDraft?: string;
-  }>();
-
   const [title, setTitle] = useState('');
   const [selectedDuration, setSelectedDuration] = useState<string | null>(null);
   const [selectedGrid, setSelectedGrid] = useState<string>('3x3');
-  const cellsRef = useRef<string[]>([]);
+  const [cells, setCells] = useState<string[]>([]);
   const scrollRef = useRef<ScrollView>(null);
   const coachScroll = useCoachMarkScrollIntoView(scrollRef, {
     'add-info': 'top',
     'add-temp-save': 'end',
   });
-  const [initialCells, setInitialCells] = useState<string[]>([]);
-  const [writeBingoKey, setWriteBingoKey] = useState(0);
   const [selectedEditCount, setSelectedEditCount] = useState<string>('0');
   const [selectedTheme, setSelectedTheme] = useState<string>('default');
   const [visibility, setVisibility] = useState<BoardVisibility>('friends');
@@ -47,9 +42,9 @@ export default function BingoAddScreen() {
   const [pickerTarget, setPickerTarget] = useState<'start' | 'end' | null>(null);
   const [tempDate, setTempDate] = useState(new Date());
 
-  const isDirty = useRef(false);
+  const [isDirty, setIsDirty] = useState(false);
   const markDirty = () => {
-    isDirty.current = true;
+    setIsDirty(true);
   };
 
   const [alertMessage, setAlertMessage] = useState<string | null>(null);
@@ -57,27 +52,33 @@ export default function BingoAddScreen() {
   const [showLeaveModal, setShowLeaveModal] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
 
-  // LOAD DRAFT
-  useEffect(() => {
-    if (!loadDraft) return;
-    AsyncStorage.getItem('@bingket/draft-bingo').then((raw) => {
-      if (!raw) return;
-      const d = JSON.parse(raw);
-      if (d.title) setTitle(d.title);
-      if (d.selectedDuration) setSelectedDuration(d.selectedDuration);
-      if (d.selectedGrid) setSelectedGrid(d.selectedGrid);
-      if (d.selectedEditCount) setSelectedEditCount(d.selectedEditCount);
-      if (d.selectedTheme) setSelectedTheme(d.selectedTheme);
-      if (d.visibility) setVisibility(d.visibility);
-      if (d.startDate) setStartDate(new Date(d.startDate));
-      if (d.endDate) setEndDate(new Date(d.endDate));
-      if (d.cells) {
-        cellsRef.current = d.cells;
-        setInitialCells(d.cells);
-        setWriteBingoKey((k) => k + 1);
-      }
-    });
-  }, [loadDraft]);
+  const draft = useBingoDraft(
+    '@bingket/draft-bingo',
+    {
+      title,
+      selectedDuration,
+      selectedGrid,
+      selectedEditCount,
+      selectedTheme,
+      visibility,
+      startDate: startDate?.toISOString() ?? null,
+      endDate: endDate?.toISOString() ?? null,
+      cells,
+    },
+    (d) => {
+      setTitle(d.title ?? '');
+      setSelectedDuration(d.selectedDuration ?? null);
+      setSelectedGrid(d.selectedGrid ?? '3x3');
+      setSelectedEditCount(d.selectedEditCount ?? '0');
+      setSelectedTheme(d.selectedTheme ?? 'default');
+      setVisibility(d.visibility ?? 'friends');
+      setStartDate(d.startDate ? new Date(d.startDate) : null);
+      setEndDate(d.endDate ? new Date(d.endDate) : null);
+      setCells(d.cells ?? []);
+      setIsDirty(true);
+    },
+    isDirty,
+  );
 
   const calcEndDate = (start: Date, duration: string): Date => {
     const d = new Date(start);
@@ -120,7 +121,7 @@ export default function BingoAddScreen() {
   const totalCells = cols * rows;
 
   const handleBack = () => {
-    if (isDirty.current) setShowLeaveModal(true);
+    if (isDirty) setShowLeaveModal(true);
     else router.back();
   };
 
@@ -134,7 +135,7 @@ export default function BingoAddScreen() {
     if (!selectedDuration) return showAlert(t('home.field.duration.label'));
     if (!startDate) return showAlert(t('home.field.duration.selectStartDate'));
     if (!endDate) return showAlert(t('home.field.duration.selectEndDate'));
-    if (cellsRef.current.filter((c) => c?.trim()).length < totalCells)
+    if (cells.filter((c) => c?.trim()).length < totalCells)
       return showAlert(t('home.alert.fillAllCells'));
     setShowConfirmModal(true);
   };
@@ -151,9 +152,9 @@ export default function BingoAddScreen() {
         editCount: selectedEditCount,
         theme: selectedTheme,
         visibility,
-        cells: cellsRef.current,
+        cells: cells,
       });
-      await AsyncStorage.removeItem('@bingket/draft-bingo');
+      await draft.clear();
       router.replace('/(tabs)');
     } catch (e) {
       Sentry.captureException(e);
@@ -163,20 +164,21 @@ export default function BingoAddScreen() {
 
   const handleTempSave = async () => {
     if (!title.trim()) return showAlert(t('home.field.title.label'));
-    const data = {
-      title,
-      selectedDuration,
-      selectedGrid,
-      selectedEditCount,
-      selectedTheme,
-      visibility,
-      startDate: startDate?.toISOString() ?? null,
-      endDate: endDate?.toISOString() ?? null,
-      cells: cellsRef.current,
-    };
-    await AsyncStorage.setItem('@bingket/draft-bingo', JSON.stringify(data));
+    try {
+      await draft.save();
+    } catch (e) {
+      Sentry.captureException(e);
+      return showAlert(t('home.error.save'));
+    }
     showAlert(t('home.btnLabel.temporarySave'), () => router.replace('/(tabs)'));
   };
+
+  if (!draft.ready)
+    return (
+      <View className="flex-1 bg-surface items-center justify-center">
+        <Loading />
+      </View>
+    );
 
   return (
     <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
@@ -239,11 +241,14 @@ export default function BingoAddScreen() {
             markDirty();
             setSelectedTheme(v);
           }}
-          cells={initialCells}
-          key={writeBingoKey}
+          cells={cells}
+          onDraftCellsChange={(v) => {
+            markDirty();
+            setCells(v);
+          }}
           onCellsChange={(v) => {
             markDirty();
-            cellsRef.current = v;
+            setCells(v);
           }}
         />
 
@@ -306,7 +311,8 @@ export default function BingoAddScreen() {
         cancelLabel={t('home.modal.unsaved.cancel')}
         confirmLabel={t('home.modal.unsaved.confirm')}
         onCancel={() => setShowLeaveModal(false)}
-        onConfirm={() => {
+        onConfirm={async () => {
+          await draft.clear();
           setShowLeaveModal(false);
           router.back();
         }}

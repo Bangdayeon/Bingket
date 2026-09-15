@@ -50,7 +50,6 @@ export default function SplashScreen() {
 
   return (
     <View className="h-full w-full flex-1 items-center justify-center bg-surface">
-      {/* 로고만 띄운다. 워드마크는 로고 안에 이미 브랜드가 담겨 중복이라 뺐다. */}
       <Animated.View style={{ opacity, alignItems: 'center' }}>
         <Logo size={150} />
       </Animated.View>

@@ -1,6 +1,9 @@
+import { useBingoDraft } from '@/features/bingo/lib/use-bingo-draft';
+import { editCountKey } from '@/features/bingo/lib/edit-limit';
+import { ErrorState } from '@/components/ErrorState';
 import * as Sentry from '@sentry/react-native';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { ScrollView, View } from 'react-native';
 
@@ -49,10 +52,28 @@ export default function TeamInviteScreen() {
   const [selectedGrid, setSelectedGrid] = useState('3x3');
   const [selectedEditCount, setSelectedEditCount] = useState('0');
   const [selectedTheme, setSelectedTheme] = useState('default');
-  const cellsRef = useRef<string[]>([]);
+  const [cells, setCells] = useState<string[]>([]);
 
-  const editCountKey = (maxEdits: number): string =>
-    maxEdits === 9999 || maxEdits === -1 ? t('home.field.modifyCount.label') : String(maxEdits);
+  const draft = useBingoDraft(
+    `@bingket/draft-invite-${teamId}`,
+    {
+      myTitle,
+      selectedGrid,
+      selectedEditCount,
+      selectedTheme,
+      cells,
+      composing,
+    },
+    (d) => {
+      setMyTitle(d.myTitle ?? '');
+      setSelectedGrid(d.selectedGrid ?? '3x3');
+      setSelectedEditCount(d.selectedEditCount ?? '0');
+      setSelectedTheme(d.selectedTheme ?? 'default');
+      setCells(d.cells ?? []);
+      setComposing(d.composing ?? false);
+    },
+    composing,
+  );
 
   useEffect(() => {
     if (!teamId) return;
@@ -62,14 +83,14 @@ export default function TeamInviteScreen() {
         setInvite(data);
 
         if (data) {
-          setMyTitle(data.title);
+          setMyTitle((current) => current || data.title);
         }
       })
       .catch(() => setAlertMessage(`${t('home.error.loadInvite')} ${t('common.error.retry')}`))
       .finally(() => setLoading(false));
   }, [teamId, t]);
 
-  if (loading) {
+  if (loading || !draft.ready) {
     return (
       <View className="flex-1 items-center justify-center bg-surface">
         <Loading />
@@ -88,7 +109,7 @@ export default function TeamInviteScreen() {
         grid: ownerBoard.grid,
         theme: ownerBoard.theme,
         cells: ownerBoard.cells,
-        maxEdits: 0,
+        maxEdits: invite?.ownerBoardMaxEdits ?? 0,
         achievedCount: ownerBoard.checkedCount,
         bingoCount: ownerBoard.bingoCount,
         dday: invite ? calcTeamDday(invite.endDate) : 0,
@@ -124,7 +145,7 @@ export default function TeamInviteScreen() {
         return setAlertMessage(t('home.field.title.label'));
       }
 
-      if (cellsRef.current.filter((cell) => cell?.trim()).length < cols * rows) {
+      if (cells.filter((cell) => cell?.trim()).length < cols * rows) {
         return setAlertMessage(t('home.alert.fillAllCells'));
       }
     }
@@ -140,7 +161,7 @@ export default function TeamInviteScreen() {
               grid: selectedGrid,
               theme: selectedTheme,
               editCount: selectedEditCount,
-              cells: cellsRef.current,
+              cells: cells,
             }
           : invite.mode === 'copied' && ownerBoard
             ? {
@@ -153,6 +174,7 @@ export default function TeamInviteScreen() {
             : undefined,
       });
 
+      await draft.clear();
       router.replace({
         pathname: '/bingo/team-status',
         params: { teamId },
@@ -171,6 +193,7 @@ export default function TeamInviteScreen() {
 
     try {
       await rejectTeamInvite(teamId);
+      await draft.clear();
       router.back();
     } catch (e) {
       setAlertMessage(
@@ -246,8 +269,22 @@ export default function TeamInviteScreen() {
             )}
           </View>
 
-          {previewBingo && !composing && (
+          {invite.boardsFailed && (
+            <ErrorState
+              message="친구의 빙고판을 불러오지 못했어요."
+              onRetry={() => {
+                fetchTeamInvite(teamId)
+                  .then(setInvite)
+                  .catch(() => setAlertMessage('친구의 빙고판을 불러오지 못했어요.'));
+              }}
+            />
+          )}
+
+          {previewBingo && (
             <View className="mt-8">
+              <Text className="px-4 mb-3 text-body-md text-gray-900">
+                {invite.ownerDisplayName}님의 빙고판
+              </Text>
               <BingoPreview
                 bingo={previewBingo}
                 className="w-full"
@@ -272,9 +309,10 @@ export default function TeamInviteScreen() {
                 onEditCountSelect={setSelectedEditCount}
                 selectedTheme={selectedTheme}
                 onThemeSelect={setSelectedTheme}
-                cells={[]}
+                cells={cells}
+                onDraftCellsChange={setCells}
                 onCellsChange={(value) => {
-                  cellsRef.current = value;
+                  setCells(value);
                 }}
               />
             </View>

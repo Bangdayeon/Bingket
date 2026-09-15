@@ -158,23 +158,17 @@ export default function ProfileScreen() {
 
               {tab === 'feed' ? (
                 <View className="flex-1">
-                  {feed.length === 0 ? (
-                    <View className="flex-1 items-center justify-center px-8">
-                      <Text className="text-body-md text-gray-400 text-center">
-                        아직 빙고가 없어요.
-                      </Text>
-                    </View>
-                  ) : (
-                    <FeedGrid
-                      items={feed}
-                      onItemPress={(item) =>
-                        router.push({
-                          pathname: '/bingo/friend-view',
-                          params: { boardId: item.id },
-                        })
-                      }
-                    />
-                  )}
+                  <FeedGrid
+                    items={feed}
+                    onChanged={profile?.isMe ? () => void load() : undefined}
+                    onItemPress={(item) =>
+                      router.push(
+                        profile?.isMe
+                          ? { pathname: '/bingo/view', params: { bingoId: item.id } }
+                          : { pathname: '/bingo/friend-view', params: { boardId: item.id } },
+                      )
+                    }
+                  />
                 </View>
               ) : (
                 <BadgesPage userId={profile?.isMe ? undefined : id} bottomGap={insets.bottom} />

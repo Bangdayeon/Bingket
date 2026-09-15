@@ -16,14 +16,12 @@ import {
   type FeedItem,
   type ProfileSummary,
 } from '@/features/profile/lib/profile';
-import { fetchMyTeams, type TeamListEntry } from '@/features/team/lib/team';
 
 export default function MyPageScreen() {
   const router = useRouter();
   const [tab, setTab] = useState<ProfileTab>('feed');
   const [profile, setProfile] = useState<ProfileSummary | null>(null);
   const [feed, setFeed] = useState<FeedItem[]>([]);
-  const [teams, setTeams] = useState<TeamListEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadFailed, setLoadFailed] = useState(false);
 
@@ -44,11 +42,6 @@ export default function MyPageScreen() {
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
-    fetchMyTeams()
-      .then((t) => {
-        if (!cancelled) setTeams(t);
-      })
-      .catch(Sentry.captureException);
     return () => {
       cancelled = true;
     };
@@ -60,10 +53,6 @@ export default function MyPageScreen() {
       setTab('feed');
       return load();
     }, [load]),
-  );
-
-  const teamBoardIds = new Set(
-    teams.filter((t) => !t.isInvite && t.myBoardId).map((t) => t.myBoardId as string),
   );
 
   return (
@@ -93,7 +82,9 @@ export default function MyPageScreen() {
           <View className="flex-1">
             <FeedGrid
               items={feed}
-              teamBoardIds={teamBoardIds}
+              onChanged={() => {
+                void load();
+              }}
               onItemPress={(item) =>
                 router.push({ pathname: '/bingo/view', params: { bingoId: item.id } })
               }

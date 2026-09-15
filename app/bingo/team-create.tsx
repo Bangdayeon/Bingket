@@ -1,7 +1,9 @@
+import { useBingoDraft } from '@/features/bingo/lib/use-bingo-draft';
+import Loading from '@/components/Loading';
 import * as Sentry from '@sentry/react-native';
 import { friendSelection, useFriendSelection } from '@/features/team/lib/friend-selection';
 import { useEffect, useRef, useState } from 'react';
-import { ScrollView, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, TextInput, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Button from '@/components/Button';
@@ -48,18 +50,52 @@ export default function TeamCreateScreen() {
     friendSelection.set([]);
   }, []);
   const [betText, setBetText] = useState('');
+  const scrollRef = useRef<ScrollView>(null);
+  const betOffset = useRef(0);
   const [visibility, setVisibility] = useState<BoardVisibility>('friends');
-  const cellsRef = useRef<string[]>([]);
+  const [cells, setCells] = useState<string[]>([]);
 
   const [alertMessage, setAlertMessage] = useState<string | null>(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showLeaveModal, setShowLeaveModal] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  const isDirty = useRef(false);
+  const [isDirty, setIsDirty] = useState(false);
   const markDirty = () => {
-    isDirty.current = true;
+    setIsDirty(true);
   };
+
+  const draft = useBingoDraft(
+    `@bingket/draft-team-${mode}`,
+    {
+      title,
+      selectedDuration,
+      selectedGrid,
+      selectedEditCount,
+      selectedTheme,
+      visibility,
+      startDate: startDate?.toISOString() ?? null,
+      endDate: endDate?.toISOString() ?? null,
+      cells,
+      betText,
+      friendIds,
+    },
+    (d) => {
+      setTitle(d.title ?? '');
+      setSelectedDuration(d.selectedDuration ?? null);
+      setSelectedGrid(d.selectedGrid ?? '3x3');
+      setSelectedEditCount(d.selectedEditCount ?? '0');
+      setSelectedTheme(d.selectedTheme ?? 'default');
+      setVisibility(d.visibility ?? 'friends');
+      setStartDate(d.startDate ? new Date(d.startDate) : null);
+      setEndDate(d.endDate ? new Date(d.endDate) : null);
+      setCells(d.cells ?? []);
+      setBetText(d.betText ?? '');
+      friendSelection.set(d.friendIds ?? []);
+      setIsDirty(true);
+    },
+    isDirty || friendIds.length > 0,
+  );
 
   const calcEndDate = (start: Date, duration: string): Date => {
     const d = new Date(start);
@@ -101,7 +137,7 @@ export default function TeamCreateScreen() {
     if (!selectedDuration) return setAlertMessage(t('home.field.duration.label'));
     if (!startDate) return setAlertMessage(t('home.field.duration.selectStartDate'));
     if (!endDate) return setAlertMessage(t('common.bingo.endDate'));
-    if (cellsRef.current.filter((c) => c?.trim()).length < totalCells)
+    if (cells.filter((c) => c?.trim()).length < totalCells)
       return setAlertMessage(t('home.alert.fillAllCells'));
     if (friendIds.length === 0) return setAlertMessage(t('home.alert.selectFriends'));
     setShowConfirmModal(true);
@@ -125,9 +161,10 @@ export default function TeamCreateScreen() {
           grid: selectedGrid,
           theme: selectedTheme,
           editCount: selectedEditCount,
-          cells: cellsRef.current,
+          cells: cells,
         },
       });
+      await draft.clear();
       router.replace({ pathname: '/bingo/team-status', params: { teamId } });
     } catch (e) {
       Sentry.captureException(e);
@@ -139,16 +176,28 @@ export default function TeamCreateScreen() {
     }
   };
 
+  if (!draft.ready)
+    return (
+      <View className="flex-1 bg-surface items-center justify-center">
+        <Loading />
+      </View>
+    );
+
   return (
-    <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      className="flex-1 bg-surface"
+      style={{ paddingTop: insets.top }}
+    >
       <PageHeader
         title={TEAM_MODE_LABEL[mode]}
-        onBack={() => (isDirty.current ? setShowLeaveModal(true) : router.back())}
+        onBack={() => (isDirty ? setShowLeaveModal(true) : router.back())}
       />
 
       <ScrollView
+        ref={scrollRef}
         className="flex-1"
-        contentContainerStyle={{ gap: 32, paddingBottom: insets.bottom + 100 }}
+        contentContainerStyle={{ gap: 32, paddingBottom: 240 }}
         keyboardShouldPersistTaps="handled"
         automaticallyAdjustKeyboardInsets={false}
       >
@@ -197,10 +246,14 @@ export default function TeamCreateScreen() {
             markDirty();
             setSelectedTheme(v);
           }}
-          cells={[]}
+          cells={cells}
+          onDraftCellsChange={(v) => {
+            markDirty();
+            setCells(v);
+          }}
           onCellsChange={(v) => {
             markDirty();
-            cellsRef.current = v;
+            setCells(v);
           }}
         />
 
@@ -209,9 +262,20 @@ export default function TeamCreateScreen() {
         )}
 
         {mode === 'competition' && (
-          <View className="px-4">
+          <View
+            className="px-4"
+            onLayout={(event) => {
+              betOffset.current = event.nativeEvent.layout.y;
+            }}
+          >
             <SectionLabel label={t('home.field.bet.label')} />
             <TextInput
+              onFocus={() =>
+                scrollRef.current?.scrollTo({
+                  y: Math.max(0, betOffset.current - 16),
+                  animated: true,
+                })
+              }
               value={betText}
               onChangeText={(v) => {
                 markDirty();
@@ -274,7 +338,8 @@ export default function TeamCreateScreen() {
         cancelLabel={t('home.modal.unsaved.cancel')}
         confirmLabel={t('home.modal.unsaved.confirm')}
         onCancel={() => setShowLeaveModal(false)}
-        onConfirm={() => {
+        onConfirm={async () => {
+          await draft.clear();
           setShowLeaveModal(false);
           router.back();
         }}
@@ -293,10 +358,7 @@ export default function TeamCreateScreen() {
         />
       )}
 
-      <View
-        className="absolute bottom-0 left-0 right-0 bg-surface px-4 pt-3"
-        style={{ paddingBottom: insets.bottom + 8 }}
-      >
+      <View className="bg-surface px-4 pt-3" style={{ paddingBottom: insets.bottom + 8 }}>
         <Button
           label={saving ? t('home.btnLabel.creating') : t('home.btnLabel.startBingoWith')}
           variant="primary"
@@ -305,6 +367,6 @@ export default function TeamCreateScreen() {
           className="w-full"
         />
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 }

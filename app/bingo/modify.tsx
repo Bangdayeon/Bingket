@@ -1,3 +1,4 @@
+import { disabledBingoCells, isUnlimitedEdits } from '@/features/bingo/lib/edit-limit';
 import * as Sentry from '@sentry/react-native';
 import Button from '@/components/Button';
 import { Modal } from '@/components/Modal';
@@ -116,7 +117,9 @@ export default function BingoModifyScreen() {
       router.replace('/(tabs)');
     } catch (e) {
       Sentry.captureException(e);
-      setAlertMessage(`${t('home.error.save')} ${t('common.error.retry')}`);
+      setAlertMessage(
+        e instanceof Error ? e.message : `${t('home.error.save')} ${t('common.error.retry')}`,
+      );
       setSaving(false);
     }
   };
@@ -140,15 +143,8 @@ export default function BingoModifyScreen() {
     }
   };
 
-  const isUnlimited = maxEdits === 9999 || maxEdits === -1;
-  const totalUsedEdits =
-    cellEdits.reduce((a, b) => a + b, 0) + cellOriginalEditCounts.reduce((a, b) => a + b, 0);
-
-  const disabledCells = cells.map(() => {
-    if (isUnlimited) return false;
-    if (maxEdits === 0) return true;
-    return totalUsedEdits >= maxEdits;
-  });
+  const isUnlimited = isUnlimitedEdits(maxEdits);
+  const disabledCells = disabledBingoCells(maxEdits, cellOriginalEditCounts, cellEdits);
 
   if (loading) {
     return (
@@ -224,7 +220,7 @@ export default function BingoModifyScreen() {
 
           <View className="gap-2">
             <Text className="px-4 text-body-sm text-gray-600">
-              {t('home.field.modifyCount.label')} {totalUsedEdits}/
+              각 항목 수정 가능 횟수:
               {isUnlimited ? t('home.field.modifyCount.infinite') : maxEdits}
             </Text>
 

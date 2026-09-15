@@ -2,7 +2,7 @@
 import { Modal } from '@/components/Modal';
 import { FIXED } from '@/lib/use-colors';
 import { LIMITS } from '@/constants/limits';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Image, TouchableOpacity, View } from 'react-native';
 import { useResponsive } from '@/lib/use-responsive';
 import { Text } from '@/components/Text';
@@ -22,6 +22,7 @@ interface AddEachBingoProps {
   title?: string;
   cells: string[];
   onCellsChange: (cells: string[]) => void;
+  onDraftCellsChange?: (cells: string[]) => void;
   disabledCells?: boolean[];
 }
 
@@ -31,6 +32,7 @@ export function AddEachBingo({
   title,
   cells,
   onCellsChange,
+  onDraftCellsChange,
   disabledCells,
 }: AddEachBingoProps) {
   const { t } = useTranslation();
@@ -38,6 +40,7 @@ export function AddEachBingo({
   const [localCells, setLocalCells] = useState<string[]>(cells);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [inputText, setInputText] = useState('');
+  const originalCells = useRef<string[]>([]);
   const [image, setImage] = useState<string | null>(null);
   const [fgColor, setFgColor] = useState<string>(FIXED.boardForeground);
 
@@ -94,6 +97,7 @@ export function AddEachBingo({
   const handleCellPress = (index: number) => {
     if (disabledCells?.[index]) return;
 
+    originalCells.current = [...localCells];
     setInputText(localCells[index] ?? '');
     setSelectedIndex(index);
   };
@@ -110,6 +114,7 @@ export function AddEachBingo({
   };
 
   const handleCancel = () => {
+    onDraftCellsChange?.(originalCells.current);
     setSelectedIndex(null);
   };
 
@@ -211,7 +216,14 @@ export function AddEachBingo({
         body={
           <TextInput
             value={inputText}
-            onChangeText={setInputText}
+            onChangeText={(value) => {
+              setInputText(value);
+              if (selectedIndex !== null && onDraftCellsChange) {
+                const updated = [...localCells];
+                updated[selectedIndex] = value;
+                onDraftCellsChange(updated);
+              }
+            }}
             placeholder="내용을 입력하세요."
             maxLength={LIMITS.bingoCell}
             maxHeight={120}

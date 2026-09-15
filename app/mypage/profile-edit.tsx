@@ -1,3 +1,4 @@
+import { FocusedTextEditor } from '@/components/FocusedTextEditor';
 import IconButton from '@/components/IconButton';
 import { PageHeader } from '@/components/PageHeader';
 import { Modal } from '@/components/Modal';
@@ -36,6 +37,7 @@ export default function ProfileEditPage() {
   const [name, setName] = useState('');
   const [userId, setUserId] = useState('');
   const [bio, setBio] = useState('');
+  const [editingBio, setEditingBio] = useState(false);
   const [avatarUri, setAvatarUri] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState('');
@@ -224,13 +226,17 @@ export default function ProfileEditPage() {
 
           <View className="gap-2">
             <Text className="text-body-md text-gray-900">한 줄 다짐</Text>
-            <TextInput
-              value={bio}
-              onChangeText={(v) => setBio(v.slice(0, BIO_MAX))}
-              placeholder={`${BIO_MAX}자 이내로 입력해주세요.`}
-              maxLength={BIO_MAX}
-              maxHeight={64}
-            />
+            <Pressable onPress={() => setEditingBio(true)} accessibilityLabel="한 줄 다짐 편집">
+              <TextInput
+                editable={false}
+                pointerEvents="none"
+                value={bio}
+                onChangeText={(v) => setBio(v.slice(0, BIO_MAX))}
+                placeholder={`${BIO_MAX}자 이내로 입력해주세요.`}
+                maxLength={BIO_MAX}
+                maxHeight={64}
+              />
+            </Pressable>
             <Text className="text-right text-caption-sm text-gray-500">
               {bio.length}/{BIO_MAX}
             </Text>
@@ -250,6 +256,15 @@ export default function ProfileEditPage() {
         />
       </View>
 
+      <FocusedTextEditor
+        visible={editingBio}
+        title="한 줄 다짐"
+        value={bio}
+        onChangeText={setBio}
+        onClose={() => setEditingBio(false)}
+        maxLength={BIO_MAX}
+        placeholder={`${BIO_MAX}자 이내로 입력해주세요.`}
+      />
       <Toast message={toast} visible={toastVisible} onDismiss={() => setToastVisible(false)} />
       <Modal
         visible={showLeaveModal}

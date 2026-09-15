@@ -1,3 +1,4 @@
+import { FocusedTextEditor } from '@/components/FocusedTextEditor';
 import * as Sentry from '@sentry/react-native';
 import { PageHeader } from '@/components/PageHeader';
 import { ErrorState } from '@/components/ErrorState';
@@ -11,7 +12,7 @@ import {
 } from '@/features/bingo/lib/bingo';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ScrollView, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/Text';
 import type { FetchedBingo } from '@/features/bingo/lib/bingo';
@@ -36,6 +37,7 @@ export default function BingoViewScreen() {
   const [team, setTeam] = useState<{ teamId: string; members: TeamAvatarMember[] } | null>(null);
   const [modalTarget, setModalTarget] = useState<number | null>(null);
   const [retrospective, setRetrospective] = useState('');
+  const [editingMemo, setEditingMemo] = useState(false);
   const [saveFailed, setSaveFailed] = useState(false);
   const memoDebounceRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
   const pendingMemoRef = useRef<Record<string, string>>({});
@@ -199,15 +201,19 @@ export default function BingoViewScreen() {
         {isDone && (
           <View className="mt-8 px-4">
             <Text className="mb-2 text-body-md text-gray-900">{t('home.memo')}</Text>
-            <TextInput
-              value={retrospective}
-              onChangeText={handleRetrospectiveChange}
-              placeholder={t('common.bingo.memoPlaceholder')}
-              multiline
-              maxLength={MEMO_MAX_LENGTH}
-              textAlignVertical="top"
-              className="h-[190px] rounded-2xl bg-gray-200 p-3 text-body-md text-gray-900 placeholder:text-gray-500"
-            />
+            <Pressable onPress={() => setEditingMemo(true)} accessibilityLabel="메모 편집">
+              <TextInput
+                editable={false}
+                pointerEvents="none"
+                value={retrospective}
+                onChangeText={handleRetrospectiveChange}
+                placeholder={t('common.bingo.memoPlaceholder')}
+                multiline
+                maxLength={MEMO_MAX_LENGTH}
+                textAlignVertical="top"
+                className="h-[190px] rounded-2xl bg-gray-200 p-3 text-body-md text-gray-900 placeholder:text-gray-500"
+              />
+            </Pressable>
             <Text className="mt-1 text-right text-caption-sm text-gray-500">
               {retrospective.length}/{MEMO_MAX_LENGTH}
             </Text>
@@ -215,6 +221,15 @@ export default function BingoViewScreen() {
         )}
       </ScrollView>
 
+      <FocusedTextEditor
+        visible={editingMemo}
+        title="메모"
+        value={retrospective}
+        onChangeText={handleRetrospectiveChange}
+        onClose={() => setEditingMemo(false)}
+        maxLength={MEMO_MAX_LENGTH}
+        placeholder={t('common.bingo.memoPlaceholder')}
+      />
       <BingoCellModal
         visible={modalTarget !== null}
         cells={cellDetails}
