@@ -1,3 +1,4 @@
+// AddEachBingo.tsx
 import { Modal } from '@/components/Modal';
 import { FIXED } from '@/lib/use-colors';
 import { LIMITS } from '@/constants/limits';
@@ -33,14 +34,16 @@ export function AddEachBingo({
   disabledCells,
 }: AddEachBingoProps) {
   const { t } = useTranslation();
+
   const [localCells, setLocalCells] = useState<string[]>(cells);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [inputText, setInputText] = useState('');
   const [image, setImage] = useState<string | null>(null);
   const [fgColor, setFgColor] = useState<string>(FIXED.boardForeground);
 
-  // prop이 바뀌면 렌더 중에 맞춘다(효과로 미러링하면 렌더가 한 번 더 돈다).
+  // prop이 바뀌면 렌더 중에 맞춘다.
   const [prevCells, setPrevCells] = useState(cells);
+
   if (cells !== prevCells) {
     setPrevCells(cells);
     setLocalCells(cells);
@@ -52,29 +55,55 @@ export function AddEachBingo({
         getThemeImageUrl(theme, selectedGrid as '3x3' | '4x3' | '4x4'),
         getThemeForegroundColor(theme),
       ]);
+
       setImage(bg);
       setFgColor(color);
     };
+
     load();
   }, [theme, selectedGrid]);
 
   const { contentWidth } = useResponsive();
+
   const [cols, rows] = selectedGrid.split('x').map(Number);
-  // 시안: 판은 좌우 여백 없이 화면 폭 전체를 쓴다
+
+  // 시안: 판은 좌우 여백 없이 화면 폭 전체를 쓴다.
   const availableWidth = contentWidth;
-  // 완성된 판(BingoCard)과 같은 크기로 보여야 작성 중과 결과가 어긋나지 않는다
+
+  // 완성된 판(BingoCard)과 같은 크기로 보여야 작성 중과 결과가 어긋나지 않는다.
   const textStyle = 'text-caption-sm';
+
+  // 이미지 빙고판 계산값.
+  // Modal을 image 조건문 밖에 고정하기 위해 계산도 return 분기 밖에서 처리한다.
+  const scale = availableWidth / FIGMA_W;
+  const cardHeight = FIGMA_H * scale;
+
+  const cfg = GRID_CONFIGS[selectedGrid];
+
+  const gridTop = cfg.top * scale;
+  const gridLeft = cfg.left * scale;
+  const cellW = cfg.cellW * scale;
+  const cellH = cfg.cellH * scale;
+  const gapX = cfg.gapX * scale;
+  const gapY = cfg.gapY * scale;
+
+  // fallback 빙고판 계산값
+  const gap = 6;
+  const cellSize = (availableWidth - gap * (cols - 1)) / cols;
 
   const handleCellPress = (index: number) => {
     if (disabledCells?.[index]) return;
+
     setInputText(localCells[index] ?? '');
     setSelectedIndex(index);
   };
 
   const handleSave = () => {
     if (selectedIndex === null) return;
+
     const updated = [...localCells];
     updated[selectedIndex] = inputText;
+
     setLocalCells(updated);
     onCellsChange(updated);
     setSelectedIndex(null);
@@ -84,47 +113,17 @@ export function AddEachBingo({
     setSelectedIndex(null);
   };
 
-  const modal = (
-    <Modal
-      visible={selectedIndex !== null}
-      title="빙고 내용을 입력해주세요"
-      body={
-        <TextInput
-          value={inputText}
-          onChangeText={setInputText}
-          placeholder="내용을 입력하세요."
-          maxLength={LIMITS.bingoCell}
-          maxHeight={120}
-          className="min-h-[72px]"
-          style={{ textAlignVertical: 'top' }}
-        />
-      }
-      variant="default"
-      cancelLabel={t('common.cancel')}
-      confirmLabel="저장"
-      onCancel={handleCancel}
-      onConfirm={handleSave}
-      onDismiss={handleCancel}
-    />
-  );
-
-  if (image) {
-    const scale = availableWidth / FIGMA_W;
-    const cardHeight = FIGMA_H * scale;
-    const cfg = GRID_CONFIGS[selectedGrid];
-    const gridTop = cfg.top * scale;
-    const gridLeft = cfg.left * scale;
-    const cellW = cfg.cellW * scale;
-    const cellH = cfg.cellH * scale;
-    const gapX = cfg.gapX * scale;
-    const gapY = cfg.gapY * scale;
-
-    return (
-      <>
+  return (
+    <>
+      {image ? (
         <View style={{ width: availableWidth, height: cardHeight }}>
           <Image
             source={{ uri: image }}
-            style={{ position: 'absolute', width: '100%', height: '100%' }}
+            style={{
+              position: 'absolute',
+              width: '100%',
+              height: '100%',
+            }}
             resizeMode="cover"
           />
 
@@ -151,6 +150,7 @@ export function AddEachBingo({
           {Array.from({ length: cols * rows }).map((_, i) => {
             const col = i % cols;
             const row = Math.floor(i / cols);
+
             return (
               <TouchableOpacity
                 key={i}
@@ -167,11 +167,8 @@ export function AddEachBingo({
                   padding: 4,
                 }}
               >
-                {/* 판 이미지 위라 앱 테마가 아니라 판의 전경색을 따라야 한다.
-                    아래 폴백 그리드는 앱 표면 위에 그리므로 기본 토큰 색이 맞다. */}
                 <Text
                   className={`${textStyle} text-center`}
-                  // 칸은 모든 테마에서 밝은 색이라 글씨는 늘 어두워야 한다. 토큰 색은 다크모드에서 흰색으로 뒤집혀 사라지고, 테마의 fgColor는 제목용이라 밝을 수 있어 칸에는 못 쓴다.
                   style={{ color: FIXED.boardForeground }}
                   numberOfLines={3}
                 >
@@ -181,32 +178,54 @@ export function AddEachBingo({
             );
           })}
         </View>
-        {modal}
-      </>
-    );
-  }
+      ) : (
+        <View
+          style={{
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            gap,
+          }}
+        >
+          {Array.from({ length: cols * rows }).map((_, i) => (
+            <TouchableOpacity
+              key={i}
+              onPress={() => handleCellPress(i)}
+              activeOpacity={0.7}
+              className="items-center justify-center rounded-lg border border-gray-300 bg-white p-1"
+              style={{
+                width: cellSize,
+                height: cellSize,
+              }}
+            >
+              <Text className={`${textStyle} text-center`} numberOfLines={3}>
+                {localCells[i] ?? ''}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
 
-  const gap = 6;
-  const cellSize = (availableWidth - gap * (cols - 1)) / cols;
-
-  return (
-    <>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap }}>
-        {Array.from({ length: cols * rows }).map((_, i) => (
-          <TouchableOpacity
-            key={i}
-            onPress={() => handleCellPress(i)}
-            activeOpacity={0.7}
-            className="items-center justify-center rounded-lg border border-gray-300 bg-white p-1"
-            style={{ width: cellSize, height: cellSize }}
-          >
-            <Text className={`${textStyle} text-center`} numberOfLines={3}>
-              {localCells[i] ?? ''}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-      {modal}
+      <Modal
+        visible={selectedIndex !== null}
+        title="빙고 내용을 입력해주세요"
+        body={
+          <TextInput
+            value={inputText}
+            onChangeText={setInputText}
+            placeholder="내용을 입력하세요."
+            maxLength={LIMITS.bingoCell}
+            maxHeight={120}
+            className="min-h-[72px]"
+            style={{ textAlignVertical: 'top' }}
+          />
+        }
+        variant="default"
+        cancelLabel={t('common.cancel')}
+        confirmLabel="저장"
+        onCancel={handleCancel}
+        onConfirm={handleSave}
+        onDismiss={handleCancel}
+      />
     </>
   );
 }

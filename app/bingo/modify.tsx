@@ -161,7 +161,7 @@ export default function BingoModifyScreen() {
   if (loadFailed) {
     return (
       <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
-        <PageHeader title={t('home.btnLabel.modifyBingo')} />
+        <PageHeader title={t('home.modifyBingo')} />
         <ErrorState
           message={`${t('home.error.load')} ${t('common.error.retry')}`}
           onRetry={() => void init()}
@@ -201,7 +201,7 @@ export default function BingoModifyScreen() {
         <View style={{ gap: 32 }}>
           <View>
             <View className="px-4">
-              <SectionLabel label={t('home.selectTheme')} />
+              <SectionLabel label={t('home.field.selectTheme')} />
             </View>
             <ScrollView
               horizontal
@@ -224,8 +224,8 @@ export default function BingoModifyScreen() {
 
           <View className="gap-2">
             <Text className="px-4 text-body-sm text-gray-600">
-              {t('home.btnLabel.modifyCount')} {totalUsedEdits}/
-              {isUnlimited ? t('home.infinite') : maxEdits}
+              {t('home.field.modifyCount.label')} {totalUsedEdits}/
+              {isUnlimited ? t('home.field.modifyCount.infinite') : maxEdits}
             </Text>
 
             <AddEachBingo
