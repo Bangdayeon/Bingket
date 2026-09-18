@@ -1,11 +1,5 @@
 import { router } from 'expo-router';
 
-/**
- * 알림 타입/타겟에 따라 해당 화면으로 이동한다.
- * 인앱 알림 목록 탭과 푸시 알림 탭(터치) 양쪽에서 동일한 매핑을 쓰기 위해 분리했다.
- *
- * @returns 이동한 경우 true, 대응하는 화면이 없어 아무 것도 하지 않은 경우 false
- */
 export const navigateToNotification = (type: string, targetId: string | null): boolean => {
   if (type === 'friend_request') {
     router.push('/mypage/friend-list');

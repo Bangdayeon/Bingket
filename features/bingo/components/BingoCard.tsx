@@ -21,15 +21,14 @@ import {
   getThemeForegroundColor,
 } from '@/features/bingo/lib/theme';
 import { shareBingoBoard } from '@/features/bingo/lib/share-board';
+import { useTranslation } from 'react-i18next';
 
 interface BingoCardProps {
   bingo: BingoData;
   completedCells?: boolean[];
   onCellPress: (index: number) => void;
   onEditPress?: () => void;
-  /** 팀 빙고일 때만 넘긴다. 팀 현황으로 이동한다 */
   onTeamPress?: () => void;
-  /** 비어 있으면 개인 빙고로 보고 아이콘을 그리지 않는다 */
   teamMembers?: TeamAvatarMember[];
 }
 
@@ -41,11 +40,11 @@ export function BingoCard({
   onTeamPress,
   teamMembers,
 }: BingoCardProps) {
+  const { t } = useTranslation();
   const [image, setImage] = useState<string | null>(null);
   const [checkImage, setCheckImage] = useState<string | null>(null);
   const [fgColor, setFgColor] = useState<string>(FIXED.boardForeground);
   const boardRef = useRef<View>(null);
-  // 캡처 중에는 저장·편집 버튼을 감춘다
   const [capturing, setCapturing] = useState(false);
   const [saveFailed, setSaveFailed] = useState(false);
 
@@ -65,12 +64,9 @@ export function BingoCard({
 
   const { isTablet, contentWidth } = useResponsive();
   const [cols, rows] = bingo.grid.split('x').map(Number);
-  // 3x3(14px)과 4x4(14px)는 원래 크기가 같고 line-height만 달랐다. 한 단계 줄이면서
-  // 토큰 하나로 합친다. 작성 화면(AddEachBingo)과 같은 값이어야 한다.
   const textStyle = 'text-caption-sm';
   const screenWidth = contentWidth;
 
-  // 시작일 - 종료일. 둘 중 하나만 있으면 있는 쪽만 보여준다 (제작 중 빙고는 비어 있을 수 있다)
   const {
     elapsed: dayElapsed,
     total: dayTotal,
@@ -96,14 +92,11 @@ export function BingoCard({
   const gapY = cfg.gapY * scale;
 
   const handleSharePress = () => {
-    // 배경이 아직 안 왔으면 빈 판이 찍힌다. 버튼도 이때는 안 그리지만 한 번 더 막음
     if (!image) return;
     setCapturing(true);
-    // 버튼을 감춘 프레임이 실제로 그려진 뒤에 찍어야 이미지에 버튼이 남지 않는다
     InteractionManager.runAfterInteractions(async () => {
       try {
         await shareBingoBoard(boardRef, bingo.title, {
-          // 화면 폭 그대로 뽑으면 저해상도라 1.5배로 키워 캡처한다
           width: screenWidth * 1.5,
           height: cardHeight * 1.5,
         });
@@ -134,9 +127,7 @@ export function BingoCard({
           >
             {bingo.title}
           </Text>
-          {/* display:none으로 지우면 레이아웃이 흔들려 opacity로만 감춘다 */}
           <View className="flex-row items-center gap-3" style={{ opacity: capturing ? 0 : 1 }}>
-            {/* 테마 배경을 받기 전에는 캡처해봐야 빈 판이라 버튼을 내놓지 않는다 */}
             {image && (
               <TouchableOpacity onPress={handleSharePress} hitSlop={8}>
                 <ShareIcon width={24} height={24} color={fgColor} />
@@ -170,7 +161,6 @@ export function BingoCard({
             >
               <Text
                 className={`${textStyle} text-center`}
-                // 칸은 모든 테마에서 밝은 색이라 글씨는 늘 어두워야 한다. 토큰 색은 다크모드에서 흰색으로 뒤집혀 사라지고, 테마의 fgColor는 제목용이라 밝을 수 있어 칸에는 못 쓴다.
                 style={{ color: FIXED.boardForeground }}
                 numberOfLines={3}
               >
@@ -193,11 +183,15 @@ export function BingoCard({
       <View className="mt-6" style={isTablet ? { width: screenWidth } : undefined}>
         <View className="flex-row justify-between px-10">
           <View className="items-center">
-            <BingoStat label="달성" current={bingo.achievedCount} total={cols * rows} />
+            <BingoStat
+              label={t('bingo.stat.achievement')}
+              current={bingo.achievedCount}
+              total={cols * rows}
+            />
           </View>
           <View className="items-center">
             <BingoStat
-              label="빙고"
+              label={t('bingo.stat.bingo')}
               current={bingo.bingoCount}
               total={calcMaxBingo(cols, rows)}
               overflowRed
@@ -205,7 +199,7 @@ export function BingoCard({
           </View>
           <View className="items-center">
             <BingoStat
-              label="종료일"
+              label={t('bingo.stat.endDate')}
               current={dayElapsed}
               total={dayTotal}
               valueText={dayTotal >= 1000 ? `D-${bingo.dday}` : undefined}
@@ -218,7 +212,6 @@ export function BingoCard({
             <Text className="text-caption-sm text-gray-700">{formattedPeriod}</Text>
           ) : null}
 
-          {/* 팀 빙고 표시 겸 현황 이동. 개인 빙고에는 그리지 않는다. */}
           {onTeamPress && teamMembers && teamMembers.length > 0 && (
             <TouchableOpacity onPress={onTeamPress} hitSlop={8}>
               <TeamAvatars members={teamMembers} size={32} />
@@ -228,7 +221,7 @@ export function BingoCard({
       </View>
 
       <Toast
-        message="빙고판을 저장하지 못했어요. 잠시 후 다시 시도해 주세요."
+        message={`${t('bingo.error.bingoSave')} ${t('common.error.retry')}`}
         visible={saveFailed}
         onDismiss={() => setSaveFailed(false)}
       />

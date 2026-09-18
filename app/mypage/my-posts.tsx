@@ -51,7 +51,7 @@ export default function MyPostsScreen() {
 
   return (
     <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
-      <PageHeader title={t('settings.post.title')} />
+      <PageHeader title={t('my.post.title')} />
 
       {loading ? (
         <View className="flex-1 items-center justify-center">
@@ -62,8 +62,8 @@ export default function MyPostsScreen() {
       ) : posts.length === 0 ? (
         <EmptyState
           align="top"
-          message={t('settings.post.empty')}
-          actionLabel={t('settings.post.emptyBtn')}
+          message={t('my.post.empty')}
+          actionLabel={t('my.post.emptyBtn')}
           onAction={() => router.replace('/(tabs)/community')}
         />
       ) : (

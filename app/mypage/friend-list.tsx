@@ -53,7 +53,6 @@ export default function FriendListScreen() {
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
 
-  // 두 목록은 항상 함께 보인다. 제목 옆 `>` 로 각각 접었다 편다.
   const [friendsExpanded, setFriendsExpanded] = useState(true);
   const [othersExpanded, setOthersExpanded] = useState(true);
 
@@ -78,7 +77,9 @@ export default function FriendListScreen() {
       setFriends(friendsData);
       setPendingRequests(incomingData);
     } catch (e) {
-      setErrorMessage(e instanceof Error ? e.message : t('friends.loadFailed'));
+      setErrorMessage(
+        e instanceof Error ? e.message : `${t('friends.error.load')} ${t('common.error.retry')}`,
+      );
     } finally {
       setListLoading(false);
     }
@@ -106,7 +107,11 @@ export default function FriendListScreen() {
       try {
         setSearchResults(await searchUsers(trimmed));
       } catch (e) {
-        setSearchError(e instanceof Error ? e.message : t('friends.searchFailed'));
+        setSearchError(
+          e instanceof Error
+            ? e.message
+            : `${t('friends.error.search')} ${t('common.error.retry')}`,
+        );
       } finally {
         setSearchLoading(false);
       }
@@ -145,7 +150,9 @@ export default function FriendListScreen() {
         prev ? prev.map((r) => (r.id === item.id ? { ...r, request_status: 'pending' } : r)) : prev,
       );
     } catch (e) {
-      setErrorMessage(e instanceof Error ? e.message : t('friends.requestFailed'));
+      setErrorMessage(
+        e instanceof Error ? e.message : `${t('friends.error.request')} ${t('common.error.retry')}`,
+      );
     } finally {
       setSending(null);
     }
@@ -162,7 +169,9 @@ export default function FriendListScreen() {
         await loadLists();
       }
     } catch (e) {
-      setErrorMessage(e instanceof Error ? e.message : t('friends.processFailed'));
+      setErrorMessage(
+        e instanceof Error ? e.message : `${t('common.error.general')} ${t('common.error.retry')}`,
+      );
     }
   };
 
@@ -187,7 +196,7 @@ export default function FriendListScreen() {
 
       setFriends((prev) => prev.filter((f) => f.friendId !== deletingFriend.friendId));
     } catch {
-      setErrorMessage(t('friends.deleteFailed'));
+      setErrorMessage(`${t('friends.error.delete')} ${t('common.error.retry')}`);
     } finally {
       setDeletingFriend(null);
     }
@@ -201,8 +210,8 @@ export default function FriendListScreen() {
 
       await KakaoShareLink.sendFeed({
         content: {
-          title: t('friends.inviteShareTitle'),
-          description: t('friends.inviteShareDescription'),
+          title: t('friends.invite.title'),
+          description: t('friends.invite.description'),
           imageUrl: 'https://pub-ce1a524f861f4062a6ec96dd100c4aec.r2.dev/etc/og_image.png',
           link: {
             webUrl: APP_STORE_URL,
@@ -211,7 +220,7 @@ export default function FriendListScreen() {
         },
         buttons: [
           {
-            title: t('friends.openApp'),
+            title: t('friends.invite.openApp'),
             link: {
               androidExecutionParams: [{ key: 'screen', value: 'invite' }],
               iosExecutionParams: [{ key: 'screen', value: 'invite' }],
@@ -220,7 +229,7 @@ export default function FriendListScreen() {
         ],
       });
     } catch (e) {
-      setErrorMessage(e instanceof Error ? e.message : t('friends.inviteFailed'));
+      setErrorMessage(e instanceof Error ? e.message : t('friends.error.invite'));
     }
   };
 
@@ -255,7 +264,7 @@ export default function FriendListScreen() {
   return (
     <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
       <PageHeader
-        title={isSelectMode ? t('friends.select') : t('friends.friend')}
+        title={isSelectMode ? t('friends.team.select') : t('friends.label')}
         titleRight={
           isSelectMode ? (
             <Text className="text-body-md text-gray-600">
@@ -269,7 +278,7 @@ export default function FriendListScreen() {
           isSelectMode ? (
             <Pressable onPress={() => router.back()} hitSlop={8}>
               <Text className="text-body-md font-pretendard-medium text-green-600">
-                {t('friends.complete')}
+                {t('friends.team.complete')}
               </Text>
             </Pressable>
           ) : undefined
@@ -277,7 +286,9 @@ export default function FriendListScreen() {
       />
 
       {isSelectMode && pickedFriends.length === 0 && (
-        <Text className="px-4 pb-4 text-body-sm text-gray-500">{t('friends.selectFriend')}</Text>
+        <Text className="px-4 pb-4 text-body-sm text-gray-500">
+          {t('friends.team.selectFriend')}
+        </Text>
       )}
 
       {isSelectMode && pickedFriends.length > 0 && (
@@ -329,7 +340,7 @@ export default function FriendListScreen() {
       <View className="mx-4 mb-2 h-16 flex-row items-center justify-between gap-2 rounded-2xl bg-green-100 px-4">
         <Text className="text-body-sm text-gray-800">{t('friends.inviteMessage')}</Text>
 
-        <Button label={t('friends.invite')} onClick={handleInvite} size="sm" />
+        <Button label={t('friends.invite.label')} onClick={handleInvite} size="sm" />
       </View>
 
       {listLoading ? (
@@ -348,7 +359,7 @@ export default function FriendListScreen() {
           />
 
           <CollapsibleSection
-            title={t('friends.friend')}
+            title={t('friends.label')}
             count={filteredFriends.length}
             expanded={friendsExpanded}
             onToggle={() => setFriendsExpanded((v) => !v)}

@@ -16,10 +16,6 @@ export interface Notification {
   is_read: boolean;
   created_at: string;
   senderProfile?: SenderProfile;
-  /**
-   * team_invite일 때만 채워진다. 홈 알림 스트립이 인라인으로 수락할 수 있는
-   * 모드인지 판단하는 데 쓴다 ('competition'은 빙고를 직접 만들어야 해서 화면 이동이 필요하다).
-   */
   teamMode?: TeamMode;
 }
 
@@ -30,13 +26,8 @@ type RequestRow = {
 
 type TeamRow = RequestRow & { mode: TeamMode };
 
-/** 한 번에 받아오는 알림 수. */
 export const NOTIFICATION_PAGE_SIZE = 30;
 
-/**
- * 예전에는 limit(50)이 하드코딩돼 있고 더 보기가 없어서, 51번째 이후 알림에는
- * 영원히 닿을 수 없었다.
- */
 export const fetchNotifications = async (
   limit: number = NOTIFICATION_PAGE_SIZE,
 ): Promise<Notification[]> => {
@@ -55,11 +46,9 @@ export const fetchNotifications = async (
   if (error) throw error;
   const notifications = data ?? [];
 
-  // friend_request / team_invite 알림에 보낸 사람 프로필 병렬 조회
   const friendIds = notifications
     .filter((n) => n.type === 'friend_request' && n.target_id)
     .map((n) => n.target_id as string);
-  // team_invite의 target_id는 팀 id이고, 보낸 사람은 그 팀의 방장이다
   const teamIds = notifications
     .filter((n) => n.type === 'team_invite' && n.target_id)
     .map((n) => n.target_id as string);
@@ -115,12 +104,6 @@ export const fetchNotifications = async (
   }));
 };
 
-/**
- * 처리가 끝난 알림을 지운다. 남겨두면 다시 눌러 또 처리할 수 있어서다
- * (팀 초대는 재수락 시 빙고판이 하나 더 만들어졌다).
- *
- * 홈 알림 스트립과 알림 페이지가 같은 경로를 쓰도록 여기에 둔다.
- */
 export const deleteNotificationByTarget = async (type: string, targetId: string): Promise<void> => {
   const {
     data: { user },

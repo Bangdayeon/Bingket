@@ -33,7 +33,6 @@ export function setPortalNode(id: number, node: ReactNode | null): void {
   } else if (index === -1) {
     entries = [...entries, { id, node }];
   } else {
-    // 자리를 유지한 채 교체한다. 매번 뒤에 다시 붙이면 여러 개가 겹칠 때 z-order가 뒤집힌다
     const next = entries.slice();
     next[index] = { id, node };
     entries = next;

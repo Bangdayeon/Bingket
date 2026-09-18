@@ -120,7 +120,7 @@ function NotificationItem({ item, onRead, onAction, onFriendResponse }: Notifica
       {isFriendRequest && item.target_id ? (
         <View className="mt-3 flex-row justify-end gap-2">
           <Button
-            label={t('team.deny')}
+            label={t('notifications.action.deny')}
             variant="ghost"
             size="sm"
             onClick={() => handleFriendResponse(false)}
@@ -128,7 +128,7 @@ function NotificationItem({ item, onRead, onAction, onFriendResponse }: Notifica
           />
 
           <Button
-            label={t('team.confirm')}
+            label={t('notifications.action.confirm')}
             size="sm"
             onClick={() => handleFriendResponse(true)}
             disabled={responding}
@@ -140,7 +140,7 @@ function NotificationItem({ item, onRead, onAction, onFriendResponse }: Notifica
       {isTeamInvite && item.target_id ? (
         <View className="mt-3 flex-row justify-end">
           <Button
-            label={t('team.checkInvite')}
+            label={t('notifications.action.checkInvite')}
             variant="secondary"
             size="sm"
             onClick={async () => {
@@ -154,7 +154,7 @@ function NotificationItem({ item, onRead, onAction, onFriendResponse }: Notifica
       {isTeamUpdate && item.target_id ? (
         <View className="mt-3 flex-row justify-end">
           <Button
-            label={t('team.checkTeamStauts')}
+            label={t('notifications.action.checkTeamStatus')}
             variant="secondary"
             size="sm"
             onClick={async () => {
@@ -261,7 +261,7 @@ export default function NotificationsScreen() {
         {fetchError ? (
           <ErrorState message={fetchError} onRetry={loadData} />
         ) : notifications.length === 0 ? (
-          <EmptyState message={t('notifications.noNew')} />
+          <EmptyState message={t('notifications.empty')} />
         ) : null}
 
         {notifications.map((item) => (

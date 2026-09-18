@@ -89,7 +89,7 @@ export default function ProfileEditPage() {
   const handleNameChange = (v: string) => {
     const stripped = v.replace(NAME_INVALID, '');
     if (stripped.length < v.length) {
-      showToast('한글/영어/숫자 조합으로만 입력할 수 있어요.');
+      showToast(t('settings.profile.nickname.mixture'));
     }
     setName(stripped.slice(0, NAME_MAX));
   };
@@ -97,7 +97,7 @@ export default function ProfileEditPage() {
   const handleUserIdChange = (v: string) => {
     const stripped = v.replace(USER_ID_INVALID, '');
     if (stripped.length < v.length) {
-      showToast('영어/숫자/_ - 조합으로만 입력할 수 있어요.');
+      showToast(t('settings.profile.id.mixture'));
     }
     setUserId(stripped.slice(0, USER_ID_MAX));
   };
@@ -109,7 +109,11 @@ export default function ProfileEditPage() {
         : await ensurePhotoLibraryPermission();
 
     if (!granted) {
-      showToast(source === 'camera' ? '카메라 권한이 필요해요.' : '사진 접근 권한이 필요해요.');
+      showToast(
+        source === 'camera'
+          ? t('common.permission.cameraTitle')
+          : t('common.permission.albumTitle'),
+      );
       return;
     }
 
@@ -137,7 +141,15 @@ export default function ProfileEditPage() {
   const handleCameraPress = () => {
     if (Platform.OS === 'ios') {
       ActionSheetIOS.showActionSheetWithOptions(
-        { options: ['취소', '카메라', '앨범에서 선택', '기본 이미지 적용'], cancelButtonIndex: 0 },
+        {
+          options: [
+            t('common.cancel'),
+            t('settings.profile.image.camera'),
+            t('settings.profile.image.album'),
+            t('settings.profile.image.default'),
+          ],
+          cancelButtonIndex: 0,
+        },
         (index) => {
           if (index === 1) pickImage('camera');
           if (index === 2) pickImage('library');
@@ -151,11 +163,11 @@ export default function ProfileEditPage() {
 
   const handleSave = async () => {
     if (name.trim().length === 0) {
-      setErrorMessage('닉네임을 입력해주세요.');
+      setErrorMessage(t('settings.profile.nickname.error'));
       return;
     }
     if (userId.trim().length === 0) {
-      setErrorMessage('아이디를 입력해주세요.');
+      setErrorMessage(t('settings.profile.id.error'));
       return;
     }
     setSaving(true);
@@ -171,7 +183,7 @@ export default function ProfileEditPage() {
       await clearCache('@bingket/cache-my-profile');
       router.back();
     } catch (e) {
-      setErrorMessage(e instanceof Error ? e.message : '다시 시도해주세요.');
+      setErrorMessage(e instanceof Error ? e.message : t('common.error.retry'));
     } finally {
       setSaving(false);
     }
@@ -179,10 +191,9 @@ export default function ProfileEditPage() {
 
   return (
     <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
-      <PageHeader title="프로필 편집" onBack={handleBack} />
+      <PageHeader title={t('settings.profile.label')} onBack={handleBack} />
 
       <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 24 }}>
-        {/* 프로필 이미지 */}
         <View className="items-center pt-6 pb-6">
           <View className="relative">
             <ProfileAvatar avatarUrl={avatarUri} size={120} />
@@ -197,14 +208,15 @@ export default function ProfileEditPage() {
           </View>
         </View>
 
-        {/* 폼 */}
         <View className="px-4 gap-5">
           <View className="gap-2">
-            <Text className="text-body-md text-gray-900">닉네임</Text>
+            <Text className="text-body-md text-gray-900">
+              {t('settings.profile.nickname.label')}
+            </Text>
             <TextInput
               value={name}
               onChangeText={handleNameChange}
-              placeholder={`${NAME_MAX}자 이내로 입력해주세요.`}
+              placeholder={t('settings.profile.nickname.label', { count: NAME_MAX })}
             />
             <Text className="text-right text-caption-sm text-gray-500">
               {name.length}/{NAME_MAX}
@@ -212,11 +224,11 @@ export default function ProfileEditPage() {
           </View>
 
           <View className="gap-2">
-            <Text className="text-body-md text-gray-900">아이디</Text>
+            <Text className="text-body-md text-gray-900">{t('settings.profile.id.label')}</Text>
             <TextInput
               value={userId}
               onChangeText={handleUserIdChange}
-              placeholder={`영어, 언더바, 하이픈, 숫자로만 ${USER_ID_MAX}자 이내로 입력해주세요.`}
+              placeholder={t('settings.profile.id.placeholder', { count: USER_ID_MAX })}
               autoCapitalize="none"
             />
             <Text className="text-right text-caption-sm text-gray-500">
@@ -225,14 +237,17 @@ export default function ProfileEditPage() {
           </View>
 
           <View className="gap-2">
-            <Text className="text-body-md text-gray-900">한 줄 다짐</Text>
-            <Pressable onPress={() => setEditingBio(true)} accessibilityLabel="한 줄 다짐 편집">
+            <Text className="text-body-md text-gray-900">{t('settings.profile.bio.label')}</Text>
+            <Pressable
+              onPress={() => setEditingBio(true)}
+              accessibilityLabel={t('settings.profile.bio.edit')}
+            >
               <TextInput
                 editable={false}
                 pointerEvents="none"
                 value={bio}
                 onChangeText={(v) => setBio(v.slice(0, BIO_MAX))}
-                placeholder={`${BIO_MAX}자 이내로 입력해주세요.`}
+                placeholder={t('settings.profile.bio.placeholder', { count: BIO_MAX })}
                 maxLength={BIO_MAX}
                 maxHeight={64}
               />
@@ -247,7 +262,7 @@ export default function ProfileEditPage() {
       {/* 저장 */}
       <View className="px-4" style={{ paddingBottom: insets.bottom + 16 }}>
         <Button
-          label="저장하기"
+          label={t('common.save')}
           size="md"
           onClick={handleSave}
           disabled={saving}
@@ -258,20 +273,20 @@ export default function ProfileEditPage() {
 
       <FocusedTextEditor
         visible={editingBio}
-        title="한 줄 다짐"
+        title={t('settings.profile.bio.label')}
         value={bio}
         onChangeText={setBio}
         onClose={() => setEditingBio(false)}
         maxLength={BIO_MAX}
-        placeholder={`${BIO_MAX}자 이내로 입력해주세요.`}
+        placeholder={t('settings.profile.bio.placeholder', { count: BIO_MAX })}
       />
       <Toast message={toast} visible={toastVisible} onDismiss={() => setToastVisible(false)} />
       <Modal
         visible={showLeaveModal}
-        title="저장하지 않은 변경사항이 있어요"
-        body="지금 나가면 변경 사항이 저장되지 않아요."
-        cancelLabel="계속 수정"
-        confirmLabel="나가기"
+        title={t('common.unsaved.title')}
+        body={t('common.unsaved.body')}
+        cancelLabel={t('common.unsaved.cancel')}
+        confirmLabel={t('common.unsaved.confirm')}
         onCancel={() => setShowLeaveModal(false)}
         onConfirm={() => {
           setShowLeaveModal(false);
@@ -281,19 +296,19 @@ export default function ProfileEditPage() {
       />
       <Modal
         visible={!!errorMessage}
-        title="저장 실패"
+        title={t('common.error.save')}
         body={errorMessage ?? ''}
         variant="error"
-        confirmLabel="확인"
+        confirmLabel={t('common.confirm')}
         onConfirm={() => setErrorMessage(null)}
         onDismiss={() => setErrorMessage(null)}
       />
       <Modal
         visible={showPhotoModal}
-        title="프로필 사진"
+        title={t('settings.profile.image.label')}
         variant="default"
         cancelLabel={t('common.cancel')}
-        confirmLabel="카메라"
+        confirmLabel={t('settings.profile.image.camera')}
         onCancel={() => setShowPhotoModal(false)}
         onConfirm={() => {
           setShowPhotoModal(false);
@@ -308,7 +323,9 @@ export default function ProfileEditPage() {
                 pickImage('library');
               }}
             >
-              <Text className="text-body-md text-center py-2">앨범에서 선택</Text>
+              <Text className="text-body-md text-center py-2">
+                {t('settings.profile.image.album')}
+              </Text>
             </Pressable>
             <Pressable
               onPress={() => {
@@ -316,7 +333,9 @@ export default function ProfileEditPage() {
                 applyDefaultAvatar();
               }}
             >
-              <Text className="text-body-md text-center py-2">기본 이미지 적용</Text>
+              <Text className="text-body-md text-center py-2">
+                {t('settings.profile.image.default')}
+              </Text>
             </Pressable>
           </View>
         }

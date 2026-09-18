@@ -19,13 +19,33 @@ import { submitReport, blockUser } from '@/features/community/lib/community';
 import { useTranslation } from 'react-i18next';
 
 const REPORT_REASONS = [
-  '상업적 광고 및 판매',
-  '욕설/비하',
-  '음란물/성적인 내용',
-  '도배',
-  '사칭/사기',
-  '기타',
-];
+  {
+    value: 'ad',
+    labelKey: 'board.moderation.report.reason.ad',
+  },
+  {
+    value: 'abuse',
+    labelKey: 'board.moderation.report.reason.abuse',
+  },
+  {
+    value: 'sexual',
+    labelKey: 'board.moderation.report.reason.sexual',
+  },
+  {
+    value: 'spam',
+    labelKey: 'board.moderation.report.reason.spam',
+  },
+  {
+    value: 'impersonation',
+    labelKey: 'board.moderation.report.reason.impersonation',
+  },
+  {
+    value: 'other',
+    labelKey: 'board.moderation.report.reason.other',
+  },
+] as const;
+
+type ReportReason = (typeof REPORT_REASONS)[number]['value'];
 
 function postBingoToBingoData(bingo: NonNullable<CommunityPost['bingo']>): BingoData {
   return {
@@ -57,7 +77,6 @@ function parseBlocks(content: string): StoredBlock[] | null {
   return null;
 }
 
-/** 목록에 보여줄 본문 미리보기. 개행은 공백으로 눌러 두 줄 안에 최대한 담는다 */
 function bodyPreview(blocks: StoredBlock[] | null, raw: string): string {
   const text = blocks
     ? blocks
@@ -80,16 +99,12 @@ export const PostCard = memo(function PostCard({ post, currentUserId, onBlock }:
 
   const [showMenu, setShowMenu] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
-  const [selectedReason, setSelectedReason] = useState<string | null>(null);
+  const [selectedReason, setSelectedReason] = useState<ReportReason | null>(null);
   const [isReporting, setIsReporting] = useState(false);
   const [showBlockModal, setShowBlockModal] = useState(false);
   const [isBlocking, setIsBlocking] = useState(false);
   const [alertModal, setAlertModal] = useState<{ title: string; message: string } | null>(null);
 
-  /**
-   * 검색 화면처럼 로그인 사용자를 안 넘기는 곳이 있다. 그때는 내 글인지 알 수 없으므로
-   * 메뉴를 아예 열지 않는다 — 남의 글에 '수정하기'를 띄우거나 내 글을 신고하게 두면 안 된다.
-   */
   const ownership =
     currentUserId == null ? 'unknown' : post.userId === currentUserId ? 'mine' : 'others';
 
@@ -132,17 +147,22 @@ export const PostCard = memo(function PostCard({ post, currentUserId, onBlock }:
 
   const menuItems =
     ownership === 'mine'
-      ? [{ label: '수정하기', onPress: () => router.push(`/community/write?postId=${post.id}`) }]
+      ? [
+          {
+            label: t('board.post.edit.menu'),
+            onPress: () => router.push(`/community/write?postId=${post.id}`),
+          },
+        ]
       : [
           {
-            label: '신고하기',
+            label: t('board.moderation.report.menu'),
             onPress: () => setShowReportModal(true),
           },
           ...(post.user?.is_deleted
             ? []
             : [
                 {
-                  label: '차단하기',
+                  label: t('board.moderation.block.menu'),
                   danger: true as const,
                   onPress: () => setShowBlockModal(true),
                 },
@@ -151,7 +171,7 @@ export const PostCard = memo(function PostCard({ post, currentUserId, onBlock }:
 
   return (
     <View className="px-4 pb-4 pt-4">
-      {/* 작성자 */}
+      {/* AUTHOR */}
       <View className="flex-row items-center justify-between">
         <View className="flex-row items-center gap-2">
           <AuthorLink userId={post.userId} isAnonymous={post.isAnonymous}>
@@ -184,9 +204,7 @@ export const PostCard = memo(function PostCard({ post, currentUserId, onBlock }:
         style={{ top: 52, right: 10 }}
       />
 
-      {/* 미디어 썸네일 (빙고 우선, 없으면 첫 이미지).
-          빙고는 목록에서 정사각형으로 자른다 — 3:4 그대로 두면 카드 하나가 화면을 거의 다
-          먹어 다음 글이 안 보인다. 전체 판은 게시글 상세에서 보여준다. */}
+      {/* media thumbnail */}
       {bingoData ? (
         <View className="mt-4 overflow-hidden rounded-2xl">
           <BingoPreview bingo={bingoData} size="md" square />
@@ -205,14 +223,7 @@ export const PostCard = memo(function PostCard({ post, currentUserId, onBlock }:
         {post.title}
       </Text>
 
-      {/* 본문 미리보기 */}
-      {/* {preview ? (
-        <Text className="mt-3 text-body-sm text-gray-800" numberOfLines={2}>
-          {preview}
-        </Text>
-      ) : null} */}
-
-      {/* 좋아요 / 댓글 */}
+      {/* === LIKE / COMMENT === */}
       <View className="flex-row items-center gap-4 mt-3">
         <LikeButton count={post.likeCount} postId={post.id} initialLiked={post.likedByMe} />
         <View className="flex-row items-center gap-1">
@@ -221,43 +232,42 @@ export const PostCard = memo(function PostCard({ post, currentUserId, onBlock }:
         </View>
       </View>
 
-      {/* 신고하기 모달 */}
+      {/* REPORT */}
       <Modal
         visible={showReportModal}
         confirmLoading={isReporting}
-        title="신고하기"
+        title={t('board.moderation.report.menu')}
         body={
           <View className="gap-3">
             <Text className="text-body-sm text-gray-700">
-              누적 신고 횟수가 3회 이상인 유저는 커뮤니티 이용 제한이 있을 수 있습니다.
+              {t('board.moderation.report.explanation')}
             </Text>
-            {/* 선택지끼리는 바깥 gap-3을 받지 않는다. 줄마다 py-1.5만 줘서 간격 12,
-                터치 영역은 32를 유지한다. */}
             <View>
               {REPORT_REASONS.map((reason) => (
                 <Pressable
-                  key={reason}
-                  onPress={() => setSelectedReason(reason)}
+                  key={reason.value}
+                  onPress={() => setSelectedReason(reason.value)}
                   className="flex-row items-center gap-3 py-1.5"
                 >
                   <View
                     className={`h-4 w-4 items-center justify-center rounded-full ${
-                      selectedReason === reason ? 'border-green-400' : 'border-gray-300'
+                      selectedReason === reason.value ? 'border-green-400' : 'border-gray-300'
                     }`}
                     style={{ borderWidth: 1.5 }}
                   >
-                    {selectedReason === reason && (
+                    {selectedReason === reason.value && (
                       <View className="h-2 w-2 rounded-full bg-green-400" />
                     )}
                   </View>
-                  <Text className="text-body-md">{reason}</Text>
+
+                  <Text className="text-body-md">{t(reason.labelKey)}</Text>
                 </Pressable>
               ))}
             </View>
           </View>
         }
-        variant="warning" // danger 확인 + 취소 버튼 둘 다 사용
-        confirmLabel="신고"
+        variant="warning"
+        confirmLabel={t('board.moderation.report.confirm')}
         cancelLabel={t('common.cancel')}
         confirmDisabled={!selectedReason}
         onConfirm={async () => {
@@ -268,13 +278,13 @@ export const PostCard = memo(function PostCard({ post, currentUserId, onBlock }:
             setShowReportModal(false);
             setSelectedReason(null);
             setAlertModal({
-              title: '신고 완료',
-              message: '신고가 접수되었습니다. 24시간 내에 처리됩니다.',
+              title: t('board.moderation.report.success.title'),
+              message: t('board.moderation.report.success.body'),
             });
           } catch (e) {
             setAlertModal({
-              title: '오류',
-              message: e instanceof Error ? e.message : '신고에 실패했어요.',
+              title: t('board.moderation.report.error'),
+              message: e instanceof Error ? e.message : t('common.error.retry'),
             });
           } finally {
             setIsReporting(false);
@@ -291,19 +301,16 @@ export const PostCard = memo(function PostCard({ post, currentUserId, onBlock }:
         }}
       />
 
-      {/* 차단하기 모달 */}
+      {/* BLOCK */}
       <Modal
         visible={showBlockModal}
         confirmLoading={isBlocking}
-        title="차단하기"
+        title={t('board.moderation.block.menu')}
         body={
-          <Text className="text-body-sm text-gray-500">
-            이 사용자를 차단하시겠어요?{'\n'}
-            차단된 사용자의 게시글과 댓글이 보이지 않아요.
-          </Text>
+          <Text className="text-body-sm text-gray-500">{t('board.moderation.block.body')}</Text>
         }
-        variant="error" // danger 단일 버튼
-        confirmLabel="차단"
+        variant="error"
+        confirmLabel={t('board.moderation.block.confirm')}
         onConfirm={async () => {
           setIsBlocking(true);
           try {
@@ -313,8 +320,8 @@ export const PostCard = memo(function PostCard({ post, currentUserId, onBlock }:
           } catch (e) {
             setShowBlockModal(false);
             setAlertModal({
-              title: '오류',
-              message: e instanceof Error ? e.message : '차단에 실패했어요.',
+              title: t('board.moderation.block.error'),
+              message: e instanceof Error ? e.message : t('common.error.retry'),
             });
           } finally {
             setIsBlocking(false);
@@ -323,7 +330,6 @@ export const PostCard = memo(function PostCard({ post, currentUserId, onBlock }:
         onDismiss={() => !isBlocking && setShowBlockModal(false)}
       />
 
-      {/* 범용 알림 모달 */}
       <Modal
         visible={alertModal !== null}
         title={alertModal?.title ?? ''}

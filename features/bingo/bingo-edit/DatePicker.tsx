@@ -3,6 +3,7 @@ import { useColors } from '@/lib/use-colors';
 import { useResolvedScheme } from '@/lib/color-scheme';
 import { Modal, Platform, Pressable, View } from 'react-native';
 import { Text } from '@/components/Text';
+import { useTranslation } from 'react-i18next';
 
 interface DatePickerProps {
   target: 'start' | 'end';
@@ -23,6 +24,7 @@ export function DatePicker({
   onConfirm,
   onDismiss,
 }: DatePickerProps) {
+  const { t } = useTranslation();
   const colors = useColors();
   const scheme = useResolvedScheme();
   const minimumDate = target === 'end' && startDate ? startDate : undefined;
@@ -58,10 +60,15 @@ export function DatePicker({
       >
         <View className="flex-row justify-between items-center mb-2">
           <Text className="text-body-sm text-gray-500">
-            {target === 'start' ? '시작일' : '종료일'} 선택
+            {target === 'start'
+              ? t('home.field.duration.startDate')
+              : t('home.field.duration.endDate')}{' '}
+            {t('common.select')}
           </Text>
           <Pressable onPress={onConfirm}>
-            <Text className="text-body-sm text-green-500 font-pretendard-semibold">확인</Text>
+            <Text className="text-body-sm text-green-500 font-pretendard-semibold">
+              {t('common.confirm')}
+            </Text>
           </Pressable>
         </View>
         <View style={{ height: 216 }}>
@@ -75,7 +82,6 @@ export function DatePicker({
             locale="ko-KR"
             style={{ flex: 1 }}
             textColor={colors.gray[900]}
-            // 글자색만 주면 스피너 선택 바와 컬럼 배경은 밝은 채로 남는다.
             themeVariant={scheme}
             minimumDate={minimumDate}
           />

@@ -55,7 +55,7 @@ export function PostBody({ post }: PostBodyProps) {
 
   return (
     <View className="px-4 pt-4">
-      {/* 작성자 */}
+      {/* AUTHOR */}
       <View className="flex-row items-center gap-2">
         <AuthorLink
           userId={post.userId}
@@ -80,7 +80,7 @@ export function PostBody({ post }: PostBodyProps) {
 
       {blocks ? (
         <>
-          {/* 본문 텍스트 (항상 최상단) */}
+          {/* body */}
           {textBlocks.map((block, i) =>
             block.value ? (
               <Text key={i} className="text-body-md mt-3">
@@ -89,7 +89,7 @@ export function PostBody({ post }: PostBodyProps) {
             ) : null,
           )}
 
-          {/* 미디어 (빙고, 이미지) */}
+          {/* media */}
           {mediaBlocks.map((block, i) => {
             if (block.type === 'image') {
               const url = (post.imageUrls ?? [])[block.index];
@@ -119,7 +119,7 @@ export function PostBody({ post }: PostBodyProps) {
         </>
       )}
 
-      {/* 좋아요 / 댓글 */}
+      {/* like / comment */}
       <View className="flex-row items-center gap-4 mt-3">
         <LikeButton count={post.likeCount} postId={post.id} initialLiked={post.likedByMe} />
         <View className="flex-row items-center gap-1">

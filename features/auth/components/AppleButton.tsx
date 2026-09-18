@@ -8,8 +8,10 @@ import { FIXED } from '@/lib/use-colors';
 import { supabase } from '@/lib/supabase';
 import { router } from 'expo-router';
 import Loading from '@/components/Loading';
+import { useTranslation } from 'react-i18next';
+import { generateUsername } from '../lib/generate-username';
 
-async function signInWithApple(): Promise<void> {
+async function signInWithApple(language: string): Promise<void> {
   const credential = await AppleAuthentication.signInAsync({
     requestedScopes: [
       AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
@@ -35,39 +37,31 @@ async function signInWithApple(): Promise<void> {
   const user = data.session?.user;
   if (!user) return;
 
+  const username = generateUsername(language);
+
+  await supabase.from('users').upsert(
+    {
+      id: user.id,
+      username,
+      display_name: username,
+    },
+    {
+      onConflict: 'id',
+      ignoreDuplicates: true,
+    },
+  );
+
   router.replace('/(tabs)');
-
-  // public.users 행 보장 — 탈퇴 후 재가입 시 trigger 미작동 대비
-  const username = 'user_' + user.id.replace(/-/g, '').slice(0, 15);
-  const fullName = credential.fullName;
-  const rawName =
-    [fullName?.givenName, fullName?.familyName].filter(Boolean).join(' ') ||
-    (user.user_metadata?.full_name as string | undefined) ||
-    '빙고유저';
-  const safeDisplayName =
-    rawName
-      .replace(/[^\uAC00-\uD7A3a-zA-Z0-9\s]/g, '')
-      .trim()
-      .slice(0, 20) || '빙고유저';
-
-  await supabase
-    .from('users')
-    .upsert(
-      { id: user.id, username, display_name: safeDisplayName },
-      { onConflict: 'id', ignoreDuplicates: true },
-    );
 }
 
 interface AppleButtonProps {
   requireAgreement: (action: () => Promise<void>) => Promise<void>;
-  /** 로그인 실패를 화면이 알린다. 예전에는 눌러도 아무 일이 없는 것처럼 보였다. */
   onError: (message: string) => void;
 }
 
 export function AppleButton({ requireAgreement, onError }: AppleButtonProps) {
+  const { t, i18n } = useTranslation();
   const [loading, setLoading] = useState(false);
-  // 버튼 배경이 다크에서 흰색으로 뒤집힌다(bg-fixed-black dark:bg-fixed-white).
-  // apple_logo.png는 흰색 단색이라 그대로 두면 다크에서 아이콘이 사라진다.
   const isDark = useResolvedScheme() === 'dark';
   const logoTint = isDark ? FIXED.fixedBlack : FIXED.fixedWhite;
 
@@ -78,7 +72,7 @@ export function AppleButton({ requireAgreement, onError }: AppleButtonProps) {
       await requireAgreement(async () => {
         setLoading(true);
         try {
-          await signInWithApple();
+          await signInWithApple(i18n.language);
         } catch (e: unknown) {
           if (
             typeof e === 'object' &&
@@ -96,7 +90,9 @@ export function AppleButton({ requireAgreement, onError }: AppleButtonProps) {
       });
     } catch (e) {
       Sentry.captureException(e);
-      onError(e instanceof Error ? e.message : '로그인에 실패했어요. 잠시 후 다시 시도해주세요.');
+      onError(
+        e instanceof Error ? e.message : `${t('auth.login.failed')} ${t('common.error.retry')}`,
+      );
     }
   };
 
@@ -113,13 +109,12 @@ export function AppleButton({ requireAgreement, onError }: AppleButtonProps) {
         <>
           <Image
             source={require('@/assets/icons/apple_logo.png')}
-            // 라벨(text-fixed-white dark:text-fixed-black)과 같은 색이어야 한다
             style={{ width: 18, height: 18, tintColor: logoTint }}
             className="absolute left-4"
             resizeMode="contain"
           />
           <Text className="text-label-sm font-pretendard-semibold text-fixed-white dark:text-fixed-black md:text-label-md">
-            Apple로 시작하기
+            {t('auth.startWith.apple')}
           </Text>
         </>
       )}

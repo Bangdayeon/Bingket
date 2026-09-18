@@ -82,7 +82,7 @@ export default function AlertSettingScreen() {
   return (
     <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
       <PageHeader
-        title={t('settings.notificationSettings')}
+        title={t('settings.notifications.label')}
         right={loading ? <Loading /> : undefined}
       />
 
@@ -93,57 +93,57 @@ export default function AlertSettingScreen() {
             className="mx-4 mt-4 rounded-xl bg-gray-100 px-4 py-3"
           >
             <Text className="text-body-md font-pretendard-medium">
-              {t('settings.notification.blockTitle')}
+              {t('settings.notifications.blockTitle')}
             </Text>
             <Text className="mt-0.5 text-caption-sm text-gray-500">
-              {t('settings.notification.blockBody')}
+              {t('settings.notifications.blockBody')}
             </Text>
           </Pressable>
         ) : null}
 
-        <GroupCaption label={t('common.bingo.bingo')} />
+        <GroupCaption label={t('settings.notifications.bingo.label')} />
         <ToggleRow
-          label={t('settings.notification.dedline')}
+          label={t('settings.notifications.bingo.deadline')}
           value={settings.bingoDeadline}
           onValueChange={(v) => update({ bingoDeadline: v })}
         />
 
         <Divider />
 
-        <GroupCaption label={t('settings.notification.teamBingo')} />
+        <GroupCaption label={t('settings.notifications.team.label')} />
         <ToggleRow
-          label={t('settings.notification.teamAction')}
+          label={t('settings.notifications.team.teamAction')}
           value={settings.teamActivity}
           onValueChange={(v) => update({ teamActivity: v })}
         />
 
         <Divider />
 
-        <GroupCaption label={t('common.screen.board')} />
+        <GroupCaption label={t('settings.notifications.board.label')} />
         {/* <ToggleRow
           label="인기글 알림"
           value={settings.communityPopular}
           onValueChange={(v) => update({ communityPopular: v })}
         /> */}
         <ToggleRow
-          label={t('settings.notification.comment')}
+          label={t('settings.notifications.board.comment')}
           value={settings.communityComment}
           onValueChange={(v) => update({ communityComment: v })}
         />
         <ToggleRow
-          label={t('settings.notification.like')}
+          label={t('settings.notifications.board.like')}
           value={settings.communityLike}
           onValueChange={(v) => update({ communityLike: v })}
         />
       </ScrollView>
 
       <Toast
-        message={t('settings.notification.saveFail')}
+        message={`${t('settings.notifications.error.save')} ${t('common.error.retry')}`}
         visible={saveFailed}
         onDismiss={() => setSaveFailed(false)}
       />
       <Toast
-        message={t('settings.notification.loadError')}
+        message={t('settings.notifications.error.load')}
         visible={loadFailed}
         onDismiss={() => setLoadFailed(false)}
       />

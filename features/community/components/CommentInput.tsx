@@ -7,6 +7,7 @@ import ArrowUpwardIcon from '@/assets/icons/ic_arrow_upward.svg';
 import CheckIcon from '@/assets/icons/ic_check.svg';
 import IconButton from '@/components/IconButton';
 import { LIMITS } from '@/constants/limits';
+import { useTranslation } from 'react-i18next';
 
 interface CommentInputProps {
   value: string;
@@ -31,10 +32,9 @@ export function CommentInput({
   onToggleAnonymous,
   isSubmitting = false,
 }: CommentInputProps) {
+  const { t } = useTranslation();
   const inputRef = useRef<RNTextInput>(null);
 
-  // replyTo 객체가 아니라 id를 본다. 부모가 리렌더될 때마다 새 객체가 와도
-  // 답글 대상이 그대로면 포커스를 다시 뺏지 않는다.
   const replyToId = replyTo?.id;
   useEffect(() => {
     if (replyToId) inputRef.current?.focus();
@@ -47,7 +47,9 @@ export function CommentInput({
     <View className="border-t border-gray-300 bg-white" style={{ paddingBottom }}>
       {replyTo && (
         <View className="flex-row items-center justify-between bg-green-50 px-4 py-2">
-          <Text className="text-caption-sm text-gray-500">{replyTo.author}에게 답글 작성 중</Text>
+          <Text className="text-caption-sm text-gray-500">
+            {t('board.comment.writingTo', { author: replyTo.author })}
+          </Text>
           <Pressable hitSlop={8} onPress={onCancelReply}>
             <CloseIcon width={18} height={18} className="text-gray-500" />
           </Pressable>
@@ -56,7 +58,7 @@ export function CommentInput({
 
       <View className="flex-row items-center gap-3 px-4 pb-1 pt-3">
         <Pressable className="flex-row items-center gap-1" onPress={onToggleAnonymous} hitSlop={8}>
-          <Text className={`text-body-md ${anonymousClass}`}>익명</Text>
+          <Text className={`text-body-md ${anonymousClass}`}>{t('board.anonymous')}</Text>
           <CheckIcon width={20} height={20} className={anonymousClass} />
         </Pressable>
 
@@ -64,14 +66,11 @@ export function CommentInput({
           ref={inputRef}
           value={value}
           onChangeText={onChangeText}
-          placeholder="댓글을 입력해주세요."
+          placeholder={t('board.comment.placeholder')}
           maxLength={LIMITS.comment}
           className="flex-1"
           style={{ flex: 1 }}
           rightIcon={
-            // 입력창 안 오른쪽에 붙인다. 입력창 높이가 48이라 버튼은 32로 줄이고,
-            // px-4로 잡힌 우측 여백을 -mr-2로 당겨 가장자리에서 8만 띄운다.
-            // 줄어든 만큼은 hitSlop으로 메워 터치 영역은 48을 유지한다.
             <IconButton
               size={32}
               className="-mr-2"

@@ -96,7 +96,7 @@ export default function CommunitySearchScreen() {
           }}
           onSubmitEditing={() => runSearch(value)}
           returnKeyType="search"
-          placeholder={t('friends.searchPlaceholder')}
+          placeholder={t('board.search.placeholder')}
           maxLength={LIMITS.searchKeyword}
           className="flex-1"
           onClear={() => {
@@ -150,7 +150,7 @@ export default function CommunitySearchScreen() {
           </View>
           {searches.length === 0 ? (
             <Text className="text-body-sm w-full text-center text-gray-500">
-              {t('board.search.noRecent')}
+              {t('board.search.empty')}
             </Text>
           ) : (
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', columnGap: 4, rowGap: 8 }}>

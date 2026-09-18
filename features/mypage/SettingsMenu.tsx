@@ -82,12 +82,12 @@ export function SettingsMenu() {
       setShowAskModal(false);
       setReportInputText('');
       setResultModal({
-        title: t('settings.inquirySuccessTitle'),
-        body: t('settings.inquirySuccessBody'),
+        title: t('settings.quickInquiry.successTitle'),
+        body: t('settings.quickInquiry.successBody'),
       });
     } catch (e) {
       Sentry.captureException(e);
-      setResultModal({ title: '오류', body: t('settings.inquiryErrorBody') });
+      setResultModal({ title: '오류', body: t('settings.quickInquiry.error') });
     } finally {
       setIsReportLoading(false);
     }
@@ -98,22 +98,22 @@ export function SettingsMenu() {
       <ScrollView className="flex-1 bg-surface md:w-full md:max-w-[600px] md:self-center">
         <View className="gap-3 px-4 py-3">
           <MenuItem
-            label={t('settings.profileEdit')}
+            label={t('settings.profile.label')}
             onPress={() => navigate('/mypage/profile-edit')}
             showArrow
           />
           <MenuItem
-            label={t('settings.accountManagement')}
+            label={t('settings.account.label')}
             onPress={() => navigate('/mypage/account')}
             showArrow
           />
           <MenuItem
-            label={t('settings.notificationSettings')}
+            label={t('settings.notifications.label')}
             onPress={() => navigate('/mypage/alert-setting')}
             showArrow
           />
           <MenuItem
-            label={t('settings.appTheme')}
+            label={t('settings.theme.label')}
             onPress={() => navigate('/mypage/app-theme')}
             showArrow
           />
@@ -122,7 +122,7 @@ export function SettingsMenu() {
         <View className="h-px bg-gray-300" />
 
         <View className="gap-3 px-4 py-3">
-          <MenuItem label={t('settings.writeReview')} onPress={openReviewPage} />
+          <MenuItem label={t('settings.review')} onPress={openReviewPage} />
           <MenuItem
             label={t('settings.faq')}
             onPress={() =>
@@ -156,7 +156,7 @@ export function SettingsMenu() {
             }
           />
           <MenuItem
-            label={t('settings.quickInquiry')}
+            label={t('settings.quickInquiry.label')}
             onPress={() => setShowAskModal(true)}
             showArrow
           />
@@ -164,7 +164,6 @@ export function SettingsMenu() {
 
         <View className="h-px bg-gray-300" />
 
-        {/* 시안: 개발자 이메일이 버전 정보보다 위이고, 둘은 별도 구획이다 */}
         <View className="gap-3 px-4 py-3">
           <MenuItem
             label={t('settings.developerEmail')}
@@ -184,16 +183,20 @@ export function SettingsMenu() {
         <View className="h-px bg-gray-300" />
 
         <View className="gap-3 px-4 py-3">
-          <MenuItem label={t('settings.logout')} muted onPress={() => setShowLogoutModal(true)} />
+          <MenuItem
+            label={t('settings.logout.label')}
+            muted
+            onPress={() => setShowLogoutModal(true)}
+          />
         </View>
         <View className="h-40" />
 
         <Modal
           visible={showLogoutModal}
-          title={t('settings.logoutConfirm')}
+          title={t('settings.logout.title')}
           variant="warning"
           cancelLabel={t('common.cancel')}
-          confirmLabel={t('settings.logout')}
+          confirmLabel={t('settings.logout.label')}
           onCancel={() => setShowLogoutModal(false)}
           onConfirm={handleLogout}
           onDismiss={() => setShowLogoutModal(false)}
@@ -206,11 +209,10 @@ export function SettingsMenu() {
           confirmLabel={t('common.confirm')}
           onConfirm={() => setResultModal(null)}
         />
-        {/* 빠른 문의 모달 */}
         <Modal
           visible={showAskModal}
-          title={t('settings.inquiryReport')}
-          confirmLabel={t('settings.submit')}
+          title={t('settings.quickInquiry.title')}
+          confirmLabel={t('settings.quickInquiry.confirm')}
           cancelLabel={t('common.cancel')}
           confirmDisabled={!reportInputText.trim()}
           confirmLoading={isReportLoading}
@@ -228,7 +230,7 @@ export function SettingsMenu() {
               <TextInput
                 value={reportInputText}
                 onChangeText={(v) => setReportInputText(v.slice(0, 500))}
-                placeholder={t('settings.inquiryPlaceholder')}
+                placeholder={t('settings.quickInquiry.placeholder')}
                 maxLength={500}
                 maxHeight={120}
                 className="min-h-[72px]"

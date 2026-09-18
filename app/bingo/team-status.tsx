@@ -28,7 +28,7 @@ import {
 import { calcDaysUntilStart, calcTeamDday } from '@/features/team/lib/team-result';
 import { calcMaxBingo } from '@/lib/calcMaxBingo';
 import { useResponsive } from '@/lib/use-responsive';
-import { TEAM_MODE_DESCRIPTION } from '@/types/team';
+import { TEAM_MODE_DESCRIPTION_KEYS } from '@/types/team';
 import type { BingoData } from '@/types/bingo';
 import { useTranslation } from 'react-i18next';
 
@@ -193,7 +193,7 @@ export default function TeamStatusScreen() {
           contentContainerStyle={{ paddingTop: 24, paddingBottom: insets.bottom + 32 }}
         >
           <Text className="mb-6 px-4 text-caption-md text-gray-700">
-            {TEAM_MODE_DESCRIPTION[detail.mode]}
+            {TEAM_MODE_DESCRIPTION_KEYS[detail.mode]}
           </Text>
 
           {/* BEFORE START */}
@@ -408,8 +408,8 @@ export default function TeamStatusScreen() {
         title={t('home.modal.leaveTeam.title')}
         body={isShared ? t('home.modal.leaveTeam.body_share') : t('home.modal.leaveTeam.body_solo')}
         variant="warning"
-        confirmLabel={t('home.modal.unsaved.confirm')}
-        cancelLabel={t('home.modal.unsaved.cancel')}
+        confirmLabel={t('common.unsaved.confirm')}
+        cancelLabel={t('common.unsaved.cancel')}
         onCancel={() => setShowLeaveModal(false)}
         onDismiss={() => setShowLeaveModal(false)}
         onConfirm={async () => {

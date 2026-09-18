@@ -46,17 +46,17 @@ export default function AccountScreen() {
 
   const PROVIDER_CONFIG: ProviderConfig = {
     google: {
-      label: 'Google',
+      label: t('auth.google'),
       bgColor: FIXED.fixedWhite,
       logo: require('@/assets/icons/google_logo.png'),
     },
     apple: {
-      label: 'Apple',
+      label: t('auth.apple'),
       bgColor: FIXED.fixedBlack,
       logo: require('@/assets/icons/apple_logo.png'),
     },
     kakao: {
-      label: t('my.kakaoLabel'),
+      label: t('auth.kakao'),
       bgColor: FIXED.kakao,
       logo: require('@/assets/icons/kakao_logo.png'),
     },
@@ -118,7 +118,7 @@ export default function AccountScreen() {
     updateAccountVisibility(next).catch((e: unknown) => {
       Sentry.captureException(e);
       setVisibility(previous);
-      setErrorMessage(t('my.visibilityChangeFail'));
+      setErrorMessage(`${t('settings.account.visibilityChangeFail')} ${t('common.error.retry')}`);
       setShowErrorModal(true);
     });
   };
@@ -153,17 +153,24 @@ export default function AccountScreen() {
 
   return (
     <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
-      <PageHeader title={t('settings.accountManagement')} />
+      <PageHeader title={t('settings.account.label')} />
 
       {/* Linked account info */}
       <View className="px-4 pt-6 pb-4">
-        <Text className="mb-4 text-caption-md text-gray-500">{t('my.linkedAccountsTitle')}</Text>
+        <Text className="mb-4 text-caption-md text-gray-500">
+          {t('settings.account.linkedInfo')}
+        </Text>
         {accountsLoading ? (
           <Loading />
         ) : accountsFailed ? (
-          <ErrorState message={t('my.linkedAccountsLoadFail')} onRetry={loadAccounts} />
+          <ErrorState
+            message={`${t('settings.account.linkedInfoFail')} ${t('common.error.retry')}`}
+            onRetry={loadAccounts}
+          />
         ) : accounts.length === 0 ? (
-          <Text className="text-body-md text-gray-500">{t('my.noLinkedAccounts')}</Text>
+          <Text className="text-body-md text-gray-500">
+            {t('settings.account.linkedInfoEmpty')}
+          </Text>
         ) : (
           accounts.map((account) => {
             const cfg = PROVIDER_CONFIG[account.provider];
@@ -195,10 +202,10 @@ export default function AccountScreen() {
 
       <View className="h-px bg-gray-300" />
 
-      {/* Account visibility — moved here from the profile edit screen.
-          There's no separate save button, so it saves as soon as you pick. */}
       <View className="px-4 py-6">
-        <Text className="mb-4 text-caption-md text-gray-500">{t('my.accountVisibilityTitle')}</Text>
+        <Text className="mb-4 text-caption-md text-gray-500">
+          {t('settings.account.visibility')}
+        </Text>
         {visibility && (
           <AccountVisibilitySelector value={visibility} onChange={handleVisibilityChange} />
         )}
@@ -212,19 +219,25 @@ export default function AccountScreen() {
         </View>
       ) : (
         <>
-          <RowItem label={t('my.resetBingos')} onPress={() => setShowResetModal(true)} />
-          <RowItem label={t('my.withdraw')} onPress={() => setShowSecessionModal(true)} />
+          <RowItem
+            label={t('settings.account.reset.label')}
+            onPress={() => setShowResetModal(true)}
+          />
+          <RowItem
+            label={t('settings.account.withdraw.label')}
+            onPress={() => setShowSecessionModal(true)}
+          />
         </>
       )}
 
       {/* Reset bingos confirmation modal */}
       <Modal
         visible={showResetModal}
-        title={t('my.resetConfirmTitle')}
-        body={t('my.resetConfirmBody')}
+        title={t('settings.account.reset.title')}
+        body={t('settings.account.reset.body')}
         variant="warning"
         cancelLabel={t('common.cancel')}
-        confirmLabel={t('my.resetConfirmButton')}
+        confirmLabel={t('settings.account.reset.confirm')}
         onCancel={() => setShowResetModal(false)}
         onConfirm={handleResetBingos}
         onDismiss={() => setShowResetModal(false)}
@@ -233,8 +246,8 @@ export default function AccountScreen() {
       {/* Reset bingos done modal */}
       <Modal
         visible={showResetDoneModal}
-        title={t('my.resetDoneTitle')}
-        body={t('my.resetDoneBody')}
+        title={t('settings.account.reset.doneTitle')}
+        body={t('settings.account.reset.doneBody')}
         variant="single"
         confirmLabel={t('common.confirm')}
         onConfirm={() => {
@@ -250,11 +263,11 @@ export default function AccountScreen() {
       {/* Withdraw account modal */}
       <Modal
         visible={showSecessionModal}
-        title={t('my.withdrawConfirmTitle')}
-        body={t('my.withdrawConfirmBody')}
+        title={t('settings.account.withdraw.title')}
+        body={t('settings.account.withdraw.body')}
         variant="warning"
         cancelLabel={t('common.cancel')}
-        confirmLabel={t('my.withdrawButton')}
+        confirmLabel={t('settings.account.withdraw.confirm')}
         onCancel={() => setShowSecessionModal(false)}
         onConfirm={handleDeleteAccount}
         onDismiss={() => setShowSecessionModal(false)}

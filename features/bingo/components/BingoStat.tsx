@@ -6,9 +6,7 @@ interface BingoStatProps {
   current: number;
   total: number;
   size?: 'sm' | 'md';
-  /** 목표를 넘겼을 때 값을 빨간색으로 표시한다. */
   overflowRed?: boolean;
-  /** `current/total` 대신 보여줄 문구 (예: 종료일의 `D-3`). */
   valueText?: string;
 }
 

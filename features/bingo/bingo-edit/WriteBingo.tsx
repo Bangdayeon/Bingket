@@ -5,20 +5,12 @@ import { Text } from '@/components/Text';
 import { SectionLabel } from './SectionLabel';
 import { fetchThemes } from '@/features/bingo/lib/theme';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
-// 내부 키는 DB·GRID_CONFIGS와 맞춰 두고, 화면에는 시안 표기(3x4)로 보여준다.
 const GRID_OPTIONS: { value: string; label: string }[] = [
   { value: '3x3', label: '3x3' },
   { value: '4x3', label: '3x4' },
   { value: '4x4', label: '4x4' },
-];
-
-const EDIT_COUNT_OPTIONS: { value: string; label: string }[] = [
-  { value: '0', label: '수정 불가' },
-  { value: '1', label: '1회' },
-  { value: '2', label: '2회' },
-  { value: '3', label: '3회' },
-  { value: '무제한', label: '무제한' },
 ];
 
 interface WriteBingoProps {
@@ -46,7 +38,31 @@ export function WriteBingo({
   onCellsChange,
   onDraftCellsChange,
 }: WriteBingoProps) {
+  const { t } = useTranslation();
   const [themes, setThemes] = useState<{ id: string; displayName: string }[]>([]);
+
+  const editCountOptions = [
+    {
+      value: '0',
+      label: t('bingo.modifyCount.none'),
+    },
+    {
+      value: '1',
+      label: t('bingo.modifyCount.count', { count: 1 }),
+    },
+    {
+      value: '2',
+      label: t('bingo.modifyCount.count', { count: 2 }),
+    },
+    {
+      value: '3',
+      label: t('bingo.modifyCount.count', { count: 3 }),
+    },
+    {
+      value: '무제한',
+      label: t('bingo.modifyCount.infinite'),
+    },
+  ];
 
   useEffect(() => {
     fetchThemes().then((map) => {
@@ -58,15 +74,10 @@ export function WriteBingo({
   }, []);
 
   return (
-    // 내부 블록도 바깥 섹션과 같은 32px로 벌린다. 블록마다 자기 패딩을 들고 있으면
-    // 반드시 제각각이 된다 — 실제로 pt-5 / pb-5 pt-2 로 섞여 있었다.
-    // gap을 숫자로 준다. tailwind의 gap-8은 rem 기반이라 metro의 inlineRem(기본 14)
-    // 때문에 32가 아니라 28로 인라인되고, 바깥 섹션(인라인 32)과 어긋난다.
     <View style={{ gap: 32 }}>
-      {/* 빙고 칸 수 */}
       <View>
         <View className="px-4">
-          <SectionLabel label="빙고 칸 수" hint="저장 후 변경 불가" />
+          <SectionLabel label={t('bingo.cellGrid.label')} hint={t('bingo.cellGrid.hint')} />
         </View>
         <ScrollView
           horizontal
@@ -83,21 +94,20 @@ export function WriteBingo({
           ))}
         </ScrollView>
         <Text className="px-4 pt-2 text-caption-sm text-gray-600">
-          대각선 3칸도 빙고로 인정돼요
+          {t('bingo.cellGrid.description')}
         </Text>
       </View>
 
-      {/* 각 항목 수정 가능 횟수 */}
       <View>
         <View className="px-4">
-          <SectionLabel label="각 항목 수정 가능 횟수" hint="저장 후 변경 불가" />
+          <SectionLabel label={t('bingo.modifyCount.label')} hint={t('bingo.modifyCount.hint')} />
         </View>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{ gap: 8, paddingHorizontal: 16 }}
         >
-          {EDIT_COUNT_OPTIONS.map((opt) => (
+          {editCountOptions.map((opt) => (
             <Chip
               key={opt.value}
               label={opt.label}
@@ -108,10 +118,9 @@ export function WriteBingo({
         </ScrollView>
       </View>
 
-      {/* 테마 선택 */}
       <View>
         <View className="px-4">
-          <SectionLabel label="테마 선택" />
+          <SectionLabel label={t('home.field.selectTheme')} />
         </View>
         <ScrollView
           horizontal
@@ -129,10 +138,9 @@ export function WriteBingo({
         </ScrollView>
       </View>
 
-      {/* 빙고 내용 작성 — 판은 화면 좌우 끝까지 */}
       <View className="gap-4">
         <View className="px-4">
-          <SectionLabel label="빙고 내용 작성" hint="각 칸을 선택해서 빙고 내용을 채워주세요." />
+          <SectionLabel label={t('bingo.cell.label')} hint={t('bingo.cell.hint')} />
         </View>
         <AddEachBingo
           selectedGrid={selectedGrid}

@@ -8,10 +8,8 @@ import { Platform } from 'react-native';
 import { navigateToNotification } from '@/features/notifications/lib/notification-route';
 import { supabase } from '@/lib/supabase';
 
-// 포그라운드 알림 표시 설정
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    // shouldShowAlert는 deprecated -- banner(상단 배너) + list(알림 센터)로 분리됐다
     shouldShowBanner: true,
     shouldShowList: true,
     shouldPlaySound: true,
@@ -26,11 +24,6 @@ export type PushRegistrationResult =
   | { status: 'denied' }
   | { status: 'error'; error: unknown };
 
-/**
- * Supabase 에러 객체의 details/hint에는 실패한 행의 값이 그대로 실려 온다.
- * push_tokens upsert가 실패하면 거기에 푸시 토큰과 user_id가 포함되므로,
- * 원인 파악에 필요한 message와 code만 남기고 나머지는 버린다.
- */
 const describeError = (error: unknown): string => {
   if (error instanceof Error) return error.message;
   if (error && typeof error === 'object') {
@@ -55,7 +48,6 @@ const reportPushFailure = (context: string, error: unknown): void => {
   });
 };
 
-/** app.json의 extra.eas.projectId를 단일 출처로 사용한다 (하드코딩 금지) */
 const getProjectId = (): string | null => {
   const extra = Constants.expoConfig?.extra as { eas?: { projectId?: string } } | undefined;
   return extra?.eas?.projectId ?? null;
@@ -70,8 +62,6 @@ export async function registerForPushNotifications(): Promise<PushRegistrationRe
       name: '기본 알림',
       importance: Notifications.AndroidImportance.MAX,
       vibrationPattern: [0, 250, 250, 250],
-      // 예전 팔레트(주황)가 남아 있었다. green-400은 라이트/다크에서 같은 값이라
-      // 안드로이드 알림 LED 색으로 그대로 쓸 수 있다.
       lightColor: LIGHT.green[400],
     });
   }

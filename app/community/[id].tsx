@@ -41,12 +41,12 @@ import { useOnlineRestore } from '@/lib/use-online';
 import { useTranslation } from 'react-i18next';
 
 const REPORT_REASON_KEYS = [
-  'board.report.reason.ad',
-  'board.report.reason.abuse',
-  'board.report.reason.sexual',
-  'board.report.reason.spam',
-  'board.report.reason.impersonation',
-  'board.report.reason.other',
+  'board.moderation.report.reason.ad',
+  'board.moderation.report.reason.abuse',
+  'board.moderation.report.reason.sexual',
+  'board.moderation.report.reason.spam',
+  'board.moderation.report.reason.impersonation',
+  'board.moderation.report.reason.other',
 ] as const;
 
 export default function CommunityDetailScreen() {
@@ -228,7 +228,7 @@ export default function CommunityDetailScreen() {
       setShowDeleteModal(false);
       setAlertModal({
         title: t('board.post.error.notFound'),
-        message: e instanceof Error ? e.message : t('board.post.error.delete'),
+        message: e instanceof Error ? e.message : t('board.post.delete.error'),
       });
     }
   };
@@ -251,7 +251,7 @@ export default function CommunityDetailScreen() {
     } catch (e) {
       setAlertModal({
         title: t('common.error.general'),
-        message: e instanceof Error ? e.message : t('board.comment.error.post'),
+        message: e instanceof Error ? e.message : t('board.comment.error.create'),
       });
     } finally {
       setCommentSubmitting(false);
@@ -297,8 +297,8 @@ export default function CommunityDetailScreen() {
       setShowBlockModal(false);
       setBlockTargetUserId(null);
       setAlertModal({
-        title: t('board.block.successTitle'),
-        message: t('board.block.successBody'),
+        title: t('board.moderation.block.success.title'),
+        message: t('board.moderation.block.success.body'),
       });
     } catch (e) {
       setShowBlockModal(false);
@@ -306,7 +306,9 @@ export default function CommunityDetailScreen() {
       setAlertModal({
         title: t('common.error.general'),
         message:
-          e instanceof Error ? e.message : `${t('board.block.error')} ${t('common.error.retry')}`,
+          e instanceof Error
+            ? e.message
+            : `${t('board.moderation.block.error')} ${t('common.error.retry')}`,
       });
     } finally {
       setIsBlocking(false);
@@ -344,7 +346,7 @@ export default function CommunityDetailScreen() {
       ]
     : [
         {
-          label: t('board.report.menu'),
+          label: t('board.moderation.report.menu'),
           onPress: () => {
             setShowPostMenu(false);
             setReportTarget({ type: 'post', id: post.id });
@@ -355,7 +357,7 @@ export default function CommunityDetailScreen() {
           ? []
           : [
               {
-                label: t('board.block.menu'),
+                label: t('board.moderation.block.menu'),
                 danger: true as const,
                 onPress: () => {
                   setShowPostMenu(false);
@@ -377,7 +379,7 @@ export default function CommunityDetailScreen() {
       ]
     : [
         {
-          label: t('board.report.menu'),
+          label: t('board.moderation.report.menu'),
           onPress: () => {
             if (commentMenuId) setReportTarget({ type: 'comment', id: commentMenuId });
             setCommentMenuId(null);
@@ -385,7 +387,7 @@ export default function CommunityDetailScreen() {
           },
         },
         {
-          label: t('board.block.menu'),
+          label: t('board.moderation.block.menu'),
           danger: true as const,
           onPress: () => {
             const uid = commentMenuTargetUserId;
@@ -458,10 +460,12 @@ export default function CommunityDetailScreen() {
       <Modal
         visible={showReportModal}
         confirmLoading={isReporting}
-        title={t('board.report.menu')}
+        title={t('board.moderation.report.menu')}
         body={
           <View className="gap-3">
-            <Text className="text-body-sm text-gray-700">{t('board.report.explanation')}</Text>
+            <Text className="text-body-sm text-gray-700">
+              {t('board.moderation.report.explanation')}
+            </Text>
             {/* Options don't inherit the outer gap-3. Each row uses py-1.5 for 12px
                 spacing while keeping a 32px touch target. */}
             <View>
@@ -488,7 +492,7 @@ export default function CommunityDetailScreen() {
           </View>
         }
         variant="warning" // Uses both a danger confirm button and a cancel button
-        confirmLabel={t('board.report.confirm')}
+        confirmLabel={t('board.moderation.report.confirm')}
         cancelLabel={t('common.cancel')}
         onConfirm={async () => {
           if (!selectedReason || !reportTarget) return;
@@ -499,8 +503,8 @@ export default function CommunityDetailScreen() {
             setSelectedReason(null);
             setReportTarget(null);
             setAlertModal({
-              title: t('board.report.successTitle'),
-              message: t('board.report.successBody'),
+              title: t('board.moderation.report.success.title'),
+              message: t('board.moderation.report.success.body'),
             });
           } catch (e) {
             setAlertModal({
@@ -508,7 +512,7 @@ export default function CommunityDetailScreen() {
               message:
                 e instanceof Error
                   ? e.message
-                  : `${t('board.report.error')} ${t('common.error.retry')}`,
+                  : `${t('board.moderation.report.error')} ${t('common.error.retry')}`,
             });
           } finally {
             setIsReporting(false);
@@ -563,15 +567,15 @@ export default function CommunityDetailScreen() {
       {/* ── Block user confirmation modal ── */}
       <Modal
         visible={showBlockModal}
-        title={t('board.block.menu')}
+        title={t('board.moderation.block.menu')}
         confirmLoading={isBlocking}
         body={
           <>
-            <Text className="text-body-sm text-gray-500">{t('board.block.body')}</Text>
+            <Text className="text-body-sm text-gray-500">{t('board.moderation.block.body')}</Text>
           </>
         }
         variant="error" // Single danger button
-        confirmLabel={t('board.block.menu')}
+        confirmLabel={t('board.moderation.block.menu')}
         onConfirm={confirmBlockUser}
         onDismiss={() => !isBlocking && setShowBlockModal(false)}
       />
