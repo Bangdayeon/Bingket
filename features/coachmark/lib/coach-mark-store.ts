@@ -7,22 +7,13 @@ export type CoachMarkPhase = 'idle' | 'running' | 'done';
 export interface CoachMarkState {
   phase: CoachMarkPhase;
   stepIndex: number;
-  /** 지금 재야 하는 대상. 이거 하나만 둔다 — 이유는 아래 주석. */
   activeTargetId: CoachMarkTargetId | null;
-  /** activeTargetId를 잰 결과. 아직 못 쟀으면 null. */
   rect: Rect | null;
-  /** 올라갈 때마다 활성 대상이 자기를 다시 잰다. */
   remeasureNonce: number;
 }
 
 /**
  * 코치마크 진행 상태. features/team/lib/friend-selection.ts와 같은 모양의 외부 스토어다.
- *
- * 측정값을 id별 Map으로 들고 있지 않고 활성 대상 하나만 두는 게 핵심이다.
- * 탭바는 /bingo/add 위에서도 (tabs) 아래에 그대로 마운트돼 있어서, Map을 쓰면
- * 5단계 중에도 탭 좌표가 '등록된 유효한 값'처럼 남는다. 그 낡은 값이 어떤 단계의
- * 것인지 매번 따져야 하고, 측정이 일어날 때마다 오버레이 전체가 다시 그려진다.
- * 활성 대상만 재게 하면 그 문제군이 통째로 사라진다.
  */
 let state: CoachMarkState = {
   phase: 'idle',

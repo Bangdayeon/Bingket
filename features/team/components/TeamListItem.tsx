@@ -3,7 +3,7 @@ import { router } from 'expo-router';
 import { Text } from '@/components/Text';
 import { TeamAvatars } from '@/features/team/components/TeamAvatars';
 import { calcDaysUntilStart, calcTeamDday } from '@/features/team/lib/team-result';
-import { TEAM_MODE_LABEL } from '@/types/team';
+import { TEAM_MODE_LABEL_KEYS } from '@/types/team';
 import type { TeamListEntry } from '@/features/team/lib/team';
 
 interface TeamListItemProps {
@@ -44,7 +44,7 @@ export function TeamListItem({ team }: TeamListItemProps) {
       </View>
 
       <View className="flex-row gap-2 items-center">
-        <Text className="text-caption-sm text-gray-700">{TEAM_MODE_LABEL[team.mode]}</Text>
+        <Text className="text-caption-sm text-gray-700">{TEAM_MODE_LABEL_KEYS[team.mode]}</Text>
         <Text className="text-caption-sm text-gray-400">·</Text>
         <Text className="text-caption-sm text-gray-700">{period}</Text>
         <Text className="text-caption-sm text-gray-400">·</Text>

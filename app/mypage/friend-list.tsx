@@ -53,7 +53,6 @@ export default function FriendListScreen() {
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
 
-  // 두 목록은 항상 함께 보인다. 제목 옆 `>` 로 각각 접었다 편다.
   const [friendsExpanded, setFriendsExpanded] = useState(true);
   const [othersExpanded, setOthersExpanded] = useState(true);
 
@@ -78,7 +77,9 @@ export default function FriendListScreen() {
       setFriends(friendsData);
       setPendingRequests(incomingData);
     } catch (e) {
-      setErrorMessage(e instanceof Error ? e.message : t('friends.loadFailed'));
+      setErrorMessage(
+        e instanceof Error ? e.message : `${t('friends.error.load')} ${t('common.error.retry')}`,
+      );
     } finally {
       setListLoading(false);
     }
@@ -106,7 +107,11 @@ export default function FriendListScreen() {
       try {
         setSearchResults(await searchUsers(trimmed));
       } catch (e) {
-        setSearchError(e instanceof Error ? e.message : t('friends.searchFailed'));
+        setSearchError(
+          e instanceof Error
+            ? e.message
+            : `${t('friends.error.search')} ${t('common.error.retry')}`,
+        );
       } finally {
         setSearchLoading(false);
       }
@@ -145,7 +150,9 @@ export default function FriendListScreen() {
         prev ? prev.map((r) => (r.id === item.id ? { ...r, request_status: 'pending' } : r)) : prev,
       );
     } catch (e) {
-      setErrorMessage(e instanceof Error ? e.message : t('friends.requestFailed'));
+      setErrorMessage(
+        e instanceof Error ? e.message : `${t('friends.error.request')} ${t('common.error.retry')}`,
+      );
     } finally {
       setSending(null);
     }
@@ -162,7 +169,9 @@ export default function FriendListScreen() {
         await loadLists();
       }
     } catch (e) {
-      setErrorMessage(e instanceof Error ? e.message : t('friends.processFailed'));
+      setErrorMessage(
+        e instanceof Error ? e.message : `${t('common.error.general')} ${t('common.error.retry')}`,
+      );
     }
   };
 
@@ -187,7 +196,7 @@ export default function FriendListScreen() {
 
       setFriends((prev) => prev.filter((f) => f.friendId !== deletingFriend.friendId));
     } catch {
-      setErrorMessage(t('friends.deleteFailed'));
+      setErrorMessage(`${t('friends.error.delete')} ${t('common.error.retry')}`);
     } finally {
       setDeletingFriend(null);
     }

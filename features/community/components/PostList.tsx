@@ -7,6 +7,7 @@ import Loading from '@/components/Loading';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
 import { supabase } from '@/lib/supabase';
+import { useTranslation } from 'react-i18next';
 
 interface PostListProps {
   posts: CommunityPost[];
@@ -15,7 +16,6 @@ interface PostListProps {
   onBlock?: (userId: string) => void;
   isLoading: boolean;
   isRefreshing: boolean;
-  /** 조회가 실패했는지. 빈 목록과 구분해서 그려야 한다. */
   hasError?: boolean;
   onRetry?: () => void;
 }
@@ -32,6 +32,7 @@ export function PostList({
   hasError = false,
   onRetry,
 }: PostListProps) {
+  const { t } = useTranslation();
   const router = useRouter();
   const flatListRef = useRef<FlatList<CommunityPost>>(null);
   const isNavigatingRef = useRef(false);
@@ -65,7 +66,6 @@ export function PostList({
 
   return (
     <View className="flex-1">
-      {/* ✅ 커스텀 상단 로딩 */}
       {isRefreshing && (
         <View className="absolute top-2 left-0 right-0 items-center z-10">
           <Loading />
@@ -80,30 +80,25 @@ export function PostList({
         ItemSeparatorComponent={Separator}
         onEndReached={onLoadMore}
         onEndReachedThreshold={0.5}
-        // gesture 유지 + 기본 spinner 숨김
         refreshControl={
           <RefreshControl
             refreshing={isRefreshing}
             onRefresh={onRefresh}
-            tintColor="transparent" // iOS spinner 숨김
-            colors={['transparent']} // Android spinner 숨김
+            tintColor="transparent"
+            colors={['transparent']}
             progressBackgroundColor="transparent"
           />
         }
-        // 탭바는 flex 형제라 화면이 이미 그 위에서 끝난다. 피해야 할 건 FAB뿐이다
-        // (52 + bottom 16 = 68). 120은 탭바가 플로팅이던 시절 수치다.
         contentContainerStyle={
           posts.length === 0 ? { flexGrow: 1, paddingBottom: 68 } : { paddingBottom: 68 }
         }
-        // 목록이 비었을 때 백지로 두지 않는다. 에러와 빈 값은 다른 화면을 보여준다.
         ListEmptyComponent={
           isLoading || isRefreshing ? null : hasError ? (
             <ErrorState onRetry={onRetry} />
           ) : (
-            <EmptyState message={'아직 게시글이 없어요\n첫 글을 남겨보세요'} />
+            <EmptyState message={t('board.post.empty')} />
           )
         }
-        // 하단 로딩
         ListFooterComponent={
           isLoading ? (
             <View className="pt-5 items-center">
@@ -111,7 +106,6 @@ export function PostList({
             </View>
           ) : null
         }
-        // ── 성능 ─────────────────────────
         windowSize={5}
         initialNumToRender={10}
         maxToRenderPerBatch={8}

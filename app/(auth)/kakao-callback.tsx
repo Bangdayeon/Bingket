@@ -55,7 +55,7 @@ export default function KakaoCallback() {
     return (
       <View className="flex-1 bg-surface">
         <ErrorState
-          message={`${t('auth.login.loginFailed')} ${t('common.error.retry')}`}
+          message={`${t('auth.login.failed')} ${t('common.error.retry')}`}
           onRetry={() => router.replace('/(auth)/login')}
         />
       </View>

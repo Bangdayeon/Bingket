@@ -28,7 +28,7 @@ import {
   type TeamInviteItem,
 } from '@/features/team/lib/team';
 import { calcDaysUntilStart, calcTeamDday, isTeamStarted } from '@/features/team/lib/team-result';
-import { TEAM_MODE_LABEL } from '@/types/team';
+import { TEAM_MODE_LABEL_KEYS } from '@/types/team';
 import type { BingoData } from '@/types/bingo';
 import { useTranslation } from 'react-i18next';
 
@@ -206,7 +206,7 @@ export default function TeamInviteScreen() {
 
   return (
     <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
-      <PageHeader title={invite ? TEAM_MODE_LABEL[invite.mode] : t('home.invite')} />
+      <PageHeader title={invite ? TEAM_MODE_LABEL_KEYS[invite.mode] : t('friends.invite')} />
 
       {!invite ? (
         <View className="flex-1 items-center justify-center">

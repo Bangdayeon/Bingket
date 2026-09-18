@@ -3,6 +3,7 @@ import { SectionLabel } from './SectionLabel';
 import { TextInput } from '@/components/TextInput';
 import { useState } from 'react';
 import { LIMITS } from '@/constants/limits';
+import { useTranslation } from 'react-i18next';
 
 interface BingoTitleProps {
   value?: string;
@@ -10,11 +11,10 @@ interface BingoTitleProps {
 }
 
 export function BingoTitle({ value = '', onChange }: BingoTitleProps) {
+  const { t } = useTranslation();
   const [title, setTitle] = useState(value);
   const [prevValue, setPrevValue] = useState(value);
 
-  // prop이 바뀌면 렌더 중에 맞춘다. 효과로 하면 낡은 값으로 한 번 그린 뒤
-  // 다시 렌더돼서 입력창이 깜빡인다.
   if (value !== prevValue) {
     setPrevValue(value);
     setTitle(value);
@@ -27,11 +27,11 @@ export function BingoTitle({ value = '', onChange }: BingoTitleProps) {
 
   return (
     <View className="px-4">
-      <SectionLabel label="제목" />
+      <SectionLabel label={t('home.field.title.label')} />
       <TextInput
         value={title}
         onChangeText={handleChange}
-        placeholder="제목을 입력해주세요."
+        placeholder={t('common.limitPlaceholder', { count: LIMITS.bingoTitle })}
         maxLength={LIMITS.bingoTitle}
       />
     </View>

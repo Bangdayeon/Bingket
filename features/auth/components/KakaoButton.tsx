@@ -6,6 +6,7 @@ import { Text } from '@/components/Text';
 import { supabase } from '@/lib/supabase';
 import { router } from 'expo-router';
 import Loading from '@/components/Loading';
+import { useTranslation } from 'react-i18next';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -47,11 +48,11 @@ async function signInWithKakao(): Promise<void> {
 
 interface KakaoButtonProps {
   requireAgreement: (action: () => Promise<void>) => Promise<void>;
-  /** 로그인 실패를 화면이 알린다. 예전에는 눌러도 아무 일이 없는 것처럼 보였다. */
   onError: (message: string) => void;
 }
 
 export function KakaoButton({ requireAgreement, onError }: KakaoButtonProps) {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
 
   const handlePress = async () => {
@@ -66,7 +67,9 @@ export function KakaoButton({ requireAgreement, onError }: KakaoButtonProps) {
       });
     } catch (e) {
       Sentry.captureException(e);
-      onError(e instanceof Error ? e.message : '로그인에 실패했어요. 잠시 후 다시 시도해주세요.');
+      onError(
+        e instanceof Error ? e.message : `${t('auth.login.failed')} ${t('common.error.retry')}`,
+      );
     }
   };
 
@@ -86,9 +89,8 @@ export function KakaoButton({ requireAgreement, onError }: KakaoButtonProps) {
             className="absolute left-4"
             resizeMode="contain"
           />
-          {/* 카카오 가이드가 라벨 색을 강제한다 (on-social) */}
           <Text className="text-label-sm font-pretendard-semibold text-on-social md:text-label-md">
-            카카오로 시작하기
+            {t('auth.startWith.kakao')}
           </Text>
         </>
       )}

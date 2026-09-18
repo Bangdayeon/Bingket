@@ -191,7 +191,6 @@ export const updateBingo = async (
   }
 };
 
-// 빙고 완료 처리
 export const markBingoDone = async (boardId: string): Promise<void> => {
   const { error } = await supabase
     .from('bingo_boards')
@@ -200,7 +199,6 @@ export const markBingoDone = async (boardId: string): Promise<void> => {
   if (error) throw new Error(error.message);
 };
 
-// 빙고 삭제 (소프트 딜리트)
 export const deleteBingo = async (boardId: string): Promise<void> => {
   const { error } = await supabase
     .from('bingo_boards')

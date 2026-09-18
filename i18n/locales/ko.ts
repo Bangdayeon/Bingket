@@ -10,6 +10,7 @@ export default {
     bingo: {
       bingo: '빙고',
       achieve: '달성',
+      achieveDate: '달성일',
       endDate: '종료일',
       emptyBingo: '볼 수 없는 빙고예요.',
       memoPlaceholder: '메모를 입력해주세요.',
@@ -20,6 +21,16 @@ export default {
       password: '비밀번호',
     },
 
+    visibility: {
+      label: '빙고 공개 범위',
+      public: '전체 공개',
+      public_des: '빙고를 누구에게나 공개해요.',
+      friends: '친구 공개',
+      friends_des: '빙고를 친구들에게만 공개해요.',
+      private: '비공개',
+      private_des: '빙고를 나만 봐요.',
+    },
+
     // Actions
     confirm: '확인',
     cancel: '취소',
@@ -27,17 +38,25 @@ export default {
     next: '다음',
     previous: '이전',
     start: '시작하기',
+    select: '선택',
 
     retry: '다시 시도',
 
     // Navigation / UI
     more: '더보기',
-
+    save: '저장하기',
+    unsaved: {
+      title: '저장하지 않은 변경사항이 있어요',
+      body: '지금 나가면 변경 사항이 저장되지 않아요.',
+      cancel: '계속 수정',
+      confirm: '나가기',
+    },
     // States
     noSearchResult: '검색 결과가 없어요.',
     offline: '오프라인이에요 · 연결되면 자동으로 새로고침돼요',
 
     error: {
+      save: '저장하지 못햇어요.',
       general: '오류가 발생했어요.',
       retry: '잠시 후 다시 시도해주세요.',
       unknown: '알 수 없는 오류가 발생했어요.',
@@ -50,11 +69,13 @@ export default {
     stateDone: '완료',
 
     permission: {
-      cameraTitle: '카메라 권한 필요',
+      cameraTitle: '카메라 권한이 필요해요.',
       cameraBody: '설정에서 카메라 접근을 허용해주세요.',
-      albumTitle: '앨범 권한 필요',
+      albumTitle: '앨범 권한이 필요해요.',
       albumnBody: '설정에서 사진 접근을 허용해주세요.',
     },
+
+    limitPlaceholder: '{{count}}}자 이내로 입력해주세요.',
   },
 
   onboarding: {
@@ -66,40 +87,112 @@ export default {
   },
 
   auth: {
+    apple: 'Apple',
+    google: 'Google',
+    kakao: '카카오',
     email: '이메일',
-    password: '비밀번호',
-    emailPlaceholder: '이메일을 입력해주세요.',
-    passwordPlaceholder: '8자 이상 영문, 숫자, 특수문자를 포함해주세요.',
-    invalidEmail: '올바른 이메일 형식을 입력해주세요.',
-    continue: '계속하기',
 
-    login: {
-      emailStart: '이메일로 시작하기',
-      missingPassword: '비밀번호를 입력해주세요.',
-      loginFailed: '로그인에 실패했어요.',
-      needLogin: '로그인이 필요해요.',
+    startWith: {
+      apple: 'Apple로 시작하기',
+      google: 'Google로 시작하기',
+      email: '이메일로 시작하기',
+      kakao: '카카오로 시작하기',
     },
 
-    signup: {
+    field: {
+      email: '이메일',
+      password: '비밀번호',
       passwordConfirm: '비밀번호 확인',
-      passwordConfirmPlaceholder: '비밀번호 확인',
+    },
+
+    placeholder: {
+      email: '이메일을 입력해주세요.',
+      password: '8자 이상 영문, 숫자, 특수문자를 포함해주세요.',
+      passwordConfirm: '비밀번호 확인을 입력해주세요.',
+    },
+
+    validation: {
+      invalidEmail: '올바른 이메일 형식을 입력해주세요.',
       invalidPassword: '비밀번호는 8자 이상이어야 해요.',
-      invalidPasswordConfirm: '비밀번호가 일치하지 않아요.',
       missingPassword: '비밀번호를 입력해주세요.',
       missingPasswordConfirm: '비밀번호 확인을 입력해주세요.',
+      passwordMismatch: '비밀번호가 일치하지 않아요.',
       alreadyRegistered: '이미 가입된 이메일이에요.',
+    },
+
+    login: {
+      failed: '로그인에 실패했어요.',
+      required: '로그인이 필요해요.',
+    },
+
+    agreement: {
+      title: '서비스 이용 필수 동의',
+      all: '전체 동의',
+      term: '이용 약관 동의',
+      privacy: '개인정보 수집 및 이용 동의',
+      over14: '만 14세 이상입니다.',
+    },
+
+    continue: '계속하기',
+  },
+
+  bingo: {
+    achievedDate: '달성일',
+    stat: {
+      achievement: '달성',
+      bingo: '빙고',
+      endDate: '종료일',
+    },
+
+    cellGrid: {
+      label: '빙고 칸 수',
+      hint: '저장 후 변경 불가',
+      description: '대각선 3칸도 빙고로 인정돼요.',
+    },
+
+    modifyCount: {
+      label: '각 항목 수정 가능 횟수',
+      none: '수정 불가',
+      count: '{{count}}회',
+      infinite: '무제한',
+      hint: '저장 후 변경 불가',
+    },
+
+    cell: {
+      label: '빙고 내용 작성',
+      hint: '각 칸을 선택해서 빙고 내용을 채워주세요.',
+    },
+
+    error: {
+      bingoSave: '빙고판을 저장하지 못했어요.',
+    },
+  },
+
+  invite: {
+    error: {
+      missing: '초대를 찾을 수 없어요.',
+      expired: '수락하지 못했어요.',
+      deny: '거절하지 못했어요.',
     },
   },
 
   home: {
-    addBingo: '빙고 추가하기',
-    invite: '초대',
+    empty: '빙고가 하나도 없어요\n첫 빙고를 만들어 볼까요?',
+    // 빙고 추가 부분
+    addBingo: {
+      default: '빙고 추가하기',
+      friends: '친구와 할래요',
+      myself: '혼자 할래요',
+      clean: '빙고를 먼저 정리해주세요.',
+      clean_des: '빙고는 한 번에 {{count}}개까지 진행할 수 있어요. ',
+    },
+
+    // invite: '초대',
     memo: '메모',
     modifyBingo: '빙고 수정하기',
 
     btnLabel: {
       temporarySave: '임시저장',
-      save: '저장하기',
       add: '추가하기',
       modify: '수정하기',
 
@@ -110,6 +203,7 @@ export default {
 
     field: {
       title: {
+        word: '제목',
         label: '제목을 입력해주세요.',
       },
 
@@ -120,6 +214,8 @@ export default {
         sixMonths: '6개월',
         oneYear: '1년',
         custom: '직접 지정',
+        startDate: '시작일',
+        endDate: '종료일',
         selectStartDate: '시작일을 선택해주세요.',
         selectEndDate: '종료일을 선택해주세요.',
       },
@@ -156,8 +252,6 @@ export default {
     },
 
     // 문장
-    empty: '아직 버킷리스트가 없어요.',
-
     temporarySaved: '임시 저장되었어요.\n홈 화면에서 이어서 만들 수 있어요.',
     deleteConfirm: '빙고를 정말로 삭제할까요?',
     deleteBody: '삭제된 빙고는 되돌릴 수 없어요.',
@@ -181,12 +275,6 @@ export default {
         body: '목표 기간, 칸 개수, 수정 가능 횟수는\n저장 후에는 수정할 수 없어요.\n이대로 빙고를 만들까요?',
         cancel: '한 번 더 보기',
         confirm: '빙고 만들기',
-      },
-      unsaved: {
-        title: '저장하지 않은 변경사항이 있어요',
-        body: '지금 나가면 변경 사항이 저장되지 않아요.',
-        cancel: '계속 수정',
-        confirm: '나가기',
       },
       friend: {
         title: '기간과 칸 내용은 만든 뒤에 바꿀 수 없어요.\n친구 {{count}}명에게 초대를 보낼까요?',
@@ -232,177 +320,162 @@ export default {
   },
 
   board: {
-    badWord: '올바르지 않은 표현을 사용했어요',
+    author: '작성자',
+    anonymous: '익명',
+    submit: '등록',
+    badWord: '올바르지 않은 표현을 사용했어요.',
 
-    comment: {
-      label: '댓글',
-      firstComment: '첫 댓글을 남겨주세요.',
-      commentWarning: '부적절한 내용은 제재를 받을 수 있어요.',
-
-      delete: {
-        title: '댓글 삭제',
-        body: '댓글을 삭제할까요?',
-      },
-
-      error: {
-        post: '댓글 작성에 실패했어요.',
-        delete: '댓글 삭제에 실패했어요.',
-      },
-    },
-
-    // 작성/수정 화면
     post: {
-      postAuthor: '작성자',
-      submit: '등록',
-      anonymous: '익명',
-      writePostTitle: '게시글 작성하기',
-      contentPlaceholder: '내용을 입력해주세요.',
-      loadBingo: '빙고 불러오기',
-      takePhoto: '카메라로 촬영하기',
-      pickFromAlbum: '앨범에서 선택하기',
-      noBingos: '빙고가 없어요.',
-      addBingo: '빙고 만들기',
+      empty: '아직 게시글이 없어요\n첫 글을 남겨보세요',
+      create: {
+        title: '게시글 작성하기',
+        error: '게시글 작성에 실패했어요.',
+      },
 
       edit: {
         menu: '수정하기',
         title: '게시글 수정하기',
+        error: '게시글 수정에 실패했어요.',
       },
+
       delete: {
         menu: '삭제하기',
         title: '게시글을 삭제할까요?',
         body: '삭제된 게시글은 복구할 수 없어요.',
+        error: '게시글 삭제에 실패했어요.',
+      },
+
+      form: {
+        contentPlaceholder: '내용을 입력해주세요.',
+      },
+
+      attachment: {
+        loadBingo: '빙고 불러오기',
+        takePhoto: '카메라로 촬영하기',
+        pickFromAlbum: '앨범에서 선택하기',
+      },
+
+      bingo: {
+        empty: '빙고가 없어요.',
+        create: '빙고 만들기',
+        loadError: '빙고 목록을 불러오지 못했어요.',
       },
 
       error: {
         notFound: '게시글을 찾을 수 없어요.',
-        delete: '게시글 삭제에 실패했어요.',
-        edit: '게시글 수정에 실패했어요.',
-        create: '게시글 작성에 실패했어요.',
-        bigoLoad: '빙고 목록을 불러오지 못했어요',
+        like: '좋아요를 반영하지 못했어요. 잠시 후 다시 시도해주세요.',
       },
     },
 
-    report: {
-      menu: '신고하기',
-      explanation: '누적 신고 횟수가 3회 이상인 유저는 커뮤니티 이용 제한이 있을 수 있어요.',
-      reason: {
-        ad: '상업적 광고 및 판매',
-        abuse: '욕설/비하',
-        sexual: '음란물/성적인 내용',
-        spam: '도배',
-        impersonation: '사칭/사기',
-        other: '기타',
+    comment: {
+      first: '첫 댓글을 남겨주세요.',
+      placeholder: '댓글을 입력해주세요.',
+      warning: '부적절한 내용은 제재를 받을 수 있어요.',
+      writingTo: '{{author}}에게 댓글 작성 중',
+      more: '댓글 더보기',
+
+      delete: {
+        title: '댓글을 삭제할까요?',
+        deleted: '삭제된 댓글이에요.',
       },
 
-      confirm: '신고하기',
-      successTitle: '신고 완료',
-      successBody: '신고 내용은 24시간 이내에 조치돼요.',
-      error: '신고에 실패했어요.',
+      error: {
+        load: '댓글을 불러오지 못했어요.',
+        create: '댓글 작성에 실패했어요.',
+        delete: '댓글 삭제에 실패했어요.',
+      },
     },
 
-    block: {
-      menu: '차단하기',
-      body: '이 사용자를 차단하시겠어요?\n차단된 사용자의 게시글과 댓글이 보이지 않아요.',
-      successTitle: '해당 사용자를 차단했어요.',
-      successBody: '이제 이 사용자가 작성한 게시글과 댓글이 보이지 않아요.',
-      error: '차단에 실패했어요.',
+    moderation: {
+      report: {
+        menu: '신고하기',
+        explanation: '누적 신고 횟수가 3회 이상인 유저는 커뮤니티 이용 제한이 있을 수 있어요.',
+        confirm: '신고하기',
+
+        reason: {
+          ad: '상업적 광고 및 판매',
+          abuse: '욕설/비하',
+          sexual: '음란물/성적인 내용',
+          spam: '도배',
+          impersonation: '사칭/사기',
+          other: '기타',
+        },
+
+        success: {
+          title: '신고 완료',
+          body: '신고 내용은 24시간 이내에 조치돼요.',
+        },
+
+        error: '신고에 실패했어요.',
+      },
+
+      block: {
+        menu: '차단하기',
+        body: '이 사용자를 차단하시겠어요?\n차단된 사용자의 게시글과 댓글이 보이지 않아요.',
+        confirm: '차단하기',
+
+        success: {
+          title: '해당 사용자를 차단했어요.',
+          body: '이제 이 사용자가 작성한 게시글과 댓글이 보이지 않아요.',
+        },
+
+        error: '차단에 실패했어요.',
+      },
     },
 
     search: {
-      placeholder: '검색어',
-      error: '검색하지 못했어요',
+      placeholder: '제목 · 본문 · 댓글 검색',
       recent: '최근 검색어',
       deleteAll: '전체 삭제',
-      noRecent: '최근 검색어가 없어요.',
+      empty: '최근 검색어가 없어요.',
+      error: '검색하지 못했어요.',
     },
   },
 
   notifications: {
     setAllRead: '모두 읽음 처리',
-    noNew: '새로운 알림이 없어요',
+    empty: '새로운 알림이 없어요.',
     more: '알림 더보기',
+
+    title: {
+      default: '새 알림',
+      bingoReminder: '마감이 얼마 남지 않았어요',
+      bingoDday: '마감이 내일이에요',
+      teamInvite: '빙고 초대가 왔어요',
+      teamFinished: '빙고가 종료되었어요',
+      comment: '게시글에 새로운 댓글이 달렸어요',
+      reply: '게시글에 새로운 댓글이 달렸어요',
+      like: '게시글에 좋아요가 달렸어요',
+      friendRequest: '친구 요청이 왔어요',
+      teamJoined: '팀에 새로 합류했어요',
+      teamInviteDeclined: '함께하기를 거절했어요',
+      teamCellChecked: '팀원이 칸을 채웠어요',
+      badge: '새 뱃지를 획득했어요',
+      popular: '인기글이 되었어요',
+    },
+
+    time: {
+      justNow: '방금 전',
+      minutesAgo: '{{count}}분 전',
+      hoursAgo: '{{count}}시간 전',
+      daysAgo: '{{count}}일 전',
+    },
+
+    action: {
+      confirm: '수락하기',
+      confirm_short: '수락',
+      deny: '거절하기',
+      deny_short: '거절',
+      checkInvite: '초대 확인하기',
+      checkTeamStatus: '팀 현황 보기',
+    },
+
     error: '알림을 불러오지 못했어요.',
   },
 
   my: {
     feed: '피드',
     badge: '뱃지',
-
-    // 계정 관리 화면
-    kakaoLabel: '카카오톡',
-    linkedAccountsTitle: '연동 계정 정보',
-    linkedAccountsLoadFail: '연동 계정을 불러오지 못했어요',
-    noLinkedAccounts: '연동된 계정이 없어요',
-    accountVisibilityTitle: '계정 공개 범위',
-    resetBingos: '빙고 초기화',
-    withdraw: '회원 탈퇴',
-
-    // 빙고 초기화 확인/완료
-    resetConfirmTitle: '정말로 빙고를 초기화 하시겠어요?',
-    resetConfirmBody:
-      '• 작성한 모든 빙고가 삭제돼요.\n• 글과 댓글은 남아요.\n• 계정과 프로필은 유지돼요.',
-    resetConfirmButton: '초기화 하기',
-    resetDoneTitle: '초기화 완료',
-    resetDoneBody: '모든 빙고가 삭제되었어요.',
-
-    // 회원 탈퇴 확인
-    withdrawConfirmTitle: '정말로 탈퇴를 하시겠어요?',
-    withdrawConfirmBody:
-      '• 계정과 프로필 정보, 프로필 사진이 삭제돼요.\n• 계정 삭제 후 데이터 복구가 불가능해요.\n• 작성한 글과 댓글은 첨부한 사진과 함께 (알 수 없음)으로 남아요',
-    withdrawButton: '탈퇴하기',
-
-    visibilityChangeFail: '공개 범위를 바꾸지 못했어요. 잠시 후 다시 시도해주세요.',
-  },
-
-  settings: {
-    profileEdit: '프로필 편집',
-    accountManagement: '계정 관리',
-    notificationSettings: '알림 설정',
-    appTheme: '앱 테마',
-    writeReview: '앱 리뷰 남기기',
-    faq: '자주 묻는 질문',
-    terms: '이용 약관',
-    privacyPolicy: '개인정보 처리방침',
-    updateHistory: '업데이트 내역',
-    quickInquiry: '빠른 문의',
-    developerEmail: '개발자 이메일',
-    versionInfo: '버전 정보',
-    logout: '로그아웃',
-    logoutConfirm: '로그아웃 하시겠어요?',
-    inquiryReport: '문의/신고하기',
-    submit: '제출',
-    inquiryPlaceholder: '문의/신고하실 내용을 입력하세요.',
-    emailCopied: '이메일을 복사했어요.',
-    inquirySuccessTitle: '문의가 접수되었습니다',
-    inquirySuccessBody: '빠른 시간 내에 검토 후 조치하겠습니다.',
-    inquiryErrorBody: '문의 접수에 실패했어요. 다시 시도해주세요.',
-
-    notification: {
-      dedline: '기간 임박 알림',
-      teamBingo: '팀 빙고',
-      teamAction: '팀원 활동 알림',
-      comment: '댓글 알림',
-      like: '좋아요 알림',
-
-      blockTitle: '기기 알림이 꺼져 있어요.',
-      blockBody:
-        '아래 설정과 무관하게 알림이 오지 않아요. 기기 설정에서 앱 푸시 알림을 켜주세요. >',
-      saveFail: '알림 설정 저장에 실패했어요.',
-      loadError: '알림 설정을 불러오지 못했어요. 화면의 값이 실제와 다를 수 있어요.',
-    },
-
-    theme: {
-      appTitle: '앱 테마',
-      system: '시스템',
-      light: '라이트',
-      dark: '다크',
-
-      iconTitle: '아이콘 테마',
-      default: '기본',
-      neon: '네온',
-      sunset: '노을',
-      taning: '태닝',
-    },
 
     post: {
       title: '게시글',
@@ -411,36 +484,283 @@ export default {
     },
   },
 
+  profile: {
+    visible: {
+      friend: '친구만 볼 수 있어요.',
+      friend_des: '친구가 되면 빙고와 뱃지를 볼 수 있어요.',
+      locked: '비공개 계정이에요.',
+      locked_des: '이 계정은 빙고와 뱃지를 공개하지 않아요.',
+    },
+
+    beFriend: {
+      require: '친구 신청',
+      required: '친구 요청 보냄',
+    },
+
+    error: {
+      loadProfile: '프로필을 불러오지 못햇어요.',
+      friendRequire: '친구 요청에 실패했어요.',
+      notFound: '찾을 수 없는 사용자예요.',
+    },
+  },
+
+  settings: {
+    label: '설정',
+    profile: {
+      label: '프로필 편집',
+
+      image: {
+        label: '프로필 사진',
+        camera: '카메라',
+        album: '앨범에서 선택',
+        default: '기본 이미지 적용',
+      },
+
+      nickname: {
+        label: '닉네임',
+        placeholder: '{{count}}자 이내로 입력해주세요.',
+        mixture: '한글/영어/숫자 조합으로만 입력할 수 있어요.',
+        error: '닉네임을 입력해주세요.',
+      },
+
+      id: {
+        label: '아이디',
+        placeholder: '영어, 언더바, 하이픈, 숫자로만 {{count}}자 이내로 입력해주세요.',
+        mixture: '영어/숫자/_ - 조합으로만 입력할 수 있어요.',
+        error: '아이디를 입력해주세요.',
+      },
+      bio: {
+        label: '한 줄 다짐',
+        edit: '한 줄 다짐 편집',
+        placeholder: '{{count}}자 이내로 입력해주세요.',
+      },
+    },
+
+    account: {
+      label: '계정 관리',
+      linkedInfo: '연동 계정 정보',
+      linkedInfoFail: '연동 계정을 불러오지 못했어요',
+      linkedInfoEmpty: '연동된 계정이 없어요',
+
+      visibility: '계정 공개 범위',
+      public: '전체 공개',
+      public_des: '내가 작성한 빙고를 누구나 볼 수 있고, 계정도 검색돼요.',
+      friends: '친구 공개',
+      friends_des: '내가 작성한 빙고를 친구만 볼 수 있어요. 계정은 검색돼요.',
+      private: '비공개',
+      private_des: '내가 작성한 빙고를 나만 볼 수 있고, 계정도 검색되지 않아요.',
+      visibilityChangeFail: '공개 범위를 바꾸지 못했어요.',
+
+      reset: {
+        label: '빙고 초기화',
+        title: '정말로 빙고를 초기화 하시겠어요?',
+        body: '• 작성한 모든 빙고가 삭제돼요.\n• 글과 댓글은 남아요.\n• 계정과 프로필은 유지돼요.',
+        confirm: '초기화 하기',
+        doneTitle: '초기화 완료',
+        doneBody: '모든 빙고가 삭제되었어요.',
+      },
+
+      withdraw: {
+        label: '회원 탈퇴',
+        title: '정말로 탈퇴를 하시겠어요?',
+        body: '• 계정과 프로필 정보, 프로필 사진이 삭제돼요.\n• 계정 삭제 후 데이터 복구가 불가능해요.\n• 작성한 글과 댓글은 첨부한 사진과 함께 (알 수 없음)으로 남아요',
+        confirm: '탈퇴하기',
+      },
+    },
+
+    notifications: {
+      label: '알림 설정',
+
+      blockTitle: '기기 알림이 꺼져 있어요.',
+      blockBody:
+        '아래 설정과 무관하게 알림이 오지 않아요. 기기 설정에서 앱 푸시 알림을 켜주세요. >',
+
+      bingo: {
+        label: '빙고',
+        deadline: '기간 임박 알림',
+      },
+      team: {
+        label: '팀 빙고',
+        teamAction: '팀원 활동 알림',
+      },
+      board: {
+        label: '게시판',
+        comment: '댓글 알림',
+        like: '좋아요 알림',
+      },
+
+      error: {
+        save: '알림 설정 저장에 실패했어요.',
+        load: '알림 설정을 불러오지 못했어요. 화면의 값이 실제와 다를 수 있어요.',
+      },
+    },
+    theme: {
+      label: '앱 테마',
+      system: '시스템',
+      light: '라이트',
+      dark: '다크',
+
+      icon: {
+        label: '아이콘 테마',
+        default: '기본',
+        neon: '네온',
+        sunset: '노을',
+        tanning: '태닝',
+      },
+    },
+
+    review: '앱 리뷰 남기기',
+    faq: '자주 묻는 질문',
+    terms: '이용 약관',
+    privacyPolicy: '개인정보 처리방침',
+    updateHistory: '업데이트 내역',
+    quickInquiry: {
+      label: '빠른 문의',
+      title: '문의/신고하기',
+      confirm: '제출하기',
+      placeholder: '문의/신고하실 내용을 입력하세요.',
+      successTitle: '문의가 접수되었습니다',
+      successBody: '빠른 시간 내에 검토 후 조치하겠습니다.',
+      error: '문의 접수에 실패했어요. 다시 시도해주세요.',
+    },
+    developerEmail: '개발자 이메일',
+    emailCopied: '이메일을 복사했어요.',
+    versionInfo: '버전 정보',
+    logout: {
+      label: '로그아웃',
+      title: '로그아웃 하시겠어요?',
+    },
+  },
+
   friends: {
-    noFriend: '아직 친구가 없어요. 친구를 먼저 추가해 주세요.',
-    loadFailed: '친구 목록을 불러오지 못했어요.',
-    delete: '친구 삭제',
-    deleteConfirm: '{{displayName}}님을 친구 목록에서 삭제할까요?',
-    searchPlaceholder: '닉네임이나 아이디 검색',
-    select: '친구 선택',
-    complete: '완료',
-    selectFriend: '함께할 친구를 골라주세요. 고른 사람이 여기에 보여요.',
-    inviteMessage: '아직 앱을 사용하지 않는 친구가 있나요?\n친구를 초대해서 함께해요.',
-    invite: '초대하기',
-    friend: '친구',
+    label: '친구',
     allUsers: '전체 유저',
-    requestFailed: '친구 요청에 실패했어요.',
-    searchFailed: '검색에 실패했어요.',
-    deleteFailed: '친구 삭제에 실패했어요.',
-    processFailed: '처리에 실패했어요.',
-    inviteFailed: '초대 링크 공유에 실패했어요.',
-    inviteShareTitle: '빙킷에서 친구와 목표를 함께 이뤄봐요!',
-    inviteShareDescription: '빙고 형태로 목표를 세우고 커뮤니티에서 함께 달성해보세요.',
-    openApp: '앱에서 열기',
+    delete: '친구 삭제',
+
+    noFriend: '아직 친구가 없어요. 친구를 먼저 추가해 주세요.',
+    deleteConfirm: '{{displayName}}님을 친구 목록에서 삭제할까요?',
+    searchPlaceholder: '닉네임이나 아이디를 검색해주세요.',
+    inviteMessage: '아직 앱을 사용하지 않는 친구가 있나요?\n친구를 초대해서 함께해요.',
+
+    team: {
+      select: '친구 선택',
+      complete: '완료',
+      selectFriend: '함께할 친구를 골라주세요. 고른 사람이 여기에 보여요.',
+    },
+
+    invite: {
+      label: '초대하기',
+      title: '빙킷에서 친구와 목표를 함께 이뤄봐요!',
+      description: '빙고 형태로 목표를 세우고 커뮤니티에서 함께 달성해보세요.',
+      openApp: '앱에서 열기',
+    },
+
+    error: {
+      load: '친구 목록을 불러오지 못했어요.',
+      invite: '초대 링크 공유에 실패했어요.',
+      request: '친구 요청에 실패했어요.',
+      search: '검색에 실패했어요.',
+      delete: '친구 삭제에 실패했어요.',
+    },
   },
 
   team: {
-    deny: '거절',
-    confirm: '수락',
+    mode: {
+      shared: {
+        label: '함께하기',
+        description: '하나의 빙고판을 같이 채워요.',
+        guide:
+          '빙고판 하나를 작성해서 친구들과 함께 완성해요.\n칸 내용과 테마는 방장인 나만 수정할 수 있어요.',
+      },
 
-    // 문장
-    checkInvite: '초대 확인하기',
-    checkTeamStauts: '팀 현황 보기',
-    noInvite: '초대를 찾을 수 없어요.',
+      competition: {
+        label: '경쟁하기',
+        description: '각자 빙고를 작성하고 경쟁해요.',
+        guide: '각자 빙고판을 작성해서 경쟁해요.\n초대를 보내면 친구들도 각자 빙고를 작성해요.',
+      },
+
+      copied: {
+        label: '같은 목표로',
+        description: '같은 목표로 시작해 각자 자기 판을 채워요.',
+        guide: '같은 목표로 시작해 각자 자기 판을 채워요.',
+      },
+    },
+  },
+
+  update: {
+    title: '업데이트가 필요해요.',
+    description: '새 버전으로 업데이트해야\n계속 사용할 수 있어요',
+    button: '업데이트하러 가기',
+  },
+  badge: {
+    cell_1: {
+      name: '첫 발걸음',
+      message: '빙고 칸 10개를 달성했어요! 🎉',
+    },
+    cell_2: {
+      name: '꾸준한 도전',
+      message: '빙고 칸 30개를 달성했어요! 🎉',
+    },
+    cell_3: {
+      name: '목표 달성자',
+      message: '빙고 칸 50개를 달성했어요! 🎉',
+    },
+    cell_4: {
+      name: '빙고 마스터',
+      message: '빙고 칸 100개를 달성했어요! 🏆',
+    },
+
+    like_1: {
+      name: '첫 좋아요',
+      message: '첫 좋아요를 눌렀어요! 💙',
+    },
+    like_2: {
+      name: '좋아요둥이',
+      message: '좋아요 10개를 눌렀어요! 💙',
+    },
+    like_3: {
+      name: '좋아요 부스트',
+      message: '좋아요 50개를 눌렀어요! ❤️',
+    },
+    like_4: {
+      name: '좋아요 대마왕',
+      message: '좋아요 100개를 눌렀어요! ❤️',
+    },
+
+    comment_1: {
+      name: '첫 댓글',
+      message: '첫 댓글을 작성했어요! 💬',
+    },
+    comment_2: {
+      name: '이야기꾼',
+      message: '댓글 30개를 작성했어요! 💬',
+    },
+    comment_3: {
+      name: '소통왕',
+      message: '댓글 50개를 작성했어요! 👑',
+    },
+    comment_4: {
+      name: '댓글 마스터',
+      message: '댓글 100개를 작성했어요! 👑',
+    },
+
+    post_1: {
+      name: '첫 게시글',
+      message: '첫 게시글을 작성했어요! 📝',
+    },
+    post_2: {
+      name: '활발한 활동가',
+      message: '게시글 30개를 작성했어요! 📝',
+    },
+    post_3: {
+      name: '커뮤니티 스타',
+      message: '게시글 50개를 작성했어요! ⭐',
+    },
+    post_4: {
+      name: '전설의 작가',
+      message: '게시글 80개를 작성했어요! 🏆',
+    },
+
+    notification: '🏅 새 뱃지 획득! {{name}} - {{message}}',
   },
 };

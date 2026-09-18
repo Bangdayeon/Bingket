@@ -21,9 +21,9 @@ import { Text } from '@/components/Text';
 import Button from '@/components/Button';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ProfileAvatar } from '@/components/ProfileAvatar';
+import { useTranslation } from 'react-i18next';
+import { LIMITS } from '@/constants/limits';
 
-// 시안: 칸 메모는 300자까지
-const MEMO_MAX_LENGTH = 300;
 const PEEK = 13;
 const CARD_MARGIN = 4;
 const CARD_HEIGHT = 436;
@@ -62,9 +62,9 @@ function MemoFooter({ length, saveState }: { length: number; saveState?: MemoSav
       {saveState === 'saved' && <Text className="text-caption-md text-green-500">저장됨</Text>}
       {saveState === 'error' && <Text className="text-caption-md text-danger">저장 실패</Text>}
       <Text
-        className={`text-caption-md ${length >= MEMO_MAX_LENGTH ? 'text-gray-700' : 'text-gray-500'}`}
+        className={`text-caption-md ${length >= LIMITS.memo ? 'text-gray-700' : 'text-gray-500'}`}
       >
-        {length}/{MEMO_MAX_LENGTH}
+        {length}/{LIMITS.memo}
       </Text>
     </View>
   );
@@ -96,6 +96,7 @@ export function BingoCellModal({
   readOnly = false,
   team,
 }: BingoCellModalProps) {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const colors = useColors();
   const scheme = useResolvedScheme();
@@ -223,7 +224,6 @@ export function BingoCellModal({
                 width: CARD_WIDTH,
                 height: CARD_HEIGHT,
                 marginHorizontal: CARD_MARGIN,
-                // 시안 드롭섀도: 0/0 blur 12, 검정 25%
                 shadowColor: FIXED.fixedBlack,
                 shadowOpacity: 0.25,
                 shadowRadius: 12,
@@ -248,10 +248,8 @@ export function BingoCellModal({
                     className="mt-1"
                   >
                     {item.completed ? (
-                      // ic_done은 원 안에서 체크가 파인 모양이라 그대로 두면 채워진 녹색 원이 된다
                       <DoneIcon width={28} height={28} className="text-green-400" />
                     ) : (
-                      // 빈 테두리 원은 에셋이 없어 View로 만든다
                       <View
                         className="rounded-full border-gray-300"
                         style={{ width: 28, height: 28, borderWidth: 1.5 }}
@@ -367,7 +365,7 @@ export function BingoCellModal({
                   multiline
                   scrollEnabled
                   textAlignVertical="top"
-                  maxLength={MEMO_MAX_LENGTH}
+                  maxLength={LIMITS.memo}
                   className="h-[298px] rounded-2xl bg-gray-200 p-3 text-body-md text-gray-900 placeholder:text-gray-500"
                 />
                 <MemoFooter
@@ -397,9 +395,9 @@ export function BingoCellModal({
             style={{ paddingBottom: insets.bottom + 16 }}
           >
             <View className="flex-row justify-between items-center mb-2">
-              <Text className="text-title-sm">완료일 선택</Text>
+              <Text className="text-title-sm">{t('bingo.achievedDate')}</Text>
               <Pressable onPress={handleDateConfirm}>
-                <Text className="text-title-sm text-green-500">확인</Text>
+                <Text className="text-title-sm text-green-500">{t('common.confirm')}</Text>
               </Pressable>
             </View>
             <View style={{ height: 216 }}>

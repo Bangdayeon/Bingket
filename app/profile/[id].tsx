@@ -17,18 +17,15 @@ import { ErrorModal } from '@/features/friend/components/ErrorModal';
 import { fetchProfile, fetchUserFeed } from '@/features/profile/lib/profile';
 import type { FeedItem, ProfileSummary } from '@/features/profile/lib/profile';
 import { sendFriendRequest } from '@/features/friend/lib/friend';
+import { useTranslation } from 'react-i18next';
 
-/**
- * 이 사람의 피드·뱃지를 볼 수 있는지. 계정 축만 본다 — 빙고 축은 서버가 거른다.
- * 'private'은 친구에게도 잠긴다 (can_view_board / get_user_badges 와 같은 규칙).
- *
- * 게시글 수는 여기서 판단하지 않는다. get_user_profile 이 본인이 아니면 null 로
- * 내려주고 ProfileHeader 가 그때 카운터를 통째로 감춘다 — 익명 게시글 역산 차단.
- */
+// 이 사람의 피드·뱃지를 볼 수 있는지.
+
 const canSeeContent = (p: ProfileSummary): boolean =>
   p.isMe || p.accountVisibility === 'public' || (p.accountVisibility === 'friends' && p.isFriend);
 
 export default function ProfileScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -51,15 +48,15 @@ export default function ProfileScreen() {
         return;
       }
       setProfile(p);
-      // 잠긴 프로필은 피드를 요청해봐야 빈 배열이라 호출을 아낀다
+      // don't call feeds of locked profile
       setFeed(canSeeContent(p) ? await fetchUserFeed(id) : []);
     } catch (e) {
       Sentry.captureException(e);
-      setErrorMessage(e instanceof Error ? e.message : '프로필을 불러오지 못했어요.');
+      setErrorMessage(e instanceof Error ? e.message : t('profile.error.loadProfile'));
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, t]);
 
   useFocusEffect(
     useCallback(() => {
@@ -78,7 +75,7 @@ export default function ProfileScreen() {
       });
       setProfile({ ...profile, hasPendingRequest: true });
     } catch (e) {
-      setErrorMessage(e instanceof Error ? e.message : '친구 요청에 실패했어요.');
+      setErrorMessage(e instanceof Error ? e.message : t('profile.error.friendRequire'));
     } finally {
       setRequesting(false);
     }
@@ -92,7 +89,9 @@ export default function ProfileScreen() {
 
   const friendButton = (
     <Button
-      label={profile?.hasPendingRequest ? '친구 요청 보냄' : '친구 신청'}
+      label={
+        profile?.hasPendingRequest ? t('profile.beFriend.require') : t('profile.beFriend.require')
+      }
       onClick={handleFriendRequest}
       size="sm"
       disabled={profile?.hasPendingRequest || requesting}
@@ -121,14 +120,13 @@ export default function ProfileScreen() {
       ) : notFound ? (
         <View className="flex-1 items-center justify-center px-8">
           <Text className="text-body-md text-gray-400 text-center">
-            {'찾을 수 없는 사용자예요.'}
+            {t('profile.error.notFound')}
           </Text>
         </View>
       ) : (
         <>
           <ProfileHeader profile={profile} onFriendsPress={undefined} onPostsPress={undefined} />
 
-          {/* 잠금 안내가 버튼을 들고 있을 때는 같은 버튼을 위에 또 두지 않는다 */}
           {canAddFriend && !unlockableByFriend && <View className="px-4 mt-4">{friendButton}</View>}
 
           {isLocked ? (
@@ -138,13 +136,13 @@ export default function ProfileScreen() {
                 <LockIcon width={40} height={40} className="text-gray-400" />
 
                 <Text className="text-title-sm mt-1">
-                  {unlockableByFriend ? '친구만 볼 수 있어요' : '비공개 계정이에요'}
+                  {unlockableByFriend ? t('profile.visible.friend') : t('profile.visible.locked')}
                 </Text>
 
                 <Text className="text-body-sm text-gray-500 text-center">
                   {unlockableByFriend
-                    ? '친구가 되면 빙고와 뱃지를 볼 수 있어요.'
-                    : '이 계정은 빙고와 뱃지를 공개하지 않아요.'}
+                    ? t('profile.visible.friend_des')
+                    : t('profile.visible.locked_des')}
                 </Text>
 
                 {unlockableByFriend && canAddFriend && (

@@ -2,7 +2,6 @@ import * as Sentry from '@sentry/react-native';
 import { useColors } from '@/lib/use-colors';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { InteractionManager, RefreshControl, ScrollView, View } from 'react-native';
-import { CoachMarkTarget } from '@/features/coachmark/CoachMarkTarget';
 import { useCoachMarkScrollIntoView } from '@/features/coachmark/use-coach-mark-scroll';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { startTransition, useState, useCallback, useRef } from 'react';
@@ -35,7 +34,6 @@ import Loading from '@/components/Loading';
 import { ErrorState } from '@/components/ErrorState';
 import { fetchFriendCount } from '@/features/friend/lib/friend';
 import { useOnlineRestore } from '@/lib/use-online';
-import Button from '@/components/Button';
 import { Modal } from '@/components/Modal';
 import {
   deleteNotificationByTarget,
@@ -44,16 +42,13 @@ import {
 } from '@/features/notifications/lib/notifications';
 import { NotificationStrip } from '@/features/notifications/components/NotificationStrip';
 import { useUnreadNotifications } from '@/features/notifications/unread-context';
+import { useTranslation } from 'react-i18next';
+import { CreateBingoButtons } from './components/CreateBingoButtons';
 
 const DRAFT_ID = 'draft_0';
-
-/** '저장됨' 표시를 띄워 두는 시간 */
-const MEMO_SAVED_BADGE_MS = 2000;
-
-/** 홈 상단 스트립에 띄우는 알림 타입 */
+const MEMO_SAVED_BADGE_MS = 2000; // saved toast
 const STRIP_TYPES = new Set(['team_invite', 'team_invite_declined']);
 
-/** 로컬에 임시 저장된 제작 중 빙고를 카드 하나로 변환한다. 없으면 null */
 async function loadDraftBingo(): Promise<BingoData | null> {
   try {
     const raw = await AsyncStorage.getItem('@bingket/draft-bingo');
@@ -91,58 +86,14 @@ async function loadDraftBingo(): Promise<BingoData | null> {
   }
 }
 
-/** 빈 화면과 추가 카드 양쪽에서 쓰는 만들기 버튼 한 쌍 */
-/**
- * 친구가 없으면 '친구와 할래요'를 아예 안 띄운다 — 눌러도 고를 사람이 없다.
- * 그때는 선택지가 하나뿐이므로 '혼자 할래요'라는 대비 문구도 의미가 없어
- * '빙고 추가하기'로 바꾼다.
- */
-function CreateBingoButtons({
-  onCreate,
-  hasFriends,
-}: {
-  onCreate: (pathname: string) => void;
-  hasFriends: boolean;
-}) {
-  return (
-    <View className="w-full max-w-[282px] gap-4 self-center">
-      {/*
-        첫 실행 안내가 가리키는 버튼. 빈 화면과 목록 아래 두 곳에서 쓰이지만 두 분기가
-        배타적이라 같은 id가 동시에 두 번 뜨지 않는다.
-        「친구와 할래요」까지 함께 감싸지 않는 이유: 안내 4단계는 구멍으로 터치를
-        통과시키는데, 그 버튼을 누르면 /bingo/team-mode로 빠져 투어가 멎는다.
-        이 버튼은 라벨이 바뀌어도 목적지가 늘 /bingo/add다.
-      */}
-      <CoachMarkTarget id="home-create-bingo" className="w-full">
-        <Button
-          label={hasFriends ? '혼자 할래요' : '빙고 추가하기'}
-          size="md"
-          onClick={() => onCreate('/bingo/add')}
-          className="w-full"
-        />
-      </CoachMarkTarget>
-      {hasFriends && (
-        <Button
-          label="친구와 할래요"
-          variant="secondary"
-          size="md"
-          onClick={() => onCreate('/bingo/team-mode')}
-          className="w-full"
-        />
-      )}
-    </View>
-  );
-}
-
 export function BingoAll() {
+  const { t } = useTranslation();
   const colors = useColors();
   const router = useRouter();
   const [bingos, setBingos] = useState<BingoData[]>([]);
   const scrollRef = useRef<ScrollView>(null);
-  // 빙고가 이미 있으면 추가 버튼이 목록 맨 아래라, 안내 4단계에서 끌어와야 한다.
   const coachScroll = useCoachMarkScrollIntoView(scrollRef, { 'home-create-bingo': 'end' });
   const [cellDetails, setCellDetails] = useState<Record<string, BingoCellDetail[]>>({});
-  /** 빙고판 id → 그 판이 속한 팀 (없으면 개인 빙고) */
   const [teamsByBoard, setTeamsByBoard] = useState<
     Record<
       string,
@@ -160,7 +111,6 @@ export function BingoAll() {
     null,
   );
   const memoDebounceRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
-  /** 아직 서버에 못 보낸 메모. 닫을 때 밀어넣고, 실패하면 여기 남는다 */
   const pendingMemoRef = useRef<Record<string, string>>({});
   const [memoSaveState, setMemoSaveState] = useState<Record<string, MemoSaveState | undefined>>({});
   const isNavigatingRef = useRef(false);
@@ -169,8 +119,6 @@ export function BingoAll() {
   const { refresh: refreshUnread } = useUnreadNotifications();
 
   const loadData = useCallback(() => {
-    // .catch가 없으면 조회 실패 시 setLoading(false)에 영영 도달하지 못해
-    // 홈 화면이 스피너로 굳는다. 해제는 finally에서 한다.
     Promise.all([fetchMyBingos(), fetchJoinedSharedBoards(), loadDraftBingo(), fetchFriendCount()])
       .then(async ([fetched, sharedFetched, draft, friendCount]) => {
         setHasFriends(friendCount > 0);
@@ -180,15 +128,12 @@ export function BingoAll() {
           return bingo;
         };
         const serverBingos = fetched.map(collect);
-        // 방장이 아니라서 내 소유가 아닌 공유판. 칸만 채울 수 있다
         const guestBingos = sharedFetched.map(collect);
 
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         const isExpired = (b: BingoData) => !!b.targetDate && new Date(b.targetDate) < today;
 
-        // 종료일이 오늘 이전인 빙고 자동 완료 처리.
-        // 남의 공유판은 방장만 완료 처리할 수 있으므로 목록에서 빼기만 한다.
         const expiredIds = serverBingos.filter(isExpired).map((b) => b.id);
         if (expiredIds.length > 0) {
           await Promise.all(
@@ -196,11 +141,7 @@ export function BingoAll() {
           );
         }
 
-        // 만료된 빙고는 BingoAll에서 제외 (마이페이지 피드에서 완료로 표시된다)
         const progressBingos = serverBingos.filter((b) => !expiredIds.includes(b.id));
-        // 제작 중인 빙고는 로컬에만 있고 서버에 없다. 맨 앞에 붙여 이어서 만들 수 있게 한다
-        // slice는 화면 보호용이다. 남의 공유판은 이미 참여한 것이라 잘라내면 접근할 길이
-        // 없어지므로 개수와 무관하게 뒤에 덧붙인다.
         const sliced = [
           ...[...(draft ? [draft] : []), ...progressBingos].slice(0, MAX_BINGOS),
           ...guestBingos.filter((b) => !isExpired(b)),
@@ -209,7 +150,6 @@ export function BingoAll() {
         setCellDetails(details);
         setCache(CACHE_KEY_ALL, { bingos: sliced, cellDetails: details });
 
-        // 각 빙고가 팀에 속해 있는지 조회. 종료된 팀은 카드에 표시하지 않는다.
         const [myTeams, { data: auth }] = await Promise.all([
           fetchMyTeams(),
           supabase.auth.getUser(),
@@ -401,8 +341,8 @@ export function BingoAll() {
         // 칸 체크와 달리 메모는 되돌리지 않는다. 입력 중일 수 있어서다.
         Sentry.captureException(error);
         setNotice({
-          title: '저장하지 못했어요',
-          body: '네트워크 연결이 불안정해요. 연결을 확인한 뒤 다시 시도해 주세요.',
+          title: t('common.error.save'),
+          body: `${t('common.error.network')} ${t('common.error.retry')}`,
         });
       });
   };
@@ -435,8 +375,8 @@ export function BingoAll() {
     if (!item.target_id) return;
     if (atBingoCap) {
       setNotice({
-        title: '빙고를 먼저 정리해주세요',
-        body: `빙고는 한 번에 ${MAX_BINGOS}개까지 진행할 수 있어요. 진행 중인 빙고를 마치면 함께할 수 있어요.`,
+        title: t('home.addBingo.clean'),
+        body: t('home.addBingo.clean_des', { count: MAX_BINGOS }),
       });
       return;
     }
@@ -449,7 +389,7 @@ export function BingoAll() {
     setStripPendingId(item.id);
     try {
       const invite = await fetchTeamInvite(item.target_id);
-      if (!invite) throw new Error('초대를 찾을 수 없어요.');
+      if (!invite) throw new Error(t('invite.error.missing'));
       // teamMode는 알림 목록이 team_bingos를 따로 조회해 채운다. 그 조회가 비면
       // 경쟁하기 초대가 위 분기를 그냥 지나쳐 '참여할 빙고판이 필요합니다'로 죽는다.
       // 여기서 온 mode가 원본이므로 한 번 더 본다.
@@ -480,7 +420,7 @@ export function BingoAll() {
         await deleteNotificationByTarget(item.type, item.target_id).catch(Sentry.captureException);
         dismissStrip(item);
       }
-      setNotice({ title: '수락하지 못했어요', body: acceptErrorMessage(e) });
+      setNotice({ title: t('invite.error.expired'), body: acceptErrorMessage(e) });
     } finally {
       setStripPendingId(null);
     }
@@ -494,7 +434,7 @@ export function BingoAll() {
       dismissStrip(item);
     } catch (e) {
       Sentry.captureException(e);
-      setNotice({ title: '거절하지 못했어요', body: '잠시 후 다시 시도해 주세요.' });
+      setNotice({ title: t('invite.error.deny'), body: t('common.error.retry') });
     } finally {
       setStripPendingId(null);
     }
@@ -583,9 +523,7 @@ export function BingoAll() {
         {/* 빙고가 하나도 없을 때: 화면 가운데 안내 + 만들기 버튼 */}
         {bingos.length === 0 && (
           <View className="mt-40 items-center px-4">
-            <Text className="text-center text-body-md text-gray-900">
-              {'빙고가 하나도 없어요\n첫 빙고를 만들어 볼까요?'}
-            </Text>
+            <Text className="text-center text-body-md text-gray-900">{t('home.empty')}</Text>
             <View className="h-10" />
             <CreateBingoButtons onCreate={navigateOnce} hasFriends={hasFriends} />
           </View>
@@ -597,7 +535,7 @@ export function BingoAll() {
             <View className="px-4">
               <View className="items-center rounded-[20px] bg-white px-5 py-6">
                 <Text className="mb-5 text-body-md text-gray-800">
-                  빙고 추가하기 ({myBingoCount}/{MAX_BINGOS})
+                  {t('home.addBingo.default')} ({myBingoCount}/{MAX_BINGOS})
                 </Text>
                 <CreateBingoButtons onCreate={navigateOnce} hasFriends={hasFriends} />
               </View>
@@ -605,7 +543,7 @@ export function BingoAll() {
           ) : (
             <View className="items-center px-4">
               <Text className="text-body-md text-gray-700">
-                빙고는 한 번에 {MAX_BINGOS}개까지 진행할 수 있어요
+                {t('home.addBingo.clean_des', { count: MAX_BINGOS })}
               </Text>
             </View>
           ))}
@@ -637,7 +575,7 @@ export function BingoAll() {
           title={notice?.title ?? ''}
           body={notice?.body ?? ''}
           variant="single"
-          confirmLabel="확인"
+          confirmLabel={t('common.confirm')}
           onConfirm={() => setNotice(null)}
           onDismiss={() => setNotice(null)}
         />

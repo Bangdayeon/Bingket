@@ -1,11 +1,10 @@
 import { ScrollView, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
+
 import { Chip } from '@/components/Chip';
 import { DateInput } from '@/components/DateInput';
 import { Text } from '@/components/Text';
 import { SectionLabel } from './SectionLabel';
-
-// 시안은 '직접 지정'이 맨 앞이다.
-const DURATION_OPTIONS = ['직접 지정', '1개월', '3개월', '6개월', '1년'];
 
 interface BingoGoalProps {
   selectedDuration: string | null;
@@ -15,13 +14,14 @@ interface BingoGoalProps {
   isEndDateDisabled: boolean;
   onOpenStartPicker: () => void;
   onOpenEndPicker: () => void;
-  /** 팀 빙고는 기간을 참여자 전원이 공유한다는 안내를 덧붙인다. */
   hint?: string;
 }
 
 const formatDate = (date: Date | null) =>
   date
-    ? `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`
+    ? `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(
+        date.getDate(),
+      ).padStart(2, '0')}`
     : '';
 
 export function BingoGoal({
@@ -32,32 +32,41 @@ export function BingoGoal({
   isEndDateDisabled,
   onOpenStartPicker,
   onOpenEndPicker,
-  hint = '저장 후 변경 불가',
 }: BingoGoalProps) {
+  const { t } = useTranslation();
+
+  const durationOptions = [
+    t('home.field.duration.custom'),
+    t('home.field.duration.oneMonth'),
+    t('home.field.duration.threeMonths'),
+    t('home.field.duration.sixMonths'),
+    t('home.field.duration.oneYear'),
+  ];
+
   return (
     <View className="px-4">
-      <SectionLabel label="목표 기간" hint={hint} />
+      <SectionLabel label={t('home.field.duration.label')} />
 
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ gap: 8, paddingBottom: 20 }}
       >
-        {DURATION_OPTIONS.map((opt) => (
+        {durationOptions.map((option) => (
           <Chip
-            key={opt}
-            label={opt}
-            selected={selectedDuration === opt}
-            onPress={() => onDurationSelect(opt)}
+            key={option}
+            label={option}
+            selected={selectedDuration === option}
+            onPress={() => onDurationSelect(option)}
           />
         ))}
       </ScrollView>
 
-      {/* 시안은 date input 두 개를 간격 31로만 벌렸는데, 둘이 기간의 시작과 끝이라는 게
-          드러나지 않아 물결표를 넣었다. 간격은 좌우로 나눠 총 폭을 유지한다. */}
       <View className="flex-row items-center" style={{ gap: 12 }}>
         <DateInput value={formatDate(startDate) || 'yyyy.mm.dd'} onPress={onOpenStartPicker} />
+
         <Text className="text-body-md text-gray-600">~</Text>
+
         <DateInput
           value={formatDate(endDate) || 'yyyy.mm.dd'}
           onPress={onOpenEndPicker}

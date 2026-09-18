@@ -19,7 +19,12 @@ import { WriteBingo } from '@/features/bingo/bingo-edit/WriteBingo';
 import { DatePicker } from '@/features/bingo/bingo-edit/DatePicker';
 import { FriendPicker } from '@/features/team/components/FriendPicker';
 import { createTeam } from '@/features/team/lib/team';
-import { TEAM_MAX_MEMBERS, TEAM_MODE_LABEL, type TeamMode, TEAM_MODE_GUIDE } from '@/types/team';
+import {
+  TEAM_MAX_MEMBERS,
+  TEAM_MODE_LABEL_KEYS,
+  type TeamMode,
+  TEAM_MODE_GUIDE_KEYS,
+} from '@/types/team';
 import { useTranslation } from 'react-i18next';
 
 const MAX_INVITES = TEAM_MAX_MEMBERS - 1;
@@ -190,7 +195,7 @@ export default function TeamCreateScreen() {
       style={{ paddingTop: insets.top }}
     >
       <PageHeader
-        title={TEAM_MODE_LABEL[mode]}
+        title={TEAM_MODE_LABEL_KEYS[mode]}
         onBack={() => (isDirty ? setShowLeaveModal(true) : router.back())}
       />
 
@@ -202,7 +207,7 @@ export default function TeamCreateScreen() {
         automaticallyAdjustKeyboardInsets={false}
       >
         <Text className="px-4 pb-2 pt-8 text-caption-md text-gray-700">
-          {TEAM_MODE_GUIDE[mode]}
+          {TEAM_MODE_GUIDE_KEYS[mode]}
         </Text>
 
         <BingoTitle
@@ -332,11 +337,11 @@ export default function TeamCreateScreen() {
 
       <Modal
         visible={showLeaveModal}
-        title={t('home.modal.unsaved.title')}
-        body={t('home.modal.unsaved.body')}
+        title={t('common.unsaved.title')}
+        body={t('common.unsaved.body')}
         variant="warning"
-        cancelLabel={t('home.modal.unsaved.cancel')}
-        confirmLabel={t('home.modal.unsaved.confirm')}
+        cancelLabel={t('common.unsaved.cancel')}
+        confirmLabel={t('common.unsaved.confirm')}
         onCancel={() => setShowLeaveModal(false)}
         onConfirm={async () => {
           await draft.clear();

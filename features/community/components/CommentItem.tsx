@@ -8,6 +8,7 @@ import AnonymousProfile from '@/components/AnonymousProfile';
 import { ProfileAvatar } from '@/components/ProfileAvatar';
 import { ReplyItem } from './ReplyItem';
 import { Comment } from '@/types/community';
+import { useTranslation } from 'react-i18next';
 
 interface CommentItemProps {
   comment: Comment;
@@ -22,13 +23,14 @@ export function CommentItem({
   onMenuPress,
   onReplyPress,
 }: CommentItemProps) {
+  const { t } = useTranslation();
   const isPostAuthor = comment.userId === postAuthorId;
 
   if (comment.isDeleted) {
     return (
       <View>
         <Text className="text-body-sm pb-6 border-b px-4 border-gray-200 text-gray-400">
-          (삭제된 댓글이에요.)
+          {t('board.comment.delete.deleted')}
         </Text>
         {comment.replies?.map((r) => (
           <ReplyItem key={r.id} reply={r} postAuthorId={postAuthorId} onMenuPress={onMenuPress} />
@@ -56,7 +58,7 @@ export function CommentItem({
         </AuthorLink>
         {isPostAuthor && (
           <View className="ml-1.5 px-1.5 py-1 rounded-full bg-green-200">
-            <Text className="text-caption-sm text-green-800">작성자</Text>
+            <Text className="text-caption-sm text-green-800">{t('board.author')}</Text>
           </View>
         )}
         <View style={{ flex: 1 }} />

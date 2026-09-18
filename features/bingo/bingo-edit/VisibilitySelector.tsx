@@ -1,15 +1,35 @@
 import { ScrollView, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
+
 import { Text } from '@/components/Text';
 import { Chip } from '@/components/Chip';
 import { SectionLabel } from './SectionLabel';
 import type { BoardVisibility } from '@/features/profile/lib/profile';
 
-// 시안 순서: 전체 공개 → 친구 공개 → 비공개
-const OPTIONS: { value: BoardVisibility; label: string; description: string }[] = [
-  { value: 'public', label: '전체 공개', description: '빙고를 누구에게나 공개해요' },
-  { value: 'friends', label: '친구 공개', description: '빙고를 친구들에게만 공개해요' },
-  { value: 'private', label: '비공개', description: '빙고를 나만 봐요' },
-];
+const OPTIONS = [
+  {
+    value: 'public',
+    labelKey: 'common.visibility.public',
+    descriptionKey: 'common.visibility.public_des',
+  },
+  {
+    value: 'friends',
+    labelKey: 'common.visibility.friends',
+    descriptionKey: 'common.visibility.friends_des',
+  },
+  {
+    value: 'private',
+    labelKey: 'common.visibility.private',
+    descriptionKey: 'common.visibility.private_des',
+  },
+] as const satisfies readonly {
+  value: BoardVisibility;
+  labelKey: 'common.visibility.public' | 'common.visibility.friends' | 'common.visibility.private';
+  descriptionKey:
+    | 'common.visibility.public_des'
+    | 'common.visibility.friends_des'
+    | 'common.visibility.private_des';
+}[];
 
 interface Props {
   value: BoardVisibility;
@@ -17,29 +37,34 @@ interface Props {
 }
 
 export function VisibilitySelector({ value, onChange }: Props) {
-  const selected = OPTIONS.find((opt) => opt.value === value);
+  const { t } = useTranslation();
+
+  const selected = OPTIONS.find((option) => option.value === value);
 
   return (
     <View>
       <View className="px-4">
-        <SectionLabel label="빙고 공개 범위" />
+        <SectionLabel label={t('common.visibility.label')} />
       </View>
+
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ gap: 8, paddingHorizontal: 16 }}
       >
-        {OPTIONS.map((opt) => (
+        {OPTIONS.map((option) => (
           <Chip
-            key={opt.value}
-            label={opt.label}
-            selected={value === opt.value}
-            onPress={() => onChange(opt.value)}
+            key={option.value}
+            label={t(option.labelKey)}
+            selected={value === option.value}
+            onPress={() => onChange(option.value)}
           />
         ))}
       </ScrollView>
-      {/* 시안: 선택한 값에 따라 설명 한 줄이 바뀐다 */}
-      <Text className="px-4 pt-3 text-caption-md text-gray-900">{selected?.description}</Text>
+
+      <Text className="px-4 pt-3 text-caption-md text-gray-900">
+        {selected ? t(selected.descriptionKey) : ''}
+      </Text>
     </View>
   );
 }

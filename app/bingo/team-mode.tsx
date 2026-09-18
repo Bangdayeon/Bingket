@@ -7,8 +7,8 @@ import ArrowForwardIcon from '@/assets/icons/ic_arrow_forward.svg';
 import {
   SELECTABLE_TEAM_MODES,
   TEAM_MAX_MEMBERS,
-  TEAM_MODE_DESCRIPTION,
-  TEAM_MODE_LABEL,
+  TEAM_MODE_DESCRIPTION_KEYS,
+  TEAM_MODE_LABEL_KEYS,
   type TeamMode,
 } from '@/types/team';
 import { useTranslation } from 'react-i18next';
@@ -58,8 +58,8 @@ export default function TeamModeScreen() {
           {SELECTABLE_TEAM_MODES.map((mode) => (
             <ModeCard
               key={mode}
-              label={TEAM_MODE_LABEL[mode]}
-              description={TEAM_MODE_DESCRIPTION[mode]}
+              label={TEAM_MODE_LABEL_KEYS[mode]}
+              description={TEAM_MODE_DESCRIPTION_KEYS[mode]}
               onPress={() => goCreate(mode)}
             />
           ))}

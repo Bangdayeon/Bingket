@@ -4,9 +4,10 @@ import { useState } from 'react';
 import { Linking, Modal, Pressable, TouchableOpacity, View } from 'react-native';
 import { Text } from '@/components/Text';
 import Button from '@/components/Button';
+import { useTranslation } from 'react-i18next';
 
-const TERMS_URL = 'https://www.notion.so/32eadd99c0428005b2e0e2437d6cd91a'; // 이용 약관 Notion 링크
-const PRIVACY_URL = 'https://www.notion.so/32eadd99c04280558920e3c684d4bd9a'; // 개인정보처리방침 Notion 링크
+const TERMS_URL = 'https://www.notion.so/32eadd99c0428005b2e0e2437d6cd91a';
+const PRIVACY_URL = 'https://www.notion.so/32eadd99c04280558920e3c684d4bd9a';
 
 interface AgreementModalProps {
   visible: boolean;
@@ -15,6 +16,7 @@ interface AgreementModalProps {
 }
 
 export function AgreementModal({ visible, onAgree, onDismiss }: AgreementModalProps) {
+  const { t } = useTranslation();
   const [terms, setTerms] = useState(false);
   const [privacy, setPrivacy] = useState(false);
   const [age, setAge] = useState(false);
@@ -52,51 +54,44 @@ export function AgreementModal({ visible, onAgree, onDismiss }: AgreementModalPr
     <Modal visible={visible} transparent animationType="slide" onRequestClose={handleDismiss}>
       <Pressable className="flex-1 bg-scrim/40 justify-end" onPress={handleDismiss}>
         <Pressable className="bg-white   rounded-t-[24px] px-5 pt-6 pb-10">
-          {/* Title */}
-          <Text className="text-title-sm mb-6">서비스 이용 필수 동의</Text>
+          <Text className="text-title-sm mb-6">{t('auth.agreement.title')}</Text>
 
-          {/* 전체 동의 */}
           <TouchableOpacity
             className="flex-row items-center gap-3 mb-4"
             onPress={toggleAll}
             activeOpacity={0.7}
           >
             <CheckCircle checked={allChecked} />
-            <Text className="text-label-md flex-1">전체 동의</Text>
+            <Text className="text-label-md flex-1">{t('auth.agreement.all')}</Text>
           </TouchableOpacity>
 
-          {/* 구분선 */}
-          <View className="h-px bg-gray-100   mb-4" />
+          <View className="h-px bg-gray-100 mb-4" />
 
-          {/* 이용 약관 동의 */}
           <AgreementItem
-            label="이용 약관 동의"
+            label={t('auth.agreement.term')}
             checked={terms}
             onToggle={() => setTerms((v) => !v)}
             onLinkPress={() => void Linking.openURL(TERMS_URL)}
           />
 
-          {/* 개인정보 수집 및 이용 동의 */}
           <AgreementItem
-            label="개인정보 수집 및 이용 동의"
+            label={t('auth.agreement.privacy')}
             checked={privacy}
             onToggle={() => setPrivacy((v) => !v)}
             onLinkPress={() => void Linking.openURL(PRIVACY_URL)}
           />
 
-          {/* 만 14세 이상 */}
           <TouchableOpacity
             className="flex-row items-center gap-3 mb-6"
             onPress={() => setAge((v) => !v)}
             activeOpacity={0.7}
           >
             <CheckCircle checked={age} />
-            <Text className="text-label-md flex-1">만 14세 이상입니다</Text>
+            <Text className="text-label-md flex-1">{t('auth.agreement.over14')}</Text>
           </TouchableOpacity>
 
-          {/* 다음 버튼 */}
           <Button
-            label="다음"
+            label={t('common.next')}
             onClick={() => void handleAgree()}
             disabled={!allChecked}
             loading={loading}

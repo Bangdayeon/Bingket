@@ -7,6 +7,7 @@ import AnonymousProfile from '@/components/AnonymousProfile';
 import { ProfileAvatar } from '@/components/ProfileAvatar';
 import { CommentReply } from '@/types/community';
 import SubIcon from '@/assets/icons/ic_subdirectory.svg';
+import { useTranslation } from 'react-i18next';
 
 interface ReplyItemProps {
   reply: CommentReply;
@@ -15,7 +16,9 @@ interface ReplyItemProps {
 }
 
 export function ReplyItem({ reply, postAuthorId, onMenuPress }: ReplyItemProps) {
+  const { t } = useTranslation();
   const isPostAuthor = reply.userId === postAuthorId;
+
   return (
     <View className="flex-row mt-2 mb-3">
       <SubIcon className="text-gray-500" style={{ marginRight: 4 }} />
@@ -37,7 +40,7 @@ export function ReplyItem({ reply, postAuthorId, onMenuPress }: ReplyItemProps) 
           </AuthorLink>
           {isPostAuthor && (
             <View className="ml-1.5 px-1.5 py-1 rounded-full bg-green-200">
-              <Text className="text-caption-sm text-green-800">작성자</Text>
+              <Text className="text-caption-sm text-green-800">{t('board.author')}</Text>
             </View>
           )}
           <View style={{ flex: 1 }} />

@@ -248,7 +248,7 @@ export default function BingoModifyScreen() {
 
         <View className="px-4">
           <Button
-            label={t('home.btnLabel.save')}
+            label={t('common.save')}
             variant="primary"
             size="md"
             onClick={handleSave}
@@ -281,10 +281,10 @@ export default function BingoModifyScreen() {
 
       <Modal
         visible={showLeaveModal}
-        title={t('home.modal.unsaved.title')}
-        body={t('home.modal.unsaved.body')}
-        cancelLabel={t('home.modal.unsaved.cancel')}
-        confirmLabel={t('home.modal.unsaved.confirm')}
+        title={t('common.unsaved.title')}
+        body={t('common.unsaved.body')}
+        cancelLabel={t('common.unsaved.cancel')}
+        confirmLabel={t('common.unsaved.confirm')}
         onCancel={() => setShowLeaveModal(false)}
         onConfirm={() => {
           setShowLeaveModal(false);

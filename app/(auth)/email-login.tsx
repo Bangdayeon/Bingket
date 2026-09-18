@@ -17,7 +17,7 @@ const STRONG_PASSWORD_REGEX = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
 
 export default function EmailLoginScreen() {
   const { t } = useTranslation();
-  const STRONG_PASSWORD_MESSAGE = t('auth.passwordPlaceholder');
+  const STRONG_PASSWORD_MESSAGE = t('auth.placeholder.password');
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -38,21 +38,21 @@ export default function EmailLoginScreen() {
     const next = { email: '', password: '', passwordConfirm: '' };
 
     if (!email.trim()) {
-      next.email = t('auth.emailPlaceholder');
+      next.email = t('auth.placeholder.email');
     } else if (!EMAIL_REGEX.test(email.trim())) {
-      next.email = t('auth.invalidEmail');
+      next.email = t('auth.validation.invalidEmail');
     }
 
     if (!password) {
-      next.password = t('auth.passwordPlaceholder');
+      next.password = t('auth.placeholder.password');
     } else if (password.length < 6) {
-      next.password = t('auth.signup.invalidPassword');
+      next.password = t('auth.validation.invalidPassword');
     }
 
     if (!passwordConfirm) {
-      next.passwordConfirm = t('auth.signup.missingPasswordConfirm');
+      next.passwordConfirm = t('auth.validation.missingPasswordConfirm');
     } else if (password !== passwordConfirm) {
-      next.passwordConfirm = t('auth.signup.invalidPasswordConfirm');
+      next.passwordConfirm = t('auth.validation.passwordMismatch');
     }
 
     setErrors(next);
@@ -95,7 +95,7 @@ export default function EmailLoginScreen() {
         }
 
         if (signUpError.message.includes('already registered')) {
-          setErrors((prev) => ({ ...prev, password: t('auth.signup.alreadyRegistered') }));
+          setErrors((prev) => ({ ...prev, password: t('auth.validation.alreadyRegistered') }));
         } else if (
           signUpError.code === 'over_email_send_rate_limit' ||
           signUpError.status === 429
@@ -136,14 +136,14 @@ export default function EmailLoginScreen() {
         className="flex-1"
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <PageHeader title={t('auth.login.emailStart')} />
+        <PageHeader title={t('auth.startWith.email')} />
 
         <View className="flex-1 px-4">
           {/* FORM */}
           <View className="mt-7 gap-5">
             {/* EMAIL */}
             <View className="gap-2">
-              <Text className="text-body-sm text-gray-900">{t('auth.email')}</Text>
+              <Text className="text-body-sm text-gray-900">{t('auth.startWith.email')}</Text>
               <TextInput
                 placeholder="example@gmail.com"
                 keyboardType="email-address"
@@ -157,7 +157,7 @@ export default function EmailLoginScreen() {
                 onBlur={() => {
                   const trimmed = email.trim();
                   if (trimmed && !EMAIL_REGEX.test(trimmed)) {
-                    setErrors((prev) => ({ ...prev, email: t('auth.invalidEmail') }));
+                    setErrors((prev) => ({ ...prev, email: t('auth.validation.invalidEmail') }));
                   }
                 }}
                 className={errors.email ? 'border border-danger' : ''}
@@ -167,9 +167,9 @@ export default function EmailLoginScreen() {
 
             {/* PASSWORD */}
             <View className="gap-2">
-              <Text className="text-body-sm text-gray-900">{t('auth.password')}</Text>
+              <Text className="text-body-sm text-gray-900">{t('auth.field.password')}</Text>
               <TextInput
-                placeholder={t('auth.passwordPlaceholder')}
+                placeholder={t('auth.placeholder.password')}
                 secureTextEntry={!showPassword}
                 value={password}
                 rightIcon={
@@ -193,10 +193,10 @@ export default function EmailLoginScreen() {
             {/* PASSWORD CONFIRM */}
             <View className="gap-2">
               <Text className="text-body-sm text-gray-900">
-                {t('auth.signup.passwordConfirmPlaceholder')}
+                {t('auth.placeholder.passwordConfirm')}
               </Text>
               <TextInput
-                placeholder={t('auth.signup.passwordConfirmPlaceholder')}
+                placeholder={t('auth.placeholder.passwordConfirm')}
                 secureTextEntry={!showPasswordConfirm}
                 value={passwordConfirm}
                 rightIcon={
@@ -214,8 +214,7 @@ export default function EmailLoginScreen() {
                   if (passwordConfirmTouched) {
                     setErrors((prev) => ({
                       ...prev,
-                      passwordConfirm:
-                        v !== password ? t('auth.signup.invalidPasswordConfirm') : '',
+                      passwordConfirm: v !== password ? t('auth.validation.passwordMismatch') : '',
                     }));
                   }
                 }}
