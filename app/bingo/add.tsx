@@ -242,10 +242,6 @@ export default function BingoAddScreen() {
             setSelectedTheme(v);
           }}
           cells={cells}
-          onDraftCellsChange={(v) => {
-            markDirty();
-            setCells(v);
-          }}
           onCellsChange={(v) => {
             markDirty();
             setCells(v);

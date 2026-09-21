@@ -310,7 +310,6 @@ export default function TeamInviteScreen() {
                 selectedTheme={selectedTheme}
                 onThemeSelect={setSelectedTheme}
                 cells={cells}
-                onDraftCellsChange={setCells}
                 onCellsChange={(value) => {
                   setCells(value);
                 }}

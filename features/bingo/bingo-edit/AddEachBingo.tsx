@@ -22,7 +22,6 @@ interface AddEachBingoProps {
   title?: string;
   cells: string[];
   onCellsChange: (cells: string[]) => void;
-  onDraftCellsChange?: (cells: string[]) => void;
   disabledCells?: boolean[];
 }
 
@@ -32,7 +31,6 @@ export function AddEachBingo({
   title,
   cells,
   onCellsChange,
-  onDraftCellsChange,
   disabledCells,
 }: AddEachBingoProps) {
   const { t } = useTranslation();
@@ -109,12 +107,12 @@ export function AddEachBingo({
     updated[selectedIndex] = inputText;
 
     setLocalCells(updated);
+    setPrevCells(updated);
     onCellsChange(updated);
     setSelectedIndex(null);
   };
 
   const handleCancel = () => {
-    onDraftCellsChange?.(originalCells.current);
     setSelectedIndex(null);
   };
 
@@ -216,14 +214,7 @@ export function AddEachBingo({
         body={
           <TextInput
             value={inputText}
-            onChangeText={(value) => {
-              setInputText(value);
-              if (selectedIndex !== null && onDraftCellsChange) {
-                const updated = [...localCells];
-                updated[selectedIndex] = value;
-                onDraftCellsChange(updated);
-              }
-            }}
+            onChangeText={setInputText}
             placeholder={t('board.post.form.contentPlaceholder')}
             maxLength={LIMITS.bingoCell}
             maxHeight={120}

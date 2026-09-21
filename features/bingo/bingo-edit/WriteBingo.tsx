@@ -23,7 +23,6 @@ interface WriteBingoProps {
   onThemeSelect: (opt: string) => void;
   cells: string[];
   onCellsChange: (cells: string[]) => void;
-  onDraftCellsChange?: (cells: string[]) => void;
 }
 
 export function WriteBingo({
@@ -36,7 +35,6 @@ export function WriteBingo({
   onThemeSelect,
   cells,
   onCellsChange,
-  onDraftCellsChange,
 }: WriteBingoProps) {
   const { t } = useTranslation();
   const [themes, setThemes] = useState<{ id: string; displayName: string }[]>([]);
@@ -148,7 +146,6 @@ export function WriteBingo({
           title={title}
           cells={cells}
           onCellsChange={onCellsChange}
-          onDraftCellsChange={onDraftCellsChange}
         />
       </View>
     </View>
