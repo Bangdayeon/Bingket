@@ -5,14 +5,16 @@ import { Text } from '@/components/Text';
 import { Modal } from '@/components/Modal';
 import { deleteBingo } from '@/features/bingo/lib/bingo';
 import { updateBoardVisibility, type BoardVisibility, type FeedItem } from '../lib/profile';
+import { useTranslation } from 'react-i18next';
 
-const OPTIONS: { value: BoardVisibility; label: string }[] = [
-  { value: 'public', label: '전체공개' },
-  { value: 'friends', label: '친구공개' },
-  { value: 'private', label: '비공개' },
-];
+const OPTIONS = [
+  { value: 'public', label: 'common.visibility.public' },
+  { value: 'friends', label: 'common.visibility.friends' },
+  { value: 'private', label: 'common.visibility.private' },
+] as const satisfies readonly { value: BoardVisibility; label: string }[];
 
 export function CompletedBingoMenu({ item, onChanged }: { item: FeedItem; onChanged: () => void }) {
+  const { t } = useTranslation();
   const anchor = useRef<View>(null);
   const { height } = useWindowDimensions();
   const [top, setTop] = useState<number | null>(null);
@@ -28,7 +30,9 @@ export function CompletedBingoMenu({ item, onChanged }: { item: FeedItem; onChan
       await action();
       onChanged();
     } catch (e) {
-      setError(e instanceof Error ? e.message : '변경하지 못했어요. 다시 시도해주세요.');
+      setError(
+        e instanceof Error ? e.message : `${t('common.error.network')} ${t('common.error.retry')}`,
+      );
     } finally {
       setBusy(false);
     }
@@ -38,7 +42,7 @@ export function CompletedBingoMenu({ item, onChanged }: { item: FeedItem; onChan
       <Pressable
         ref={anchor}
         accessibilityRole="button"
-        accessibilityLabel={`${item.title} 더보기`}
+        accessibilityLabel={`${item.title} ${t('common.more')}`}
         disabled={busy}
         hitSlop={8}
         onPress={(event) => {
@@ -59,7 +63,7 @@ export function CompletedBingoMenu({ item, onChanged }: { item: FeedItem; onChan
         <Pressable
           style={{ flex: 1 }}
           onPress={() => setTop(null)}
-          accessibilityLabel="메뉴 닫기"
+          accessibilityLabel={t('settings.closeMenu')}
         />
         <View
           className="absolute right-4 rounded-2xl bg-surface p-4 border border-gray-300"
@@ -72,9 +76,9 @@ export function CompletedBingoMenu({ item, onChanged }: { item: FeedItem; onChan
             }}
             className="py-2 mb-2 border-b border-gray-300"
           >
-            <Text className="text-body-md text-danger">삭제하기</Text>
+            <Text className="text-body-md text-danger">{t('board.post.delete.menu')}</Text>
           </Pressable>
-          <Text className="text-caption-sm text-gray-500 mb-2">공개 범위</Text>
+          <Text className="text-caption-sm text-gray-500 mb-2">{t('common.visibility.label')}</Text>
           {OPTIONS.map((option) => (
             <Pressable
               key={option.value}
@@ -88,26 +92,26 @@ export function CompletedBingoMenu({ item, onChanged }: { item: FeedItem; onChan
                   <View className="w-3 h-3 rounded-full bg-green-500" />
                 )}
               </View>
-              <Text className="text-body-md text-gray-900">{option.label}</Text>
+              <Text className="text-body-md text-gray-900">{t(option.label)}</Text>
             </Pressable>
           ))}
         </View>
       </NativeModal>
       <Modal
         visible={confirmDelete}
-        title="빙고를 삭제할까요?"
+        title={t('home.deleteConfirm')}
         body={item.title}
-        cancelLabel="취소"
-        confirmLabel="삭제하기"
+        cancelLabel={t('common.cancel')}
+        confirmLabel={t('board.post.delete.menu')}
         onCancel={() => setConfirmDelete(false)}
         onDismiss={() => setConfirmDelete(false)}
         onConfirm={() => void mutate(() => deleteBingo(item.id))}
       />
       <Modal
         visible={error !== null}
-        title="변경 실패"
+        title={t('common.editFail')}
         body={error ?? ''}
-        confirmLabel="확인"
+        confirmLabel={t('common.confirm')}
         onConfirm={() => setError(null)}
         onDismiss={() => setError(null)}
       />

@@ -72,7 +72,7 @@ function parseBlocks(content: string): StoredBlock[] | null {
       return parsed as StoredBlock[];
     }
   } catch {
-    /* 구형 plain text */
+    /* old plain text */
   }
   return null;
 }

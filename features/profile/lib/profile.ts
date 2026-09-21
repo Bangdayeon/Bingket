@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import type { BingoTheme } from '@/types/bingo';
+import i18n from '@/i18n';
 
 // ============================================================
 // Types
@@ -164,7 +165,7 @@ export const updateAccountVisibility = async (visibility: AccountVisibility): Pr
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) throw new Error('로그인이 필요해요.');
+  if (!user) throw new Error(i18n.t('auth.needLogin'));
 
   const { error } = await supabase
     .from('users')

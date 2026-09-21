@@ -2,6 +2,7 @@ import type { RefObject } from 'react';
 import type { View } from 'react-native';
 import * as Sharing from 'expo-sharing';
 import { captureRef } from 'react-native-view-shot';
+import type { TFunction } from 'i18next';
 
 interface CaptureSize {
   width: number;
@@ -12,9 +13,10 @@ export async function shareBingoBoard(
   ref: RefObject<View | null>,
   title: string,
   size: CaptureSize,
+  t: TFunction,
 ): Promise<void> {
   if (!(await Sharing.isAvailableAsync())) {
-    throw new Error('이 기기에서는 공유 시트를 쓸 수 없어요.');
+    throw new Error(t('friends.error.usage'));
   }
 
   const uri = await captureRef(ref, {
@@ -27,6 +29,6 @@ export async function shareBingoBoard(
 
   await Sharing.shareAsync(uri, {
     mimeType: 'image/png',
-    dialogTitle: `${title} 빙고판`,
+    dialogTitle: `${title} ${t('bingo.board')}`,
   });
 }

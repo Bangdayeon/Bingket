@@ -17,12 +17,6 @@ interface TeamAvatarsProps {
 const DEFAULT_SIZE = 32;
 const OVERLAP_RATIO = 0.375;
 
-/**
- * 팀원 아바타를 겹쳐서 보여준다.
- *
- * 배열 순서를 그대로 쓴다 -- 호출하는 쪽이 이미 1등부터 정렬해서 넘긴다.
- * 왕관이 뒤 아바타에 가리지 않도록 앞사람일수록 위에 쌓는다.
- */
 export function TeamAvatars({ members, size = DEFAULT_SIZE }: TeamAvatarsProps) {
   if (members.length === 0) return null;
 

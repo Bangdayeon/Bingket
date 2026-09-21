@@ -28,7 +28,7 @@ import {
 import type { TeamAvatarMember } from '@/features/team/components/TeamAvatars';
 import { supabase } from '@/lib/supabase';
 import { getCache, setCache } from '@/lib/cache';
-import { MAX_BINGOS } from '@/constants/bingo';
+import { LIMITS } from '@/constants/limits';
 import { CACHE_KEY_ALL } from '@/constants/cache_key';
 import Loading from '@/components/Loading';
 import { ErrorState } from '@/components/ErrorState';
@@ -143,7 +143,7 @@ export function BingoAll() {
 
         const progressBingos = serverBingos.filter((b) => !expiredIds.includes(b.id));
         const sliced = [
-          ...[...(draft ? [draft] : []), ...progressBingos].slice(0, MAX_BINGOS),
+          ...[...(draft ? [draft] : []), ...progressBingos].slice(0, LIMITS.bingoCount),
           ...guestBingos.filter((b) => !isExpired(b)),
         ];
         setBingos(sliced);
@@ -284,8 +284,8 @@ export function BingoAll() {
       Sentry.captureException(error);
       if (rollback) applyCells(previousCells);
       setNotice({
-        title: '저장하지 못했어요',
-        body: '네트워크 연결이 불안정해요. 연결을 확인한 뒤 다시 시도해 주세요.',
+        title: t('common.error.save'),
+        body: `{${t('common.error.network')} ${t('common.error.retry')}}`,
       });
     };
 
@@ -304,8 +304,8 @@ export function BingoAll() {
           if (isTeamBoard && isChecking && !applied) {
             // 내가 늦었다 -- 화면을 실제 상태로 되돌린다
             setNotice({
-              title: '이미 채워진 칸이에요',
-              body: '한발 늦었어요! 이미 다른 팀원이 채운 칸이에요.',
+              title: t('bingo.competition.alreadyTitle'),
+              body: t('bingo.competition.alreadyBody'),
             });
             loadData();
           }
@@ -362,7 +362,7 @@ export function BingoAll() {
   // 한 칸을 쓴다(20260908150000_shared_team_bingo_limit). 여기서 공유판을 빼고 세던 때는
   // 화면상 여유가 있어 보여서, 수락을 눌러야 트리거가 막고 "잠시 후 다시 시도"만 떴다.
   const myBingoCount = bingos.length;
-  const atBingoCap = myBingoCount >= MAX_BINGOS;
+  const atBingoCap = myBingoCount >= LIMITS.bingoCount;
 
   /** 스트립에서 지우고 화면에서도 즉시 뺀다. loadData는 쿼리가 깊어 느리다 */
   const dismissStrip = (item: Notification) => {
@@ -376,7 +376,7 @@ export function BingoAll() {
     if (atBingoCap) {
       setNotice({
         title: t('home.addBingo.clean'),
-        body: t('home.addBingo.clean_des', { count: MAX_BINGOS }),
+        body: t('home.addBingo.clean_des', { count: LIMITS.bingoCount }),
       });
       return;
     }
@@ -531,11 +531,11 @@ export function BingoAll() {
 
         {/* 빙고가 있을 때: 목록 아래에 추가 카드, 상한에 닿으면 안내 문구 */}
         {bingos.length > 0 &&
-          (myBingoCount < MAX_BINGOS ? (
+          (myBingoCount < LIMITS.bingoCount ? (
             <View className="px-4">
               <View className="items-center rounded-[20px] bg-white px-5 py-6">
                 <Text className="mb-5 text-body-md text-gray-800">
-                  {t('home.addBingo.default')} ({myBingoCount}/{MAX_BINGOS})
+                  {t('home.addBingo.default')} ({myBingoCount}/{LIMITS.bingoCount})
                 </Text>
                 <CreateBingoButtons onCreate={navigateOnce} hasFriends={hasFriends} />
               </View>
@@ -543,7 +543,7 @@ export function BingoAll() {
           ) : (
             <View className="items-center px-4">
               <Text className="text-body-md text-gray-700">
-                {t('home.addBingo.clean_des', { count: MAX_BINGOS })}
+                {t('home.addBingo.clean_des', { count: LIMITS.bingoCount })}
               </Text>
             </View>
           ))}

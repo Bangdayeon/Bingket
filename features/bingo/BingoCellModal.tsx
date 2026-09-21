@@ -55,21 +55,6 @@ interface BingoCellModalProps {
   team?: CellTeamContext;
 }
 
-/** 메모 상자 아래 우측 줄: 저장 상태 + 글자수 */
-function MemoFooter({ length, saveState }: { length: number; saveState?: MemoSaveState }) {
-  return (
-    <View className="flex-row items-center justify-end gap-2 mt-2">
-      {saveState === 'saved' && <Text className="text-caption-md text-green-500">저장됨</Text>}
-      {saveState === 'error' && <Text className="text-caption-md text-danger">저장 실패</Text>}
-      <Text
-        className={`text-caption-md ${length >= LIMITS.memo ? 'text-gray-700' : 'text-gray-500'}`}
-      >
-        {length}/{LIMITS.memo}
-      </Text>
-    </View>
-  );
-}
-
 /** 들여쓰기(탭·개행)를 공백으로 정규화하고 앞뒤 공백을 제거 */
 function normalizeTitle(title: string): string {
   return title
@@ -84,6 +69,26 @@ function formatDate(iso: string | null): string {
   const mm = String(d.getMonth() + 1).padStart(2, '0');
   const dd = String(d.getDate()).padStart(2, '0');
   return `${d.getFullYear()}.${mm}.${dd}`;
+}
+
+/** 메모 상자 아래 우측 줄: 저장 상태 + 글자수 */
+function MemoFooter({ length, saveState }: { length: number; saveState?: MemoSaveState }) {
+  const { t } = useTranslation();
+  return (
+    <View className="flex-row items-center justify-end gap-2 mt-2">
+      {saveState === 'saved' && (
+        <Text className="text-caption-md text-green-500">{t('bingo.memo.saved')}</Text>
+      )}
+      {saveState === 'error' && (
+        <Text className="text-caption-md text-danger">{t('bingo.memo.saveFailed')}</Text>
+      )}
+      <Text
+        className={`text-caption-md ${length >= LIMITS.memo ? 'text-gray-700' : 'text-gray-500'}`}
+      >
+        {length}/{LIMITS.memo}
+      </Text>
+    </View>
+  );
 }
 
 export function BingoCellModal({
@@ -265,8 +270,8 @@ export function BingoCellModal({
                   <ProfileAvatar avatarUrl={memberOf(item.completedBy)?.avatarUrl} size={24} />
                   <Text className="flex-1 text-body-sm text-gray-700" numberOfLines={1}>
                     {item.completedBy === team.currentUserId
-                      ? '내가 채웠어요'
-                      : `${memberOf(item.completedBy)?.displayName ?? '탈퇴한 멤버'}님이 채웠어요`}
+                      ? t('bingo.competition.my')
+                      : `${memberOf(item.completedBy)?.displayName ?? t('bingo.competition.nobody')}${t('bingo.competition.other')}`}
                   </Text>
                 </View>
               )}
@@ -276,7 +281,7 @@ export function BingoCellModal({
                   체크하면 현재 시각이 자동으로 찍히고, 그 뒤 날짜를 고쳐 잡으면 된다. */}
               {item.completed && (
                 <>
-                  <Text className="mb-2 text-body-md text-gray-900">완료일</Text>
+                  <Text className="mb-2 text-body-md text-gray-900">{t('bingo.doneDate')}</Text>
                   <DateInput
                     value={formatDate(item.completedAt) || '날짜 선택'}
                     onPress={() => handleOpenDatePicker(item)}
@@ -286,13 +291,11 @@ export function BingoCellModal({
                 </>
               )}
 
-              {/* 메모 */}
-              <Text className="mb-2 text-body-md text-gray-900">메모</Text>
-              {/* 여기서는 미리보기만 한다. 실제 입력은 아래 메모 편집 오버레이에서. */}
+              <Text className="mb-2 text-body-md text-gray-900">{t('home.memo')}</Text>
               <Pressable onPress={() => setEditingMemoCellId(item.id)}>
                 <RNTextInput
                   value={item.memo}
-                  placeholder="메모를 입력해주세요."
+                  placeholder={t('home.memoPlaceholder')}
                   multiline
                   scrollEnabled={false}
                   editable={false}
@@ -303,17 +306,16 @@ export function BingoCellModal({
                 <MemoFooter length={item.memo?.length ?? 0} saveState={memoSaveState[item.id]} />
               </Pressable>
 
-              {/* 팀 메모는 전원이 고칠 수 있어, 조용히 바뀌지 않도록 마지막 수정자를 남긴다 */}
               {team && item.memoUpdatedBy && item.memoUpdatedBy !== team.currentUserId && (
                 <Text className="text-caption-sm mt-2 text-gray-500">
-                  마지막 수정: {memberOf(item.memoUpdatedBy)?.displayName ?? '탈퇴한 멤버'}
+                  {t('home.lastModify')}:{' '}
+                  {memberOf(item.memoUpdatedBy)?.displayName ?? t('bingo.competition.nobody')}
                 </Text>
               )}
             </View>
           )}
         />
 
-        {/* 닫기 */}
         <View className="items-center mt-6">
           <Pressable
             onPress={onClose}
@@ -325,7 +327,6 @@ export function BingoCellModal({
         </View>
       </View>
 
-      {/* 메모 편집 — 키보드에 가리지 않도록 화면 위쪽에 붙인다 */}
       {editingMemoCell && (
         <>
           <Pressable
@@ -341,10 +342,11 @@ export function BingoCellModal({
               style={{ width: CARD_WIDTH, marginTop: insets.top + 16 }}
             >
               <View className="flex-row justify-between items-center mb-2">
-                <Text className="text-title-sm font-pretendard-medium text-gray-900">메모</Text>
-                {/* 버튼 자체 좌우 패딩(14)만큼 당겨서 라벨이 카드 안쪽 여백에 맞게 선다. */}
+                <Text className="text-title-sm font-pretendard-medium text-gray-900">
+                  {t('home.memo')}
+                </Text>
                 <Button
-                  label="완료"
+                  label={t('common.stateDone')}
                   variant="ghost"
                   size="sm"
                   onClick={closeMemoEditor}
@@ -361,7 +363,7 @@ export function BingoCellModal({
                   autoFocus
                   value={editingMemoCell.memo}
                   onChangeText={(v) => onUpdate(editingMemoCell.id, { memo: v })}
-                  placeholder="메모를 입력해주세요."
+                  placeholder={t('home.memoPlaceholder')}
                   multiline
                   scrollEnabled
                   textAlignVertical="top"
@@ -378,18 +380,12 @@ export function BingoCellModal({
         </>
       )}
 
-      {/* Date picker sheet */}
       {datePickerCellId && (
         <>
-          {/* 4방향을 다 줘야 실제로 눌린다. 크기가 없으면 이 backdrop을 그냥 통과해
-            아래 깔린 전체화면 Pressable이 먹고 셀 모달째 닫힌다.
-            날짜는 '확인'에서만 확정되므로 여기서 닫으면 고른 값은 버려진다. */}
           <Pressable
             className="absolute bottom-0 left-0 right-0 top-0 z-10"
             onPress={() => setDatePickerCellId(null)}
           />
-          {/* 하단 여백은 인라인 스타일로 준다. `pb-[${'{'}...{'}'}px]` 같은 동적 클래스는
-              NativeWind가 빌드 타임에 생성하지 못해 패딩이 조용히 사라진다. */}
           <View
             className="absolute bottom-0 left-0 right-0 z-20 rounded-t-[16px] bg-white px-4 pt-4"
             style={{ paddingBottom: insets.bottom + 16 }}
@@ -405,7 +401,6 @@ export function BingoCellModal({
                 value={tempDate}
                 mode="date"
                 display="spinner"
-                // 팀 빙고는 진행 기간 밖의 날짜를 DB가 거부하므로 선택 자체를 막는다
                 minimumDate={team ? new Date(`${team.startDate}T00:00:00`) : undefined}
                 maximumDate={
                   team && new Date(`${team.endDate}T23:59:59`) < new Date()
@@ -417,7 +412,6 @@ export function BingoCellModal({
                 }}
                 locale="ko-KR"
                 textColor={colors.gray[900]}
-                // 글자색만 주면 스피너 선택 바와 컬럼 배경은 밝은 채로 남는다.
                 themeVariant={scheme}
                 style={{ flex: 1 }}
               />

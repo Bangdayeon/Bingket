@@ -6,9 +6,9 @@ import { Text } from '@/components/Text';
 import { useResponsive } from '@/lib/use-responsive';
 import { BingoThumbnail } from './BingoThumbnail';
 import type { FeedItem } from '@/features/profile/lib/profile';
+import { useTranslation } from 'react-i18next';
 
 const H_PADDING = 16;
-// 시안: 390 화면에서 172px 두 칸이 나오는 간격
 const GAP = 14;
 const COLUMNS = 2;
 
@@ -19,21 +19,20 @@ interface Props {
   onChanged?: () => void;
 }
 
-export function FeedGrid({
-  items,
-  onChanged,
-  onItemPress,
-  emptyText = '아직 빙고가 없어요.',
-}: Props) {
+export function FeedGrid({ items, onChanged, onItemPress, emptyText }: Props) {
+  const { t } = useTranslation();
   const router = useRouter();
   const { contentWidth } = useResponsive();
   const itemWidth = (contentWidth - H_PADDING * 2 - GAP * (COLUMNS - 1)) / COLUMNS;
+  const defaultEmptyText = t('home.boardNotCreated');
 
   if (items.length === 0) {
     return (
       <View className="py-20 items-center gap-6">
-        <Text className="text-body-md text-gray-400 text-center">{emptyText}</Text>
-        <Button label="빙고 추가하기" onClick={() => router.push('/bingo/add')} />
+        <Text className="text-body-md text-gray-400 text-center">
+          {emptyText ?? defaultEmptyText}
+        </Text>
+        <Button label={t('home.addBingo.default')} onClick={() => router.push('/bingo/add')} />
       </View>
     );
   }
@@ -77,7 +76,7 @@ export function FeedGrid({
                   item.status === 'done' ? 'text-on-brand-dark' : 'text-gray-800'
                 }`}
               >
-                {item.status === 'done' ? '완료' : '진행 중'}
+                {item.status === 'done' ? t('common.stateDone') : t('common.stateProgress')}
               </Text>
             </View>
 

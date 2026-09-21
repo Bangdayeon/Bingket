@@ -3,6 +3,7 @@ import { Text } from '@/components/Text';
 import { ProfileAvatar } from '@/components/ProfileAvatar';
 import Loading from '@/components/Loading';
 import type { ProfileSummary } from '@/features/profile/lib/profile';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   profile: ProfileSummary | null;
@@ -11,6 +12,8 @@ interface Props {
 }
 
 export function ProfileHeader({ profile, onFriendsPress, onPostsPress }: Props) {
+  const { t } = useTranslation();
+
   return (
     <View className="px-4 pt-4">
       <View className="flex-row items-start gap-4">
@@ -34,14 +37,14 @@ export function ProfileHeader({ profile, onFriendsPress, onPostsPress }: Props) 
             {/* 게시글 수는 본인에게만 노출한다 — 익명 게시글이 역산되는 것을 막는다 */}
             {profile?.feedCount !== null && profile?.feedCount !== undefined && (
               <Pressable onPress={onPostsPress} className="flex-row items-center gap-1">
-                <Text className="text-caption-md text-gray-800">게시글</Text>
+                <Text className="text-caption-md text-gray-800">{t('my.post.title')}</Text>
                 <Text className="text-label-sm font-pretendard-semibold text-gray-800">
                   {profile.feedCount}
                 </Text>
               </Pressable>
             )}
             <Pressable onPress={onFriendsPress} className="flex-row items-center gap-1">
-              <Text className="text-caption-md text-gray-800">친구</Text>
+              <Text className="text-caption-md text-gray-800">{t('friends.label')}</Text>
               <Text className="text-label-sm font-pretendard-semibold text-gray-800">
                 {profile?.friendCount ?? 0}
               </Text>
@@ -50,9 +53,8 @@ export function ProfileHeader({ profile, onFriendsPress, onPostsPress }: Props) 
         </View>
       </View>
 
-      {/* 시안에는 '한 줄 다짐' 라벨이 없다 — 본문만 그린다 */}
       <Text className="pt-3 text-body-sm text-gray-700">
-        {profile?.bio || '아직 한 줄 다짐이 없어요.'}
+        {profile?.bio || t('settings.profile.bio.empty')}
       </Text>
     </View>
   );

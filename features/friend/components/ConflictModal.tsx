@@ -1,5 +1,6 @@
 import { Modal } from '@/components/Modal';
 import type { ConflictModal as ConflictModalType } from '@/types/friend';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   conflictModal: ConflictModalType | null; // 친구 요청이 있는지 여부
@@ -7,14 +8,15 @@ interface Props {
 }
 
 export function ConflictModal({ conflictModal, handleConflictResponse }: Props) {
+  const { t } = useTranslation();
   return (
     <Modal
       visible={!!conflictModal}
-      title="친구 요청"
-      body="상대방이 보낸 친구 요청이 있어요.\n수락할까요?"
+      title={t('friends.requestModal.title')}
+      body={t('friends.requestModal.body')}
       variant="warning"
-      confirmLabel="수락"
-      cancelLabel="거절"
+      confirmLabel={t('notifications.action.confirm')}
+      cancelLabel={t('notifications.action.deny')}
       onConfirm={() => handleConflictResponse(true)}
       onCancel={() => handleConflictResponse(false)}
     />

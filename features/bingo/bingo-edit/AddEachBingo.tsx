@@ -212,7 +212,7 @@ export function AddEachBingo({
 
       <Modal
         visible={selectedIndex !== null}
-        title="빙고 내용을 입력해주세요"
+        title={`${t('common.bingo.bingo')} ${t('board.post.form.contentPlaceholder')}`}
         body={
           <TextInput
             value={inputText}
@@ -224,7 +224,7 @@ export function AddEachBingo({
                 onDraftCellsChange(updated);
               }
             }}
-            placeholder="내용을 입력하세요."
+            placeholder={t('board.post.form.contentPlaceholder')}
             maxLength={LIMITS.bingoCell}
             maxHeight={120}
             className="min-h-[72px]"
@@ -233,7 +233,7 @@ export function AddEachBingo({
         }
         variant="default"
         cancelLabel={t('common.cancel')}
-        confirmLabel="저장"
+        confirmLabel={t('common.save')}
         onCancel={handleCancel}
         onConfirm={handleSave}
         onDismiss={handleCancel}

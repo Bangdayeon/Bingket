@@ -41,6 +41,7 @@ export default {
     select: '선택',
 
     retry: '다시 시도',
+    editFail: '변경 실패',
 
     // Navigation / UI
     more: '더보기',
@@ -56,6 +57,7 @@ export default {
     offline: '오프라인이에요 · 연결되면 자동으로 새로고침돼요',
 
     error: {
+      imageUpload: '이미지 업로드에 실패했어요.',
       save: '저장하지 못햇어요.',
       general: '오류가 발생했어요.',
       retry: '잠시 후 다시 시도해주세요.',
@@ -91,6 +93,8 @@ export default {
     google: 'Google',
     kakao: '카카오',
     email: '이메일',
+
+    needLogin: '로그인이 필요해요',
 
     startWith: {
       apple: 'Apple로 시작하기',
@@ -137,6 +141,10 @@ export default {
   },
 
   bingo: {
+    label: '빙고',
+    board: '빙고판',
+
+    doneDate: '완료일',
     achievedDate: '달성일',
     stat: {
       achievement: '달성',
@@ -166,6 +174,28 @@ export default {
     error: {
       bingoSave: '빙고판을 저장하지 못했어요.',
     },
+
+    competition: {
+      alreadyTitle: '이미 채워진 칸이에요.',
+      alreadyBody: '한 발 늦었어요! 이미 다른 팀원이 채운 칸이에요.',
+      my: '내가 채웠어요.',
+      nobody: '탈퇴한 멤버',
+      other: '님이 채웠어요.',
+    },
+
+    memo: {
+      saved: '저장됨',
+      saveFailed: '저장 실패',
+    },
+
+    theme: {
+      default: '기본',
+      rabbit: '토끼',
+      redHorse: '붉은 말',
+      squareCat: '고먐미',
+      pig: '돼지',
+      midnight: '미드나잇',
+    },
   },
 
   invite: {
@@ -189,7 +219,9 @@ export default {
 
     // invite: '초대',
     memo: '메모',
+    memoPlaceholder: '메모를 입력해주세요.',
     modifyBingo: '빙고 수정하기',
+    lastModify: '마지막 수정',
 
     btnLabel: {
       temporarySave: '임시저장',
@@ -232,6 +264,7 @@ export default {
 
       friend: {
         label: '친구 선택하기',
+        selected: '{{count}}명 선택함',
         invite: '초대할 친구',
         description: '친구는 최대 {{count}}명까지 같이할 수 있어요.',
       },
@@ -304,6 +337,7 @@ export default {
     participants: '참여자',
     boardNotCreated: '아직 빙고판을\n만들지 않았어요',
     boardLoadFailRefresh: '빙고판을 불러오지 못했어요\n당겨서 새로고침해주세요',
+    noBingo: '빙고판을 찾을 수 없어요.',
     noJoinedMembers: '아직 참여한 사람이 없어요\n초대를 수락하면 여기에 보여요',
     retrospectiveTitle: '회고',
     retrospectiveDescription: '이 기간이 나에게 어땠는지 남겨보세요. 팀원들도 볼 수 있어요.',
@@ -316,14 +350,24 @@ export default {
 
     periodEnded: '종료',
     periodDaysUntilStart: '{{days}}일 후 시작',
+    howmany: '{{count}}명',
     periodDday: 'D-{{days}}',
   },
 
   board: {
     author: '작성자',
     anonymous: '익명',
+    unknown: '(알 수 없음)',
     submit: '등록',
     badWord: '올바르지 않은 표현을 사용했어요.',
+
+    timeAgo: {
+      justNow: '방금 전',
+      minutesAgo: '{{count}}분 전',
+      hoursAgo: '{{count}}시간 전',
+      daysAgo: '{{count}}일 전',
+      monthsAgo: '{{count}}달 전',
+    },
 
     post: {
       empty: '아직 게시글이 없어요\n첫 글을 남겨보세요',
@@ -506,6 +550,7 @@ export default {
 
   settings: {
     label: '설정',
+    closeMenu: '메뉴 닫기',
     profile: {
       label: '프로필 편집',
 
@@ -532,6 +577,7 @@ export default {
       bio: {
         label: '한 줄 다짐',
         edit: '한 줄 다짐 편집',
+        empty: '아직 한 줄 다짐이 없어요.',
         placeholder: '{{count}}자 이내로 입력해주세요.',
       },
     },
@@ -594,6 +640,7 @@ export default {
         load: '알림 설정을 불러오지 못했어요. 화면의 값이 실제와 다를 수 있어요.',
       },
     },
+
     theme: {
       label: '앱 테마',
       system: '시스템',
@@ -636,7 +683,16 @@ export default {
     label: '친구',
     allUsers: '전체 유저',
     delete: '친구 삭제',
+    recieved: '받은 친구 요청',
+    reRequest: '재요청',
+    add: '친구 추가',
 
+    requestModal: {
+      title: '친구 요청',
+      body: '상대방이 보낸 친구 요청이 있어요.\n수락할까요?',
+    },
+
+    noSameFriend: '일치하는 친구가 없어요. 이름이나 아이디를 확인해주세요.',
     noFriend: '아직 친구가 없어요. 친구를 먼저 추가해 주세요.',
     deleteConfirm: '{{displayName}}님을 친구 목록에서 삭제할까요?',
     searchPlaceholder: '닉네임이나 아이디를 검색해주세요.',
@@ -661,6 +717,7 @@ export default {
       request: '친구 요청에 실패했어요.',
       search: '검색에 실패했어요.',
       delete: '친구 삭제에 실패했어요.',
+      usage: '이 기기에서는 공유 시트를 쓸 수 없어요.',
     },
   },
 
@@ -685,6 +742,22 @@ export default {
         guide: '같은 목표로 시작해 각자 자기 판을 채워요.',
       },
     },
+
+    alert: {
+      fullBingo:
+        '진행 중인 빙고를 마치면 함께할 수 있어요. 빙고는 한 번에 {{count}}개까지 진행할 수 있어요.',
+      fullTeammate: '인원이 다 찼어요. 팀 빙고는 {{count}}명까지 참여할 수 있어요.',
+      needBingo: '내 빙고를 직접 만들어야 하는 초대예요. 초대장을 열어 참여해 주세요.',
+      endedBingo: '이미 종료된 빙고예요.',
+      endedInvite: '취소되었거나 종료된 초대예요.',
+      removedBingo: '방장이 빙고판을 지워서 참여할 수 없어요.',
+      loadFail: '빙고판을 불러오지 못했어요.',
+      acceptFaile: '수락에 실패했어요.',
+    },
+
+    error: {
+      generate: '팀 빙고 생성 실패',
+    },
   },
 
   update: {
@@ -692,7 +765,13 @@ export default {
     description: '새 버전으로 업데이트해야\n계속 사용할 수 있어요',
     button: '업데이트하러 가기',
   },
+
   badge: {
+    get: '획득',
+    loadError: '뱃지를 불러오지 못했어요.',
+    empty: '아직 획득한 뱃지가 없어요.',
+    more: '더 많은 뱃지가 추가될 예정이에요.',
+
     cell_1: {
       name: '첫 발걸음',
       message: '빙고 칸 10개를 달성했어요! 🎉',

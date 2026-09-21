@@ -11,22 +11,16 @@ import ArrowForwardIcon from '@/assets/icons/ic_arrow_forward.svg';
 import { fetchFriends } from '@/features/friend/lib/friend';
 import { friendSelection } from '@/features/team/lib/friend-selection';
 import type { Friend } from '@/types/friend';
+import { useTranslation } from 'react-i18next';
 
 interface FriendPickerProps {
   selectedIds: string[];
   onChange: (ids: string[]) => void;
-  /** 방장을 뺀 초대 가능 인원 */
   maxCount: number;
 }
 
-/**
- * 초대할 친구를 고른다.
- *
- * 고르는 일 자체는 친구 목록 화면(`?mode=select`)이 맡는다. 여기서는 고른 사람만
- * 보여주고 빼는 것까지 한다 — 친구 검색 UI를 두 곳에 만들 이유가 없다.
- * 친구가 아닌 사람은 DB 트리거가 막으므로 목록은 친구로 한정된다.
- */
 export function FriendPicker({ selectedIds, onChange, maxCount }: FriendPickerProps) {
+  const { t } = useTranslation();
   const router = useRouter();
   const [friends, setFriends] = useState<Friend[]>([]);
   const [loading, setLoading] = useState(true);
@@ -38,7 +32,6 @@ export function FriendPicker({ selectedIds, onChange, maxCount }: FriendPickerPr
     fetchFriends()
       .then(setFriends)
       .catch((e: unknown) => {
-        // catch가 없으면 조회 실패가 "아직 친구가 없어요"로 보인다.
         Sentry.captureException(e);
         setLoadFailed(true);
       })
@@ -68,15 +61,11 @@ export function FriendPicker({ selectedIds, onChange, maxCount }: FriendPickerPr
   }
 
   if (loadFailed) {
-    return <ErrorState message="친구 목록을 불러오지 못했어요" onRetry={load} />;
+    return <ErrorState message={t('friends.error.load')} onRetry={load} />;
   }
 
   if (friends.length === 0) {
-    return (
-      <Text className="py-4 text-body-md text-gray-500">
-        아직 친구가 없어요. 친구를 먼저 추가해 주세요.
-      </Text>
-    );
+    return <Text className="py-4 text-body-md text-gray-500">{t('friends.noFriend')}</Text>;
   }
 
   return (
@@ -86,7 +75,9 @@ export function FriendPicker({ selectedIds, onChange, maxCount }: FriendPickerPr
         className="h-12 flex-row items-center justify-between rounded-xl bg-gray-200 px-3"
       >
         <Text className="text-body-md text-gray-500">
-          {selected.length > 0 ? `${selected.length}명 선택함` : '친구 선택하기'}
+          {selected.length > 0
+            ? t('home.field.friend.selected', { count: selected.length })
+            : t('home.field.friend.label')}
         </Text>
         <ArrowForwardIcon width={24} height={24} className="text-gray-600" />
       </Pressable>

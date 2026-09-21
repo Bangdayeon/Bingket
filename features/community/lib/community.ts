@@ -10,19 +10,26 @@ import type {
 } from '@/types/community';
 import type { BingoData, BingoState, BingoTheme } from '@/types/bingo';
 import { calcBingoCount } from '@/features/bingo/lib/bingo';
+import i18n from '@/i18n';
+import { timeAgo } from '@/lib/timeAgo';
 
 export const PAGE_SIZE = 15;
 
 const R2_PUBLIC_URL = 'https://pub-ce1a524f861f4062a6ec96dd100c4aec.r2.dev';
 
-const THEME_DISPLAY_TO_KEY: Record<string, BingoTheme> = {
-  기본: 'default',
-  토끼: 'rabbit',
-  붉은말: 'red_horse',
-  고먐미: 'square_cat',
-  돼지: 'pig',
-  미드나잇: 'midnight',
-};
+const THEME_ENTRIES = [
+  ['bingo.theme.default', 'default'],
+  ['bingo.theme.rabbit', 'rabbit'],
+  ['bingo.theme.redHorse', 'red_horse'],
+  ['bingo.theme.squareCat', 'square_cat'],
+  ['bingo.theme.pig', 'pig'],
+  ['bingo.theme.midnight', 'midnight'],
+] as const satisfies readonly (readonly [string, BingoTheme])[];
+
+function themeFromDisplay(display: string): BingoTheme {
+  const entry = THEME_ENTRIES.find(([key]) => i18n.t(key) === display);
+  return entry ? entry[1] : 'default';
+}
 
 function calcDdayLocal(targetDate: string | null): number {
   if (!targetDate) return 0;
@@ -30,20 +37,7 @@ function calcDdayLocal(targetDate: string | null): number {
   return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
 }
 
-// ── 시간 포맷 ─────────────────────────────────────────────────
-function timeAgo(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const m = Math.floor(diff / 60000);
-  if (m < 1) return '방금 전';
-  if (m < 60) return `${m}분 전`;
-  const h = Math.floor(m / 60);
-  if (h < 24) return `${h}시간 전`;
-  const d = Math.floor(h / 24);
-  if (d < 30) return `${d}일 전`;
-  return `${Math.floor(d / 30)}달 전`;
-}
-
-// ── 빙고 셀 배열 → flat string[] 변환 ────────────────────────
+// ── bingo cell [] → flat string[] translation ────────────────────────
 function sortedCells(cells: Array<{ position: number; content: string }>): string[] {
   return [...cells].sort((a, b) => a.position - b.position).map((c) => c.content);
 }
@@ -100,7 +94,9 @@ function mapPost(
     id: p.id,
     title: p.title,
     userId: p.user_id,
-    author: isAnonymous ? '익명' : (user?.display_name ?? '(알 수 없음)'),
+    author: isAnonymous
+      ? i18n.t('board.anonymous')
+      : (user?.display_name ?? i18n.t('board.unknown')),
     isAnonymous,
     avatarUrl: isAnonymous ? null : (user?.avatar_url ?? null),
     timeAgo: timeAgo(p.created_at),
@@ -134,7 +130,6 @@ const POST_SELECT = `
   bingo_boards ( id, title, grid, theme, bingo_cells ( position, content ) )
 `;
 
-// ── 게시글 목록 조회 (페이지네이션) ──────────────────────────
 export const fetchPosts = async (page: number): Promise<CommunityPost[]> => {
   const blockedIds = await fetchBlockedUserIds();
 
@@ -148,7 +143,6 @@ export const fetchPosts = async (page: number): Promise<CommunityPost[]> => {
   if (blockedIds.length > 0) query = query.not('user_id', 'in', `(${blockedIds.join(',')})`);
 
   const { data, error } = await query;
-  // 에러를 빈 배열로 삼키면 조회 실패가 "글이 없음"으로 보인다. 화면이 구분할 수 있게 던진다.
   if (error) throw error;
   if (!data) return [];
 
@@ -156,7 +150,6 @@ export const fetchPosts = async (page: number): Promise<CommunityPost[]> => {
   return data.map((p) => mapPost(p as Parameters<typeof mapPost>[0], likedSet.has(p.id as string)));
 };
 
-// ── 게시글 단건 조회 ──────────────────────────────────────────────
 export const fetchPost = async (id: string): Promise<CommunityPost | null> => {
   const { data, error } = await supabase
     .from('posts')
@@ -165,14 +158,12 @@ export const fetchPost = async (id: string): Promise<CommunityPost | null> => {
     .eq('is_deleted', false)
     .single();
 
-  // PGRST116은 .single()이 행을 못 찾은 경우다. 이것만 "없는 글"이고 나머지는 실패다.
   if (error && error.code !== 'PGRST116') throw error;
   if (error || !data) return null;
   const likedSet = await fetchLikedSet([data.id as string]);
   return mapPost(data as Parameters<typeof mapPost>[0], likedSet.has(data.id as string));
 };
 
-// ── 게시글 작성용 내 빙고 전체 조회 (제작중 + 진행중 + 완료) ──────
 export const fetchMyBingosForPost = async (): Promise<BingoData[]> => {
   const {
     data: { user },
@@ -213,7 +204,6 @@ export const fetchMyBingosForPost = async (): Promise<BingoData[]> => {
     };
   });
 
-  // 로컬 제작 중 빙고 (AsyncStorage)
   try {
     const raw = await AsyncStorage.getItem('@bingket/draft-bingo');
     if (raw) {
@@ -233,32 +223,30 @@ export const fetchMyBingosForPost = async (): Promise<BingoData[]> => {
         startDate: null,
         targetDate: null,
         state: 'draft',
-        theme: THEME_DISPLAY_TO_KEY[d.selectedTheme as string] ?? 'default',
+        theme: themeFromDisplay(d.selectedTheme as string) ?? 'default',
         retrospective: null,
       };
       return [draftBingo, ...dbBingos];
     }
   } catch {
-    // AsyncStorage 오류 시 DB 빙고만 반환
+    // AsyncStorage error, return only DB bingo
   }
 
   return dbBingos;
 };
 
-// ── 게시글 이미지 R2 업로드 ──────────────────────────────────────
 export const uploadPostImage = async (uri: string): Promise<string> => {
   // 포스트 이미지: 최대 1080px로 리사이즈 후 JPEG 압축
   const imageRef = await ImageManipulator.manipulate(uri).resize({ width: 1080 }).renderAsync();
   const resized = await imageRef.saveAsync({ compress: 0.75, format: SaveFormat.JPEG });
   const ext = 'jpg';
 
-  // getUser() triggers token refresh — required for Kakao sessions with expired access tokens
   await supabase.auth.getUser();
   const {
     data: { session },
   } = await supabase.auth.getSession();
 
-  if (!session) throw new Error('로그인이 필요해요.');
+  if (!session) throw new Error(i18n.t('auth.needLogin'));
 
   const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL!;
   const presignRes = await fetch(`${supabaseUrl}/functions/v1/post-presign`, {
@@ -292,12 +280,12 @@ export const uploadPostImage = async (uri: string): Promise<string> => {
     body: blob,
     headers: { 'Content-Type': 'image/jpeg' },
   });
-  if (!uploadRes.ok) throw new Error('이미지 업로드에 실패했어요.');
+  if (!uploadRes.ok)
+    throw new Error(`${i18n.t('common.error.imageUpload')} ${i18n.t('common.error.retry')}`);
 
   return `${R2_PUBLIC_URL}/${data.key as string}`;
 };
 
-// ── blocks → DB 저장용 변환 + 이미지 업로드 ─────────────────────
 async function processBlocks(blocks: EditorBlock[]): Promise<{
   storedBlocks: StoredBlock[];
   imageUrls: string[];
@@ -330,7 +318,6 @@ async function processBlocks(blocks: EditorBlock[]): Promise<{
         };
       } else {
         bingoBoardId = block.bingo.id;
-        // 보드가 이후 삭제되거나 계정이 비공개 전환되더라도 포스트에서 빙고판을 볼 수 있도록 snapshot 저장
         bingoSnapshot = {
           title: block.bingo.title,
           cells: block.bingo.cells,
@@ -345,7 +332,6 @@ async function processBlocks(blocks: EditorBlock[]): Promise<{
   return { storedBlocks, imageUrls, bingoBoardId, bingoSnapshot };
 }
 
-// ── 게시글 작성 ──────────────────────────────────────────────────
 export interface CreatePostRequest {
   title: string;
   isAnonymous: boolean;
@@ -354,7 +340,7 @@ export interface CreatePostRequest {
 
 export const createPost = async (req: CreatePostRequest): Promise<string> => {
   const { data: userData, error: authError } = await supabase.auth.getUser();
-  if (authError || !userData?.user) throw new Error('로그인이 필요해요.');
+  if (authError || !userData?.user) throw new Error(i18n.t('auth.needLogin'));
 
   const { storedBlocks, imageUrls, bingoBoardId, bingoSnapshot } = await processBlocks(req.blocks);
 
@@ -372,11 +358,13 @@ export const createPost = async (req: CreatePostRequest): Promise<string> => {
     .select('id')
     .single();
 
-  if (error || !data) throw new Error(error?.message ?? '게시글 작성에 실패했어요.');
+  if (error || !data)
+    throw new Error(
+      error?.message ?? `${i18n.t('board.post.create.error')} ${i18n.t('common.error.retry')}`,
+    );
   return data.id as string;
 };
 
-// ── 게시글 수정 ──────────────────────────────────────────────────
 export interface UpdatePostRequest {
   postId: string;
   title: string;
@@ -389,7 +377,7 @@ export const updatePost = async (req: UpdatePostRequest): Promise<void> => {
     data: { user },
     error: authError,
   } = await supabase.auth.getUser();
-  if (authError || !user) throw new Error('로그인이 필요해요.');
+  if (authError || !user) throw new Error(i18n.t('auth.needLogin'));
 
   const { storedBlocks, imageUrls, bingoBoardId, bingoSnapshot } = await processBlocks(req.blocks);
 
@@ -406,16 +394,18 @@ export const updatePost = async (req: UpdatePostRequest): Promise<void> => {
     .eq('id', req.postId)
     .eq('user_id', user.id);
 
-  if (error) throw new Error(error.message ?? '게시글 수정에 실패했어요.');
+  if (error)
+    throw new Error(
+      error.message ?? `${i18n.t('board.post.edit.error')} ${i18n.t('common.error.retry')}`,
+    );
 };
 
-// ── 게시글 삭제 (소프트 딜리트) ──────────────────────────────────
 export const deletePost = async (postId: string): Promise<void> => {
   const {
     data: { user },
     error: authError,
   } = await supabase.auth.getUser();
-  if (authError || !user) throw new Error('로그인이 필요해요.');
+  if (authError || !user) throw new Error(i18n.t('auth.needLogin'));
 
   const { error } = await supabase
     .from('posts')
@@ -426,7 +416,6 @@ export const deletePost = async (postId: string): Promise<void> => {
   if (error) throw new Error(error.message);
 };
 
-// ── 댓글 날짜 포맷 ────────────────────────────────────────────
 function formatCommentDate(dateStr: string): string {
   const d = new Date(dateStr);
   const yy = String(d.getFullYear()).slice(2);
@@ -448,7 +437,6 @@ type RawCommentRow = {
   users: unknown;
 };
 
-// 내가 좋아요 누른 댓글 ID 조회
 async function fetchLikedCommentSet(commentIds: string[]): Promise<Set<string>> {
   if (commentIds.length === 0) return new Set();
   const {
@@ -463,23 +451,13 @@ async function fetchLikedCommentSet(commentIds: string[]): Promise<Set<string>> 
   return new Set((data ?? []).map((l) => l.comment_id as string));
 }
 
-// ── 댓글 목록 조회 ────────────────────────────────────────────
-
-/** 한 번에 받아오는 댓글 행 수. 대댓글도 같이 센다. */
 export const COMMENT_PAGE_SIZE = 20;
 
 export interface CommentsPage {
   comments: Comment[];
-  /** 삭제되지 않은 전체 댓글 행 수(대댓글 포함). 더 보기 여부와 게시글 댓글 수에 쓴다. */
   total: number;
 }
 
-/**
- * 인기 글에서 댓글 수백 개를 한 번에 받아 ScrollView에 전부 그리면 진입이 통째로 멈춘다.
- * 항상 처음부터 `limit`개를 받는 방식이라, 더 보기로 늘려도 익명 번호(익명1, 익명2…)가
- * 흔들리지 않는다. 대댓글은 부모보다 항상 늦게 만들어지므로 오름차순 자르기에서
- * 부모 없는 답글이 생기지 않는다.
- */
 export const fetchComments = async (
   postId: string,
   limit: number = COMMENT_PAGE_SIZE,
@@ -512,7 +490,6 @@ export const fetchComments = async (
     }
   }
 
-  // 내가 좋아요 누른 댓글 ID 세트
   const likedCommentSet = await fetchLikedCommentSet(rows.map((c) => c.id));
 
   const mapRow = (c: RawCommentRow): Omit<Comment, 'replies'> & Omit<CommentReply, never> => {
@@ -535,7 +512,6 @@ export const fetchComments = async (
   const topLevel = rows.filter((c) => !c.parent_id);
   const replies = rows.filter((c) => c.parent_id);
 
-  // 부모가 삭제된 경우 → placeholder 생성
   const topLevelIds = new Set(topLevel.map((c) => c.id));
   const orphanGroups = new Map<string, RawCommentRow[]>();
   for (const r of replies) {
@@ -577,7 +553,6 @@ export const fetchComments = async (
   return { comments, total: count ?? comments.length };
 };
 
-// ── 댓글 작성 ────────────────────────────────────────────────
 export const addComment = async (
   postId: string,
   content: string,
@@ -588,7 +563,7 @@ export const addComment = async (
     data: { user },
     error: authError,
   } = await supabase.auth.getUser();
-  if (authError || !user) throw new Error('로그인이 필요해요.');
+  if (authError || !user) throw new Error(i18n.t('auth.needLogin'));
 
   const { error } = await supabase.from('comments').insert({
     post_id: postId,
@@ -601,13 +576,12 @@ export const addComment = async (
   if (error) throw new Error(error.message);
 };
 
-// ── 댓글 삭제 (소프트 딜리트) ────────────────────────────────
 export const deleteComment = async (commentId: string): Promise<void> => {
   const {
     data: { user },
     error: authError,
   } = await supabase.auth.getUser();
-  if (authError || !user) throw new Error('로그인이 필요해요.');
+  if (authError || !user) throw new Error(i18n.t('auth.needLogin'));
 
   const { error } = await supabase
     .from('comments')
@@ -618,13 +592,12 @@ export const deleteComment = async (commentId: string): Promise<void> => {
   if (error) throw new Error(error.message);
 };
 
-// ── 댓글 좋아요 토글 ─────────────────────────────────────────
 export const toggleCommentLike = async (commentId: string, like: boolean): Promise<void> => {
   const {
     data: { user },
     error: authError,
   } = await supabase.auth.getUser();
-  if (authError || !user) throw new Error('로그인이 필요해요.');
+  if (authError || !user) throw new Error(i18n.t('auth.needLogin'));
 
   if (like) {
     const { error } = await supabase
@@ -641,7 +614,6 @@ export const toggleCommentLike = async (commentId: string, like: boolean): Promi
   }
 };
 
-// ── 차단된 유저 ID 목록 ───────────────────────────────────────
 export const fetchBlockedUserIds = async (): Promise<string[]> => {
   const {
     data: { user },
@@ -651,20 +623,18 @@ export const fetchBlockedUserIds = async (): Promise<string[]> => {
   return (data ?? []).map((b) => b.blocked_id as string);
 };
 
-// ── 유저 차단 ─────────────────────────────────────────────────
 export const blockUser = async (userId: string): Promise<void> => {
   const {
     data: { user },
     error: authError,
   } = await supabase.auth.getUser();
-  if (authError || !user) throw new Error('로그인이 필요해요.');
+  if (authError || !user) throw new Error(i18n.t('auth.needLogin'));
   const { error } = await supabase
     .from('blocks')
     .insert({ blocker_id: user.id, blocked_id: userId });
   if (error) throw new Error(error.message);
 };
 
-// ── 신고 ──────────────────────────────────────────────────────
 export const submitReport = async (
   targetType: 'post' | 'comment',
   targetId: string,
@@ -674,7 +644,7 @@ export const submitReport = async (
     data: { user },
     error: authError,
   } = await supabase.auth.getUser();
-  if (authError || !user) throw new Error('로그인이 필요해요.');
+  if (authError || !user) throw new Error(i18n.t('auth.needLogin'));
   const { error } = await supabase.from('reports').insert({
     reporter_id: user.id,
     target_type: targetType,
@@ -684,7 +654,6 @@ export const submitReport = async (
   if (error) throw new Error(error.message);
 };
 
-// ── 게시글 검색 ───────────────────────────────────────────────
 export const searchPosts = async (query: string): Promise<CommunityPost[]> => {
   const trimmed = query.trim();
   if (!trimmed) return [];
@@ -715,13 +684,12 @@ export const searchPosts = async (query: string): Promise<CommunityPost[]> => {
   return data.map((p) => mapPost(p as Parameters<typeof mapPost>[0], likedSet.has(p.id as string)));
 };
 
-// ── 게시글 좋아요 토글 ────────────────────────────────────────
 export const togglePostLike = async (postId: string, like: boolean): Promise<void> => {
   const {
     data: { user },
     error: authError,
   } = await supabase.auth.getUser();
-  if (authError || !user) throw new Error('로그인이 필요해요.');
+  if (authError || !user) throw new Error(i18n.t('auth.needLogin'));
 
   if (like) {
     const { error } = await supabase.from('likes').insert({ user_id: user.id, post_id: postId });

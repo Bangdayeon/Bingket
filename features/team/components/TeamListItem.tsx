@@ -5,6 +5,7 @@ import { TeamAvatars } from '@/features/team/components/TeamAvatars';
 import { calcDaysUntilStart, calcTeamDday } from '@/features/team/lib/team-result';
 import { TEAM_MODE_LABEL_KEYS } from '@/types/team';
 import type { TeamListEntry } from '@/features/team/lib/team';
+import i18n from '@/i18n';
 
 interface TeamListItemProps {
   team: TeamListEntry;
@@ -17,8 +18,9 @@ function formatDate(yyyyMmDd: string | null): string {
 
 /** 진행 상태를 한 줄로 요약한다 */
 function statusLabel(team: TeamListEntry): string {
-  if (team.isFinished) return '종료';
-  if (!team.isStarted) return `${calcDaysUntilStart(team.startDate)}일 후 시작`;
+  if (team.isFinished) return i18n.t('home.periodEnded');
+  if (!team.isStarted)
+    return i18n.t('home.periodDaysUntilStart', { days: calcDaysUntilStart(team.startDate) });
   return `D-${calcTeamDday(team.endDate)}`;
 }
 
@@ -48,7 +50,9 @@ export function TeamListItem({ team }: TeamListItemProps) {
         <Text className="text-caption-sm text-gray-400">·</Text>
         <Text className="text-caption-sm text-gray-700">{period}</Text>
         <Text className="text-caption-sm text-gray-400">·</Text>
-        <Text className="text-caption-sm text-gray-700">{team.members.length}명</Text>
+        <Text className="text-caption-sm text-gray-700">
+          {i18n.t('home.howmany', { count: team.members.length })}
+        </Text>
       </View>
     </Pressable>
   );

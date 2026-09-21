@@ -3,6 +3,7 @@ import { ProfileAvatar } from '@/components/ProfileAvatar';
 import { Text } from '@/components/Text';
 import { UserSearchResult as UserSearchResultType } from '@/types/friend';
 import Loading from '@/components/Loading';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   searchLoading: boolean;
@@ -10,11 +11,9 @@ interface Props {
   searchResults: UserSearchResultType[] | null;
   sending: string | null;
   handleRequest: (item: UserSearchResultType) => void;
-  /** 아바타·이름을 누르면 그 사람 프로필로. 공개범위 판정은 프로필 화면이 한다. */
   handleProfilePress: (item: UserSearchResultType) => void;
 }
 
-// 제목은 바깥의 CollapsibleSection이 그린다. 이미 친구인 사람은 위 '친구' 목록에 있으므로 여기선 뺀다.
 export function SearchList({
   searchLoading,
   searchError,
@@ -23,6 +22,8 @@ export function SearchList({
   handleRequest,
   handleProfilePress,
 }: Props) {
+  const { t } = useTranslation();
+
   if (searchLoading) {
     return (
       <View className="items-center py-8">
@@ -44,7 +45,7 @@ export function SearchList({
   if (others.length === 0) {
     return (
       <View className="items-center py-8">
-        <Text className="text-body-md text-gray-500">검색 결과가 없어요</Text>
+        <Text className="text-body-md text-gray-500">{t('common.noSearchResult')}</Text>
       </View>
     );
   }
@@ -54,7 +55,7 @@ export function SearchList({
       {others.map((item) => {
         const isPending = item.request_status === 'pending';
         const isSending = sending === item.id;
-        const label = isPending ? '재요청' : '친구 추가';
+        const label = isPending ? t('friends.reRequest') : t('friends.add');
 
         return (
           <View key={item.id} className="flex-row items-center px-4 py-3">

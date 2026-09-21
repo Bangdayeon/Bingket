@@ -96,10 +96,15 @@ export function BingoCard({
     setCapturing(true);
     InteractionManager.runAfterInteractions(async () => {
       try {
-        await shareBingoBoard(boardRef, bingo.title, {
-          width: screenWidth * 1.5,
-          height: cardHeight * 1.5,
-        });
+        await shareBingoBoard(
+          boardRef,
+          bingo.title,
+          {
+            width: screenWidth * 1.5,
+            height: cardHeight * 1.5,
+          },
+          t,
+        );
       } catch (e) {
         Sentry.captureException(e);
         setSaveFailed(true);

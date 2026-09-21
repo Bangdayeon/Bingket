@@ -3,6 +3,8 @@ import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
 import { CACHE_KEY_ALERT_SETTINGS, CACHE_KEY_PROFILE } from '@/constants/cache_key';
 import { supabase } from '@/lib/supabase';
 import { withNetworkRetry } from '@/lib/network-retry';
+import i18n from '@/i18n';
+import { timeAgo } from '@/lib/timeAgo';
 
 const R2_PUBLIC_URL = 'https://pub-ce1a524f861f4062a6ec96dd100c4aec.r2.dev';
 
@@ -77,7 +79,7 @@ export const updateMyProfile = async (data: {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) throw new Error('로그인이 필요해요.');
+  if (!user) throw new Error(i18n.t('auth.needLogin'));
 
   const updates: Record<string, string> = {
     display_name: data.displayName,
@@ -109,7 +111,7 @@ export const uploadProfileImage = async (uri: string, filename: string): Promise
   const {
     data: { session },
   } = await supabase.auth.getSession();
-  if (!session) throw new Error('로그인이 필요해요.');
+  if (!session) throw new Error(i18n.t('auth.needLogin'));
 
   return withNetworkRetry(async () => {
     const { data, error } = await supabase.functions.invoke('r2-presign', {
@@ -131,7 +133,9 @@ export const uploadProfileImage = async (uri: string, filename: string): Promise
     });
     if (!uploadRes.ok) {
       const text = await uploadRes.text().catch(() => '');
-      throw new Error(`이미지 업로드 실패 (${uploadRes.status})${text ? `: ${text}` : ''}`);
+      throw new Error(
+        `${i18n.t('common.error.imageUpload')} (${uploadRes.status})${text ? `: ${text}` : ''}`,
+      );
     }
 
     return `${R2_PUBLIC_URL}/${data.key as string}`;
@@ -172,7 +176,7 @@ export const resetMyBingos = async (): Promise<void> => {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) throw new Error('로그인이 필요해요.');
+  if (!user) throw new Error(i18n.t('auth.needLogin'));
 
   const { error } = await supabase
     .from('bingo_boards')
@@ -190,21 +194,6 @@ export interface MyPost {
   commentCount: number;
   createdAt: string;
 }
-
-function timeAgo(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const minutes = Math.floor(diff / 60000);
-  if (minutes < 1) return '방금 전';
-  if (minutes < 60) return `${minutes}분 전`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}시간 전`;
-  const days = Math.floor(hours / 24);
-  if (days < 30) return `${days}일 전`;
-  const months = Math.floor(days / 30);
-  return `${months}달 전`;
-}
-
-export { timeAgo };
 
 function extractTextPreview(content: string): string {
   try {
@@ -253,7 +242,7 @@ export const submitReport = async (content: string): Promise<void> => {
   const {
     data: { session },
   } = await supabase.auth.getSession();
-  if (!session) throw new Error('로그인이 필요해요.');
+  if (!session) throw new Error(i18n.t('auth.needLogin'));
 
   const { error } = await supabase.functions.invoke('submit-report', {
     headers: { Authorization: `Bearer ${session.access_token}` },
@@ -272,7 +261,7 @@ export const deleteAccount = async (): Promise<void> => {
   const {
     data: { session },
   } = await supabase.auth.getSession();
-  if (!session) throw new Error('로그인이 필요해요.');
+  if (!session) throw new Error(i18n.t('auth.needLogin'));
 
   const { error } = await supabase.functions.invoke('delete-account', {
     headers: {

@@ -1,6 +1,7 @@
 import { View, Text, Pressable } from 'react-native';
 import { ProfileAvatar } from '@/components/ProfileAvatar';
 import { IncomingRequest as IncomingRequestType } from '@/types/friend';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   pendingRequests: IncomingRequestType[];
@@ -8,12 +9,14 @@ interface Props {
 }
 
 export function ReceivedList({ pendingRequests, handleIncomingResponse }: Props) {
+  const { t } = useTranslation();
+
   return (
     <View>
       {pendingRequests.length > 0 && (
         <View>
           <Text className="text-title-sm   px-4 pt-4 pb-2">
-            받은 친구 요청 {pendingRequests.length}
+            {t('friends.recieved')} {pendingRequests.length}
           </Text>
           {pendingRequests.map((req) => (
             <View
@@ -30,13 +33,17 @@ export function ReceivedList({ pendingRequests, handleIncomingResponse }: Props)
                   onPress={() => handleIncomingResponse(req.id, false)}
                   className="px-4 py-2 rounded-full bg-danger"
                 >
-                  <Text className="text-label-sm text-on-danger">거절</Text>
+                  <Text className="text-label-sm text-on-danger">
+                    {t('notifications.action.deny_short')}
+                  </Text>
                 </Pressable>
                 <Pressable
                   onPress={() => handleIncomingResponse(req.id, true)}
                   className="px-4 py-2 rounded-full bg-green-400"
                 >
-                  <Text className="text-label-sm text-on-brand-dark">수락</Text>
+                  <Text className="text-label-sm text-on-brand-dark">
+                    {t('notifications.action.confirm_short')}
+                  </Text>
                 </Pressable>
               </View>
             </View>

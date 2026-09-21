@@ -10,4 +10,6 @@ export const LIMITS = {
   bio: 50,
   displayName: 12,
   username: 20,
+  bingoCount: 3,
+  teammateCount: 6,
 } as const;

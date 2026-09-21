@@ -12,6 +12,8 @@ import { isTeamOver, isTeamStarted, rankMembers } from '@/features/team/lib/team
 import { deleteNotificationByTarget } from '@/features/notifications/lib/notifications';
 import type { BingoTheme } from '@/types/bingo';
 import type { TeamMemberStatus, TeamMode, TeamStatus } from '@/types/team';
+import i18n from '@/i18n';
+import { LIMITS } from '@/constants/limits';
 
 // ============================================================
 // Types
@@ -250,7 +252,7 @@ export interface CreateTeamParams {
 
 export const createTeam = async (params: CreateTeamParams): Promise<{ teamId: string }> => {
   const userId = await currentUserId();
-  if (!userId) throw new Error('로그인이 필요해요.');
+  if (!userId) throw new Error(i18n.t('auth.needLogin'));
 
   const boardId = await createBingo({
     title: params.board.title,
@@ -279,7 +281,7 @@ export const createTeam = async (params: CreateTeamParams): Promise<{ teamId: st
     .select('id')
     .single();
 
-  if (teamError || !team) throw new Error(teamError?.message ?? '팀 빙고 생성 실패');
+  if (teamError || !team) throw new Error(teamError?.message ?? i18n.t('team.error.generate'));
   const teamId = team.id as string;
 
   const { error: ownerError } = await supabase.from('team_members').insert({
@@ -300,8 +302,6 @@ export const createTeam = async (params: CreateTeamParams): Promise<{ teamId: st
       })),
     );
     if (inviteError) throw new Error(inviteError.message);
-    // 초대 알림은 team_members INSERT 트리거(notify_on_team_invite)가 만든다.
-    // notifications의 INSERT 정책이 본인 행만 허용하므로 여기서는 넣을 수 없다.
   }
 
   return { teamId };
@@ -359,10 +359,10 @@ export const acceptTeamInvite = async (params: {
   board?: { title: string; grid: string; theme: string; editCount: string; cells: string[] };
 }): Promise<void> => {
   const userId = await currentUserId();
-  if (!userId) throw new Error('로그인이 필요해요.');
+  if (!userId) throw new Error(i18n.t('auth.needLogin'));
 
   const invite = await fetchTeamInvite(params.teamId);
-  if (!invite) throw new Error('초대를 찾을 수 없어요.');
+  if (!invite) throw new Error(i18n.t('invite.error.missing'));
 
   let boardId: string;
 
@@ -370,12 +370,12 @@ export const acceptTeamInvite = async (params: {
     if (!invite.ownerBoard) {
       // 못 불러온 것을 "없다"로 처리하면 멀쩡한 초대 알림을 지워버린다.
       throw new Error(
-        invite.boardsFailed ? '빙고판을 불러오지 못했어요.' : '빙고판을 찾을 수 없어요.',
+        invite.boardsFailed ? i18n.t('home.boardLoadFailRefresh') : i18n.t('home.noBingo'),
       );
     }
     boardId = invite.ownerBoard.id;
   } else {
-    if (!params.board) throw new Error('참여할 빙고판이 필요해요.');
+    if (!params.board) throw new Error(i18n.t('home.boardNotCreated'));
     boardId = await createBingo({
       title: params.board.title,
       duration: '',
@@ -385,7 +385,6 @@ export const acceptTeamInvite = async (params: {
       editCount: params.board.editCount,
       theme: params.board.theme,
       cells: params.board.cells,
-      // 팀원은 서로 친구여야 초대되므로 팀 빙고판은 친구공개로 만든다
       visibility: 'friends',
     });
   }
@@ -415,34 +414,27 @@ export const acceptErrorMessage = (e: unknown): string => {
 
   // 조치할 수 있는 사유
   if (raw.includes('최대 3개')) {
-    return '진행 중인 빙고를 마치면 함께할 수 있어요. 빙고는 한 번에 3개까지 진행할 수 있어요.';
+    return i18n.t('team.alert.fullBingo', { count: LIMITS.bingoCount });
   }
-  if (raw.includes('최대 6명')) return '인원이 다 찼어요. 팀 빙고는 6명까지 참여할 수 있어요.';
-  if (raw.includes('로그인이 필요')) return '로그인이 풀렸어요. 다시 로그인해 주세요.';
+  if (raw.includes('최대 6명'))
+    return i18n.t('team.alert.fullTeammate', { count: LIMITS.teammateCount });
+  if (raw.includes('로그인이 필요')) return i18n.t('auth.needLogin');
   if (raw.includes('참여할 빙고판이 필요')) {
-    return '내 빙고를 직접 만들어야 하는 초대예요. 초대장을 열어 참여해 주세요.';
+    return i18n.t('team.alert.needBingo');
   }
 
   // 초대가 더 이상 유효하지 않은 사유 (isDeadInvite와 짝을 이룬다)
-  if (raw.includes('종료된 팀')) return '이미 종료된 빙고예요.';
-  if (raw.includes('초대를 찾을 수 없')) return '이미 취소되었거나 종료된 초대예요.';
-  if (raw.includes('빙고판을 찾을 수 없')) return '방장이 빙고판을 지워서 참여할 수 없어요.';
+  if (raw.includes('종료된 팀')) return i18n.t('team.alert.endedBingo');
+  if (raw.includes('초대를 찾을 수 없')) return i18n.t('team.alert.endedInvite');
+  if (raw.includes('빙고판을 찾을 수 없')) return i18n.t('team.alert.removedBingo');
 
   // 다시 시도하면 되는 사유
   if (raw.includes('불러오지 못했'))
-    return '빙고판을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.';
+    return `${i18n.t('team.alert.loadFail')} ${i18n.t('common.error.retry')}`;
 
-  // 남은 사유까지 '수락에 실패했어요'로 덮으면 무엇을 해야 할지 알 수 없다.
-  // DB 트리거 문구는 사람이 읽을 수 있게 쓰여 있으므로 그대로 보여준다.
   return raw || '수락에 실패했어요.';
 };
 
-/**
- * 다시 눌러도 결과가 달라지지 않고, 알림 자체가 이미 유효하지 않은 사유.
- * 이 경우 알림을 남겨두면 사용자가 같은 실패를 반복하게 된다.
- *
- * '불러오지 못했습니다'(일시적 조회 실패)는 여기 넣지 않는다 — 멀쩡한 초대를 지우게 된다.
- */
 export const isDeadInvite = (e: unknown): boolean => {
   const raw = e instanceof Error ? e.message : '';
   return (
@@ -454,7 +446,7 @@ export const isDeadInvite = (e: unknown): boolean => {
 
 export const rejectTeamInvite = async (teamId: string): Promise<void> => {
   const userId = await currentUserId();
-  if (!userId) throw new Error('로그인이 필요해요.');
+  if (!userId) throw new Error(i18n.t('auth.needLogin'));
 
   // 거절 알림은 team_members DELETE 트리거(notify_on_team_invite_declined)가 만든다.
   // 내 초대 알림은 멤버 행을 지우기 전에 지운다 — 삭제 뒤에는 RLS가 이 팀에 대한
@@ -478,7 +470,7 @@ export const rejectTeamInvite = async (teamId: string): Promise<void> => {
  */
 export const leaveTeam = async (teamId: string): Promise<void> => {
   const userId = await currentUserId();
-  if (!userId) throw new Error('로그인이 필요해요.');
+  if (!userId) throw new Error(i18n.t('auth.needLogin'));
 
   const { error } = await supabase
     .from('team_members')
@@ -874,10 +866,7 @@ export const fetchTeamByBoardId = async (
   };
 };
 
-// ============================================================
 // 회고
-// ============================================================
-
 export interface TeamRetrospective {
   userId: string;
   displayName: string;
@@ -916,7 +905,7 @@ export const fetchTeamRetrospectives = async (teamId: string): Promise<TeamRetro
 
 export const saveMyRetrospective = async (teamId: string, content: string): Promise<void> => {
   const userId = await currentUserId();
-  if (!userId) throw new Error('로그인이 필요해요.');
+  if (!userId) throw new Error(i18n.t('auth.needLogin'));
 
   const { error } = await supabase.from('team_retrospectives').upsert(
     {

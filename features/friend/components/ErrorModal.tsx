@@ -1,4 +1,5 @@
 import { Modal } from '@/components/Modal';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   message: string | null;
@@ -6,13 +7,15 @@ interface Props {
 }
 
 export function ErrorModal({ message, onDismiss }: Props) {
+  const { t } = useTranslation();
+
   return (
     <Modal
       visible={!!message}
-      title="오류"
+      title={t('common.error.general')}
       body={message ?? ''}
       variant="single"
-      confirmLabel="확인"
+      confirmLabel={t('common.confirm')}
       onConfirm={onDismiss}
       onDismiss={onDismiss}
     />

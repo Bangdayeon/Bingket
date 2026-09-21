@@ -206,7 +206,7 @@ export default function TeamInviteScreen() {
 
   return (
     <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
-      <PageHeader title={invite ? TEAM_MODE_LABEL_KEYS[invite.mode] : t('friends.invite')} />
+      <PageHeader title={invite ? TEAM_MODE_LABEL_KEYS[invite.mode] : t('friends.invite.label')} />
 
       {!invite ? (
         <View className="flex-1 items-center justify-center">
