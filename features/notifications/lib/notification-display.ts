@@ -1,4 +1,6 @@
-import { t } from 'i18next';
+import i18n from '@/i18n';
+
+const t = i18n.t.bind(i18n);
 
 const TITLE_KEYS = {
   bingo_reminder: 'notifications.title.bingoReminder',

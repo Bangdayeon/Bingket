@@ -201,13 +201,13 @@ export default function BingoViewScreen() {
         {isDone && (
           <View className="mt-8 px-4">
             <Text className="mb-2 text-body-md text-gray-900">{t('home.memo')}</Text>
-            <Pressable onPress={() => setEditingMemo(true)} accessibilityLabel="메모 편집">
+            <Pressable onPress={() => setEditingMemo(true)} accessibilityLabel={t('home.memoEdit')}>
               <TextInput
                 editable={false}
                 pointerEvents="none"
                 value={retrospective}
                 onChangeText={handleRetrospectiveChange}
-                placeholder={t('common.bingo.memoPlaceholder')}
+                placeholder={t('bingo.memo.placeholder')}
                 multiline
                 maxLength={MEMO_MAX_LENGTH}
                 textAlignVertical="top"
@@ -223,12 +223,12 @@ export default function BingoViewScreen() {
 
       <FocusedTextEditor
         visible={editingMemo}
-        title="메모"
+        title={t('home.memo')}
         value={retrospective}
         onChangeText={handleRetrospectiveChange}
         onClose={() => setEditingMemo(false)}
         maxLength={MEMO_MAX_LENGTH}
-        placeholder={t('common.bingo.memoPlaceholder')}
+        placeholder={t('bingo.memo.placeholder')}
       />
       <BingoCellModal
         visible={modalTarget !== null}

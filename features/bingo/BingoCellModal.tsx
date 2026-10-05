@@ -22,6 +22,7 @@ import Button from '@/components/Button';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ProfileAvatar } from '@/components/ProfileAvatar';
 import { useTranslation } from 'react-i18next';
+import i18n from '@/i18n';
 import { LIMITS } from '@/constants/limits';
 
 const PEEK = 13;
@@ -283,7 +284,7 @@ export function BingoCellModal({
                 <>
                   <Text className="mb-2 text-body-md text-gray-900">{t('bingo.doneDate')}</Text>
                   <DateInput
-                    value={formatDate(item.completedAt) || '날짜 선택'}
+                    value={formatDate(item.completedAt) || t('common.selectDate')}
                     onPress={() => handleOpenDatePicker(item)}
                     disabled={readOnly || lockedByOther(item)}
                     className="mb-5 self-start"
@@ -410,7 +411,7 @@ export function BingoCellModal({
                 onChange={(_, date) => {
                   if (date) setTempDate(date);
                 }}
-                locale="ko-KR"
+                locale={i18n.language === 'ko' ? 'ko-KR' : i18n.language}
                 textColor={colors.gray[900]}
                 themeVariant={scheme}
                 style={{ flex: 1 }}

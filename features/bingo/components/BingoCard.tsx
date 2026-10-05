@@ -19,6 +19,8 @@ import {
   GRID_CONFIGS,
   getThemeImageUrl,
   getThemeForegroundColor,
+  getThemeImageUrlSync,
+  getThemeForegroundColorSync,
 } from '@/features/bingo/lib/theme';
 import { shareBingoBoard } from '@/features/bingo/lib/share-board';
 import { useTranslation } from 'react-i18next';
@@ -41,9 +43,12 @@ export function BingoCard({
   teamMembers,
 }: BingoCardProps) {
   const { t } = useTranslation();
-  const [image, setImage] = useState<string | null>(null);
-  const [checkImage, setCheckImage] = useState<string | null>(null);
-  const [fgColor, setFgColor] = useState<string>(FIXED.boardForeground);
+  const grid = bingo.grid as '3x3' | '4x3' | '4x4';
+  const [image, setImage] = useState<string | null>(() => getThemeImageUrlSync(bingo.theme, grid));
+  const [checkImage, setCheckImage] = useState<string | null>(() =>
+    getThemeImageUrlSync(bingo.theme, 'check'),
+  );
+  const [fgColor, setFgColor] = useState<string>(() => getThemeForegroundColorSync(bingo.theme));
   const boardRef = useRef<View>(null);
   const [capturing, setCapturing] = useState(false);
   const [saveFailed, setSaveFailed] = useState(false);
@@ -51,7 +56,7 @@ export function BingoCard({
   useEffect(() => {
     const load = async () => {
       const [bg, check, color] = await Promise.all([
-        getThemeImageUrl(bingo.theme, bingo.grid as '3x3' | '4x3' | '4x4'),
+        getThemeImageUrl(bingo.theme, grid),
         getThemeImageUrl(bingo.theme, 'check'),
         getThemeForegroundColor(bingo.theme),
       ]);
@@ -60,7 +65,7 @@ export function BingoCard({
       setFgColor(color);
     };
     load();
-  }, [bingo.theme, bingo.grid]);
+  }, [bingo.theme, grid]);
 
   const { isTablet, contentWidth } = useResponsive();
   const [cols, rows] = bingo.grid.split('x').map(Number);

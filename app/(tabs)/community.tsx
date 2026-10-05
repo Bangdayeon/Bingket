@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import * as Sentry from '@sentry/react-native';
 import { Pressable, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -9,6 +9,7 @@ import EditIcon from '@/assets/icons/ic_edit.svg';
 import { CommunityPost } from '@/types/community';
 import { fetchPosts, PAGE_SIZE } from '@/features/community/lib/community';
 import { useOnlineRestore } from '@/lib/use-online';
+import { supabase } from '@/lib/supabase';
 
 export default function CommunityScreen() {
   const router = useRouter();
@@ -19,8 +20,17 @@ export default function CommunityScreen() {
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [loadFailed, setLoadFailed] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [authReady, setAuthReady] = useState(false);
   const loadingRef = useRef(false);
   const isFocused = useRef(false);
+
+  useEffect(() => {
+    supabase.auth
+      .getSession()
+      .then(({ data }) => setCurrentUserId(data.session?.user.id ?? null))
+      .finally(() => setAuthReady(true));
+  }, []);
 
   const loadPosts = useCallback(async (pageNum: number, reset: boolean) => {
     if (loadingRef.current) return;
@@ -91,16 +101,19 @@ export default function CommunityScreen() {
     <SafeAreaView className="flex-1 bg-surface" edges={['top']}>
       <View className="flex-1 md:self-center md:w-full md:max-w-[600px]">
         <CommunityHeader />
-        <PostList
-          posts={posts}
-          onLoadMore={handleLoadMore}
-          onRefresh={handleRefresh}
-          onBlock={handleBlock}
-          isLoading={loading}
-          isRefreshing={refreshing}
-          hasError={loadFailed}
-          onRetry={() => loadPosts(0, true)}
-        />
+        {authReady && (
+          <PostList
+            posts={posts}
+            onLoadMore={handleLoadMore}
+            onRefresh={handleRefresh}
+            onBlock={handleBlock}
+            isLoading={loading}
+            isRefreshing={refreshing}
+            hasError={loadFailed}
+            onRetry={() => loadPosts(0, true)}
+            currentUserId={currentUserId}
+          />
+        )}
       </View>
       <Pressable
         onPress={() => router.push('/community/write')}

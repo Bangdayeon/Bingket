@@ -39,7 +39,9 @@ export function AddEachBingo({
 
   const [localCells, setLocalCells] = useState<string[]>(cells);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
-  const [inputText, setInputText] = useState('');
+  const [initialInputText, setInitialInputText] = useState('');
+  const draftText = useRef('');
+  const [inputSession, setInputSession] = useState(0);
   const originalCells = useRef<string[]>([]);
   const [image, setImage] = useState<string | null>(null);
   const [fgColor, setFgColor] = useState<string>(FIXED.boardForeground);
@@ -98,7 +100,11 @@ export function AddEachBingo({
     if (disabledCells?.[index]) return;
 
     originalCells.current = [...localCells];
-    setInputText(localCells[index] ?? '');
+    const currentText = localCells[index] ?? '';
+    draftText.current = currentText;
+    setInitialInputText(currentText);
+    // 닫힘 애니메이션 중 다시 열어도 새 native 입력창을 사용한다.
+    setInputSession((session) => session + 1);
     setSelectedIndex(index);
   };
 
@@ -106,9 +112,12 @@ export function AddEachBingo({
     if (selectedIndex === null) return;
 
     const updated = [...localCells];
-    updated[selectedIndex] = inputText;
+    updated[selectedIndex] = draftText.current;
 
     setLocalCells(updated);
+    // 입력 중에는 native 입력값을 React state나 부모에 다시 전달하지 않는다.
+    // 저장 시점에만 반영해 한글 IME 조합을 보존한다.
+    onDraftCellsChange?.(updated);
     onCellsChange(updated);
     setSelectedIndex(null);
   };
@@ -212,17 +221,13 @@ export function AddEachBingo({
 
       <Modal
         visible={selectedIndex !== null}
-        title={`${t('common.bingo.bingo')} ${t('board.post.form.contentPlaceholder')}`}
+        title={`${t('bingo.label')} ${t('board.post.form.contentPlaceholder')}`}
         body={
           <TextInput
-            value={inputText}
+            key={inputSession}
+            defaultValue={initialInputText}
             onChangeText={(value) => {
-              setInputText(value);
-              if (selectedIndex !== null && onDraftCellsChange) {
-                const updated = [...localCells];
-                updated[selectedIndex] = value;
-                onDraftCellsChange(updated);
-              }
+              draftText.current = value;
             }}
             placeholder={t('board.post.form.contentPlaceholder')}
             maxLength={LIMITS.bingoCell}

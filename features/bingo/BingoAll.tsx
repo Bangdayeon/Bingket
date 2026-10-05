@@ -376,7 +376,7 @@ export function BingoAll() {
     if (atBingoCap) {
       setNotice({
         title: t('home.addBingo.clean'),
-        body: t('home.addBingo.clean_des', { count: LIMITS.bingoCount }),
+        body: t('home.addBingo.cleanDescription', { count: LIMITS.bingoCount }),
       });
       return;
     }
@@ -389,7 +389,7 @@ export function BingoAll() {
     setStripPendingId(item.id);
     try {
       const invite = await fetchTeamInvite(item.target_id);
-      if (!invite) throw new Error(t('invite.error.missing'));
+      if (!invite) throw new Error(t('team.error.inviteMissing'));
       // teamMode는 알림 목록이 team_bingos를 따로 조회해 채운다. 그 조회가 비면
       // 경쟁하기 초대가 위 분기를 그냥 지나쳐 '참여할 빙고판이 필요합니다'로 죽는다.
       // 여기서 온 mode가 원본이므로 한 번 더 본다.
@@ -420,7 +420,7 @@ export function BingoAll() {
         await deleteNotificationByTarget(item.type, item.target_id).catch(Sentry.captureException);
         dismissStrip(item);
       }
-      setNotice({ title: t('invite.error.expired'), body: acceptErrorMessage(e) });
+      setNotice({ title: t('team.error.inviteExpired'), body: acceptErrorMessage(e) });
     } finally {
       setStripPendingId(null);
     }
@@ -434,7 +434,7 @@ export function BingoAll() {
       dismissStrip(item);
     } catch (e) {
       Sentry.captureException(e);
-      setNotice({ title: t('invite.error.deny'), body: t('common.error.retry') });
+      setNotice({ title: t('team.error.inviteDeny'), body: t('common.error.retry') });
     } finally {
       setStripPendingId(null);
     }
@@ -543,7 +543,7 @@ export function BingoAll() {
           ) : (
             <View className="items-center px-4">
               <Text className="text-body-md text-gray-700">
-                {t('home.addBingo.clean_des', { count: LIMITS.bingoCount })}
+                {t('home.addBingo.cleanDescription', { count: LIMITS.bingoCount })}
               </Text>
             </View>
           ))}

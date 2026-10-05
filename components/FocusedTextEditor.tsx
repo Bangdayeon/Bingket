@@ -10,6 +10,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Button from './Button';
 import { Text } from './Text';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   visible: boolean;
@@ -30,6 +31,7 @@ export function FocusedTextEditor({
   maxLength,
   placeholder,
 }: Props) {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const input = useRef<RNTextInput>(null);
   const close = () => {
@@ -53,7 +55,7 @@ export function FocusedTextEditor({
         >
           <View className="flex-row items-center justify-between mb-4">
             <Text className="text-title-sm text-gray-900">{title}</Text>
-            <Button label="완료" variant="ghost" size="sm" onClick={close} />
+            <Button label={t('common.done')} variant="ghost" size="sm" onClick={close} />
           </View>
           <RNTextInput
             ref={input}

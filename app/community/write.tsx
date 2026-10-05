@@ -241,7 +241,7 @@ export default function CommunityWriteScreen() {
     setShowCameraMenu(false);
     if (imageBlockCount >= MAX_IMAGES) return;
     if (!(await ensurePhotoLibraryPermission())) {
-      Alert.alert(t('common.permission.albumnBody'), t('common.permission.albumnBody'));
+      Alert.alert(t('common.permission.albumTitle'), t('common.permission.albumBody'));
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({

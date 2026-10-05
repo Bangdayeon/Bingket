@@ -86,7 +86,7 @@ export default function TeamInviteScreen() {
           setMyTitle((current) => current || data.title);
         }
       })
-      .catch(() => setAlertMessage(`${t('home.error.loadInvite')} ${t('common.error.retry')}`))
+      .catch(() => setAlertMessage(`${t('team.error.loadInvite')} ${t('common.error.retry')}`))
       .finally(() => setLoading(false));
   }, [teamId, t]);
 
@@ -197,7 +197,7 @@ export default function TeamInviteScreen() {
       router.back();
     } catch (e) {
       setAlertMessage(
-        e instanceof Error ? e.message : `${t('home.error.reject')} ${t('common.error.retry')}`,
+        e instanceof Error ? e.message : `${t('team.error.reject')} ${t('common.error.retry')}`,
       );
     } finally {
       setActing(false);
@@ -206,12 +206,14 @@ export default function TeamInviteScreen() {
 
   return (
     <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
-      <PageHeader title={invite ? TEAM_MODE_LABEL_KEYS[invite.mode] : t('friends.invite.label')} />
+      <PageHeader
+        title={invite ? t(TEAM_MODE_LABEL_KEYS[invite.mode]) : t('friends.invite.label')}
+      />
 
       {!invite ? (
         <View className="flex-1 items-center justify-center">
           <Text className="text-body-md text-gray-400">
-            {t('home.error.loadInvite')} {t('common.error.retry')}
+            {t('team.error.loadInvite')} {t('common.error.retry')}
           </Text>
         </View>
       ) : (
@@ -227,14 +229,17 @@ export default function TeamInviteScreen() {
               <ProfileAvatar avatarUrl={invite.ownerAvatarUrl} size={32} />
 
               <Text className="flex-1 text-body-md text-gray-900">
-                {t(isCompetition ? 'home.inviteCompetitionMessage' : 'home.inviteTogetherMessage', {
-                  name: invite.ownerDisplayName,
-                })}
+                {t(
+                  isCompetition ? 'team.invite.competitionMessage' : 'team.invite.togetherMessage',
+                  {
+                    name: invite.ownerDisplayName,
+                  },
+                )}
               </Text>
             </View>
 
             <Text className="text-body-md text-gray-800">
-              {t('home.period', {
+              {t('team.invite.period', {
                 startDate: invite.startDate.replaceAll('-', '.'),
                 endDate: invite.endDate.replaceAll('-', '.'),
               })}
@@ -243,16 +248,16 @@ export default function TeamInviteScreen() {
             <View>
               <Text className="text-body-sm text-gray-700">
                 {started
-                  ? t('home.daysUntilEnd', {
+                  ? t('team.invite.daysUntilEnd', {
                       days: calcTeamDday(invite.endDate),
                     })
-                  : t('home.daysUntilStart', {
+                  : t('team.invite.daysUntilStart', {
                       days: calcDaysUntilStart(invite.startDate),
                     })}
               </Text>
 
               <Text className="text-body-sm text-gray-700">
-                {t('home.currentMemberCount', {
+                {t('team.invite.currentMemberCount', {
                   count: invite.memberCount,
                 })}
               </Text>
@@ -271,11 +276,11 @@ export default function TeamInviteScreen() {
 
           {invite.boardsFailed && (
             <ErrorState
-              message="친구의 빙고판을 불러오지 못했어요."
+              message={t('team.error.load')}
               onRetry={() => {
                 fetchTeamInvite(teamId)
                   .then(setInvite)
-                  .catch(() => setAlertMessage('친구의 빙고판을 불러오지 못했어요.'));
+                  .catch(() => setAlertMessage(t('team.error.load')));
               }}
             />
           )}
@@ -283,7 +288,7 @@ export default function TeamInviteScreen() {
           {previewBingo && (
             <View className="mt-8">
               <Text className="px-4 mb-3 text-body-md text-gray-900">
-                {invite.ownerDisplayName}님의 빙고판
+                {t('team.invite.friendsBingo', { userName: invite.ownerDisplayName })}
               </Text>
               <BingoPreview
                 bingo={previewBingo}
@@ -296,7 +301,7 @@ export default function TeamInviteScreen() {
           {composing && (
             <View className="mt-8">
               <Text className="px-4 pb-2 text-caption-md text-gray-700">
-                {t('home.composingDescription')}
+                {t('team.invite.composingDescription')}
               </Text>
 
               <BingoTitle value={myTitle} onChange={setMyTitle} />
@@ -326,7 +331,7 @@ export default function TeamInviteScreen() {
           style={{ paddingBottom: insets.bottom + 8 }}
         >
           <Button
-            label={composing ? t('common.previous') : t('home.rejectInvite')}
+            label={composing ? t('common.previous') : t('team.invite.reject')}
             variant="secondary"
             size="md"
             onClick={composing ? () => setComposing(false) : () => setShowRejectModal(true)}
@@ -345,11 +350,11 @@ export default function TeamInviteScreen() {
 
       <Modal
         visible={showRejectModal}
-        title={t('home.rejectInviteTitle')}
-        body={t('home.rejectInviteBody')}
+        title={t('team.invite.rejectTitle')}
+        body={t('team.invite.rejectBody')}
         variant="warning"
         cancelLabel={t('common.cancel')}
-        confirmLabel={t('home.rejectInvite')}
+        confirmLabel={t('team.invite.reject')}
         onCancel={() => setShowRejectModal(false)}
         onDismiss={() => setShowRejectModal(false)}
         onConfirm={handleReject}

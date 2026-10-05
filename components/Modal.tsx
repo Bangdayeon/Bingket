@@ -10,6 +10,7 @@ import { Text } from './Text';
 import Button from './Button';
 import { Portal } from './Portal';
 import { ReactNode, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 type ModalVariant = 'default' | 'warning' | 'error' | 'success' | 'single';
 
@@ -39,14 +40,17 @@ export function Modal({
   title,
   body,
   variant = 'default',
-  confirmLabel = '확인',
-  cancelLabel = '취소',
+  confirmLabel,
+  cancelLabel,
   confirmDisabled = false,
   confirmLoading = false,
   onConfirm,
   onCancel,
   onDismiss,
 }: ModalProps) {
+  const { t } = useTranslation();
+  const resolvedConfirmLabel = confirmLabel ?? t('common.confirm');
+  const resolvedCancelLabel = cancelLabel ?? t('common.cancel');
   const confirmVariant = variant === 'warning' || variant === 'error' ? 'danger' : 'primary';
   const isSingleButton = variant === 'single' || variant === 'success' || variant === 'error';
 
@@ -131,7 +135,7 @@ export function Modal({
               <View className="mt-[22px] flex-row items-center justify-end gap-2">
                 {!isSingleButton && (
                   <Button
-                    label={cancelLabel}
+                    label={resolvedCancelLabel}
                     variant="secondary"
                     size="md"
                     onClick={onCancel ?? (() => {})}
@@ -139,7 +143,7 @@ export function Modal({
                   />
                 )}
                 <Button
-                  label={confirmLabel}
+                  label={resolvedConfirmLabel}
                   variant={confirmVariant}
                   size="md"
                   onClick={onConfirm}

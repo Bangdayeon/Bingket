@@ -362,7 +362,7 @@ export const acceptTeamInvite = async (params: {
   if (!userId) throw new Error(i18n.t('auth.needLogin'));
 
   const invite = await fetchTeamInvite(params.teamId);
-  if (!invite) throw new Error(i18n.t('invite.error.missing'));
+  if (!invite) throw new Error(i18n.t('team.error.inviteMissing'));
 
   let boardId: string;
 
@@ -370,12 +370,14 @@ export const acceptTeamInvite = async (params: {
     if (!invite.ownerBoard) {
       // 못 불러온 것을 "없다"로 처리하면 멀쩡한 초대 알림을 지워버린다.
       throw new Error(
-        invite.boardsFailed ? i18n.t('home.boardLoadFailRefresh') : i18n.t('home.noBingo'),
+        invite.boardsFailed
+          ? i18n.t('team.status.boardLoadFailRefresh')
+          : i18n.t('team.status.noBingo'),
       );
     }
     boardId = invite.ownerBoard.id;
   } else {
-    if (!params.board) throw new Error(i18n.t('home.boardNotCreated'));
+    if (!params.board) throw new Error(i18n.t('team.status.boardNotCreated'));
     boardId = await createBingo({
       title: params.board.title,
       duration: '',

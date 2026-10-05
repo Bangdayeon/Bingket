@@ -4,6 +4,7 @@ import { useResolvedScheme } from '@/lib/color-scheme';
 import { Modal, Platform, Pressable, View } from 'react-native';
 import { Text } from '@/components/Text';
 import { useTranslation } from 'react-i18next';
+import i18n from '@/i18n';
 
 interface DatePickerProps {
   target: 'start' | 'end';
@@ -79,7 +80,7 @@ export function DatePicker({
             onChange={(_, date) => {
               if (date) onDateChange(date);
             }}
-            locale="ko-KR"
+            locale={i18n.language === 'ko' ? 'ko-KR' : i18n.language}
             style={{ flex: 1 }}
             textColor={colors.gray[900]}
             themeVariant={scheme}

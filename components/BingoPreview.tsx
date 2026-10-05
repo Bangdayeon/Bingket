@@ -9,6 +9,8 @@ import {
   GRID_CONFIGS,
   getThemeImageUrl,
   getThemeForegroundColor,
+  getThemeImageUrlSync,
+  getThemeForegroundColorSync,
 } from '@/features/bingo/lib/theme';
 
 type PreviewSize = 'sm' | 'md';
@@ -44,14 +46,17 @@ export default function BingoPreview({
   square = false,
   onPress,
 }: BingoPreviewProps) {
-  const [image, setImage] = useState<string | null>(null);
-  const [checkImage, setCheckImage] = useState<string | null>(null);
-  const [fgColor, setFgColor] = useState<string>(FIXED.boardForeground);
+  const grid = bingo.grid as '3x3' | '4x3' | '4x4';
+  const [image, setImage] = useState<string | null>(() => getThemeImageUrlSync(bingo.theme, grid));
+  const [checkImage, setCheckImage] = useState<string | null>(() =>
+    getThemeImageUrlSync(bingo.theme, 'check'),
+  );
+  const [fgColor, setFgColor] = useState<string>(() => getThemeForegroundColorSync(bingo.theme));
 
   useEffect(() => {
     const load = async () => {
       const [bg, check, color] = await Promise.all([
-        getThemeImageUrl(bingo.theme, bingo.grid as '3x3' | '4x3' | '4x4'),
+        getThemeImageUrl(bingo.theme, grid),
         getThemeImageUrl(bingo.theme, 'check'),
         getThemeForegroundColor(bingo.theme),
       ]);
@@ -60,7 +65,7 @@ export default function BingoPreview({
       setFgColor(color);
     };
     load();
-  }, [bingo.theme, bingo.grid]);
+  }, [bingo.theme, grid]);
 
   const [cols, rows] = bingo.grid.split('x').map(Number);
   const Wrapper = onPress ? Pressable : View;

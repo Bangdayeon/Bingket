@@ -183,7 +183,9 @@ export default function BingoModifyScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <View className="px-4 pb-2 pt-7">
-          <Text className="text-title-lg font-pretendard-medium text-gray-900">빙고 수정하기</Text>
+          <Text className="text-title-lg font-pretendard-medium text-gray-900">
+            {t('home.modifyBingo')}
+          </Text>
         </View>
 
         <BingoTitle
@@ -220,7 +222,7 @@ export default function BingoModifyScreen() {
 
           <View className="gap-2">
             <Text className="px-4 text-body-sm text-gray-600">
-              각 항목 수정 가능 횟수:
+              {t('bingo.modifyCount.label')}:
               {isUnlimited ? t('home.field.modifyCount.infinite') : maxEdits}
             </Text>
 

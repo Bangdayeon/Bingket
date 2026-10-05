@@ -18,9 +18,9 @@ function formatDate(yyyyMmDd: string | null): string {
 
 /** 진행 상태를 한 줄로 요약한다 */
 function statusLabel(team: TeamListEntry): string {
-  if (team.isFinished) return i18n.t('home.periodEnded');
+  if (team.isFinished) return i18n.t('team.status.periodEnded');
   if (!team.isStarted)
-    return i18n.t('home.periodDaysUntilStart', { days: calcDaysUntilStart(team.startDate) });
+    return i18n.t('team.status.periodDaysUntilStart', { days: calcDaysUntilStart(team.startDate) });
   return `D-${calcTeamDday(team.endDate)}`;
 }
 
@@ -46,12 +46,14 @@ export function TeamListItem({ team }: TeamListItemProps) {
       </View>
 
       <View className="flex-row gap-2 items-center">
-        <Text className="text-caption-sm text-gray-700">{TEAM_MODE_LABEL_KEYS[team.mode]}</Text>
+        <Text className="text-caption-sm text-gray-700">
+          {i18n.t(TEAM_MODE_LABEL_KEYS[team.mode])}
+        </Text>
         <Text className="text-caption-sm text-gray-400">·</Text>
         <Text className="text-caption-sm text-gray-700">{period}</Text>
         <Text className="text-caption-sm text-gray-400">·</Text>
         <Text className="text-caption-sm text-gray-700">
-          {i18n.t('home.howmany', { count: team.members.length })}
+          {i18n.t('team.status.howMany', { count: team.members.length })}
         </Text>
       </View>
     </Pressable>

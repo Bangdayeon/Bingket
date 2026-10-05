@@ -4,6 +4,8 @@ import { Text } from '@/components/Text';
 import { FIXED } from '@/lib/use-colors';
 import { TABLET_MAX_MODAL_WIDTH } from '@/lib/use-responsive';
 import type { Hole } from './lib/spotlight-path';
+import { useTranslation } from 'react-i18next';
+import i18n from '@/i18n';
 
 /** 카드와 구멍 사이 간격. 삼각형이 이 사이를 메운다. */
 const GAP = 14;
@@ -44,6 +46,8 @@ export function CoachMarkCard({
   showPrev,
   onPrev,
 }: CoachMarkCardProps) {
+  useTranslation();
+  const t = i18n.t.bind(i18n) as (key: string) => string;
   const { rect } = hole;
 
   /**
@@ -97,7 +101,9 @@ export function CoachMarkCard({
 
         {(showPrev || nextLabel !== null) && (
           <View className="mt-4 flex-row justify-end gap-2">
-            {showPrev && <Button label="이전" variant="secondary" size="sm" onClick={onPrev} />}
+            {showPrev && (
+              <Button label={t('common.previous')} variant="secondary" size="sm" onClick={onPrev} />
+            )}
             {nextLabel !== null && <Button label={nextLabel} size="sm" onClick={onNext} />}
           </View>
         )}

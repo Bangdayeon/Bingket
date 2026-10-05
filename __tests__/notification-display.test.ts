@@ -3,6 +3,9 @@ import {
   hasNotificationBody,
   notificationTitle,
 } from '@/features/notifications/lib/notification-display';
+import i18n from '@/i18n';
+
+i18n.changeLanguage('ko');
 
 const NOW = new Date('2026-09-09T12:00:00Z').getTime();
 const ago = (ms: number) => new Date(NOW - ms).toISOString();

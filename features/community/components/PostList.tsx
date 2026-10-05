@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback, useState } from 'react';
+import { useRef, useCallback } from 'react';
 import { FlatList, Pressable, RefreshControl, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { CommunityPost } from '@/types/community';
@@ -6,7 +6,6 @@ import { PostCard } from './PostCard';
 import Loading from '@/components/Loading';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
-import { supabase } from '@/lib/supabase';
 import { useTranslation } from 'react-i18next';
 
 interface PostListProps {
@@ -18,6 +17,7 @@ interface PostListProps {
   isRefreshing: boolean;
   hasError?: boolean;
   onRetry?: () => void;
+  currentUserId: string | null;
 }
 
 const Separator = () => <View className="h-px bg-gray-300" />;
@@ -31,19 +31,12 @@ export function PostList({
   isRefreshing,
   hasError = false,
   onRetry,
+  currentUserId,
 }: PostListProps) {
   const { t } = useTranslation();
   const router = useRouter();
   const flatListRef = useRef<FlatList<CommunityPost>>(null);
   const isNavigatingRef = useRef(false);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setCurrentUserId(data.session?.user.id ?? null);
-    });
-  }, []);
-
   const renderItem = useCallback(
     ({ item }: { item: CommunityPost }) => (
       <Pressable

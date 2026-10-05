@@ -62,7 +62,15 @@ export async function getThemeImageUrl(theme: string, grid: GridType): Promise<s
   return themes[theme]?.images?.[grid] ?? null;
 }
 
+export function getThemeImageUrlSync(theme: string, grid: GridType): string | null {
+  return themeCache?.[theme]?.images?.[grid] ?? null;
+}
+
 export async function getThemeForegroundColor(theme: string): Promise<string> {
   const themes = await fetchThemes();
   return themes[theme]?.foregroundColor ?? FIXED.boardForeground;
+}
+
+export function getThemeForegroundColorSync(theme: string): string {
+  return themeCache?.[theme]?.foregroundColor ?? FIXED.boardForeground;
 }

@@ -22,6 +22,12 @@ interface Particle {
   angle: number;
 }
 
+interface ParticleAnims {
+  progress: Animated.Value;
+  opacity: Animated.Value;
+  gravity: Animated.Value;
+}
+
 const PARTICLES: Particle[] = Array.from({ length: PARTICLE_COUNT }, (_, i) => ({
   id: i,
   color: PARTICLE_COLORS[i % PARTICLE_COLORS.length],
@@ -48,16 +54,22 @@ export function LikeButton({
   const [liked, setLiked] = useState(initialLiked);
   const [likeCount, setLikeCount] = useState(count);
   const [showParticles, setShowParticles] = useState(false);
+  const [particleAnims, setParticleAnims] = useState<ParticleAnims[] | null>(null);
   const [failed, setFailed] = useState(false);
   const isProcessingRef = useRef(false);
 
-  const [particleAnims] = useState(() =>
-    PARTICLES.map(() => ({
+  const particleAnimsRef = useRef<ParticleAnims[] | null>(null);
+  const getParticleAnims = () => {
+    if (particleAnimsRef.current) return particleAnimsRef.current;
+    const next = PARTICLES.map(() => ({
       progress: new Animated.Value(0),
       opacity: new Animated.Value(1),
       gravity: new Animated.Value(0),
-    })),
-  );
+    }));
+    particleAnimsRef.current = next;
+    setParticleAnims(next);
+    return next;
+  };
 
   const [prevProps, setPrevProps] = useState({ initialLiked, count });
   if (prevProps.initialLiked !== initialLiked || prevProps.count !== count) {
@@ -68,15 +80,16 @@ export function LikeButton({
 
   useEffect(() => {
     return () => {
-      particleAnims.forEach(({ progress, opacity, gravity }) => {
+      particleAnimsRef.current?.forEach(({ progress, opacity, gravity }) => {
         progress.stopAnimation();
         opacity.stopAnimation();
         gravity.stopAnimation();
       });
     };
-  }, [particleAnims]);
+  }, []);
 
   const triggerParticles = () => {
+    const particleAnims = getParticleAnims();
     // initial
     particleAnims.forEach(({ progress, opacity, gravity }) => {
       progress.setValue(0);
@@ -154,6 +167,7 @@ export function LikeButton({
         )}
 
         {showParticles &&
+          particleAnims &&
           PARTICLES.map((particle, i) => {
             const { progress, opacity, gravity } = particleAnims[i];
 

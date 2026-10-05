@@ -9,26 +9,26 @@ import type { BoardVisibility } from '@/features/profile/lib/profile';
 const OPTIONS = [
   {
     value: 'public',
-    labelKey: 'common.visibility.public',
-    descriptionKey: 'common.visibility.public_des',
+    labelKey: 'bingo.visibility.public',
+    descriptionKey: 'bingo.visibility.publicDescription',
   },
   {
     value: 'friends',
-    labelKey: 'common.visibility.friends',
-    descriptionKey: 'common.visibility.friends_des',
+    labelKey: 'bingo.visibility.friends',
+    descriptionKey: 'bingo.visibility.friendsDescription',
   },
   {
     value: 'private',
-    labelKey: 'common.visibility.private',
-    descriptionKey: 'common.visibility.private_des',
+    labelKey: 'bingo.visibility.private',
+    descriptionKey: 'bingo.visibility.privateDescription',
   },
 ] as const satisfies readonly {
   value: BoardVisibility;
-  labelKey: 'common.visibility.public' | 'common.visibility.friends' | 'common.visibility.private';
+  labelKey: 'bingo.visibility.public' | 'bingo.visibility.friends' | 'bingo.visibility.private';
   descriptionKey:
-    | 'common.visibility.public_des'
-    | 'common.visibility.friends_des'
-    | 'common.visibility.private_des';
+    | 'bingo.visibility.publicDescription'
+    | 'bingo.visibility.friendsDescription'
+    | 'bingo.visibility.privateDescription';
 }[];
 
 interface Props {
@@ -44,7 +44,7 @@ export function VisibilitySelector({ value, onChange }: Props) {
   return (
     <View>
       <View className="px-4">
-        <SectionLabel label={t('common.visibility.label')} />
+        <SectionLabel label={t('bingo.visibility.label')} />
       </View>
 
       <ScrollView

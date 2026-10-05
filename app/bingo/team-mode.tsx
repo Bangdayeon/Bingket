@@ -45,11 +45,11 @@ export default function TeamModeScreen() {
 
   return (
     <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
-      <PageHeader title="친구와 같이하기" />
+      <PageHeader title={t('team.title')} />
 
       <ScrollView className="flex-1 px-4">
         <Text className="pb-6 text-caption-md text-gray-700">
-          {t('home.field.friend.description', {
+          {t('team.create.friend.description', {
             count: TEAM_MAX_MEMBERS - 1,
           })}
         </Text>
@@ -58,8 +58,8 @@ export default function TeamModeScreen() {
           {SELECTABLE_TEAM_MODES.map((mode) => (
             <ModeCard
               key={mode}
-              label={TEAM_MODE_LABEL_KEYS[mode]}
-              description={TEAM_MODE_DESCRIPTION_KEYS[mode]}
+              label={t(TEAM_MODE_LABEL_KEYS[mode])}
+              description={t(TEAM_MODE_DESCRIPTION_KEYS[mode])}
               onPress={() => goCreate(mode)}
             />
           ))}

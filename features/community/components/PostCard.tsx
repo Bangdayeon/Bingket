@@ -77,16 +77,6 @@ function parseBlocks(content: string): StoredBlock[] | null {
   return null;
 }
 
-function bodyPreview(blocks: StoredBlock[] | null, raw: string): string {
-  const text = blocks
-    ? blocks
-        .filter((b): b is Extract<StoredBlock, { type: 'text' }> => b.type === 'text')
-        .map((b) => b.value)
-        .join(' ')
-    : raw;
-  return text.replace(/\s+/g, ' ').trim();
-}
-
 interface PostCardProps {
   post: CommunityPost;
   currentUserId?: string | null;
@@ -134,40 +124,40 @@ export const PostCard = memo(function PostCard({ post, currentUserId, onBlock }:
 
     const bingoData = hasBingo && post.bingo ? postBingoToBingoData(post.bingo) : null;
 
-    const preview = bodyPreview(blocks, post.body);
-
     return {
       blocks,
       firstImageUrl,
       hasBingo,
       bingoData,
-      preview,
     };
   }, [post.body, post.imageUrls, post.bingo]);
 
-  const menuItems =
-    ownership === 'mine'
-      ? [
-          {
-            label: t('board.post.edit.menu'),
-            onPress: () => router.push(`/community/write?postId=${post.id}`),
-          },
-        ]
-      : [
-          {
-            label: t('board.moderation.report.menu'),
-            onPress: () => setShowReportModal(true),
-          },
-          ...(post.user?.is_deleted
-            ? []
-            : [
-                {
-                  label: t('board.moderation.block.menu'),
-                  danger: true as const,
-                  onPress: () => setShowBlockModal(true),
-                },
-              ]),
-        ];
+  const menuItems = useMemo(
+    () =>
+      ownership === 'mine'
+        ? [
+            {
+              label: t('board.post.edit.menu'),
+              onPress: () => router.push(`/community/write?postId=${post.id}`),
+            },
+          ]
+        : [
+            {
+              label: t('board.moderation.report.menu'),
+              onPress: () => setShowReportModal(true),
+            },
+            ...(post.user?.is_deleted
+              ? []
+              : [
+                  {
+                    label: t('board.moderation.block.menu'),
+                    danger: true as const,
+                    onPress: () => setShowBlockModal(true),
+                  },
+                ]),
+          ],
+    [ownership, post.id, post.user?.is_deleted, router, t],
+  );
 
   return (
     <View className="px-4 pb-4 pt-4">

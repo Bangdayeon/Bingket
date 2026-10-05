@@ -141,8 +141,8 @@ export default function ProfileScreen() {
 
                 <Text className="text-body-sm text-gray-500 text-center">
                   {unlockableByFriend
-                    ? t('profile.visible.friend_des')
-                    : t('profile.visible.locked_des')}
+                    ? t('profile.visible.friendDescription')
+                    : t('profile.visible.lockedDescription')}
                 </Text>
 
                 {unlockableByFriend && canAddFriend && (

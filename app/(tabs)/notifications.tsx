@@ -2,7 +2,7 @@ import { useFocusEffect } from 'expo-router';
 
 import { useCallback, useState } from 'react';
 
-import { Alert, Pressable, ScrollView, View } from 'react-native';
+import { Alert, FlatList, Pressable, View } from 'react-native';
 
 import { Text } from '@/components/Text';
 
@@ -187,7 +187,7 @@ export default function NotificationsScreen() {
         setNotifications(list);
         setHasMore(list.length === limit);
       })
-      .catch(() => setFetchError(`$(t('notifications.error')} ${t('common.error.retry')}`))
+      .catch(() => setFetchError(`${t('notifications.error')} ${t('common.error.retry')}`))
       .finally(() => setLoading(false));
   }, [limit]);
 
@@ -257,16 +257,12 @@ export default function NotificationsScreen() {
 
       <View className="h-px bg-gray-300" />
 
-      <ScrollView className="flex-1">
-        {fetchError ? (
-          <ErrorState message={fetchError} onRetry={loadData} />
-        ) : notifications.length === 0 ? (
-          <EmptyState message={t('notifications.empty')} />
-        ) : null}
-
-        {notifications.map((item) => (
+      <FlatList
+        className="flex-1"
+        data={notifications}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
           <NotificationItem
-            key={item.id}
             item={item}
             onRead={async () => {
               await markNotificationRead(item.id);
@@ -282,17 +278,22 @@ export default function NotificationsScreen() {
             onAction={handleAction}
             onFriendResponse={handleFriendResponse}
           />
-        ))}
-
-        {hasMore && (
-          <Pressable
-            onPress={() => setLimit((currentLimit) => currentLimit + NOTIFICATION_PAGE_SIZE)}
-            className="items-center py-4"
-          >
-            <Text className="text-body-md text-gray-600">{t('notifications.more')}</Text>
-          </Pressable>
         )}
-      </ScrollView>
+        ListHeaderComponent={
+          fetchError ? <ErrorState message={fetchError} onRetry={loadData} /> : null
+        }
+        ListEmptyComponent={<EmptyState message={t('notifications.empty')} />}
+        ListFooterComponent={
+          hasMore ? (
+            <Pressable
+              onPress={() => setLimit((currentLimit) => currentLimit + NOTIFICATION_PAGE_SIZE)}
+              className="items-center py-4"
+            >
+              <Text className="text-body-md text-gray-600">{t('notifications.more')}</Text>
+            </Pressable>
+          ) : null
+        }
+      />
     </SafeAreaView>
   );
 }

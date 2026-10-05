@@ -210,7 +210,12 @@ function extractTextPreview(content: string): string {
   return content;
 }
 
-export const fetchMyPosts = async (): Promise<MyPost[]> => {
+export const MY_POSTS_PAGE_SIZE = 30;
+
+export const fetchMyPosts = async (
+  page: number = 0,
+  limit: number = MY_POSTS_PAGE_SIZE,
+): Promise<MyPost[]> => {
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -221,7 +226,8 @@ export const fetchMyPosts = async (): Promise<MyPost[]> => {
     .select('id, title, content, like_count, comment_count, created_at')
     .eq('user_id', user.id)
     .eq('is_deleted', false)
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false })
+    .range(page * limit, (page + 1) * limit - 1);
 
   // 조회 실패가 "아직 작성한 글이 없습니다"로 보이면 안 된다.
   if (error) throw error;

@@ -4,6 +4,9 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { PortalHost } from '@/components/PortalHost';
 import { CoachMarkHost } from '@/features/coachmark/CoachMarkHost';
 import { COACH_MARK_STEPS } from '@/features/coachmark/lib/coach-mark-steps';
+import i18n from '@/i18n';
+
+i18n.changeLanguage('ko');
 import {
   advanceTour,
   getCoachMarkState,
@@ -104,7 +107,9 @@ describe('CoachMarkHost', () => {
 
     act(() => setActiveRect(COACH_MARK_STEPS[0].targetId, RECT));
 
-    expect(screen.getByText(COACH_MARK_STEPS[0].text)).toBeTruthy();
+    expect(
+      screen.getByText((i18n.t as (key: string) => string)(COACH_MARK_STEPS[0].textKey)),
+    ).toBeTruthy();
     expect(screen.getByText(`1 / ${COACH_MARK_STEPS.length}`)).toBeTruthy();
   });
 
@@ -112,7 +117,9 @@ describe('CoachMarkHost', () => {
     await mount();
 
     // 전환 중에 옛 좌표로 구멍을 뚫느니 한 박자 늦게 나타나는 편이 낫다
-    expect(screen.queryByText(COACH_MARK_STEPS[0].text)).toBeNull();
+    expect(
+      screen.queryByText((i18n.t as (key: string) => string)(COACH_MARK_STEPS[0].textKey)),
+    ).toBeNull();
   });
 
   it('마지막 단계에서만 시작하기가 뜬다', async () => {

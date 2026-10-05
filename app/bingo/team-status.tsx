@@ -73,10 +73,10 @@ export default function TeamStatusScreen() {
   const retroDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   function periodLabel(detail: TeamDetail): string {
-    if (detail.isFinished) return t('home.periodEnded');
+    if (detail.isFinished) return t('team.status.periodEnded');
     if (!detail.isStarted)
-      return t('home.periodDaysUntilStart', { days: calcDaysUntilStart(detail.startDate) });
-    return t('home.periodDday', { days: calcTeamDday(detail.endDate) });
+      return t('team.status.periodDaysUntilStart', { days: calcDaysUntilStart(detail.startDate) });
+    return t('team.status.periodDday', { days: calcTeamDday(detail.endDate) });
   }
 
   function MemberColumn({
@@ -102,7 +102,7 @@ export default function TeamStatusScreen() {
           {member.displayName}
         </Text>
         {pending ? (
-          <Text className="text-caption-sm text-gray-400">{t('home.pendingAccept')}</Text>
+          <Text className="text-caption-sm text-gray-400">{t('team.status.pendingAccept')}</Text>
         ) : contributionOnly ? (
           <Text className="text-caption-sm text-gray-700">{member.achievedCount}칸</Text>
         ) : (
@@ -123,7 +123,7 @@ export default function TeamStatusScreen() {
           setRetrospectives(retros);
           setMyRetrospective(retros.find((r) => r.isMe)?.content ?? '');
         })
-        .catch(() => setErrorMessage(t('home.error.teamInfoLoad')))
+        .catch(() => setErrorMessage(t('team.error.info')))
         .finally(() => setLoading(false));
     }, [teamId, t]),
   );
@@ -134,7 +134,7 @@ export default function TeamStatusScreen() {
     retroDebounceRef.current = setTimeout(() => {
       saveMyRetrospective(teamId, value).catch((e: unknown) => {
         Sentry.captureException(e);
-        setErrorMessage(t('home.retrospectiveSaveFail'));
+        setErrorMessage(t('team.status.retrospectiveSaveFail'));
       });
     }, 500);
   };
@@ -176,7 +176,7 @@ export default function TeamStatusScreen() {
         style={{ top: insets.top + 50, right: 16 }}
         items={[
           {
-            label: t('home.leaveTeamMenuItem'),
+            label: t('team.status.leaveTeamMenuItem'),
             danger: true,
             onPress: () => setShowLeaveModal(true),
           },
@@ -185,7 +185,7 @@ export default function TeamStatusScreen() {
 
       {!detail ? (
         <View className="flex-1 items-center justify-center">
-          <Text className="text-body-md text-gray-400">{t('home.error.teamStatus')}</Text>
+          <Text className="text-body-md text-gray-400">{t('team.error.status')}</Text>
         </View>
       ) : (
         <ScrollView
@@ -193,14 +193,14 @@ export default function TeamStatusScreen() {
           contentContainerStyle={{ paddingTop: 24, paddingBottom: insets.bottom + 32 }}
         >
           <Text className="mb-6 px-4 text-caption-md text-gray-700">
-            {TEAM_MODE_DESCRIPTION_KEYS[detail.mode]}
+            {t(TEAM_MODE_DESCRIPTION_KEYS[detail.mode])}
           </Text>
 
           {/* BEFORE START */}
           {!detail.isStarted && (
             <View className="mx-5 mb-6 bg-gray-200 rounded-2xl p-4">
               <Text className="text-body-md">
-                {t('home.teamStartCountdown', { days: calcDaysUntilStart(detail.startDate) })}
+                {t('team.status.startCountdown', { days: calcDaysUntilStart(detail.startDate) })}
               </Text>
             </View>
           )}
@@ -211,19 +211,19 @@ export default function TeamStatusScreen() {
               {isShared ? (
                 <Text className="text-title-md font-pretendard-semibold text-center">
                   {sharedBoard
-                    ? t('home.teamEndedShared', {
+                    ? t('team.status.endedShared', {
                         total: sharedBoard.totalCells,
                         checked: sharedBoard.checkedCount,
                       })
-                    : t('home.teamEndedNoWinner')}
+                    : t('team.status.endedNoWinner')}
                 </Text>
               ) : winners.length === 0 ? (
                 <Text className="text-title-md font-pretendard-semibold">
-                  {t('home.teamEndedNoWinner')}
+                  {t('team.status.endedNoWinner')}
                 </Text>
               ) : (
                 <Text className="text-title-md font-pretendard-semibold text-center">
-                  {t('home.teamWinner', { names: winners.map((w) => w.displayName).join(', ') })}
+                  {t('team.status.winner', { names: winners.map((w) => w.displayName).join(', ') })}
                 </Text>
               )}
             </View>
@@ -243,7 +243,9 @@ export default function TeamStatusScreen() {
 
           {/* MEMBER LIST */}
           <View className="mb-6">
-            <Text className="mb-3 px-4 text-body-md text-gray-900">{t('home.participants')}</Text>
+            <Text className="mb-3 px-4 text-body-md text-gray-900">
+              {t('team.status.participants')}
+            </Text>
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
@@ -272,9 +274,9 @@ export default function TeamStatusScreen() {
               />
             )
           ) : detail.boardsFailed ? (
-            <EmptyState message={t('home.boardLoadFailRefresh')} />
+            <EmptyState message={t('team.status.boardLoadFailRefresh')} />
           ) : detail.members.filter((m) => m.status === 'joined').length === 0 ? (
-            <EmptyState message={t('home.noJoinedMembers')} />
+            <EmptyState message={t('team.status.noJoinedMembers')} />
           ) : (
             <View className="flex-row flex-wrap gap-x-[14px] gap-y-8 px-4">
               {detail.members
@@ -286,7 +288,7 @@ export default function TeamStatusScreen() {
                       <View key={member.userId} className="items-center gap-2">
                         <View className="h-[172px] w-[172px] items-center justify-center rounded-2xl bg-gray-200 px-3">
                           <Text className="text-caption-md text-center text-gray-600">
-                            {t('home.boardNotCreated')}
+                            {t('team.status.boardNotCreated')}
                           </Text>
                         </View>
                       </View>
@@ -305,13 +307,13 @@ export default function TeamStatusScreen() {
                       </View>
                       <View className="flex-row gap-2">
                         <BingoStat
-                          label={t('common.bingo.achieve')}
+                          label={t('bingo.stat.achievement')}
                           current={board.checkedCount}
                           total={board.totalCells}
                           size={statSize}
                         />
                         <BingoStat
-                          label={t('common.bingo.bingo')}
+                          label={t('bingo.label')}
                           current={board.bingoCount}
                           total={calcMaxBingo(cols, rows)}
                           size={statSize}
@@ -326,17 +328,17 @@ export default function TeamStatusScreen() {
           {detail.isFinished && (
             <View className="mx-5 mt-10">
               <Text className="text-title-md mb-2 font-pretendard-semibold">
-                {t('home.retrospectiveTitle')}
+                {t('team.status.retrospectiveTitle')}
               </Text>
               <Text className="text-caption-md text-gray-600 mb-3">
-                {t('home.retrospectiveDescription')}
+                {t('team.status.retrospectiveDescription')}
               </Text>
 
               <View style={{ position: 'relative' }}>
                 <TextInput
                   value={myRetrospective}
                   onChangeText={handleRetrospectiveChange}
-                  placeholder={t('home.retrospectivePlaceholder')}
+                  placeholder={t('team.status.retrospectivePlaceholder')}
                   multiline
                   maxLength={500}
                   className="h-[140px] bg-gray-100 rounded-2xl p-4 text-body-md text-gray-900 placeholder:text-gray-500"
@@ -352,7 +354,7 @@ export default function TeamStatusScreen() {
 
               {retrospectives.filter((r) => !r.isMe && r.content.trim()).length === 0 && (
                 <Text className="mt-6 text-center text-body-sm text-gray-500">
-                  {t('home.noOtherRetrospective')}
+                  {t('team.status.noOtherRetrospective')}
                 </Text>
               )}
 
@@ -376,10 +378,10 @@ export default function TeamStatusScreen() {
             <InfoIcon width={20} height={20} className="text-gray-700" />
             <Text className="text-caption-md md:text-body-md flex-1">
               {isShared
-                ? t('home.sharedModeInfo')
+                ? t('team.status.sharedModeInfo')
                 : detail.isResultFrozen
-                  ? t('home.rankFrozenInfo')
-                  : t('home.rankInfo')}
+                  ? t('team.status.rankFrozenInfo')
+                  : t('team.status.rankInfo')}
             </Text>
           </View>
         </ScrollView>
@@ -405,8 +407,8 @@ export default function TeamStatusScreen() {
 
       <Modal
         visible={showLeaveModal}
-        title={t('home.modal.leaveTeam.title')}
-        body={isShared ? t('home.modal.leaveTeam.body_share') : t('home.modal.leaveTeam.body_solo')}
+        title={t('team.leaveModal.title')}
+        body={isShared ? t('team.leaveModal.bodyShare') : t('team.leaveModal.bodySolo')}
         variant="warning"
         confirmLabel={t('common.unsaved.confirm')}
         cancelLabel={t('common.unsaved.cancel')}
@@ -420,7 +422,7 @@ export default function TeamStatusScreen() {
             await leaveTeam(teamId);
             router.back();
           } catch (e) {
-            setErrorMessage(e instanceof Error ? e.message : t('home.modal.leaveTeam.fail'));
+            setErrorMessage(e instanceof Error ? e.message : t('team.leaveModal.fail'));
           } finally {
             setLeaving(false);
           }

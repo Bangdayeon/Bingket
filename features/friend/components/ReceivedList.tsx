@@ -16,7 +16,7 @@ export function ReceivedList({ pendingRequests, handleIncomingResponse }: Props)
       {pendingRequests.length > 0 && (
         <View>
           <Text className="text-title-sm   px-4 pt-4 pb-2">
-            {t('friends.recieved')} {pendingRequests.length}
+            {t('friends.received')} {pendingRequests.length}
           </Text>
           {pendingRequests.map((req) => (
             <View

@@ -7,17 +7,17 @@ const OPTIONS = [
   {
     value: 'public',
     label: 'settings.account.public',
-    description: 'settings.account.public_des',
+    description: 'settings.account.publicDescription',
   },
   {
     value: 'friends',
     label: 'settings.account.friends',
-    description: 'settings.account.friends_des',
+    description: 'settings.account.friendsDescription',
   },
   {
     value: 'private',
     label: 'settings.account.private',
-    description: 'settings.account.private_des', // 마침표도 제거
+    description: 'settings.account.privateDescription',
   },
 ] as const satisfies { value: AccountVisibility; label: string; description: string }[];
 

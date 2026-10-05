@@ -213,7 +213,7 @@ export const fetchMyBingosForPost = async (): Promise<BingoData[]> => {
       const draftCells: string[] = (d.cells as string[] | undefined) ?? Array(cols * rows).fill('');
       const draftBingo: BingoData = {
         id: 'draft',
-        title: (d.title as string | undefined) || '제작 중인 빙고',
+        title: (d.title as string | undefined) || i18n.t('common.stateDraft'),
         grid,
         cells: draftCells,
         maxEdits: 0,

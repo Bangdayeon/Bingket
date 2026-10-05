@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { FlatList, Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -11,7 +11,7 @@ import { friendSelection, useFriendSelection } from '@/features/team/lib/friend-
 import { TEAM_MAX_MEMBERS } from '@/types/team';
 import { SearchInput } from '@/components/SearchInput';
 import { PageHeader } from '@/components/PageHeader';
-import { deleteFriend, fetchFriends } from '@/features/friend/lib/friend';
+import { deleteFriend, fetchFriends, FRIENDS_PAGE_SIZE } from '@/features/friend/lib/friend';
 import type { Friend } from '@/types/friend';
 import {
   checkIncomingConflict,
@@ -23,7 +23,7 @@ import {
 import { ConflictModal } from '@/features/friend/components/ConflictModal';
 import { DeleteFriendModal } from '@/features/friend/components/DeleteFriendModal';
 import { ErrorModal } from '@/features/friend/components/ErrorModal';
-import { FriendList } from '@/features/friend/components/FriendList';
+import { FriendRow } from '@/features/friend/components/FriendList';
 import { ReceivedList } from '@/features/friend/components/ReceivedList';
 import { CollapsibleSection } from '@/features/friend/components/CollapsibleSection';
 import { SearchList } from '@/features/friend/components/SearchList';
@@ -57,6 +57,8 @@ export default function FriendListScreen() {
   const [othersExpanded, setOthersExpanded] = useState(true);
 
   const [friends, setFriends] = useState<Friend[]>([]);
+  const [friendPage, setFriendPage] = useState(0);
+  const [hasMoreFriends, setHasMoreFriends] = useState(false);
   const [pendingRequests, setPendingRequests] = useState<IncomingRequest[]>([]);
   const [listLoading, setListLoading] = useState(true);
 
@@ -75,6 +77,8 @@ export default function FriendListScreen() {
       ]);
 
       setFriends(friendsData);
+      setFriendPage(0);
+      setHasMoreFriends(friendsData.length === FRIENDS_PAGE_SIZE);
       setPendingRequests(incomingData);
     } catch (e) {
       setErrorMessage(
@@ -84,6 +88,20 @@ export default function FriendListScreen() {
       setListLoading(false);
     }
   }, [t]);
+
+  const loadMoreFriends = useCallback(async () => {
+    if (listLoading || !hasMoreFriends || friendSearch.trim() || !friendsExpanded) return;
+    const nextPage = friendPage + 1;
+    setListLoading(true);
+    try {
+      const next = await fetchFriends(nextPage);
+      setFriends((current) => [...current, ...next]);
+      setFriendPage(nextPage);
+      setHasMoreFriends(next.length === FRIENDS_PAGE_SIZE);
+    } finally {
+      setListLoading(false);
+    }
+  }, [friendPage, friendSearch, friendsExpanded, hasMoreFriends, listLoading]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -264,7 +282,7 @@ export default function FriendListScreen() {
   return (
     <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
       <PageHeader
-        title={isSelectMode ? t('friends.team.select') : t('friends.label')}
+        title={isSelectMode ? t('team.selection.select') : t('friends.label')}
         titleRight={
           isSelectMode ? (
             <Text className="text-body-md text-gray-600">
@@ -278,7 +296,7 @@ export default function FriendListScreen() {
           isSelectMode ? (
             <Pressable onPress={() => router.back()} hitSlop={8}>
               <Text className="text-body-md font-pretendard-medium text-green-600">
-                {t('friends.team.complete')}
+                {t('team.selection.complete')}
               </Text>
             </Pressable>
           ) : undefined
@@ -287,7 +305,7 @@ export default function FriendListScreen() {
 
       {isSelectMode && pickedFriends.length === 0 && (
         <Text className="px-4 pb-4 text-body-sm text-gray-500">
-          {t('friends.team.selectFriend')}
+          {t('team.selection.selectFriend')}
         </Text>
       )}
 
@@ -343,66 +361,79 @@ export default function FriendListScreen() {
         <Button label={t('friends.invite.label')} onClick={handleInvite} size="sm" />
       </View>
 
-      {listLoading ? (
+      {listLoading && friends.length === 0 ? (
         <View className="flex-1 items-center justify-center">
           <Loading />
         </View>
       ) : (
-        <ScrollView
-          contentContainerStyle={{
-            paddingBottom: insets.bottom + 16,
-          }}
-        >
-          <ReceivedList
-            pendingRequests={pendingRequests}
-            handleIncomingResponse={handleIncomingResponse}
-          />
-
-          <CollapsibleSection
-            title={t('friends.label')}
-            count={filteredFriends.length}
-            expanded={friendsExpanded}
-            onToggle={() => setFriendsExpanded((v) => !v)}
-          >
-            <FriendList
-              friends={filteredFriends}
-              searching={friendSearch.trim().length > 0}
+        <FlatList
+          data={friendsExpanded ? filteredFriends : []}
+          keyExtractor={(friend) => friend.friendId}
+          renderItem={({ item }) => (
+            <FriendRow
+              friend={item}
               handleDeleteFriend={handleDeleteFriend}
               selectable={isSelectMode}
               selectedIds={picked}
               handleProfilePress={(friend) =>
                 isSelectMode
                   ? friendSelection.toggle(friend.friendId, maxSelect)
-                  : router.push({
-                      pathname: '/profile/[id]',
-                      params: { id: friend.friendId },
-                    })
+                  : router.push({ pathname: '/profile/[id]', params: { id: friend.friendId } })
               }
             />
-          </CollapsibleSection>
-
-          {friendSearch.trim().length >= 2 && (
-            <CollapsibleSection
-              title={t('friends.allUsers')}
-              expanded={othersExpanded}
-              onToggle={() => setOthersExpanded((v) => !v)}
-            >
-              <SearchList
-                searchLoading={searchLoading}
-                searchError={searchError}
-                searchResults={searchResults}
-                sending={sending}
-                handleRequest={handleRequest}
-                handleProfilePress={(item) =>
-                  router.push({
-                    pathname: '/profile/[id]',
-                    params: { id: item.id },
-                  })
-                }
-              />
-            </CollapsibleSection>
           )}
-        </ScrollView>
+          ListHeaderComponent={
+            <>
+              <ReceivedList
+                pendingRequests={pendingRequests}
+                handleIncomingResponse={handleIncomingResponse}
+              />
+              <CollapsibleSection
+                title={t('friends.label')}
+                count={filteredFriends.length}
+                expanded={friendsExpanded}
+                onToggle={() => setFriendsExpanded((v) => !v)}
+              >
+                <View />
+              </CollapsibleSection>
+            </>
+          }
+          ListEmptyComponent={
+            friendsExpanded ? (
+              <View className="items-center py-8">
+                <Text className="text-body-md text-gray-500">
+                  {friendSearch.trim() ? t('friends.noSameFriend') : t('friends.noFriend')}
+                </Text>
+              </View>
+            ) : null
+          }
+          ListFooterComponent={
+            <>
+              {friendSearch.trim().length >= 2 && (
+                <CollapsibleSection
+                  title={t('friends.allUsers')}
+                  expanded={othersExpanded}
+                  onToggle={() => setOthersExpanded((v) => !v)}
+                >
+                  <SearchList
+                    searchLoading={searchLoading}
+                    searchError={searchError}
+                    searchResults={searchResults}
+                    sending={sending}
+                    handleRequest={handleRequest}
+                    handleProfilePress={(item) =>
+                      router.push({ pathname: '/profile/[id]', params: { id: item.id } })
+                    }
+                  />
+                </CollapsibleSection>
+              )}
+              {listLoading && <Loading />}
+            </>
+          }
+          onEndReached={loadMoreFriends}
+          onEndReachedThreshold={0.5}
+          contentContainerStyle={{ paddingBottom: insets.bottom + 16 }}
+        />
       )}
 
       <ConflictModal

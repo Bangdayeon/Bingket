@@ -141,7 +141,7 @@ export default function TeamCreateScreen() {
     if (!title.trim()) return setAlertMessage(t('home.field.title.label'));
     if (!selectedDuration) return setAlertMessage(t('home.field.duration.label'));
     if (!startDate) return setAlertMessage(t('home.field.duration.selectStartDate'));
-    if (!endDate) return setAlertMessage(t('common.bingo.endDate'));
+    if (!endDate) return setAlertMessage(t('bingo.stat.endDate'));
     if (cells.filter((c) => c?.trim()).length < totalCells)
       return setAlertMessage(t('home.alert.fillAllCells'));
     if (friendIds.length === 0) return setAlertMessage(t('home.alert.selectFriends'));
@@ -195,7 +195,7 @@ export default function TeamCreateScreen() {
       style={{ paddingTop: insets.top }}
     >
       <PageHeader
-        title={TEAM_MODE_LABEL_KEYS[mode]}
+        title={t(TEAM_MODE_LABEL_KEYS[mode])}
         onBack={() => (isDirty ? setShowLeaveModal(true) : router.back())}
       />
 
@@ -207,7 +207,7 @@ export default function TeamCreateScreen() {
         automaticallyAdjustKeyboardInsets={false}
       >
         <Text className="px-4 pb-2 pt-8 text-caption-md text-gray-700">
-          {TEAM_MODE_GUIDE_KEYS[mode]}
+          {t(TEAM_MODE_GUIDE_KEYS[mode])}
         </Text>
 
         <BingoTitle
@@ -286,7 +286,7 @@ export default function TeamCreateScreen() {
                 markDirty();
                 setBetText(v.slice(0, BET_MAX_LENGTH));
               }}
-              placeholder={t('common.bingo.memoPlaceholder')}
+              placeholder={t('bingo.memo.placeholder')}
               multiline
               className="h-20 rounded-2xl bg-gray-200 p-3 text-body-md text-gray-900 placeholder:text-gray-500"
               style={{ textAlignVertical: 'top' }}
@@ -300,7 +300,9 @@ export default function TeamCreateScreen() {
         <View className="px-4">
           <SectionLabel
             label={
-              mode === 'competition' ? t('home.field.friend.label') : t('home.field.friend.invite')
+              mode === 'competition'
+                ? t('team.create.friend.label')
+                : t('team.create.friend.invite')
             }
             hint={`(${friendIds.length}/${MAX_INVITES})`}
           />

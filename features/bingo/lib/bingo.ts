@@ -3,6 +3,7 @@ import type { BoardVisibility } from '@/features/profile/lib/profile';
 import { withNetworkRetry } from '@/lib/network-retry';
 import type { BingoData, BingoTheme } from '@/types/bingo';
 import type { BingoCellDetail } from '@/types/bingo-cell';
+import i18n from '@/i18n';
 
 const EDIT_COUNT: Record<string, number> = {
   '0': 0,
@@ -45,7 +46,7 @@ export const createBingo = async (data: CreateBingoRequest): Promise<string> => 
     p_visibility: data.visibility,
   });
 
-  if (error || !boardId) throw new Error(error?.message ?? '빙고 생성 실패');
+  if (error || !boardId) throw new Error(error?.message ?? i18n.t('bingo.error.create'));
 
   return boardId as string;
 };

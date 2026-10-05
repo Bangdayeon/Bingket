@@ -13,10 +13,11 @@ export const resources = {
 };
 
 const deviceLanguage = Localization.getLocales()[0]?.languageCode ?? 'en';
+const initialLanguage = deviceLanguage === 'ko' || deviceLanguage === 'ja' ? deviceLanguage : 'en';
 
 i18n.use(initReactI18next).init({
   resources,
-  lng: deviceLanguage === 'ko' ? 'ko' : 'en',
+  lng: initialLanguage,
   fallbackLng: 'en',
   interpolation: {
     escapeValue: false,

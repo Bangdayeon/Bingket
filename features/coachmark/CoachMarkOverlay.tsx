@@ -8,6 +8,8 @@ import { GlowRing } from './GlowRing';
 import { SpotlightScrim } from './SpotlightScrim';
 import type { CoachMarkStep } from './lib/coach-mark-steps';
 import { spotlightHole, type Rect } from './lib/spotlight-path';
+import { useTranslation } from 'react-i18next';
+import i18n from '@/i18n';
 
 interface CoachMarkOverlayProps {
   step: CoachMarkStep;
@@ -37,6 +39,8 @@ export function CoachMarkOverlay({
   onClose,
 }: CoachMarkOverlayProps) {
   const insets = useSafeAreaInsets();
+  useTranslation();
+  const t = i18n.t.bind(i18n) as (key: string) => string;
   const { width, height } = useWindowDimensions();
   const hole = spotlightHole(rect, step.shape);
 
@@ -55,13 +59,15 @@ export function CoachMarkOverlay({
         <GlowRing hole={hole} />
 
         <CoachMarkCard
-          text={step.text}
+          text={t(step.textKey)}
           stepNumber={stepNumber}
           total={total}
           hole={hole}
           screenWidth={width}
           screenHeight={height}
-          nextLabel={step.passThrough ? null : stepNumber === total ? '시작하기' : '다음'}
+          nextLabel={
+            step.passThrough ? null : stepNumber === total ? t('common.start') : t('common.next')
+          }
           onNext={onNext}
           showPrev={stepNumber > 1}
           onPrev={onPrev}
@@ -73,7 +79,7 @@ export function CoachMarkOverlay({
             size={40}
             icon={<IcClose width={24} height={24} className="text-fixed-white" />}
             onClick={onClose}
-            accessibilityLabel="안내 닫기"
+            accessibilityLabel={t('common.close')}
           />
         </View>
       </View>

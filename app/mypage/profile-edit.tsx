@@ -216,7 +216,7 @@ export default function ProfileEditPage() {
             <TextInput
               value={name}
               onChangeText={handleNameChange}
-              placeholder={t('settings.profile.nickname.label', { count: NAME_MAX })}
+              placeholder={t('settings.profile.nickname.placeholder', { count: NAME_MAX })}
             />
             <Text className="text-right text-caption-sm text-gray-500">
               {name.length}/{NAME_MAX}

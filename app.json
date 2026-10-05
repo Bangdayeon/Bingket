@@ -12,6 +12,10 @@
       "resizeMode": "contain",
       "backgroundColor": "#FAFAFA"
     },
+    "locales": {
+      "ko": "./locales/ko.json",
+      "en": "./locales/en.json"
+    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.day.bingket.app",
@@ -19,7 +23,8 @@
       "usesAppleSignIn": true,
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
-        "LSApplicationCategoryType": "public.app-category.lifestyle"
+        "LSApplicationCategoryType": "public.app-category.lifestyle",
+        "CFBundleAllowMixedLocalizations": true
       },
       "appleTeamId": "MVHPSL2Y9N",
       "googleServicesFile": "./GoogleService-Info.plist"
@@ -60,7 +65,8 @@
         "expo-build-properties",
         {
           "ios": {
-            "useFrameworks": "static"
+            "useFrameworks": "static",
+            "buildReactNativeFromSource": true
           }
         }
       ],
@@ -70,6 +76,15 @@
           "photosPermission": "프로필 사진 설정 및 게시글 이미지 첨부를 위해 사진 라이브러리 접근 권한이 필요해요.",
           "cameraPermission": "프로필 사진 촬영 및 게시글 이미지 첨부를 위해 카메라 접근 권한이 필요해요.",
           "microphonePermission": false
+        }
+      ],
+      [
+        "expo-localization",
+        {
+          "supportedLocales": {
+            "ios": ["ko", "en"],
+            "android": ["ko", "en"]
+          }
         }
       ],
       [

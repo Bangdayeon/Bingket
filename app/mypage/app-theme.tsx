@@ -16,22 +16,22 @@ const ICON_THEMES = [
   {
     value: 'default',
     iconName: 'settings.theme.icon.default',
-    image: require('@/assets/icon_themes/icon_theme_default.png'),
+    image: require('@/assets/icon-themes/default.png'),
   },
   {
     value: 'neon',
     iconName: 'settings.theme.icon.neon',
-    image: require('@/assets/icon_themes/icon_theme_neon.png'),
+    image: require('@/assets/icon-themes/neon.png'),
   },
   {
     value: 'sunset',
     iconName: 'settings.theme.icon.sunset',
-    image: require('@/assets/icon_themes/icon_theme_sunset.png'),
+    image: require('@/assets/icon-themes/sunset.png'),
   },
   {
     value: 'tanning',
     iconName: 'settings.theme.icon.tanning',
-    image: require('@/assets/icon_themes/icon_theme_tanning.png'),
+    image: require('@/assets/icon-themes/tanning.png'),
   },
 ] as const satisfies { value: IconTheme; iconName: string; image: number }[];
 

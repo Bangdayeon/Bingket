@@ -7,30 +7,6 @@ export default {
       mypage: '내 공간',
     },
 
-    bingo: {
-      bingo: '빙고',
-      achieve: '달성',
-      achieveDate: '달성일',
-      endDate: '종료일',
-      emptyBingo: '볼 수 없는 빙고예요.',
-      memoPlaceholder: '메모를 입력해주세요.',
-    },
-
-    field: {
-      email: '이메일',
-      password: '비밀번호',
-    },
-
-    visibility: {
-      label: '빙고 공개 범위',
-      public: '전체 공개',
-      public_des: '빙고를 누구에게나 공개해요.',
-      friends: '친구 공개',
-      friends_des: '빙고를 친구들에게만 공개해요.',
-      private: '비공개',
-      private_des: '빙고를 나만 봐요.',
-    },
-
     // Actions
     confirm: '확인',
     cancel: '취소',
@@ -39,6 +15,9 @@ export default {
     previous: '이전',
     start: '시작하기',
     select: '선택',
+    done: '완료',
+    close: '닫기',
+    selectDate: '날짜 선택',
 
     retry: '다시 시도',
     editFail: '변경 실패',
@@ -58,7 +37,7 @@ export default {
 
     error: {
       imageUpload: '이미지 업로드에 실패했어요.',
-      save: '저장하지 못햇어요.',
+      save: '저장하지 못했어요.',
       general: '오류가 발생했어요.',
       retry: '잠시 후 다시 시도해주세요.',
       unknown: '알 수 없는 오류가 발생했어요.',
@@ -74,10 +53,10 @@ export default {
       cameraTitle: '카메라 권한이 필요해요.',
       cameraBody: '설정에서 카메라 접근을 허용해주세요.',
       albumTitle: '앨범 권한이 필요해요.',
-      albumnBody: '설정에서 사진 접근을 허용해주세요.',
+      albumBody: '설정에서 사진 접근을 허용해주세요.',
     },
 
-    limitPlaceholder: '{{count}}}자 이내로 입력해주세요.',
+    limitPlaceholder: '{{count}}자 이내로 입력해주세요.',
   },
 
   onboarding: {
@@ -86,6 +65,15 @@ export default {
     msg3: '사람들과 목표를 공유하고\n서로의 도전을 응원해요',
     msg4: '차근차근 목표를 이뤄나가며\n뱃지를 수집해요',
     msg5: '빙고에 채우는 나만의 도전,\n빙킷에서 시작해봐요',
+  },
+
+  coachmark: {
+    home: '홈에서는 현재 진행 중인 빙고를 확인하고 빙고를 체크할 수 있어요',
+    community: '게시판에서는 앱을 사용하는 다른 사람들과 소통하고 빙고도 공유할 수 있어요',
+    mypage: '내 공간에서는 완료, 임시저장, 진행중 빙고와 친구 목록을 확인할 수 있어요',
+    create: '우선 첫 빙고를 만들어볼까요?',
+    info: '빙고 정보를 입력해주세요',
+    tempSave: '아직 뭘 쓸지 고민된다면 임시저장을 하고 다음에 이어서 작성해도 돼요',
   },
 
   auth: {
@@ -143,6 +131,17 @@ export default {
   bingo: {
     label: '빙고',
     board: '빙고판',
+    user: '빙고 유저',
+    empty: '볼 수 없는 빙고예요.',
+    visibility: {
+      label: '빙고 공개 범위',
+      public: '전체 공개',
+      publicDescription: '빙고를 누구에게나 공개해요.',
+      friends: '친구 공개',
+      friendsDescription: '빙고를 친구들에게만 공개해요.',
+      private: '비공개',
+      privateDescription: '빙고를 나만 봐요.',
+    },
 
     doneDate: '완료일',
     achievedDate: '달성일',
@@ -173,6 +172,7 @@ export default {
 
     error: {
       bingoSave: '빙고판을 저장하지 못했어요.',
+      create: '빙고 생성 실패',
     },
 
     competition: {
@@ -184,6 +184,7 @@ export default {
     },
 
     memo: {
+      placeholder: '메모를 입력해주세요.',
       saved: '저장됨',
       saveFailed: '저장 실패',
     },
@@ -198,14 +199,6 @@ export default {
     },
   },
 
-  invite: {
-    error: {
-      missing: '초대를 찾을 수 없어요.',
-      expired: '수락하지 못했어요.',
-      deny: '거절하지 못했어요.',
-    },
-  },
-
   home: {
     empty: '빙고가 하나도 없어요\n첫 빙고를 만들어 볼까요?',
     // 빙고 추가 부분
@@ -214,11 +207,12 @@ export default {
       friends: '친구와 할래요',
       myself: '혼자 할래요',
       clean: '빙고를 먼저 정리해주세요.',
-      clean_des: '빙고는 한 번에 {{count}}개까지 진행할 수 있어요. ',
+      cleanDescription: '빙고는 한 번에 {{count}}개까지 진행할 수 있어요.',
     },
 
     // invite: '초대',
     memo: '메모',
+    memoEdit: '메모 편집',
     memoPlaceholder: '메모를 입력해주세요.',
     modifyBingo: '빙고 수정하기',
     lastModify: '마지막 수정',
@@ -261,13 +255,6 @@ export default {
       bet: {
         label: '내기 내용',
       },
-
-      friend: {
-        label: '친구 선택하기',
-        selected: '{{count}}명 선택함',
-        invite: '초대할 친구',
-        description: '친구는 최대 {{count}}명까지 같이할 수 있어요.',
-      },
     },
     alert: {
       fillAllCells: '빙고 칸을 모두 채워주세요.',
@@ -276,30 +263,14 @@ export default {
 
     error: {
       save: '저장에 실패했어요.',
-      delete: '삭제에 실패했어요..',
+      delete: '삭제에 실패했어요.',
       load: '빙고를 불러오지 못했어요',
-      loadInvite: '초대를 불러오지 못했어요.',
-      reject: '거절에 실패했어요.',
-      teamStatus: '팀 정보를 불러올 수 없어요.',
-      teamInfoLoad: '팀 정보를 불러오지 못했어요.',
     },
 
     // 문장
     temporarySaved: '임시 저장되었어요.\n홈 화면에서 이어서 만들 수 있어요.',
     deleteConfirm: '빙고를 정말로 삭제할까요?',
     deleteBody: '삭제된 빙고는 되돌릴 수 없어요.',
-
-    // 팀 초대
-    inviteCompetitionMessage: '{{name}}님이 빙고로 경쟁하고 싶어해요',
-    inviteTogetherMessage: '{{name}}님이 빙고를 함께하고 싶어해요',
-    period: '진행 기간: {{startDate}} ~ {{endDate}}',
-    daysUntilEnd: '종료일까지 {{days}}일 남았어요',
-    daysUntilStart: '{{days}}일 후 다 같이 시작해요',
-    currentMemberCount: '지금 {{count}}명이 참여 중이에요',
-    composingDescription: '기간은 초대한 사람이 정한 그대로예요. 목표만 자유롭게 정하면 돼요.',
-    rejectInvite: '거절하기',
-    rejectInviteTitle: '초대를 거절할까요?',
-    rejectInviteBody: '거절하면 이 팀 빙고에 참여할 수 없어요.',
 
     // 저장 확인 모달
     modal: {
@@ -314,44 +285,11 @@ export default {
         cancel: '한 번 더 보기',
         confirm: '초대 보내기',
       },
-      leaveTeam: {
-        title: '팀에서 나갈까요?',
-        body_share: '내가 채운 칸은 그대로 남아요. 방장이라면 다음 사람에게 넘어가요.',
-        body_solo: '내 빙고는 개인 빙고로 남아요. 팀 순위에서만 빠져요.',
-        fail: '팀 나가기에 실패했어요.',
-      },
     },
     saveConfirmTitle: '빙고 만들기',
     saveConfirmCancel: '한 번 더 보기',
     okAndCreate: '수락하고 빙고 만들기',
     doWith: '같이하기',
-
-    // 팀 현황 화면 (TeamStatusScreen)
-    pendingAccept: '수락 대기',
-    leaveTeamMenuItem: '팀 나가기',
-
-    teamStartCountdown: '{{days}}일 후 다 같이 시작해요. 그때부터 칸을 채울 수 있어요.',
-    teamEndedShared: '우리 팀은 {{total}}칸 중 {{checked}}칸을 채웠어요 👏',
-    teamEndedNoWinner: '팀 빙고가 끝났어요 👏',
-    teamWinner: '{{names}}님이 1등이에요! 👑',
-    participants: '참여자',
-    boardNotCreated: '아직 빙고판을\n만들지 않았어요',
-    boardLoadFailRefresh: '빙고판을 불러오지 못했어요\n당겨서 새로고침해주세요',
-    noBingo: '빙고판을 찾을 수 없어요.',
-    noJoinedMembers: '아직 참여한 사람이 없어요\n초대를 수락하면 여기에 보여요',
-    retrospectiveTitle: '회고',
-    retrospectiveDescription: '이 기간이 나에게 어땠는지 남겨보세요. 팀원들도 볼 수 있어요.',
-    retrospectivePlaceholder: '회고를 남겨보세요.',
-    retrospectiveSaveFail: '회고를 저장하지 못했어요. 잠시 후 다시 시도해주세요.',
-    noOtherRetrospective: '아직 다른 사람의 회고가 없어요',
-    sharedModeInfo: '먼저 누른 사람이 그 칸의 주인이 돼요. 채운 칸은 그 사람만 해제할 수 있어요.',
-    rankFrozenInfo: '순위는 종료 시점 달성률로 확정됐어요.',
-    rankInfo: '순위는 달성률(채운 칸 ÷ 전체 칸)로 정해져요. 판 크기가 달라도 공평해요.',
-
-    periodEnded: '종료',
-    periodDaysUntilStart: '{{days}}일 후 시작',
-    howmany: '{{count}}명',
-    periodDday: 'D-{{days}}',
   },
 
   board: {
@@ -531,9 +469,9 @@ export default {
   profile: {
     visible: {
       friend: '친구만 볼 수 있어요.',
-      friend_des: '친구가 되면 빙고와 뱃지를 볼 수 있어요.',
+      friendDescription: '친구가 되면 빙고와 뱃지를 볼 수 있어요.',
       locked: '비공개 계정이에요.',
-      locked_des: '이 계정은 빙고와 뱃지를 공개하지 않아요.',
+      lockedDescription: '이 계정은 빙고와 뱃지를 공개하지 않아요.',
     },
 
     beFriend: {
@@ -542,7 +480,7 @@ export default {
     },
 
     error: {
-      loadProfile: '프로필을 불러오지 못햇어요.',
+      loadProfile: '프로필을 불러오지 못했어요.',
       friendRequire: '친구 요청에 실패했어요.',
       notFound: '찾을 수 없는 사용자예요.',
     },
@@ -590,11 +528,11 @@ export default {
 
       visibility: '계정 공개 범위',
       public: '전체 공개',
-      public_des: '내가 작성한 빙고를 누구나 볼 수 있고, 계정도 검색돼요.',
+      publicDescription: '내가 작성한 빙고를 누구나 볼 수 있고, 계정도 검색돼요.',
       friends: '친구 공개',
-      friends_des: '내가 작성한 빙고를 친구만 볼 수 있어요. 계정은 검색돼요.',
+      friendsDescription: '내가 작성한 빙고를 친구만 볼 수 있어요. 계정은 검색돼요.',
       private: '비공개',
-      private_des: '내가 작성한 빙고를 나만 볼 수 있고, 계정도 검색되지 않아요.',
+      privateDescription: '내가 작성한 빙고를 나만 볼 수 있고, 계정도 검색되지 않아요.',
       visibilityChangeFail: '공개 범위를 바꾸지 못했어요.',
 
       reset: {
@@ -683,7 +621,7 @@ export default {
     label: '친구',
     allUsers: '전체 유저',
     delete: '친구 삭제',
-    recieved: '받은 친구 요청',
+    received: '받은 친구 요청',
     reRequest: '재요청',
     add: '친구 추가',
 
@@ -697,12 +635,6 @@ export default {
     deleteConfirm: '{{displayName}}님을 친구 목록에서 삭제할까요?',
     searchPlaceholder: '닉네임이나 아이디를 검색해주세요.',
     inviteMessage: '아직 앱을 사용하지 않는 친구가 있나요?\n친구를 초대해서 함께해요.',
-
-    team: {
-      select: '친구 선택',
-      complete: '완료',
-      selectFriend: '함께할 친구를 골라주세요. 고른 사람이 여기에 보여요.',
-    },
 
     invite: {
       label: '초대하기',
@@ -722,6 +654,58 @@ export default {
   },
 
   team: {
+    title: '친구와 같이하기',
+    create: {
+      friend: {
+        label: '친구 선택하기',
+        selected: '{{count}}명 선택함',
+        invite: '초대할 친구',
+        description: '친구는 최대 {{count}}명까지 같이할 수 있어요.',
+      },
+    },
+    selection: {
+      select: '친구 선택',
+      complete: '완료',
+      selectFriend: '함께할 친구를 골라주세요. 고른 사람이 여기에 보여요.',
+    },
+    invite: {
+      friendsBingo: '{{userName}}님의 빙고판',
+      competitionMessage: '{{name}}님이 빙고로 경쟁하고 싶어해요',
+      togetherMessage: '{{name}}님이 빙고를 함께하고 싶어해요',
+      period: '진행 기간: {{startDate}} ~ {{endDate}}',
+      daysUntilEnd: '종료일까지 {{days}}일 남았어요',
+      daysUntilStart: '{{days}}일 후 다 같이 시작해요',
+      currentMemberCount: '지금 {{count}}명이 참여 중이에요',
+      composingDescription: '기간은 초대한 사람이 정한 그대로예요. 목표만 자유롭게 정하면 돼요.',
+      reject: '거절하기',
+      rejectTitle: '초대를 거절할까요?',
+      rejectBody: '거절하면 이 팀 빙고에 참여할 수 없어요.',
+    },
+    status: {
+      pendingAccept: '수락 대기',
+      leaveTeamMenuItem: '팀 나가기',
+      startCountdown: '{{days}}일 후 다 같이 시작해요. 그때부터 칸을 채울 수 있어요.',
+      endedShared: '우리 팀은 {{total}}칸 중 {{checked}}칸을 채웠어요 👏',
+      endedNoWinner: '팀 빙고가 끝났어요 👏',
+      winner: '{{names}}님이 1등이에요! 👑',
+      participants: '참여자',
+      boardNotCreated: '아직 빙고판을\n만들지 않았어요',
+      boardLoadFailRefresh: '빙고판을 불러오지 못했어요\n당겨서 새로고침해주세요',
+      noBingo: '빙고판을 찾을 수 없어요.',
+      noJoinedMembers: '아직 참여한 사람이 없어요\n초대를 수락하면 여기에 보여요',
+      retrospectiveTitle: '회고',
+      retrospectiveDescription: '이 기간이 나에게 어땠는지 남겨보세요. 팀원들도 볼 수 있어요.',
+      retrospectivePlaceholder: '회고를 남겨보세요.',
+      retrospectiveSaveFail: '회고를 저장하지 못했어요. 잠시 후 다시 시도해주세요.',
+      noOtherRetrospective: '아직 다른 사람의 회고가 없어요',
+      sharedModeInfo: '먼저 누른 사람이 그 칸의 주인이 돼요. 채운 칸은 그 사람만 해제할 수 있어요.',
+      rankFrozenInfo: '순위는 종료 시점 달성률로 확정됐어요.',
+      rankInfo: '순위는 달성률(채운 칸 ÷ 전체 칸)로 정해져요. 판 크기가 달라도 공평해요.',
+      periodEnded: '종료',
+      periodDaysUntilStart: '{{days}}일 후 시작',
+      howMany: '{{count}}명',
+      periodDday: 'D-{{days}}',
+    },
     mode: {
       shared: {
         label: '함께하기',
@@ -752,11 +736,25 @@ export default {
       endedInvite: '취소되었거나 종료된 초대예요.',
       removedBingo: '방장이 빙고판을 지워서 참여할 수 없어요.',
       loadFail: '빙고판을 불러오지 못했어요.',
-      acceptFaile: '수락에 실패했어요.',
+      acceptFailed: '수락에 실패했어요.',
     },
 
     error: {
       generate: '팀 빙고 생성 실패',
+      load: '친구의 빙고판을 불러오지 못했어요.',
+      loadInvite: '초대를 불러오지 못했어요.',
+      reject: '거절에 실패했어요.',
+      status: '팀 정보를 불러올 수 없어요.',
+      info: '팀 정보를 불러오지 못했어요.',
+      inviteMissing: '초대를 찾을 수 없어요.',
+      inviteExpired: '수락하지 못했어요.',
+      inviteDeny: '거절하지 못했어요.',
+    },
+    leaveModal: {
+      title: '팀에서 나갈까요?',
+      bodyShare: '내가 채운 칸은 그대로 남아요. 방장이라면 다음 사람에게 넘어가요.',
+      bodySolo: '내 빙고는 개인 빙고로 남아요. 팀 순위에서만 빠져요.',
+      fail: '팀 나가기에 실패했어요.',
     },
   },
 

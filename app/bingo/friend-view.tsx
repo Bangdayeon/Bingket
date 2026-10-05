@@ -75,14 +75,14 @@ export default function FriendBingoViewScreen() {
         <View
           className={`mt-6 flex-row px-10 ${showDeadline ? 'justify-between' : 'justify-around'}`}
         >
-          <BingoStat label={t('common.bingo.achieve')} current={achieved} total={cols * rows} />
+          <BingoStat label={t('bingo.stat.achievement')} current={achieved} total={cols * rows} />
           <BingoStat
-            label={t('common.bingo.bingo')}
+            label={t('bingo.label')}
             current={calcBingoCount(checked, cols, rows)}
             total={calcMaxBingo(cols, rows)}
           />
           {showDeadline && (
-            <BingoStat label={t('common.bingo.endDate')} current={elapsed} total={total} />
+            <BingoStat label={t('bingo.stat.endDate')} current={elapsed} total={total} />
           )}
         </View>
 
@@ -104,7 +104,7 @@ export default function FriendBingoViewScreen() {
       ) : loadFailed ? (
         <ErrorState onRetry={() => void load()} />
       ) : !board ? (
-        <EmptyState message={t('common.bingo.emptyBingo')} />
+        <EmptyState message={t('bingo.empty')} />
       ) : (
         <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 32 }}>
           {renderBoard(board)}

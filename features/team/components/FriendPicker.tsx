@@ -76,8 +76,8 @@ export function FriendPicker({ selectedIds, onChange, maxCount }: FriendPickerPr
       >
         <Text className="text-body-md text-gray-500">
           {selected.length > 0
-            ? t('home.field.friend.selected', { count: selected.length })
-            : t('home.field.friend.label')}
+            ? t('team.create.friend.selected', { count: selected.length })
+            : t('team.create.friend.label')}
         </Text>
         <ArrowForwardIcon width={24} height={24} className="text-gray-600" />
       </Pressable>

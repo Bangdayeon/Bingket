@@ -1,10 +1,10 @@
 import { PageHeader } from '@/components/PageHeader';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { FlatList, Pressable, View } from 'react-native';
 import { Text } from '@/components/Text';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { fetchMyPosts, MyPost } from '@/features/mypage/lib/mypage';
+import { fetchMyPosts, MY_POSTS_PAGE_SIZE, MyPost } from '@/features/mypage/lib/mypage';
 import Loading from '@/components/Loading';
 import { ErrorState } from '@/components/ErrorState';
 import { EmptyState } from '@/components/EmptyState';
@@ -34,12 +34,18 @@ export default function MyPostsScreen() {
   const [posts, setPosts] = useState<MyPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadFailed, setLoadFailed] = useState(false);
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
 
   const load = useCallback(() => {
     setLoading(true);
     setLoadFailed(false);
-    fetchMyPosts()
-      .then(setPosts)
+    fetchMyPosts(0)
+      .then((items) => {
+        setPosts(items);
+        setPage(0);
+        setHasMore(items.length === MY_POSTS_PAGE_SIZE);
+      })
       .catch((e: unknown) => {
         Sentry.captureException(e);
         setLoadFailed(true);
@@ -47,13 +53,29 @@ export default function MyPostsScreen() {
       .finally(() => setLoading(false));
   }, []);
 
+  const loadMore = useCallback(async () => {
+    if (loading || !hasMore) return;
+    const nextPage = page + 1;
+    setLoading(true);
+    try {
+      const items = await fetchMyPosts(nextPage);
+      setPosts((current) => [...current, ...items]);
+      setPage(nextPage);
+      setHasMore(items.length === MY_POSTS_PAGE_SIZE);
+    } catch (e: unknown) {
+      Sentry.captureException(e);
+    } finally {
+      setLoading(false);
+    }
+  }, [hasMore, loading, page]);
+
   useFocusEffect(load);
 
   return (
     <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
       <PageHeader title={t('my.post.title')} />
 
-      {loading ? (
+      {loading && posts.length === 0 ? (
         <View className="flex-1 items-center justify-center">
           <Loading />
         </View>
@@ -67,17 +89,21 @@ export default function MyPostsScreen() {
           onAction={() => router.replace('/(tabs)/community')}
         />
       ) : (
-        <ScrollView
+        <FlatList
           className="flex-1"
-          contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}
-        >
-          {posts.map((post, index) => (
-            <View key={post.id}>
+          data={posts}
+          keyExtractor={(post) => post.id}
+          renderItem={({ item, index }) => (
+            <View>
               {index > 0 && <View className="h-px bg-gray-300" />}
-              <PostItem post={post} onPress={() => router.push(`/community/${post.id}`)} />
+              <PostItem post={item} onPress={() => router.push(`/community/${item.id}`)} />
             </View>
-          ))}
-        </ScrollView>
+          )}
+          onEndReached={loadMore}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={loading ? <Loading /> : null}
+          contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}
+        />
       )}
     </View>
   );

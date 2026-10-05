@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import type { Friend, IncomingRequest, UserSearchResult } from '@/types/friend';
+import i18n from '@/i18n';
 
 // ─── Friends ──────────────────────────────────────────────────
 
@@ -22,7 +23,12 @@ export const fetchFriendCount = async (): Promise<number> => {
   return count ?? 0;
 };
 
-export const fetchFriends = async (): Promise<Friend[]> => {
+export const FRIENDS_PAGE_SIZE = 50;
+
+export const fetchFriends = async (
+  page: number = 0,
+  limit: number = FRIENDS_PAGE_SIZE,
+): Promise<Friend[]> => {
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -32,7 +38,8 @@ export const fetchFriends = async (): Promise<Friend[]> => {
     .from('friends')
     .select('id, friend_id, users!friends_friend_id_fkey(username, display_name, avatar_url)')
     .eq('user_id', user.id)
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false })
+    .range(page * limit, (page + 1) * limit - 1);
 
   if (error || !data) return [];
 
@@ -56,7 +63,7 @@ export const deleteFriend = async (friendUserId: string): Promise<void> => {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) throw new Error('로그인이 필요해요.');
+  if (!user) throw new Error(i18n.t('auth.needLogin'));
 
   // 양방향 행을 함께 지운다
   const { error } = await supabase
@@ -154,7 +161,7 @@ export const sendFriendRequest = async (params: {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) throw new Error('로그인이 필요해요.');
+  if (!user) throw new Error(i18n.t('auth.needLogin'));
 
   if (params.existingStatus !== null) {
     await supabase

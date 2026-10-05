@@ -9,6 +9,8 @@ import {
   GRID_CONFIGS,
   getThemeImageUrl,
   getThemeForegroundColor,
+  getThemeImageUrlSync,
+  getThemeForegroundColorSync,
 } from '@/features/bingo/lib/theme';
 import type { BingoTheme } from '@/types/bingo';
 import type { FeedCell } from '@/features/profile/lib/profile';
@@ -34,15 +36,20 @@ interface Props {
 }
 
 export function BingoThumbnail({ width, grid, theme, title, cells, rounded = true }: Props) {
-  const [image, setImage] = useState<string | null>(null);
-  const [checkImage, setCheckImage] = useState<string | null>(null);
-  const [fgColor, setFgColor] = useState<string>(FIXED.boardForeground);
+  const resolvedGrid = grid as '3x3' | '4x3' | '4x4';
+  const [image, setImage] = useState<string | null>(() =>
+    getThemeImageUrlSync(theme, resolvedGrid),
+  );
+  const [checkImage, setCheckImage] = useState<string | null>(() =>
+    getThemeImageUrlSync(theme, 'check'),
+  );
+  const [fgColor, setFgColor] = useState<string>(() => getThemeForegroundColorSync(theme));
 
   useEffect(() => {
     let cancelled = false;
     const load = async () => {
       const [bg, check, color] = await Promise.all([
-        getThemeImageUrl(theme, grid as '3x3' | '4x3' | '4x4'),
+        getThemeImageUrl(theme, resolvedGrid),
         getThemeImageUrl(theme, 'check'),
         getThemeForegroundColor(theme),
       ]);
@@ -55,7 +62,7 @@ export function BingoThumbnail({ width, grid, theme, title, cells, rounded = tru
     return () => {
       cancelled = true;
     };
-  }, [theme, grid]);
+  }, [theme, resolvedGrid]);
 
   const height = width * (FIGMA_H / FIGMA_W);
   const radius = rounded ? 8 : 0;

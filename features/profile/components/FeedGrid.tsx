@@ -24,7 +24,7 @@ export function FeedGrid({ items, onChanged, onItemPress, emptyText }: Props) {
   const router = useRouter();
   const { contentWidth } = useResponsive();
   const itemWidth = (contentWidth - H_PADDING * 2 - GAP * (COLUMNS - 1)) / COLUMNS;
-  const defaultEmptyText = t('home.boardNotCreated');
+  const defaultEmptyText = t('team.status.boardNotCreated');
 
   if (items.length === 0) {
     return (

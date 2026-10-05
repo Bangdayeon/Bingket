@@ -3,6 +3,7 @@ import '@/global.css';
 import '@/lib/svg-interop';
 import * as Sentry from '@sentry/react-native';
 import { hasConsent, loadConsent } from '@/lib/consent';
+import i18n from '@/i18n';
 
 Sentry.init({
   dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
@@ -82,7 +83,8 @@ function RootLayout() {
           // re-signup 또는 trigger 미작동 대비: public.users 행 보장
           const rawName = (user.user_metadata?.name as string | undefined) ?? '';
           const displayName =
-            rawName.replace(/[^\u{AC00}-\u{D7A3}a-zA-Z0-9]/gu, '').slice(0, 20) || '빙고유저';
+            rawName.replace(/[^\u{AC00}-\u{D7A3}a-zA-Z0-9]/gu, '').slice(0, 20) ||
+            i18n.t('bingo.user');
           const username = `user_${user.id.replace(/-/g, '').slice(0, 15)}`;
           await supabase
             .from('users')

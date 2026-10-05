@@ -87,7 +87,7 @@ export function SettingsMenu() {
       });
     } catch (e) {
       Sentry.captureException(e);
-      setResultModal({ title: '오류', body: t('settings.quickInquiry.error') });
+      setResultModal({ title: t('common.error.general'), body: t('settings.quickInquiry.error') });
     } finally {
       setIsReportLoading(false);
     }

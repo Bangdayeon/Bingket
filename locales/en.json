@@ -1,0 +1,10 @@
+{
+  "ios": {
+    "CFBundleDisplayName": "Bingket",
+    "NSPhotoLibraryUsageDescription": "Photo library access is required to set a profile picture or attach images to posts.",
+    "NSCameraUsageDescription": "Camera access is required to take a profile picture or attach images to posts."
+  },
+  "android": {
+    "app_name": "Bingket"
+  }
+}

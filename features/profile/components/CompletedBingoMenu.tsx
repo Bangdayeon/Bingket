@@ -8,9 +8,9 @@ import { updateBoardVisibility, type BoardVisibility, type FeedItem } from '../l
 import { useTranslation } from 'react-i18next';
 
 const OPTIONS = [
-  { value: 'public', label: 'common.visibility.public' },
-  { value: 'friends', label: 'common.visibility.friends' },
-  { value: 'private', label: 'common.visibility.private' },
+  { value: 'public', label: 'bingo.visibility.public' },
+  { value: 'friends', label: 'bingo.visibility.friends' },
+  { value: 'private', label: 'bingo.visibility.private' },
 ] as const satisfies readonly { value: BoardVisibility; label: string }[];
 
 export function CompletedBingoMenu({ item, onChanged }: { item: FeedItem; onChanged: () => void }) {
@@ -78,7 +78,7 @@ export function CompletedBingoMenu({ item, onChanged }: { item: FeedItem; onChan
           >
             <Text className="text-body-md text-danger">{t('board.post.delete.menu')}</Text>
           </Pressable>
-          <Text className="text-caption-sm text-gray-500 mb-2">{t('common.visibility.label')}</Text>
+          <Text className="text-caption-sm text-gray-500 mb-2">{t('bingo.visibility.label')}</Text>
           {OPTIONS.map((option) => (
             <Pressable
               key={option.value}
