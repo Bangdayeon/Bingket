@@ -391,7 +391,20 @@ export default function CommunityWriteScreen() {
               lineHeight: 22,
             }}
           />
-          <View style={{ height: 40 }} />
+          <View className="mt-6 gap-3 px-6 pb-10">
+            <Text className="text-body-sm font-pretendard-medium text-gray-500">
+              {t('board.post.guidelines.title')}
+            </Text>
+            <Text className="text-caption-md text-gray-500">
+              {t('board.post.guidelines.description')}
+            </Text>
+            <Text className="text-caption-md font-pretendard-medium text-gray-500">
+              {t('board.post.guidelines.heading')}
+            </Text>
+            <Text className="text-caption-md text-gray-500">
+              {t('board.post.guidelines.items')}
+            </Text>
+          </View>
         </ScrollView>
 
         {/* Bottom toolbar — hidden when the keyboard is up */}

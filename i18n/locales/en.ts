@@ -231,6 +231,14 @@ const en = {
         error: 'Could not delete the post.',
       },
       form: { contentPlaceholder: 'Write something.' },
+      guidelines: {
+        title: 'Help us build a positive community',
+        description:
+          'To keep this a welcoming space for everyone, posts that disparage others or cause offense may be subject to moderation. Content listed below may result in post removal, restrictions on use, or other actions under our community policies.',
+        heading: 'Content that may be subject to moderation',
+        items:
+          '• Profanity, slander, insults, or ridicule directed at a person or group\n• Discriminatory or hateful language based on gender, region, age, race, religion, disability, or other characteristics\n• Spreading false information or damaging someone’s reputation\n• Sharing someone’s personal information (real name, contact details, address, photos, etc.) without permission\n• Threats, harassment, or intimidation targeting an individual\n• Pornography or sexually explicit, violent, or disturbing content\n• Flooding, repetitive posts, spam, promotions, or advertisements\n• Encouraging illegal activities or sharing illegal information\n• Copying or posting someone else’s work without permission\n• Impersonating moderators or disrupting the service',
+      },
       attachment: {
         loadBingo: 'Load bingo',
         takePhoto: 'Take a photo',
