@@ -16,23 +16,25 @@ interface Props {
   items: FeedItem[];
   onItemPress: (item: FeedItem) => void;
   emptyText?: string;
+  isMine?: boolean;
   onChanged?: () => void;
 }
 
-export function FeedGrid({ items, onChanged, onItemPress, emptyText }: Props) {
+export function FeedGrid({ items, onChanged, onItemPress, emptyText, isMine = true }: Props) {
   const { t } = useTranslation();
   const router = useRouter();
   const { contentWidth } = useResponsive();
   const itemWidth = (contentWidth - H_PADDING * 2 - GAP * (COLUMNS - 1)) / COLUMNS;
-  const defaultEmptyText = t('home.boardNotCreated');
 
   if (items.length === 0) {
     return (
       <View className="py-20 items-center gap-6">
         <Text className="text-body-md text-gray-400 text-center">
-          {emptyText ?? defaultEmptyText}
+          {isMine ? (emptyText ?? t('home.boardNotCreated')) : t('profile.feedEmpty')}
         </Text>
-        <Button label={t('home.addBingo.default')} onClick={() => router.push('/bingo/add')} />
+        {isMine && (
+          <Button label={t('home.addBingo.default')} onClick={() => router.push('/bingo/add')} />
+        )}
       </View>
     );
   }

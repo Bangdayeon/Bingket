@@ -158,6 +158,7 @@ export default function ProfileScreen() {
                 <View className="flex-1">
                   <FeedGrid
                     items={feed}
+                    isMine={profile?.isMe ?? false}
                     onChanged={profile?.isMe ? () => void load() : undefined}
                     onItemPress={(item) =>
                       router.push(

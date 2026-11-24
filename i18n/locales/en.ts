@@ -8,4 +8,7 @@ export default {
     title: 'My Bucket List',
     empty: 'You don’t have any bucket lists yet.',
   },
+  profile: {
+    feedEmpty: 'The feed is empty',
+  },
 };

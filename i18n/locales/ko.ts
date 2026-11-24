@@ -532,6 +532,7 @@ export default {
   },
 
   profile: {
+    feedEmpty: '피드가 비어있어요',
     visible: {
       friend: '친구만 볼 수 있어요.',
       friend_des: '친구가 되면 빙고와 뱃지를 볼 수 있어요.',

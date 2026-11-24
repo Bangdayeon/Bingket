@@ -27,6 +27,10 @@ const ja = {
     comment: 'コメント',
   },
 
+  profile: {
+    feedEmpty: 'フィードは空です',
+  },
+
   settings: {
     title: '設定',
     language: '言語',
