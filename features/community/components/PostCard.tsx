@@ -169,6 +169,8 @@ export const PostCard = memo(function PostCard({
       : [
           {
             label: t('board.moderation.report.menu'),
+            icon: 'report' as const,
+            danger: true as const,
             onPress: () => setShowReportModal(true),
           },
           ...(post.user?.is_deleted
@@ -176,6 +178,7 @@ export const PostCard = memo(function PostCard({
             : [
                 {
                   label: t('board.moderation.block.menu'),
+                  icon: 'block' as const,
                   danger: true as const,
                   onPress: () => setShowBlockModal(true),
                 },

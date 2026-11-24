@@ -347,6 +347,8 @@ export default function CommunityDetailScreen() {
     : [
         {
           label: t('board.moderation.report.menu'),
+          icon: 'report' as const,
+          danger: true as const,
           onPress: () => {
             setShowPostMenu(false);
             setReportTarget({ type: 'post', id: post.id });
@@ -358,6 +360,7 @@ export default function CommunityDetailScreen() {
           : [
               {
                 label: t('board.moderation.block.menu'),
+                icon: 'block' as const,
                 danger: true as const,
                 onPress: () => {
                   setShowPostMenu(false);
@@ -380,6 +383,8 @@ export default function CommunityDetailScreen() {
     : [
         {
           label: t('board.moderation.report.menu'),
+          icon: 'report' as const,
+          danger: true as const,
           onPress: () => {
             if (commentMenuId) setReportTarget({ type: 'comment', id: commentMenuId });
             setCommentMenuId(null);
@@ -388,6 +393,7 @@ export default function CommunityDetailScreen() {
         },
         {
           label: t('board.moderation.block.menu'),
+          icon: 'block' as const,
           danger: true as const,
           onPress: () => {
             const uid = commentMenuTargetUserId;
