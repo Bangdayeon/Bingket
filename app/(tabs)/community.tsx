@@ -87,6 +87,10 @@ export default function CommunityScreen() {
     setPosts((prev) => prev.filter((p) => p.userId !== userId));
   }, []);
 
+  const handleDelete = useCallback((postId: string) => {
+    setPosts((prev) => prev.filter((p) => p.id !== postId));
+  }, []);
+
   return (
     <SafeAreaView className="flex-1 bg-surface" edges={['top']}>
       <View className="flex-1 md:self-center md:w-full md:max-w-[600px]">
@@ -96,6 +100,7 @@ export default function CommunityScreen() {
           onLoadMore={handleLoadMore}
           onRefresh={handleRefresh}
           onBlock={handleBlock}
+          onDelete={handleDelete}
           isLoading={loading}
           isRefreshing={refreshing}
           hasError={loadFailed}

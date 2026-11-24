@@ -14,6 +14,7 @@ interface PostListProps {
   onLoadMore: () => void;
   onRefresh: () => void;
   onBlock?: (userId: string) => void;
+  onDelete?: (postId: string) => void;
   isLoading: boolean;
   isRefreshing: boolean;
   hasError?: boolean;
@@ -27,6 +28,7 @@ export function PostList({
   onLoadMore,
   onRefresh,
   onBlock,
+  onDelete,
   isLoading,
   isRefreshing,
   hasError = false,
@@ -56,10 +58,10 @@ export function PostList({
           }, 1000);
         }}
       >
-        <PostCard post={item} currentUserId={currentUserId} onBlock={onBlock} />
+        <PostCard post={item} currentUserId={currentUserId} onBlock={onBlock} onDelete={onDelete} />
       </Pressable>
     ),
-    [router, currentUserId, onBlock],
+    [router, currentUserId, onBlock, onDelete],
   );
 
   const keyExtractor = useCallback((item: CommunityPost) => item.id, []);

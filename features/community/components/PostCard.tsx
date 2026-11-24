@@ -15,7 +15,7 @@ import BingoPreview from '@/components/BingoPreview';
 import type { BingoData } from '@/types/bingo';
 import { Popover } from '@/components/Popover';
 import { Modal } from '@/components/Modal';
-import { submitReport, blockUser } from '@/features/community/lib/community';
+import { submitReport, blockUser, deletePost } from '@/features/community/lib/community';
 import { useTranslation } from 'react-i18next';
 
 const REPORT_REASONS = [
@@ -91,9 +91,15 @@ interface PostCardProps {
   post: CommunityPost;
   currentUserId?: string | null;
   onBlock?: (userId: string) => void;
+  onDelete?: (postId: string) => void;
 }
 
-export const PostCard = memo(function PostCard({ post, currentUserId, onBlock }: PostCardProps) {
+export const PostCard = memo(function PostCard({
+  post,
+  currentUserId,
+  onBlock,
+  onDelete,
+}: PostCardProps) {
   const { t } = useTranslation();
   const router = useRouter();
 
@@ -103,6 +109,8 @@ export const PostCard = memo(function PostCard({ post, currentUserId, onBlock }:
   const [isReporting, setIsReporting] = useState(false);
   const [showBlockModal, setShowBlockModal] = useState(false);
   const [isBlocking, setIsBlocking] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [alertModal, setAlertModal] = useState<{ title: string; message: string } | null>(null);
 
   const ownership =
@@ -151,6 +159,11 @@ export const PostCard = memo(function PostCard({ post, currentUserId, onBlock }:
           {
             label: t('board.post.edit.menu'),
             onPress: () => router.push(`/community/write?postId=${post.id}`),
+          },
+          {
+            label: t('board.post.delete.menu'),
+            danger: true as const,
+            onPress: () => setShowDeleteModal(true),
           },
         ]
       : [
@@ -231,6 +244,36 @@ export const PostCard = memo(function PostCard({ post, currentUserId, onBlock }:
           <Text className="text-body-sm text-gray-700">{post.commentCount}</Text>
         </View>
       </View>
+
+      {/* REPORT */}
+      <Modal
+        visible={showDeleteModal}
+        title={t('board.post.delete.title')}
+        body={<Text className="text-body-sm text-gray-500">{t('board.post.delete.body')}</Text>}
+        variant="warning"
+        confirmLabel={t('common.delete')}
+        cancelLabel={t('common.cancel')}
+        confirmLoading={isDeleting}
+        onConfirm={async () => {
+          if (isDeleting) return;
+          setIsDeleting(true);
+          try {
+            await deletePost(post.id);
+            setShowDeleteModal(false);
+            onDelete?.(post.id);
+          } catch (e) {
+            setShowDeleteModal(false);
+            setAlertModal({
+              title: t('board.post.delete.error'),
+              message: e instanceof Error ? e.message : t('common.error.retry'),
+            });
+          } finally {
+            setIsDeleting(false);
+          }
+        }}
+        onCancel={() => !isDeleting && setShowDeleteModal(false)}
+        onDismiss={() => !isDeleting && setShowDeleteModal(false)}
+      />
 
       {/* REPORT */}
       <Modal
