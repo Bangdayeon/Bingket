@@ -4,6 +4,7 @@ import { useResolvedScheme } from '@/lib/color-scheme';
 import { DateInput } from '@/components/DateInput';
 import DoneIcon from '@/assets/icons/ic_done.svg';
 import CloseIcon from '@/assets/icons/ic_close.svg';
+import EditIcon from '@/assets/icons/ic_edit.svg';
 import { BingoCellDetail } from '@/types/bingo-cell';
 import { useEffect, useRef, useState } from 'react';
 import {
@@ -291,20 +292,27 @@ export function BingoCellModal({
                 </>
               )}
 
-              <Text className="mb-2 text-body-md text-gray-900">{t('home.memo')}</Text>
-              <Pressable onPress={() => setEditingMemoCellId(item.id)}>
-                <RNTextInput
-                  value={item.memo}
-                  placeholder={t('home.memoPlaceholder')}
-                  multiline
-                  scrollEnabled={false}
-                  editable={false}
-                  pointerEvents="none"
-                  textAlignVertical="top"
-                  className="h-[190px] rounded-2xl bg-gray-200 p-3 text-body-md text-gray-900 placeholder:text-gray-500"
-                />
-                <MemoFooter length={item.memo?.length ?? 0} saveState={memoSaveState[item.id]} />
-              </Pressable>
+              <View className="mb-2 flex-row items-center justify-between">
+                <Text className="text-body-md text-gray-900">{t('home.memo')}</Text>
+                <Pressable
+                  onPress={() => setEditingMemoCellId(item.id)}
+                  hitSlop={8}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('board.post.edit.menu')}
+                >
+                  <EditIcon width={20} height={20} className="text-gray-700" />
+                </Pressable>
+              </View>
+              <RNTextInput
+                value={item.memo}
+                placeholder={t('home.memoPlaceholder')}
+                multiline
+                scrollEnabled
+                editable={false}
+                textAlignVertical="top"
+                className="h-[190px] rounded-2xl bg-gray-200 p-3 text-body-md text-gray-900 placeholder:text-gray-500"
+              />
+              <MemoFooter length={item.memo?.length ?? 0} saveState={memoSaveState[item.id]} />
 
               {team && item.memoUpdatedBy && item.memoUpdatedBy !== team.currentUserId && (
                 <Text className="text-caption-sm mt-2 text-gray-500">
