@@ -8,7 +8,7 @@ import { FIXED, useColors } from '@/lib/use-colors';
 import { Text } from '@/components/Text';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Modal } from '@/components/Modal';
 
 type IconTheme = 'default' | 'neon' | 'sunset' | 'tanning';
 
@@ -16,26 +16,24 @@ const ICON_THEMES = [
   {
     value: 'default',
     iconName: 'settings.theme.icon.default',
-    image: require('@/assets/icon_themes/icon_theme_default.png'),
+    image: require('@/assets/icon-themes/default.png'),
   },
   {
     value: 'neon',
     iconName: 'settings.theme.icon.neon',
-    image: require('@/assets/icon_themes/icon_theme_neon.png'),
+    image: require('@/assets/icon-themes/neon.png'),
   },
   {
     value: 'sunset',
     iconName: 'settings.theme.icon.sunset',
-    image: require('@/assets/icon_themes/icon_theme_sunset.png'),
+    image: require('@/assets/icon-themes/sunset.png'),
   },
   {
     value: 'tanning',
     iconName: 'settings.theme.icon.tanning',
-    image: require('@/assets/icon_themes/icon_theme_tanning.png'),
+    image: require('@/assets/icon-themes/tanning.png'),
   },
 ] as const satisfies { value: IconTheme; iconName: string; image: number }[];
-
-const ICON_THEME_STORAGE_KEY = '@bingket/icon-theme';
 
 export default function AppThemeScreen() {
   const { t } = useTranslation();
@@ -43,10 +41,12 @@ export default function AppThemeScreen() {
   const [appTheme, setAppTheme] = useState<AppTheme>('system');
   const [iconTheme, setIconTheme] = useState<IconTheme>(() => {
     const currentIconName = getAppIcon();
-    const matched = ICON_THEMES.find((theme) => theme.iconName === currentIconName);
+    const matched = ICON_THEMES.find((theme) => theme.value === currentIconName);
     return matched?.value ?? 'default';
   });
   const colors = useColors();
+  const [changingIcon, setChangingIcon] = useState(false);
+  const [iconError, setIconError] = useState(false);
 
   const APP_THEMES: { value: AppTheme; label: string; leftBg: string; rightBg: string }[] = [
     {
@@ -80,11 +80,16 @@ export default function AppThemeScreen() {
   };
 
   const handleIconThemeChange = async (value: IconTheme) => {
-    setIconTheme(value);
-    const selected = ICON_THEMES.find((theme) => theme.value === value);
-    if (selected) {
-      await setAppIcon(selected.iconName);
-      await AsyncStorage.setItem(ICON_THEME_STORAGE_KEY, selected.iconName);
+    if (changingIcon || value === iconTheme) return;
+    setChangingIcon(true);
+    try {
+      const result = await setAppIcon(value);
+      if (result === false) throw new Error('Icon change failed');
+      setIconTheme(value);
+    } catch {
+      setIconError(true);
+    } finally {
+      setChangingIcon(false);
     }
   };
 
@@ -130,6 +135,7 @@ export default function AppThemeScreen() {
           {ICON_THEMES.map(({ value, iconName, image }) => (
             <Pressable
               key={value}
+              disabled={changingIcon}
               onPress={() => handleIconThemeChange(value)}
               className="flex-row items-center gap-3 py-2"
             >
@@ -144,6 +150,15 @@ export default function AppThemeScreen() {
           ))}
         </View>
       </ScrollView>
+      <Modal
+        visible={iconError}
+        title={t('common.error.general')}
+        body={t('common.error.retry')}
+        variant="single"
+        confirmLabel={t('common.confirm')}
+        onConfirm={() => setIconError(false)}
+        onDismiss={() => setIconError(false)}
+      />
     </View>
   );
 }

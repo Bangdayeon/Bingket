@@ -73,7 +73,7 @@ export default function MyPostsScreen() {
         >
           {posts.map((post, index) => (
             <View key={post.id}>
-              {index > 0 && <View className="h-px bg-gray-300" />}
+              {index > 0 && <View className="h-px bg-gray-200" />}
               <PostItem post={post} onPress={() => router.push(`/community/${post.id}`)} />
             </View>
           ))}

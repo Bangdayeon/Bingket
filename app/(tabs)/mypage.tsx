@@ -57,9 +57,9 @@ export default function MyPageScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-surface" edges={['top']}>
-      <View className="h-[60px] flex-row items-center justify-end border-b border-gray-300 px-4">
+      <View className="h-[60px] flex-row items-center justify-end border-b border-gray-200 px-4">
         <Pressable onPress={() => router.push('/mypage/settings')} hitSlop={8}>
-          <SettingsIcon width={36} height={36} className="text-gray-700" />
+          <SettingsIcon width={34} height={34} className="text-gray-700" />
         </Pressable>
       </View>
 

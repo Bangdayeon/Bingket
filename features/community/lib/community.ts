@@ -124,44 +124,24 @@ function mapPost(
   };
 }
 
-const POST_SELECT = `
-  id, title, content, like_count, comment_count, created_at, user_id, image_urls, is_anonymous, bingo_snapshot,
-  users ( display_name, avatar_url ),
-  bingo_boards ( id, title, grid, theme, bingo_cells ( position, content ) )
-`;
-
 export const fetchPosts = async (page: number): Promise<CommunityPost[]> => {
-  const blockedIds = await fetchBlockedUserIds();
-
-  let query = supabase
-    .from('posts')
-    .select(POST_SELECT)
-    .eq('is_deleted', false)
-    .order('created_at', { ascending: false })
-    .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
-
-  if (blockedIds.length > 0) query = query.not('user_id', 'in', `(${blockedIds.join(',')})`);
-
-  const { data, error } = await query;
+  const { data, error } = await supabase.rpc('community_posts', {
+    p_offset: page * PAGE_SIZE,
+    p_limit: PAGE_SIZE,
+  });
   if (error) throw error;
-  if (!data) return [];
-
-  const likedSet = await fetchLikedSet(data.map((p) => p.id as string));
-  return data.map((p) => mapPost(p as Parameters<typeof mapPost>[0], likedSet.has(p.id as string)));
+  const rows = (data ?? []) as Parameters<typeof mapPost>[0][];
+  const liked = await fetchLikedSet(rows.map((p) => p.id));
+  return rows.map((p) => mapPost(p, liked.has(p.id)));
 };
 
 export const fetchPost = async (id: string): Promise<CommunityPost | null> => {
-  const { data, error } = await supabase
-    .from('posts')
-    .select(POST_SELECT)
-    .eq('id', id)
-    .eq('is_deleted', false)
-    .single();
-
-  if (error && error.code !== 'PGRST116') throw error;
-  if (error || !data) return null;
-  const likedSet = await fetchLikedSet([data.id as string]);
-  return mapPost(data as Parameters<typeof mapPost>[0], likedSet.has(data.id as string));
+  const { data, error } = await supabase.rpc('community_posts', { p_id: id, p_limit: 1 });
+  if (error) throw error;
+  const row = data?.[0] as Parameters<typeof mapPost>[0] | undefined;
+  if (!row) return null;
+  const liked = await fetchLikedSet([id]);
+  return mapPost(row, liked.has(id));
 };
 
 export const fetchMyBingosForPost = async (): Promise<BingoData[]> => {
@@ -462,24 +442,14 @@ export const fetchComments = async (
   postId: string,
   limit: number = COMMENT_PAGE_SIZE,
 ): Promise<CommentsPage> => {
-  const { data, error, count } = await supabase
-    .from('comments')
-    .select(
-      'id, content, user_id, parent_id, is_anonymous, created_at, like_count, users ( display_name, avatar_url )',
-      { count: 'exact' },
-    )
-    .eq('post_id', postId)
-    .eq('is_deleted', false)
-    .order('created_at', { ascending: true })
-    .limit(limit);
-
+  const { data, error } = await supabase.rpc('community_comments', {
+    p_post_id: postId,
+    p_limit: limit,
+  });
   if (error) throw error;
-  if (!data) return { comments: [], total: 0 };
-
-  const blockedIds = await fetchBlockedUserIds();
-  const rows = (data as RawCommentRow[]).filter(
-    (c) => blockedIds.length === 0 || !blockedIds.includes(c.user_id),
-  );
+  const payload = data as { rows: RawCommentRow[]; total: number };
+  const rows = payload.rows;
+  const count = payload.total;
 
   // 익명 번호 맵: user_id → 익명N (등장 순서)
   const anonymousMap = new Map<string, number>();
@@ -614,24 +584,13 @@ export const toggleCommentLike = async (commentId: string, like: boolean): Promi
   }
 };
 
-export const fetchBlockedUserIds = async (): Promise<string[]> => {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return [];
-  const { data } = await supabase.from('blocks').select('blocked_id').eq('blocker_id', user.id);
-  return (data ?? []).map((b) => b.blocked_id as string);
-};
-
 export const blockUser = async (userId: string): Promise<void> => {
   const {
     data: { user },
     error: authError,
   } = await supabase.auth.getUser();
   if (authError || !user) throw new Error(i18n.t('auth.needLogin'));
-  const { error } = await supabase
-    .from('blocks')
-    .insert({ blocker_id: user.id, blocked_id: userId });
+  const { error } = await supabase.rpc('community_block_author', { p_target: userId });
   if (error) throw new Error(error.message);
 };
 
@@ -658,30 +617,19 @@ export const searchPosts = async (query: string): Promise<CommunityPost[]> => {
   const trimmed = query.trim();
   if (!trimmed) return [];
 
-  const blockedIds = await fetchBlockedUserIds();
-
-  const { data: idRows, error: rpcError } = await supabase.rpc('search_post_ids', {
+  const { data: idRows, error: searchError } = await supabase.rpc('search_post_ids', {
     query_text: trimmed,
   });
-  if (rpcError || !idRows || idRows.length === 0) return [];
-
-  const ids = (idRows as Array<{ id: string }>).map((r) => r.id);
-
-  let q = supabase
-    .from('posts')
-    .select(POST_SELECT)
-    .in('id', ids)
-    .eq('is_deleted', false)
-    .order('created_at', { ascending: false });
-
-  if (blockedIds.length > 0) q = q.not('user_id', 'in', `(${blockedIds.join(',')})`);
-
-  const { data, error } = await q;
+  if (searchError) throw searchError;
+  if (!idRows?.length) return [];
+  const { data, error } = await supabase.rpc('community_posts', {
+    p_ids: idRows.map((r: { id: string }) => r.id),
+    p_limit: 50,
+  });
   if (error) throw error;
-  if (!data) return [];
-
-  const likedSet = await fetchLikedSet(data.map((p) => p.id as string));
-  return data.map((p) => mapPost(p as Parameters<typeof mapPost>[0], likedSet.has(p.id as string)));
+  const rows = (data ?? []) as Parameters<typeof mapPost>[0][];
+  const liked = await fetchLikedSet(rows.map((p) => p.id));
+  return rows.map((p) => mapPost(p, liked.has(p.id)));
 };
 
 export const togglePostLike = async (postId: string, like: boolean): Promise<void> => {

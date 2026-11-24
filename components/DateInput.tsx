@@ -18,7 +18,7 @@ export function DateInput({ value, onPress, disabled = false, className = '' }: 
         disabled ? 'opacity-40' : ''
       } ${className}`}
     >
-      <CalendarIcon width={24} height={24} className="text-gray-600" />
+      <CalendarIcon width={20} height={20} className="text-gray-600" />
       <Text className="text-body-md text-gray-700">{value}</Text>
     </Pressable>
   );

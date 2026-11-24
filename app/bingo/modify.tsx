@@ -102,7 +102,7 @@ export default function BingoModifyScreen() {
   };
 
   const handleSave = async () => {
-    if (!title.trim()) return setAlertMessage(t('home.field.title.label'));
+    if (!title.trim()) return setAlertMessage(t('home.field.title.word'));
     if (saving) return;
     setSaving(true);
     try {
@@ -182,7 +182,7 @@ export default function BingoModifyScreen() {
         contentContainerStyle={{ gap: 32, paddingBottom: insets.bottom + 32 }}
         keyboardShouldPersistTaps="handled"
       >
-        <View className="px-4 pb-2 pt-7">
+        <View className="px-4 pb-2">
           <Text className="text-title-lg font-pretendard-medium text-gray-900">빙고 수정하기</Text>
         </View>
 

@@ -142,7 +142,7 @@ export default function TeamInviteScreen() {
       const [cols, rows] = selectedGrid.split('x').map(Number);
 
       if (!myTitle.trim()) {
-        return setAlertMessage(t('home.field.title.label'));
+        return setAlertMessage(t('home.field.title.word'));
       }
 
       if (cells.filter((cell) => cell?.trim()).length < cols * rows) {
@@ -206,7 +206,9 @@ export default function TeamInviteScreen() {
 
   return (
     <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
-      <PageHeader title={invite ? TEAM_MODE_LABEL_KEYS[invite.mode] : t('friends.invite.label')} />
+      <PageHeader
+        title={invite ? t(TEAM_MODE_LABEL_KEYS[invite.mode]) : t('friends.invite.label')}
+      />
 
       {!invite ? (
         <View className="flex-1 items-center justify-center">

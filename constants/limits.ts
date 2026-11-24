@@ -5,7 +5,7 @@ export const LIMITS = {
   bingoTitle: 20,
   bingoCell: 30,
   searchKeyword: 30,
-  memo: 300,
+  memo: 1000,
   retrospective: 500,
   bio: 50,
   displayName: 12,

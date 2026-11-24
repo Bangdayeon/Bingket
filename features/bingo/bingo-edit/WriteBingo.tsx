@@ -91,9 +91,11 @@ export function WriteBingo({
             />
           ))}
         </ScrollView>
-        <Text className="px-4 pt-2 text-caption-sm text-gray-600">
-          {t('bingo.cellGrid.description')}
-        </Text>
+        {selectedGrid === '4x3' && (
+          <Text className="px-4 pt-2 text-caption-sm text-gray-600">
+            {t('bingo.cellGrid.description')}
+          </Text>
+        )}
       </View>
 
       <View>

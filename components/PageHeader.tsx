@@ -22,24 +22,24 @@ export function PageHeader({
   const router = useRouter();
 
   return (
-    <View>
-      <View className="h-9 flex-row items-center justify-between px-4 pt-3">
-        {hideBack ? (
-          <View />
-        ) : (
-          <Pressable onPress={onBack ?? (() => router.back())} hitSlop={12}>
-            <BackArrowIcon width={24} height={24} className="text-gray-900" />
-          </Pressable>
-        )}
-        {right}
+    <View className="h-[60px] shrink-0 flex-row items-center gap-2 px-2">
+      {!hideBack && (
+        <Pressable onPress={onBack ?? (() => router.back())} hitSlop={12}>
+          <BackArrowIcon width={24} height={24} className="text-gray-900" />
+        </Pressable>
+      )}
+      <View className="flex-1 flex-row items-center gap-2">
+        {title ? (
+          <Text
+            className="shrink text-title-md font-pretendard-medium text-gray-900"
+            numberOfLines={1}
+          >
+            {title}
+          </Text>
+        ) : null}
+        {titleRight}
       </View>
-
-      {title ? (
-        <View className="flex-row items-center gap-2 px-4 pb-2 pt-7">
-          <Text className="text-title-lg font-pretendard-medium text-gray-900">{title}</Text>
-          {titleRight}
-        </View>
-      ) : null}
+      {right}
     </View>
   );
 }

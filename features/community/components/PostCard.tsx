@@ -208,7 +208,7 @@ export const PostCard = memo(function PostCard({
         </View>
         {ownership !== 'unknown' && (
           <Pressable onPress={() => setShowMenu((v) => !v)} hitSlop={8}>
-            <MoreIcon width={24} height={24} className="text-gray-500" />
+            <MoreIcon width={24} height={24} className="text-gray-700" />
           </Pressable>
         )}
       </View>
@@ -243,7 +243,7 @@ export const PostCard = memo(function PostCard({
       <View className="flex-row items-center gap-4 mt-3">
         <LikeButton count={post.likeCount} postId={post.id} initialLiked={post.likedByMe} />
         <View className="flex-row items-center gap-1">
-          <SMSIcon width={24} height={24} className="text-gray-400" />
+          <SMSIcon width={24} height={24} className="text-gray-700" />
           <Text className="text-body-sm text-gray-700">{post.commentCount}</Text>
         </View>
       </View>
@@ -355,8 +355,10 @@ export const PostCard = memo(function PostCard({
         body={
           <Text className="text-body-sm text-gray-500">{t('board.moderation.block.body')}</Text>
         }
-        variant="error"
+        variant="warning"
         confirmLabel={t('board.moderation.block.confirm')}
+        cancelLabel={t('common.cancel')}
+        onCancel={() => !isBlocking && setShowBlockModal(false)}
         onConfirm={async () => {
           setIsBlocking(true);
           try {

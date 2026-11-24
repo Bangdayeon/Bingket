@@ -20,7 +20,7 @@ import { useTranslation } from 'react-i18next';
 const MAX_RECENT = 10;
 const RECENT_SEARCHES_KEY = '@bingket/recent-searches';
 
-const Separator = () => <View className="h-px bg-gray-300  " />;
+const Separator = () => <View className="h-px bg-gray-200" />;
 
 export default function CommunitySearchScreen() {
   const { t } = useTranslation();
@@ -149,7 +149,7 @@ export default function CommunitySearchScreen() {
             )}
           </View>
           {searches.length === 0 ? (
-            <Text className="text-body-sm w-full text-center text-gray-500">
+            <Text className="text-body-sm w-full mt-10 text-center text-gray-500">
               {t('board.search.empty')}
             </Text>
           ) : (

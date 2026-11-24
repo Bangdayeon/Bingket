@@ -45,12 +45,12 @@ export function BingoGoal({
 
   return (
     <View className="px-4">
-      <SectionLabel label={t('home.field.duration.label')} />
+      <SectionLabel label={t('home.field.duration.word')} />
 
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ gap: 8, paddingBottom: 20 }}
+        contentContainerStyle={{ gap: 8, paddingBottom: 12 }}
       >
         {durationOptions.map((option) => (
           <Chip
@@ -63,12 +63,12 @@ export function BingoGoal({
       </ScrollView>
 
       <View className="flex-row items-center" style={{ gap: 12 }}>
-        <DateInput value={formatDate(startDate) || 'yyyy.mm.dd'} onPress={onOpenStartPicker} />
+        <DateInput value={formatDate(startDate) || t('common.date')} onPress={onOpenStartPicker} />
 
         <Text className="text-body-md text-gray-600">~</Text>
 
         <DateInput
-          value={formatDate(endDate) || 'yyyy.mm.dd'}
+          value={formatDate(endDate) || t('common.date')}
           onPress={onOpenEndPicker}
           disabled={isEndDateDisabled}
         />

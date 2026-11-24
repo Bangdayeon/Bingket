@@ -1,6 +1,5 @@
 import * as Sentry from '@sentry/react-native';
 import Button from '@/components/Button';
-import { Text } from '@/components/Text';
 import { Modal } from '@/components/Modal';
 import { PageHeader } from '@/components/PageHeader';
 import { BingoTitle } from '@/features/bingo/bingo-edit/BingoTitle';
@@ -36,7 +35,7 @@ export default function BingoAddScreen() {
   });
   const [selectedEditCount, setSelectedEditCount] = useState<string>('0');
   const [selectedTheme, setSelectedTheme] = useState<string>('default');
-  const [visibility, setVisibility] = useState<BoardVisibility>('friends');
+  const [visibility, setVisibility] = useState<BoardVisibility>('public');
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [pickerTarget, setPickerTarget] = useState<'start' | 'end' | null>(null);
@@ -71,7 +70,7 @@ export default function BingoAddScreen() {
       setSelectedGrid(d.selectedGrid ?? '3x3');
       setSelectedEditCount(d.selectedEditCount ?? '0');
       setSelectedTheme(d.selectedTheme ?? 'default');
-      setVisibility(d.visibility ?? 'friends');
+      setVisibility(d.visibility ?? 'public');
       setStartDate(d.startDate ? new Date(d.startDate) : null);
       setEndDate(d.endDate ? new Date(d.endDate) : null);
       setCells(d.cells ?? []);
@@ -119,6 +118,12 @@ export default function BingoAddScreen() {
 
   const [cols, rows] = selectedGrid.split('x').map(Number);
   const totalCells = cols * rows;
+  const allCellsFilled = Array.from({ length: totalCells }, (_, index) => cells[index]).every(
+    (cell) => Boolean(cell?.trim()),
+  );
+  const canSave = Boolean(
+    title.trim() && selectedDuration && startDate && endDate && allCellsFilled,
+  );
 
   const handleBack = () => {
     if (isDirty) setShowLeaveModal(true);
@@ -131,12 +136,11 @@ export default function BingoAddScreen() {
   };
 
   const handleSave = () => {
-    if (!title.trim()) return showAlert(t('home.field.title.label'));
-    if (!selectedDuration) return showAlert(t('home.field.duration.label'));
+    if (!title.trim()) return showAlert(t('home.field.title.word'));
+    if (!selectedDuration) return showAlert(t('home.field.duration.word'));
     if (!startDate) return showAlert(t('home.field.duration.selectStartDate'));
     if (!endDate) return showAlert(t('home.field.duration.selectEndDate'));
-    if (cells.filter((c) => c?.trim()).length < totalCells)
-      return showAlert(t('home.alert.fillAllCells'));
+    if (!allCellsFilled) return showAlert(t('home.alert.fillAllCells'));
     setShowConfirmModal(true);
   };
 
@@ -163,7 +167,7 @@ export default function BingoAddScreen() {
   };
 
   const handleTempSave = async () => {
-    if (!title.trim()) return showAlert(t('home.field.title.label'));
+    if (!title.trim()) return showAlert(t('home.field.title.word'));
     try {
       await draft.save();
     } catch (e) {
@@ -182,7 +186,7 @@ export default function BingoAddScreen() {
 
   return (
     <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
-      <PageHeader onBack={handleBack} />
+      <PageHeader title={t('home.addBingo.default')} onBack={handleBack} />
 
       <ScrollView
         ref={scrollRef}
@@ -192,12 +196,6 @@ export default function BingoAddScreen() {
         keyboardShouldPersistTaps="handled"
         automaticallyAdjustKeyboardInsets
       >
-        <View className="px-4 pb-2 pt-7">
-          <Text className="text-title-lg font-pretendard-medium text-gray-900">
-            {t('home.addBingo.default')}
-          </Text>
-        </View>
-
         <CoachMarkTarget id="add-info" className="gap-8">
           <BingoTitle
             value={title}
@@ -271,6 +269,7 @@ export default function BingoAddScreen() {
             variant="primary"
             size="md"
             onClick={handleSave}
+            disabled={!canSave}
             className="flex-1"
           />
         </View>

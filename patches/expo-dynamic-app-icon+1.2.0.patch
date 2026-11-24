@@ -1,0 +1,47 @@
+--- a/node_modules/expo-dynamic-app-icon/ios/ExpoDynamicAppIconModule.swift
++++ b/node_modules/expo-dynamic-app-icon/ios/ExpoDynamicAppIconModule.swift
+@@ -2,31 +2,24 @@
+ 
+ public class ExpoDynamicAppIconModule: Module {
+   public func definition() -> ModuleDefinition {
+-    
+     Name("ExpoDynamicAppIcon")
+ 
+-    Function("setAppIcon") { (name:String) -> String in
+-      self.setAppIconWithoutAlert(name)
+-
+-      return name
+-    }
++    AsyncFunction("setAppIcon") { (name: String, promise: Promise) in
++      guard UIApplication.shared.supportsAlternateIcons else {
++        promise.reject("ERR_ICON_UNSUPPORTED", "Alternate icons are unavailable")
++        return
++      }
++      UIApplication.shared.setAlternateIconName(name) { error in
++        if let error = error {
++          promise.reject("ERR_ICON_CHANGE", error.localizedDescription)
++        } else {
++          promise.resolve(name)
++        }
++      }
++    }.runOnQueue(.main)
+ 
+     Function("getAppIcon") { () -> String in
+       return UIApplication.shared.alternateIconName ?? "DEFAULT"
+     }
+   }
+-
+-  private func setAppIconWithoutAlert(_ iconName: String?) {
+-    if UIApplication.shared.responds(to: #selector(getter: UIApplication.supportsAlternateIcons)) && UIApplication.shared.supportsAlternateIcons {
+-      typealias setAlternateIconName = @convention(c) (NSObject, Selector, NSString?, @escaping (NSError) -> ()) -> ()
+-      
+-      let selectorString = "_setAlternateIconName:completionHandler:"
+-      
+-      let selector = NSSelectorFromString(selectorString)
+-      let imp = UIApplication.shared.method(for: selector)
+-      let method = unsafeBitCast(imp, to: setAlternateIconName.self)
+-      method(UIApplication.shared, selector, iconName as NSString?, { _ in })
+-    }
+-  }
+-
+ }

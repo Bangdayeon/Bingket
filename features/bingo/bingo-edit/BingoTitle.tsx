@@ -27,7 +27,7 @@ export function BingoTitle({ value = '', onChange }: BingoTitleProps) {
 
   return (
     <View className="px-4">
-      <SectionLabel label={t('home.field.title.label')} />
+      <SectionLabel label={t('home.field.title.word')} />
       <TextInput
         value={title}
         onChangeText={handleChange}

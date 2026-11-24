@@ -175,7 +175,7 @@ export default function CommunityDetailScreen() {
     return (
       <SafeAreaView className="flex-1 bg-surface" edges={['top']}>
         <View
-          className="flex-row items-center border-b border-gray-300  "
+          className="flex-row items-center border-b border-gray-200  "
           style={{ height: HEADER_HEIGHT }}
         >
           <View style={{ width: 56 }} className="pl-4">
@@ -195,7 +195,7 @@ export default function CommunityDetailScreen() {
     return (
       <SafeAreaView className="flex-1 bg-surface" edges={['top']}>
         <View
-          className="flex-row items-center border-b border-gray-300  "
+          className="flex-row items-center border-b border-gray-200  "
           style={{ height: HEADER_HEIGHT }}
         >
           <View style={{ width: 56 }} className="pl-4">
@@ -336,7 +336,7 @@ export default function CommunityDetailScreen() {
           },
         },
         {
-          label: t('board.post.delete.menu'),
+          label: t('common.delete'),
           danger: true as const,
           onPress: () => {
             setShowPostMenu(false);
@@ -546,11 +546,11 @@ export default function CommunityDetailScreen() {
             <Text className="text-body-sm text-gray-500">{t('board.post.delete.body')}</Text>
           </>
         }
-        // 'error' keeps a single button but makes the confirm button danger-colored.
-        // 'single' is primary (green), which didn't visually warn for an irreversible action.
-        variant="error"
+        variant="warning"
         confirmLabel={t('common.delete')}
+        cancelLabel={t('common.cancel')}
         onConfirm={handleDeletePost}
+        onCancel={() => !isDeleting && setShowDeleteModal(false)}
         onDismiss={() => !isDeleting && setShowDeleteModal(false)}
       />
 
@@ -561,7 +561,9 @@ export default function CommunityDetailScreen() {
         confirmLoading={isDeletingComment}
         body={
           <>
-            <Text className="text-body-sm text-gray-500">{t('board.post.delete.body')}</Text>
+            <Text className="text-body-sm text-gray-500">
+              {t('board.comment.delete.description')}
+            </Text>
           </>
         }
         variant="error" // Single confirm button, styled danger
@@ -582,8 +584,10 @@ export default function CommunityDetailScreen() {
             <Text className="text-body-sm text-gray-500">{t('board.moderation.block.body')}</Text>
           </>
         }
-        variant="error" // Single danger button
+        variant="warning"
         confirmLabel={t('board.moderation.block.menu')}
+        cancelLabel={t('common.cancel')}
+        onCancel={() => !isBlocking && setShowBlockModal(false)}
         onConfirm={confirmBlockUser}
         onDismiss={() => !isBlocking && setShowBlockModal(false)}
       />

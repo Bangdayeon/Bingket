@@ -54,7 +54,7 @@ export function CompletedBingoMenu({ item, onChanged }: { item: FeedItem; onChan
           });
         }}
       >
-        <MoreIcon width={24} height={24} className="text-gray-900" />
+        <MoreIcon width={24} height={24} className="text-gray-700" />
       </Pressable>
       <NativeModal
         visible={menuOpen}
@@ -78,7 +78,7 @@ export function CompletedBingoMenu({ item, onChanged }: { item: FeedItem; onChan
             }}
             className="py-2 mb-2 border-b border-gray-300"
           >
-            <Text className="text-body-md text-danger">{t('board.post.delete.menu')}</Text>
+            <Text className="text-label-md text-danger">{t('board.post.delete.menu')}</Text>
           </Pressable>
           <Text className="text-caption-sm text-gray-500 mb-2">{t('common.visibility.label')}</Text>
           {OPTIONS.map((option) => (
@@ -104,7 +104,8 @@ export function CompletedBingoMenu({ item, onChanged }: { item: FeedItem; onChan
         title={t('home.deleteConfirm')}
         body={item.title}
         cancelLabel={t('common.cancel')}
-        confirmLabel={t('board.post.delete.menu')}
+        variant="warning"
+        confirmLabel={t('common.delete')}
         onCancel={() => setConfirmDelete(false)}
         onDismiss={() => setConfirmDelete(false)}
         onConfirm={() => void mutate(() => deleteBingo(item.id))}

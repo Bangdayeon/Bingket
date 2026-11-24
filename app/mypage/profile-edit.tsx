@@ -237,7 +237,9 @@ export default function ProfileEditPage() {
           </View>
 
           <View className="gap-2">
-            <Text className="text-body-md text-gray-900">{t('settings.profile.bio.label')}</Text>
+            <Text className="text-body-md text-gray-900 ml-2">
+              {t('settings.profile.bio.label')}
+            </Text>
             <Pressable
               onPress={() => setEditingBio(true)}
               accessibilityLabel={t('settings.profile.bio.edit')}

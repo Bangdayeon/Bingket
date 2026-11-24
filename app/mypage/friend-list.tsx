@@ -277,44 +277,35 @@ export default function FriendListScreen() {
         right={
           isSelectMode ? (
             <Pressable onPress={() => router.back()} hitSlop={8}>
-              <Text className="text-body-md font-pretendard-medium text-green-600">
-                {t('friends.team.complete')}
+              <Text className="text-body-md font-pretendard-medium text-green-600 pr-3">
+                {t('team.selection.complete')}
               </Text>
             </Pressable>
           ) : undefined
         }
       />
 
-      {isSelectMode && pickedFriends.length === 0 && (
-        <Text className="px-4 pb-4 text-body-sm text-gray-500">
-          {t('friends.team.selectFriend')}
-        </Text>
-      )}
-
       {isSelectMode && pickedFriends.length > 0 && (
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
+          className="flex-grow-0 mb-3"
           contentContainerStyle={{
-            gap: 12,
             paddingHorizontal: 16,
             paddingTop: 6,
-            paddingBottom: 8,
           }}
         >
           {pickedFriends.map((friend) => (
-            <View key={friend.friendId} className="w-[52px] items-center gap-1">
-              <View>
-                <ProfileAvatar avatarUrl={friend.avatarUrl} size={32} />
-
-                <Pressable
-                  onPress={() => friendSelection.toggle(friend.friendId, maxSelect)}
-                  hitSlop={8}
-                  className="absolute -right-1 -top-1 rounded-full bg-gray-300"
-                >
-                  <CloseIcon width={16} height={16} className="text-gray-800" />
-                </Pressable>
-              </View>
+            <View key={friend.friendId} className="mx-1 items-center gap-1">
+              <Pressable
+                onPress={() => friendSelection.toggle(friend.friendId, maxSelect)}
+                hitSlop={8}
+              >
+                <ProfileAvatar avatarUrl={friend.avatarUrl} size={52} />
+                <View className="absolute -right-1 -top-1 rounded-full bg-gray-200 p-2">
+                  <CloseIcon width={12} height={12} className="text-gray-800" />
+                </View>
+              </Pressable>
 
               <Text className="text-caption-sm text-gray-700" numberOfLines={1}>
                 {friend.displayName}

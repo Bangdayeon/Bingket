@@ -80,7 +80,7 @@ function NotificationItem({ item, onRead, onAction, onFriendResponse }: Notifica
 
   return (
     <Pressable
-      className={`justify-center border-b border-gray-300 px-4 py-6 ${
+      className={`justify-center border-b border-gray-200 px-4 py-6 ${
         item.is_read ? '' : 'bg-green-100'
       }`}
       onPress={handlePress}
@@ -255,7 +255,7 @@ export default function NotificationsScreen() {
         </Pressable>
       </View>
 
-      <View className="h-px bg-gray-300" />
+      <View className="h-px bg-gray-200" />
 
       <ScrollView className="flex-1">
         {fetchError ? (

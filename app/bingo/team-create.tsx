@@ -57,7 +57,7 @@ export default function TeamCreateScreen() {
   const [betText, setBetText] = useState('');
   const scrollRef = useRef<ScrollView>(null);
   const betOffset = useRef(0);
-  const [visibility, setVisibility] = useState<BoardVisibility>('friends');
+  const [visibility, setVisibility] = useState<BoardVisibility>('public');
   const [cells, setCells] = useState<string[]>([]);
 
   const [alertMessage, setAlertMessage] = useState<string | null>(null);
@@ -91,7 +91,7 @@ export default function TeamCreateScreen() {
       setSelectedGrid(d.selectedGrid ?? '3x3');
       setSelectedEditCount(d.selectedEditCount ?? '0');
       setSelectedTheme(d.selectedTheme ?? 'default');
-      setVisibility(d.visibility ?? 'friends');
+      setVisibility(d.visibility ?? 'public');
       setStartDate(d.startDate ? new Date(d.startDate) : null);
       setEndDate(d.endDate ? new Date(d.endDate) : null);
       setCells(d.cells ?? []);
@@ -145,8 +145,8 @@ export default function TeamCreateScreen() {
     cells.slice(0, totalCells).filter((cell) => cell?.trim()).length === totalCells;
 
   const handleSave = () => {
-    if (!title.trim()) return setAlertMessage(t('home.field.title.label'));
-    if (!selectedDuration) return setAlertMessage(t('home.field.duration.label'));
+    if (!title.trim()) return setAlertMessage(t('home.field.title.word'));
+    if (!selectedDuration) return setAlertMessage(t('home.field.duration.word'));
     if (!startDate) return setAlertMessage(t('home.field.duration.selectStartDate'));
     if (!endDate) return setAlertMessage(t('common.bingo.endDate'));
     if (cells.filter((c) => c?.trim()).length < totalCells)
@@ -206,19 +206,19 @@ export default function TeamCreateScreen() {
       style={{ paddingTop: insets.top }}
     >
       <PageHeader
-        title={TEAM_MODE_LABEL_KEYS[mode]}
+        title={t(TEAM_MODE_LABEL_KEYS[mode])}
         onBack={() => (isDirty ? setShowLeaveModal(true) : router.back())}
       />
 
       <ScrollView
         ref={scrollRef}
         className="flex-1"
-        contentContainerStyle={{ gap: 32, paddingBottom: 240 }}
+        contentContainerStyle={{ gap: 30, paddingBottom: 240 }}
         keyboardShouldPersistTaps="handled"
         automaticallyAdjustKeyboardInsets={false}
       >
-        <Text className="px-4 pb-2 pt-8 text-caption-md text-gray-700">
-          {TEAM_MODE_GUIDE_KEYS[mode]}
+        <Text className="px-4 pb-2 text-caption-md text-gray-700">
+          {t(TEAM_MODE_GUIDE_KEYS[mode])}
         </Text>
 
         <BingoTitle

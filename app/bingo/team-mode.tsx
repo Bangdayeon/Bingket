@@ -12,24 +12,27 @@ import {
   type TeamMode,
 } from '@/types/team';
 import { useTranslation } from 'react-i18next';
+import IC_COMPETITION from '@/assets/icons/ic_team.svg';
+import IC_TOGETHER from '@/assets/icons/ic_together.svg';
 
 interface ModeCardProps {
   label: string;
+  icon: string;
   description: string;
   onPress: () => void;
 }
 
-function ModeCard({ label, description, onPress }: ModeCardProps) {
+function ModeCard({ label, icon, description, onPress }: ModeCardProps) {
   return (
-    <Pressable
-      onPress={onPress}
-      className="h-[70px] flex-row items-center justify-between rounded-2xl border border-gray-300 px-3"
-    >
-      <View className="gap-2">
-        <Text className="text-body-md font-pretendard-medium text-gray-800">{label}</Text>
-        <Text className="text-body-sm text-gray-700">{description}</Text>
+    <Pressable onPress={onPress} className="h-[70px] flex-row items-center justify-between px-3">
+      <View className="flex-row items-center gap-4">
+        {icon === 'competition' ? <IC_COMPETITION className="" /> : <IC_TOGETHER />}
+        <View className="gap-2">
+          <Text className="text-body-md font-pretendard-medium text-gray-800">{label}</Text>
+          <Text className="text-body-sm text-gray-700">{description}</Text>
+        </View>
       </View>
-      <ArrowForwardIcon width={24} height={24} className="text-gray-800" />
+      <ArrowForwardIcon width={24} height={24} className="text-gray-700" />
     </Pressable>
   );
 }
@@ -58,8 +61,9 @@ export default function TeamModeScreen() {
           {SELECTABLE_TEAM_MODES.map((mode) => (
             <ModeCard
               key={mode}
-              label={TEAM_MODE_LABEL_KEYS[mode]}
-              description={TEAM_MODE_DESCRIPTION_KEYS[mode]}
+              icon={mode}
+              label={t(TEAM_MODE_LABEL_KEYS[mode])}
+              description={t(TEAM_MODE_DESCRIPTION_KEYS[mode])}
               onPress={() => goCreate(mode)}
             />
           ))}

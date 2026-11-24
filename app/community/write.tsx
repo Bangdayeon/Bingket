@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { HEADER_HEIGHT } from '@/lib/layout';
+import { PageHeader } from '@/components/PageHeader';
 import Button from '@/components/Button';
 import {
   Alert,
@@ -18,7 +18,6 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import * as Sentry from '@sentry/react-native';
 import { Text } from '@/components/Text';
-import ArrowBackIcon from '@/assets/icons/ic_arrow_back.svg';
 import ImagesIcon from '@/assets/icons/ic_imagesmode.svg';
 import GridIcon from '@/assets/icons/ic_grid_3x3.svg';
 import CheckIcon from '@/assets/icons/ic_check.svg';
@@ -241,7 +240,7 @@ export default function CommunityWriteScreen() {
     setShowCameraMenu(false);
     if (imageBlockCount >= MAX_IMAGES) return;
     if (!(await ensurePhotoLibraryPermission())) {
-      Alert.alert(t('common.permission.albumnBody'), t('common.permission.albumnBody'));
+      Alert.alert(t('common.permission.albumTitle'), t('common.permission.albumBody'));
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -295,15 +294,9 @@ export default function CommunityWriteScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-surface" edges={['top']}>
-      {/* Header — back / submit */}
-      <View className="flex-row items-center" style={{ height: HEADER_HEIGHT }}>
-        <View style={{ width: 56 }} className="pl-4">
-          <Pressable onPress={() => router.back()} hitSlop={8}>
-            <ArrowBackIcon width={24} height={24} className="text-gray-900" />
-          </Pressable>
-        </View>
-        <View style={{ flex: 1 }} />
-        <View className="pr-2">
+      <PageHeader
+        title={isEditMode ? t('board.post.edit.title') : t('board.post.create.title')}
+        right={
           <Button
             label={t('board.submit')}
             size="sm"
@@ -312,8 +305,8 @@ export default function CommunityWriteScreen() {
             loading={isSubmitting}
             onClick={handleSubmit}
           />
-        </View>
-      </View>
+        }
+      />
 
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -321,17 +314,12 @@ export default function CommunityWriteScreen() {
       >
         {/* Body */}
         <ScrollView style={{ flex: 1 }} keyboardShouldPersistTaps="handled">
-          {/* Screen title */}
-          <Text className="mb-4 px-4 text-title-sm font-pretendard-semibold text-gray-900">
-            {isEditMode ? t('board.post.edit.title') : t('board.post.create.title')}
-          </Text>
-
           {/* Title */}
           <View className="mb-4 px-6">
             <TextInput
               value={title}
               onChangeText={setTitle}
-              placeholder={t('home.field.title.label')}
+              placeholder={t('home.field.title.word')}
               maxLength={LIMITS.postTitle}
             />
           </View>
@@ -394,10 +382,18 @@ export default function CommunityWriteScreen() {
           <View style={{ height: 40 }} />
         </ScrollView>
 
+        <View className="gap-2 px-4 py-3">
+          {(['line1', 'line2', 'line3', 'line4'] as const).map((line) => (
+            <Text key={line} className="text-caption-sm text-gray-500">
+              {t(`postWritingNotice.${line}`)}
+            </Text>
+          ))}
+        </View>
+
         {/* Bottom toolbar — hidden when the keyboard is up */}
         {!keyboardShown && (
           <View
-            className="flex-row items-center gap-2 border-t border-gray-300 px-4"
+            className="flex-row items-center gap-2 border-t border-gray-200 px-4"
             style={{ height: TOOLBAR_H, marginBottom: insets.bottom }}
           >
             {/* Image */}
@@ -503,7 +499,7 @@ export default function CommunityWriteScreen() {
           className="bg-white   rounded-t-2xl"
           style={{ maxHeight: '60%', paddingBottom: insets.bottom + 16 }}
         >
-          <View className="border-b border-gray-300 px-5 pb-4 pt-6">
+          <View className="border-b border-gray-200 px-5 pb-4 pt-6">
             <Text className="text-title-sm font-pretendard-medium">
               {t('board.post.attachment.loadBingo')}
             </Text>
@@ -538,7 +534,7 @@ export default function CommunityWriteScreen() {
                   <Pressable
                     key={bingo.id}
                     onPress={() => handleSelectBingo(bingo)}
-                    className="h-16 flex-row items-center justify-between border-b border-gray-300 px-5"
+                    className="h-16 flex-row items-center justify-between border-b border-gray-200 px-5"
                   >
                     <Text className="mr-2 flex-1 text-body-md text-gray-900" numberOfLines={1}>
                       {bingo.title}

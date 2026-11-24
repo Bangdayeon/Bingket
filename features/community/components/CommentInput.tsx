@@ -3,11 +3,11 @@ import CloseIcon from '@/assets/icons/ic_close.svg';
 import { Pressable, TextInput as RNTextInput, View } from 'react-native';
 import { Text } from '@/components/Text';
 import { TextInput } from '@/components/TextInput';
-import ArrowUpwardIcon from '@/assets/icons/ic_arrow_upward.svg';
 import CheckIcon from '@/assets/icons/ic_check.svg';
 import IconButton from '@/components/IconButton';
 import { LIMITS } from '@/constants/limits';
 import { useTranslation } from 'react-i18next';
+import SendIcon from '@/assets/icons/ic_send.svg';
 
 interface CommentInputProps {
   value: string;
@@ -44,7 +44,7 @@ export function CommentInput({
   const [pressed, setPressed] = useState(false);
 
   return (
-    <View className="border-t border-gray-300 bg-white" style={{ paddingBottom }}>
+    <View className="border-t border-gray-200 bg-white" style={{ paddingBottom }}>
       {replyTo && (
         <View className="flex-row items-center justify-between bg-green-50 px-4 py-2">
           <Text className="text-caption-sm text-gray-500">
@@ -76,9 +76,9 @@ export function CommentInput({
               className="-mr-2"
               hitSlop={8}
               icon={
-                <ArrowUpwardIcon
-                  width={24}
-                  height={24}
+                <SendIcon
+                  width={20}
+                  height={20}
                   className={pressed ? 'text-gray-500' : 'text-gray-400'}
                 />
               }

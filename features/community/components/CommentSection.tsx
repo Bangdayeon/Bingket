@@ -1,4 +1,4 @@
-import { Image, Pressable, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { Text } from '@/components/Text';
 import { CommentItem } from './CommentItem';
 import { Comment } from '@/types/community';
@@ -31,7 +31,7 @@ export function CommentSection({
 }: CommentSectionProps) {
   const { t } = useTranslation();
   return (
-    <View className="mt-5 pt-5 border-t border-gray-300 pb-20">
+    <View className="mt-5 pt-5 border-t border-gray-200 pb-20">
       {isLoading ? (
         <View className="items-center py-12">
           <Loading />
@@ -40,13 +40,8 @@ export function CommentSection({
         <ErrorState message={t('board.comment.error.load')} onRetry={onRetry} />
       ) : comments.length === 0 ? (
         <View className="items-center py-12 gap-5">
-          <Image
-            source={require('@/assets/mascots/3D_01.png')}
-            style={{ width: 130, height: 110 }}
-            resizeMode="contain"
-          />
-          <Text className="text-body-md text-gray-500">{t('board.comment.first')}</Text>
-          <Text className="text-body-md text-gray-500">{t('board.comment.warning')}</Text>
+          <Text className="text-body-sm text-gray-500">{t('board.comment.first')}</Text>
+          <Text className="text-body-sm text-gray-500">{t('board.comment.warning')}</Text>
         </View>
       ) : (
         <View className="gap-5">

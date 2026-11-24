@@ -26,7 +26,7 @@ export function MenuItem({
       <Text className={`text-body-md ${muted ? 'text-gray-600' : 'text-gray-800'}`}>{label}</Text>
       <View className="flex-row items-center gap-1">
         {rightText && <Text className="text-body-md text-gray-600">{rightText}</Text>}
-        {showArrow && <ForwardArrowIcon width={24} height={24} className="text-gray-800" />}
+        {showArrow && <ForwardArrowIcon width={24} height={24} className="text-gray-600" />}
       </View>
     </Pressable>
   );

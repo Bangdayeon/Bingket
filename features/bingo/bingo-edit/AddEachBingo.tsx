@@ -210,12 +210,12 @@ export function AddEachBingo({
 
       <Modal
         visible={selectedIndex !== null}
-        title={`${t('common.bingo.bingo')} ${t('board.post.form.contentPlaceholder')}`}
+        title={t('bingo.cell.label')}
         body={
           <TextInput
             value={inputText}
             onChangeText={setInputText}
-            placeholder={t('board.post.form.contentPlaceholder')}
+            placeholder={t('bingo.cell.placeholder')}
             maxLength={LIMITS.bingoCell}
             maxHeight={120}
             className="min-h-[72px]"

@@ -100,7 +100,7 @@ export default function ProfileScreen() {
 
   return (
     <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
-      <View className="h-[60px] flex-row items-center px-4 border-b border-gray-300">
+      <View className="h-[60px] flex-row items-center px-4 border-b border-gray-200">
         <IconButton
           variant="ghost"
           size={32}
@@ -141,8 +141,8 @@ export default function ProfileScreen() {
 
                 <Text className="text-body-sm text-gray-500 text-center">
                   {unlockableByFriend
-                    ? t('profile.visible.friend_des')
-                    : t('profile.visible.locked_des')}
+                    ? t('profile.visible.friendDescription')
+                    : t('profile.visible.lockedDescription')}
                 </Text>
 
                 {unlockableByFriend && canAddFriend && (

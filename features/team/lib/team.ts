@@ -263,8 +263,7 @@ export const createTeam = async (params: CreateTeamParams): Promise<{ teamId: st
     editCount: params.board.editCount,
     theme: params.board.theme,
     cells: params.board.cells,
-    // 팀원은 서로 친구여야 초대되므로 기본은 친구공개다
-    visibility: params.visibility ?? 'friends',
+    visibility: params.visibility ?? 'public',
   });
 
   const { data: team, error: teamError } = await supabase
@@ -385,7 +384,7 @@ export const acceptTeamInvite = async (params: {
       editCount: params.board.editCount,
       theme: params.board.theme,
       cells: params.board.cells,
-      visibility: 'friends',
+      visibility: 'public',
     });
   }
 
@@ -432,7 +431,7 @@ export const acceptErrorMessage = (e: unknown): string => {
   if (raw.includes('불러오지 못했'))
     return `${i18n.t('team.alert.loadFail')} ${i18n.t('common.error.retry')}`;
 
-  return raw || '수락에 실패했어요.';
+  return raw || '수락에 실패했어요';
 };
 
 export const isDeadInvite = (e: unknown): boolean => {

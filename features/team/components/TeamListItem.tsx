@@ -46,7 +46,9 @@ export function TeamListItem({ team }: TeamListItemProps) {
       </View>
 
       <View className="flex-row gap-2 items-center">
-        <Text className="text-caption-sm text-gray-700">{TEAM_MODE_LABEL_KEYS[team.mode]}</Text>
+        <Text className="text-caption-sm text-gray-700">
+          {i18n.t(TEAM_MODE_LABEL_KEYS[team.mode])}
+        </Text>
         <Text className="text-caption-sm text-gray-400">·</Text>
         <Text className="text-caption-sm text-gray-700">{period}</Text>
         <Text className="text-caption-sm text-gray-400">·</Text>

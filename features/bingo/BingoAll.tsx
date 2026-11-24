@@ -376,7 +376,7 @@ export function BingoAll() {
     if (atBingoCap) {
       setNotice({
         title: t('home.addBingo.clean'),
-        body: t('home.addBingo.clean_des', { count: LIMITS.bingoCount }),
+        body: t('home.addBingo.cleanDescription', { count: LIMITS.bingoCount }),
       });
       return;
     }
@@ -533,7 +533,7 @@ export function BingoAll() {
         {bingos.length > 0 &&
           (myBingoCount < LIMITS.bingoCount ? (
             <View className="px-4">
-              <View className="items-center rounded-[20px] bg-white px-5 py-6">
+              <View className="items-center rounded-[20px] bg-white px-5 pt-6 pb-[80px]">
                 <Text className="mb-5 text-body-md text-gray-800">
                   {t('home.addBingo.default')} ({myBingoCount}/{LIMITS.bingoCount})
                 </Text>
@@ -543,7 +543,7 @@ export function BingoAll() {
           ) : (
             <View className="items-center px-4">
               <Text className="text-body-md text-gray-700">
-                {t('home.addBingo.clean_des', { count: LIMITS.bingoCount })}
+                {t('home.addBingo.cleanDescription', { count: LIMITS.bingoCount })}
               </Text>
             </View>
           ))}

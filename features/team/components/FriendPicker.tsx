@@ -74,7 +74,7 @@ export function FriendPicker({ selectedIds, onChange, maxCount }: FriendPickerPr
         onPress={openPicker}
         className="h-12 flex-row items-center justify-between rounded-xl bg-gray-200 px-3"
       >
-        <Text className="text-body-md text-gray-500">
+        <Text className="text-body-md text-gray-700">
           {selected.length > 0
             ? t('home.field.friend.selected', { count: selected.length })
             : t('home.field.friend.label')}
@@ -84,7 +84,7 @@ export function FriendPicker({ selectedIds, onChange, maxCount }: FriendPickerPr
 
       <View className="pt-2">
         {selected.map((friend) => (
-          <View key={friend.friendId} className="h-11 flex-row items-center gap-2">
+          <View key={friend.friendId} className="h-11 flex-row items-center gap-2 px-2">
             <ProfileAvatar avatarUrl={friend.avatarUrl} size={32} />
             <Text className="shrink text-body-md text-gray-900" numberOfLines={1}>
               {friend.displayName}
@@ -96,7 +96,7 @@ export function FriendPicker({ selectedIds, onChange, maxCount }: FriendPickerPr
               onPress={() => onChange(selectedIds.filter((id) => id !== friend.friendId))}
               hitSlop={8}
             >
-              <CloseIcon width={24} height={24} className="text-gray-700" />
+              <CloseIcon width={20} height={20} className="text-gray-700" />
             </Pressable>
           </View>
         ))}

@@ -193,7 +193,7 @@ export default function TeamStatusScreen() {
           contentContainerStyle={{ paddingTop: 24, paddingBottom: insets.bottom + 32 }}
         >
           <Text className="mb-6 px-4 text-caption-md text-gray-700">
-            {TEAM_MODE_DESCRIPTION_KEYS[detail.mode]}
+            {t(TEAM_MODE_DESCRIPTION_KEYS[detail.mode])}
           </Text>
 
           {/* BEFORE START */}
@@ -409,7 +409,7 @@ export default function TeamStatusScreen() {
         body={isShared ? t('home.modal.leaveTeam.body_share') : t('home.modal.leaveTeam.body_solo')}
         variant="warning"
         confirmLabel={t('common.unsaved.confirm')}
-        cancelLabel={t('common.unsaved.cancel')}
+        cancelLabel={t('common.cancel')}
         onCancel={() => setShowLeaveModal(false)}
         onDismiss={() => setShowLeaveModal(false)}
         onConfirm={async () => {

@@ -7,7 +7,6 @@ import { useUnreadNotifications } from '@/features/notifications/unread-context'
 import { CoachMarkTarget } from '@/features/coachmark/CoachMarkTarget';
 import type { CoachMarkTargetId } from '@/features/coachmark/lib/coach-mark-steps';
 import { TABLET_MAX_CONTENT_WIDTH } from '@/lib/use-responsive';
-
 import HomeOff from '@/assets/icons/home_off.svg';
 import HomeOn from '@/assets/icons/home_on.svg';
 import CommunityOff from '@/assets/icons/ic_community_off.svg';
@@ -56,13 +55,13 @@ export function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarP
   return (
     <View className="bg-surface">
       <View
-        className="flex-row rounded-t-3xl border-l border-r border-t border-gray-300 bg-white"
+        className="flex-row border-t border-gray-200 bg-white"
         style={{
           flexDirection: 'row',
           justifyContent: 'space-between',
           paddingHorizontal: horizontalPadding,
-          paddingTop: 4,
-          paddingBottom: insets.bottom + 6,
+          paddingTop: 6,
+          paddingBottom: insets.bottom + 2,
         }}
       >
         {state.routes.map((route, index) => {
@@ -87,7 +86,7 @@ export function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarP
           return (
             <TouchableOpacity
               key={route.key}
-              style={{ alignItems: 'center', gap: 6 }}
+              style={{ alignItems: 'center', gap: 2 }}
               hitSlop={{ top: 8, bottom: 8, left: 16, right: 16 }}
               onPress={onPress}
               activeOpacity={0.7}

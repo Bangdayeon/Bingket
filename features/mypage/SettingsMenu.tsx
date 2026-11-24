@@ -119,7 +119,7 @@ export function SettingsMenu() {
           />
         </View>
 
-        <View className="h-px bg-gray-300" />
+        <View className="h-px bg-gray-200" />
 
         <View className="gap-3 px-4 py-3">
           <MenuItem label={t('settings.review')} onPress={openReviewPage} />
@@ -162,7 +162,7 @@ export function SettingsMenu() {
           />
         </View>
 
-        <View className="h-px bg-gray-300" />
+        <View className="h-px bg-gray-200" />
 
         <View className="gap-3 px-4 py-3">
           <MenuItem
@@ -180,7 +180,7 @@ export function SettingsMenu() {
           />
         </View>
 
-        <View className="h-px bg-gray-300" />
+        <View className="h-px bg-gray-200" />
 
         <View className="gap-3 px-4 py-3">
           <MenuItem

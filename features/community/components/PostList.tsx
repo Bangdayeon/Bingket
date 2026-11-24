@@ -21,7 +21,7 @@ interface PostListProps {
   onRetry?: () => void;
 }
 
-const Separator = () => <View className="h-px bg-gray-300" />;
+const Separator = () => <View className="h-px bg-gray-200" />;
 
 export function PostList({
   posts,

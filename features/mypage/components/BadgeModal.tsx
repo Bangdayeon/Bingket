@@ -56,14 +56,9 @@ export function BadgeModal({ visible, badge, onClose }: BadgeModalProps) {
             <Text className="text-body-md text-center text-gray-700">{message}</Text>
           ) : null}
 
-          <View
-            className="bg-gray-200"
-            style={{ borderRadius: 9999, paddingHorizontal: 16, paddingVertical: 8 }}
-          >
-            <Text className="text-body-sm text-gray-500">
-              {formatDate(badge.earnedAt)} {t('badge.get')}
-            </Text>
-          </View>
+          <Text className="text-body-sm text-gray-500">
+            {formatDate(badge.earnedAt)} {t('badge.get')}
+          </Text>
 
           <Button onClick={onClose} label={t('common.confirm')} size="sm" className="px-10" />
         </View>

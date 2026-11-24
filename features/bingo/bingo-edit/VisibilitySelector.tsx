@@ -62,7 +62,7 @@ export function VisibilitySelector({ value, onChange }: Props) {
         ))}
       </ScrollView>
 
-      <Text className="px-4 pt-3 text-caption-md text-gray-900">
+      <Text className="px-4 pt-3 text-caption-md text-gray-700">
         {selected ? t(selected.descriptionKey) : ''}
       </Text>
     </View>

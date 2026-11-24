@@ -15,15 +15,15 @@ interface Props {
 export function ProfileTabs({ value, onChange, feedCount, className = '' }: Props) {
   const { t } = useTranslation();
   return (
-    <View className={`flex-row gap-6 border-b border-gray-300 px-4 ${className}`}>
+    <View className={`flex-row gap-6 border-b border-gray-200 px-4 ${className}`}>
       {PROFILE_TABS.map((tab) => (
-        <Pressable key={tab} onPress={() => onChange(tab)} className="items-center pt-3">
-          <View className="flex-row items-baseline gap-1">
+        <Pressable key={tab} onPress={() => onChange(tab)} className="items-center pt-4">
+          <View className="flex-row items-baseline gap-2">
             <Text
               className={
                 value === tab
-                  ? 'text-body-md font-pretendard-bold text-gray-800'
-                  : 'text-body-md font-pretendard-medium text-gray-400'
+                  ? 'text-body-lg font-pretendard-bold text-gray-800'
+                  : 'text-body-lg font-pretendard-medium text-gray-400'
               }
             >
               {t(`my.${tab}`)}

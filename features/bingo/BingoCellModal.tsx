@@ -20,6 +20,7 @@ import { BlurView } from 'expo-blur';
 import { TABLET_MAX_CONTENT_WIDTH } from '@/lib/use-responsive';
 import { Text } from '@/components/Text';
 import Button from '@/components/Button';
+import IconButton from '@/components/IconButton';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ProfileAvatar } from '@/components/ProfileAvatar';
 import { useTranslation } from 'react-i18next';
@@ -282,7 +283,9 @@ export function BingoCellModal({
                   체크하면 현재 시각이 자동으로 찍히고, 그 뒤 날짜를 고쳐 잡으면 된다. */}
               {item.completed && (
                 <>
-                  <Text className="mb-2 text-body-md text-gray-900">{t('bingo.doneDate')}</Text>
+                  <Text className="mb-2 ml-2 text-body-md text-gray-900">
+                    {t('bingo.doneDate')}
+                  </Text>
                   <DateInput
                     value={formatDate(item.completedAt) || '날짜 선택'}
                     onPress={() => handleOpenDatePicker(item)}
@@ -292,27 +295,28 @@ export function BingoCellModal({
                 </>
               )}
 
-              <View className="mb-2 flex-row items-center justify-between">
+              <View className="mb-2 ml-2 flex-row items-center gap-1">
                 <Text className="text-body-md text-gray-900">{t('home.memo')}</Text>
-                <Pressable
-                  onPress={() => setEditingMemoCellId(item.id)}
-                  hitSlop={8}
-                  accessibilityRole="button"
-                  accessibilityLabel={t('board.post.edit.menu')}
-                >
-                  <EditIcon width={20} height={20} className="text-gray-700" />
-                </Pressable>
+                <IconButton
+                  icon={<EditIcon width={20} height={20} />}
+                  variant="ghost"
+                  size={28}
+                  accessibilityLabel={t('home.memoEdit')}
+                  onClick={() => setEditingMemoCellId(item.id)}
+                />
               </View>
-              <RNTextInput
-                value={item.memo}
-                placeholder={t('home.memoPlaceholder')}
-                multiline
-                scrollEnabled
-                editable={false}
-                textAlignVertical="top"
-                className="h-[190px] rounded-2xl bg-gray-200 p-3 text-body-md text-gray-900 placeholder:text-gray-500"
-              />
-              <MemoFooter length={item.memo?.length ?? 0} saveState={memoSaveState[item.id]} />
+              <View>
+                <RNTextInput
+                  value={item.memo}
+                  placeholder={t('home.memoPlaceholder')}
+                  multiline
+                  scrollEnabled
+                  editable={false}
+                  textAlignVertical="top"
+                  className="h-[190px]  rounded-2xl bg-gray-200 p-3 text-body-md placeholder:text-gray-500"
+                />
+                <MemoFooter length={item.memo?.length ?? 0} saveState={memoSaveState[item.id]} />
+              </View>
 
               {team && item.memoUpdatedBy && item.memoUpdatedBy !== team.currentUserId && (
                 <Text className="text-caption-sm mt-2 text-gray-500">
@@ -376,7 +380,7 @@ export function BingoCellModal({
                   scrollEnabled
                   textAlignVertical="top"
                   maxLength={LIMITS.memo}
-                  className="h-[298px] rounded-2xl bg-gray-200 p-3 text-body-md text-gray-900 placeholder:text-gray-500"
+                  className="h-[298px] rounded-2xl bg-gray-200 p-3 text-body-md placeholder:text-gray-500"
                 />
                 <MemoFooter
                   length={editingMemoCell.memo?.length ?? 0}

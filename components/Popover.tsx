@@ -53,8 +53,14 @@ export function Popover({ visible, items, onDismiss, style }: PopoverProps) {
               onDismiss();
               item.onPress();
             }}
-            className={`flex-row items-center gap-2 ${i < items.length - 1 ? 'border-b border-gray-300' : ''}`}
-            style={{ paddingHorizontal: 16, paddingVertical: 12 }}
+            className={i < items.length - 1 ? 'border-b border-gray-200' : undefined}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 8,
+              paddingHorizontal: 16,
+              paddingVertical: 12,
+            }}
           >
             {item.icon === 'report' && <ReportIcon width={20} height={20} color={colors.danger} />}
             {item.icon === 'block' && <BlockIcon width={20} height={20} color={colors.danger} />}
