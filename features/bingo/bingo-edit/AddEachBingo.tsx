@@ -101,7 +101,7 @@ export function AddEachBingo({
   };
 
   const handleSave = () => {
-    if (selectedIndex === null) return;
+    if (selectedIndex === null || !inputText.trim()) return;
 
     const updated = [...localCells];
     updated[selectedIndex] = inputText;
@@ -225,6 +225,7 @@ export function AddEachBingo({
         variant="default"
         cancelLabel={t('common.cancel')}
         confirmLabel={t('common.save')}
+        confirmDisabled={!inputText.trim()}
         onCancel={handleCancel}
         onConfirm={handleSave}
         onDismiss={handleCancel}
