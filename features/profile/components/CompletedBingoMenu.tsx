@@ -17,14 +17,15 @@ export function CompletedBingoMenu({ item, onChanged }: { item: FeedItem; onChan
   const { t } = useTranslation();
   const anchor = useRef<View>(null);
   const { height } = useWindowDimensions();
-  const [top, setTop] = useState<number | null>(null);
+  const [top, setTop] = useState(0);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const mutate = async (action: () => Promise<void>) => {
     if (busy) return;
     setBusy(true);
-    setTop(null);
+    setMenuOpen(false);
     setConfirmDelete(false);
     try {
       await action();
@@ -47,31 +48,32 @@ export function CompletedBingoMenu({ item, onChanged }: { item: FeedItem; onChan
         hitSlop={8}
         onPress={(event) => {
           event.stopPropagation();
-          anchor.current?.measureInWindow((_x, y, _w, h) =>
-            setTop(Math.max(16, Math.min(y + h, height - 260))),
-          );
+          anchor.current?.measureInWindow((_x, y, _w, h) => {
+            setTop(Math.max(16, Math.min(y + h, height - 260)));
+            setMenuOpen(true);
+          });
         }}
       >
         <MoreIcon width={24} height={24} className="text-gray-900" />
       </Pressable>
       <NativeModal
-        visible={top !== null}
+        visible={menuOpen}
         transparent
         animationType="fade"
-        onRequestClose={() => setTop(null)}
+        onRequestClose={() => setMenuOpen(false)}
       >
         <Pressable
           style={{ flex: 1 }}
-          onPress={() => setTop(null)}
+          onPress={() => setMenuOpen(false)}
           accessibilityLabel={t('settings.closeMenu')}
         />
         <View
           className="absolute right-4 rounded-2xl bg-surface p-4 border border-gray-300"
-          style={{ top: top ?? 0, width: 200 }}
+          style={{ top, width: 200 }}
         >
           <Pressable
             onPress={() => {
-              setTop(null);
+              setMenuOpen(false);
               setConfirmDelete(true);
             }}
             className="py-2 mb-2 border-b border-gray-300"
