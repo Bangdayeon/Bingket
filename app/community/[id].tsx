@@ -560,7 +560,9 @@ export default function CommunityDetailScreen() {
         }
         variant="error" // Single confirm button, styled danger
         confirmLabel={t('common.delete')}
+        cancelLabel={t('common.cancel')}
         onConfirm={confirmDeleteComment}
+        onCancel={() => !isDeleting && setShowDeleteCommentModal(false)}
         onDismiss={() => !isDeletingComment && setShowDeleteCommentModal(false)}
       />
 
