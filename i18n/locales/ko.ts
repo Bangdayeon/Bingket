@@ -230,7 +230,7 @@ export default {
 
       creating: '만드는 중...',
       processing: '처리 중...',
-      startBingoWith: '함께 빙고 시작하기',
+      startBingoWith: '빙고 초대 보내기',
     },
 
     field: {
@@ -260,6 +260,9 @@ export default {
 
       bet: {
         label: '내기 내용',
+      },
+      reward: {
+        label: '달성 리워드',
       },
 
       friend: {

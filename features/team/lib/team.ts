@@ -275,7 +275,7 @@ export const createTeam = async (params: CreateTeamParams): Promise<{ teamId: st
       mode: params.mode,
       start_date: params.startDate.split('T')[0],
       end_date: params.endDate.split('T')[0],
-      bet_text: params.mode === 'competition' ? params.betText : null,
+      bet_text: params.mode === 'competition' || params.mode === 'shared' ? params.betText : null,
       status: isTeamStarted(params.startDate.split('T')[0]) ? 'in_progress' : 'waiting',
     })
     .select('id')

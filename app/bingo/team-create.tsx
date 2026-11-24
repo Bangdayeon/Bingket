@@ -136,6 +136,13 @@ export default function TeamCreateScreen() {
     selectedDuration !== null && selectedDuration !== t('home.field.duration.custom');
   const [cols, rows] = selectedGrid.split('x').map(Number);
   const totalCells = cols * rows;
+  const canSave =
+    !saving &&
+    friendIds.length > 0 &&
+    Boolean(title.trim()) &&
+    Boolean(betText.trim()) &&
+    Boolean(selectedDuration && startDate && endDate) &&
+    cells.slice(0, totalCells).filter((cell) => cell?.trim()).length === totalCells;
 
   const handleSave = () => {
     if (!title.trim()) return setAlertMessage(t('home.field.title.label'));
@@ -145,6 +152,10 @@ export default function TeamCreateScreen() {
     if (cells.filter((c) => c?.trim()).length < totalCells)
       return setAlertMessage(t('home.alert.fillAllCells'));
     if (friendIds.length === 0) return setAlertMessage(t('home.alert.selectFriends'));
+    if (!betText.trim())
+      return setAlertMessage(
+        t(mode === 'shared' ? 'home.field.reward.label' : 'home.field.bet.label'),
+      );
     setShowConfirmModal(true);
   };
 
@@ -262,14 +273,16 @@ export default function TeamCreateScreen() {
           <VisibilitySelector value={visibility} onChange={setVisibility} />
         )}
 
-        {mode === 'competition' && (
+        {(mode === 'competition' || mode === 'shared') && (
           <View
             className="px-4"
             onLayout={(event) => {
               betOffset.current = event.nativeEvent.layout.y;
             }}
           >
-            <SectionLabel label={t('home.field.bet.label')} />
+            <SectionLabel
+              label={t(mode === 'shared' ? 'home.field.reward.label' : 'home.field.bet.label')}
+            />
             <TextInput
               onFocus={() =>
                 scrollRef.current?.scrollTo({
@@ -365,6 +378,7 @@ export default function TeamCreateScreen() {
           variant="primary"
           size="md"
           onClick={handleSave}
+          disabled={!canSave}
           className="w-full"
         />
       </View>

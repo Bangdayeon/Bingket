@@ -233,7 +233,7 @@ export default function TeamStatusScreen() {
           {detail.betText && (
             <View className="mx-5 mb-8">
               <Text className="text-title-md mb-3 font-pretendard-semibold">
-                {t('home.field.bet.label')}
+                {t(detail.mode === 'shared' ? 'home.field.reward.label' : 'home.field.bet.label')}
               </Text>
               <View className="p-4 bg-gray-100 rounded-2xl">
                 <Text className="text-body-md">{detail.betText}</Text>

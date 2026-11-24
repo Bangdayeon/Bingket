@@ -261,7 +261,7 @@ export default function TeamInviteScreen() {
             {invite.betText && (
               <View className="rounded-2xl bg-gray-200 px-4 py-3">
                 <Text className="mb-1 text-caption-md text-gray-700">
-                  {t('home.field.bet.label')}
+                  {t(invite.mode === 'shared' ? 'home.field.reward.label' : 'home.field.bet.label')}
                 </Text>
 
                 <Text className="text-body-md text-gray-900">{invite.betText}</Text>
