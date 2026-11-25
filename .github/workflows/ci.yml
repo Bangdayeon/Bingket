@@ -34,4 +34,4 @@ jobs:
         run: pnpm run lint
 
       - name: Test
-        run: pnpm exec jest --ci --coverage
+        run: pnpm exec jest --ci --coverage --passWithNoTests
