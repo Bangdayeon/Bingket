@@ -5,6 +5,8 @@ import { GridType } from '@/types/bingo-cell';
 export interface BingoThemeConfig {
   id: string;
   displayName: string;
+  names: Record<string, string>;
+  sortOrder: number;
   images: {
     '3x3': string;
     '4x3': string;
@@ -28,11 +30,17 @@ export const GRID_CONFIGS: Record<
   '4x4': { top: 185, left: 40, cellW: 233, cellH: 212, gapX: 22, gapY: 10 },
 };
 
-export async function fetchThemes(): Promise<Record<string, BingoThemeConfig>> {
-  if (themeCache) return themeCache;
+export async function fetchThemes(refresh = false): Promise<Record<string, BingoThemeConfig>> {
+  if (themeCache && !refresh) return themeCache;
 
-  const { data, error } = await supabase.from('bingo_themes').select('*');
-  if (error || !data?.length) return {};
+  const { data, error } = await supabase
+    .from('bingo_themes')
+    .select(
+      'id, display_name, names, sort_order, grid_3x3_url, grid_4x3_url, grid_4x4_url, check_url, foreground_color',
+    )
+    .order('sort_order')
+    .order('id');
+  if (error) return themeCache ?? {};
 
   const map: Record<string, BingoThemeConfig> = {};
 
@@ -40,6 +48,8 @@ export async function fetchThemes(): Promise<Record<string, BingoThemeConfig>> {
     const config: BingoThemeConfig = {
       id: row.id,
       displayName: row.display_name,
+      names: row.names ?? {},
+      sortOrder: row.sort_order,
       images: {
         '3x3': row.grid_3x3_url,
         '4x3': row.grid_4x3_url,
@@ -55,6 +65,10 @@ export async function fetchThemes(): Promise<Record<string, BingoThemeConfig>> {
 
   themeCache = map;
   return map;
+}
+
+export function getThemeName(theme: BingoThemeConfig, locale: string): string {
+  return theme.names[locale] ?? theme.names.en ?? theme.names.ko ?? theme.displayName ?? theme.id;
 }
 
 export async function getThemeImageUrl(theme: string, grid: GridType): Promise<string | null> {

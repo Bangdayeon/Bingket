@@ -3,8 +3,10 @@ import { AddEachBingo } from './AddEachBingo';
 import { ScrollView, View } from 'react-native';
 import { Text } from '@/components/Text';
 import { SectionLabel } from './SectionLabel';
-import { fetchThemes } from '@/features/bingo/lib/theme';
-import { useEffect, useState } from 'react';
+import { fetchThemes, getThemeName, type BingoThemeConfig } from '@/features/bingo/lib/theme';
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 const GRID_OPTIONS: { value: string; label: string }[] = [
@@ -36,8 +38,8 @@ export function WriteBingo({
   cells,
   onCellsChange,
 }: WriteBingoProps) {
-  const { t } = useTranslation();
-  const [themes, setThemes] = useState<{ id: string; displayName: string }[]>([]);
+  const { t, i18n } = useTranslation();
+  const [themes, setThemes] = useState<BingoThemeConfig[]>([]);
 
   const editCountOptions = [
     {
@@ -62,14 +64,22 @@ export function WriteBingo({
     },
   ];
 
-  useEffect(() => {
-    fetchThemes().then((map) => {
-      const unique = Object.values(map).filter(
-        (v, i, arr) => arr.findIndex((t) => t.id === v.id) === i,
-      );
-      setThemes(unique.map((t) => ({ id: t.id, displayName: t.displayName })));
-    });
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
+      fetchThemes(true).then((map) => {
+        if (active)
+          setThemes(
+            Object.values(map)
+              .filter((v, i, arr) => arr.findIndex((t) => t.id === v.id) === i)
+              .sort((a, b) => a.sortOrder - b.sortOrder || a.id.localeCompare(b.id)),
+          );
+      });
+      return () => {
+        active = false;
+      };
+    }, []),
+  );
 
   return (
     <View style={{ gap: 32 }}>
@@ -130,7 +140,7 @@ export function WriteBingo({
           {themes.map((theme) => (
             <Chip
               key={theme.id}
-              label={theme.displayName}
+              label={getThemeName(theme, i18n.language)}
               selected={selectedTheme === theme.id}
               onPress={() => onThemeSelect(theme.id)}
             />

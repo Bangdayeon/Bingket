@@ -17,20 +17,6 @@ export const PAGE_SIZE = 15;
 
 const R2_PUBLIC_URL = 'https://pub-ce1a524f861f4062a6ec96dd100c4aec.r2.dev';
 
-const THEME_ENTRIES = [
-  ['bingo.theme.default', 'default'],
-  ['bingo.theme.rabbit', 'rabbit'],
-  ['bingo.theme.redHorse', 'red_horse'],
-  ['bingo.theme.squareCat', 'square_cat'],
-  ['bingo.theme.pig', 'pig'],
-  ['bingo.theme.midnight', 'midnight'],
-] as const satisfies readonly (readonly [string, BingoTheme])[];
-
-function themeFromDisplay(display: string): BingoTheme {
-  const entry = THEME_ENTRIES.find(([key]) => i18n.t(key) === display);
-  return entry ? entry[1] : 'default';
-}
-
 function calcDdayLocal(targetDate: string | null): number {
   if (!targetDate) return 0;
   const diff = new Date(targetDate).getTime() - Date.now();
@@ -203,7 +189,7 @@ export const fetchMyBingosForPost = async (): Promise<BingoData[]> => {
         startDate: null,
         targetDate: null,
         state: 'draft',
-        theme: themeFromDisplay(d.selectedTheme as string) ?? 'default',
+        theme: (d.selectedTheme as string | undefined) ?? 'default',
         retrospective: null,
       };
       return [draftBingo, ...dbBingos];

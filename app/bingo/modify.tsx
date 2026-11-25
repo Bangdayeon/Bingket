@@ -12,7 +12,7 @@ import { fetchBingoForEdit, updateBingo, deleteBingo } from '@/features/bingo/li
 import { VisibilitySelector } from '@/features/bingo/bingo-edit/VisibilitySelector';
 import type { BoardVisibility } from '@/features/profile/lib/profile';
 import { fetchTeamByBoardId, leaveTeam } from '@/features/team/lib/team';
-import { fetchThemes } from '@/features/bingo/lib/theme';
+import { fetchThemes, getThemeName, type BingoThemeConfig } from '@/features/bingo/lib/theme';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
@@ -23,7 +23,7 @@ import Loading from '@/components/Loading';
 import { useTranslation } from 'react-i18next';
 
 export default function BingoModifyScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -39,7 +39,7 @@ export default function BingoModifyScreen() {
   const [cellEdits, setCellEdits] = useState<number[]>([]);
   const [selectedTheme, setSelectedTheme] = useState<string>('');
   const [visibility, setVisibility] = useState<BoardVisibility>('friends');
-  const [themes, setThemes] = useState<{ id: string; displayName: string }[]>([]);
+  const [themes, setThemes] = useState<BingoThemeConfig[]>([]);
 
   const [loadFailed, setLoadFailed] = useState(false);
 
@@ -47,11 +47,11 @@ export default function BingoModifyScreen() {
     setLoading(true);
     setLoadFailed(false);
     try {
-      const themeMap = await fetchThemes();
+      const themeMap = await fetchThemes(true);
       const uniqueThemes = Object.values(themeMap).filter(
         (v, i, arr) => arr.findIndex((t) => t.id === v.id) === i,
       );
-      setThemes(uniqueThemes.map((t) => ({ id: t.id, displayName: t.displayName })));
+      setThemes(uniqueThemes.sort((a, b) => a.sortOrder - b.sortOrder || a.id.localeCompare(b.id)));
 
       if (!bingoId) {
         setLoadFailed(true);
@@ -207,7 +207,7 @@ export default function BingoModifyScreen() {
               {themes.map((theme) => (
                 <Chip
                   key={theme.id}
-                  label={theme.displayName}
+                  label={getThemeName(theme, i18n.language)}
                   selected={selectedTheme === theme.id}
                   onPress={() => {
                     markDirty();
