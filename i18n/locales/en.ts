@@ -11,6 +11,7 @@ export default {
     screen: {
       home: 'Home',
       board: 'Board',
+      bingos: 'Browse Bingos',
       notifications: 'Notifications',
       mypage: 'My Space',
     },

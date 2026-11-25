@@ -57,6 +57,7 @@ async function fetchLikedSet(postIds: string[]): Promise<Set<string>> {
 function mapPost(
   p: {
     id: string;
+    category: string;
     title: string;
     content: string;
     like_count: number;
@@ -113,6 +114,23 @@ function mapPost(
 export const fetchPosts = async (page: number): Promise<CommunityPost[]> => {
   const { data, error } = await supabase.rpc('community_posts', {
     p_offset: page * PAGE_SIZE,
+    p_limit: PAGE_SIZE,
+  });
+  if (error) throw error;
+  const rows = (data ?? []) as Parameters<typeof mapPost>[0][];
+  const liked = await fetchLikedSet(rows.map((p) => p.id));
+  return rows.map((p) => mapPost(p, liked.has(p.id)));
+};
+
+export const fetchBingosPosts = async (page: number): Promise<CommunityPost[]> => {
+  const { data: ids, error: idsError } = await supabase.rpc('bingos_post_ids', {
+    p_offset: page * PAGE_SIZE,
+    p_limit: PAGE_SIZE,
+  });
+  if (idsError) throw idsError;
+  if (!ids?.length) return [];
+  const { data, error } = await supabase.rpc('community_posts', {
+    p_ids: ids.map((row: { id: string }) => row.id),
     p_limit: PAGE_SIZE,
   });
   if (error) throw error;
@@ -302,6 +320,7 @@ export interface CreatePostRequest {
   title: string;
   isAnonymous: boolean;
   blocks: EditorBlock[];
+  category?: 'bingo_memo';
 }
 
 export const createPost = async (req: CreatePostRequest): Promise<string> => {
@@ -313,6 +332,7 @@ export const createPost = async (req: CreatePostRequest): Promise<string> => {
   const { data, error } = await supabase
     .from('posts')
     .insert({
+      category: req.category ?? 'free',
       title: req.title.trim(),
       content: JSON.stringify(storedBlocks),
       is_anonymous: req.isAnonymous,

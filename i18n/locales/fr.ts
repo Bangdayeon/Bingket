@@ -12,6 +12,7 @@ export default {
     screen: {
       home: 'Accueil',
       board: 'Forum',
+      bingos: 'Voir les bingos',
       notifications: 'Notifications',
       mypage: 'Mon espace',
     },

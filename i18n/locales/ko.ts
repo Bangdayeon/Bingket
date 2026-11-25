@@ -9,6 +9,7 @@ export default {
     screen: {
       home: '홈',
       board: '게시판',
+      bingos: '빙고 구경',
       notifications: '알림',
       mypage: '내 공간',
     },

@@ -9,6 +9,7 @@ export default {
     screen: {
       home: 'ホーム',
       board: '掲示板',
+      bingos: 'ビンゴを見る',
       notifications: '通知',
       mypage: 'マイページ',
     },

@@ -33,7 +33,8 @@ export function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarP
     { on: React.FC<SvgProps>; off: React.FC<SvgProps>; label: string }
   > = {
     index: { on: HomeOn, off: HomeOff, label: t('common.screen.home') },
-    community: { on: CommunityOn, off: CommunityOff, label: t('common.screen.board') },
+    // community: { on: CommunityOn, off: CommunityOff, label: t('common.screen.board') },
+    bingos: { on: CommunityOn, off: CommunityOff, label: t('common.screen.bingos') },
     mypage: { on: MypageOn, off: MypageOff, label: t('common.screen.mypage') },
   };
 
@@ -52,53 +53,57 @@ export function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarP
           paddingBottom: insets.bottom + 2,
         }}
       >
-        {state.routes.map((route) => {
-          const index = state.routes.findIndex((item) => item.key === route.key);
-          const { options } = descriptors[route.key];
-          const isFocused = state.index === index;
-          const tab = TAB_ICONS[route.name];
-          const Icon = tab ? (isFocused ? tab.on : tab.off) : null;
-          const labelClass = isFocused ? 'text-gray-800' : 'text-gray-600';
+        {state.routes
+          .filter((route) => route.name !== 'community')
+          .map((route) => {
+            const index = state.routes.findIndex((item) => item.key === route.key);
+            const { options } = descriptors[route.key];
+            const isFocused = state.index === index;
+            const tab = TAB_ICONS[route.name];
+            const Icon = tab ? (isFocused ? tab.on : tab.off) : null;
+            const labelClass = isFocused ? 'text-gray-800' : 'text-gray-600';
 
-          const onPress = () => {
-            const event = navigation.emit({
-              type: 'tabPress',
-              target: route.key,
-              canPreventDefault: true,
-            });
-            if (!isFocused && !event.defaultPrevented) {
-              navigation.navigate(route.name);
-            }
-          };
+            const onPress = () => {
+              const event = navigation.emit({
+                type: 'tabPress',
+                target: route.key,
+                canPreventDefault: true,
+              });
+              if (!isFocused && !event.defaultPrevented) {
+                navigation.navigate(route.name);
+              }
+            };
 
-          return (
-            <TouchableOpacity
-              key={route.key}
-              style={{ alignItems: 'center', gap: 2 }}
-              hitSlop={{ top: 8, bottom: 8, left: 16, right: 16 }}
-              onPress={onPress}
-              activeOpacity={0.7}
-              accessibilityRole="button"
-              accessibilityState={isFocused ? { selected: true } : {}}
-              accessibilityLabel={options.tabBarAccessibilityLabel}
-            >
-              <CoachMarkTarget id={TAB_COACH_MARK_IDS[route.name]}>
-                <View
-                  style={{
-                    width: 28,
-                    height: 28,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    position: 'relative',
-                  }}
-                >
-                  {Icon && <Icon width={28} height={28} className={labelClass} />}
-                </View>
-              </CoachMarkTarget>
-              <Text className={`text-caption-sm font-pretendard ${labelClass}`}>{tab?.label}</Text>
-            </TouchableOpacity>
-          );
-        })}
+            return (
+              <TouchableOpacity
+                key={route.key}
+                style={{ alignItems: 'center', gap: 2 }}
+                hitSlop={{ top: 8, bottom: 8, left: 16, right: 16 }}
+                onPress={onPress}
+                activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityState={isFocused ? { selected: true } : {}}
+                accessibilityLabel={options.tabBarAccessibilityLabel}
+              >
+                <CoachMarkTarget id={TAB_COACH_MARK_IDS[route.name]}>
+                  <View
+                    style={{
+                      width: 28,
+                      height: 28,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      position: 'relative',
+                    }}
+                  >
+                    {Icon && <Icon width={28} height={28} className={labelClass} />}
+                  </View>
+                </CoachMarkTarget>
+                <Text className={`text-caption-sm font-pretendard ${labelClass}`}>
+                  {tab?.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
       </View>
     </View>
   );
