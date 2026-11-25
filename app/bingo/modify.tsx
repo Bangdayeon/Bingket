@@ -2,7 +2,7 @@ import { disabledBingoCells, isUnlimitedEdits } from '@/features/bingo/lib/edit-
 import * as Sentry from '@sentry/react-native';
 import Button from '@/components/Button';
 import { Modal } from '@/components/Modal';
-import { PageHeader } from '@/components/PageHeader';
+import { SubHeader } from '@/components/SubHeader';
 import { ErrorState } from '@/components/ErrorState';
 import { SectionLabel } from '@/features/bingo/bingo-edit/SectionLabel';
 import DeleteIcon from '@/assets/icons/ic_delete.svg';
@@ -180,7 +180,7 @@ export default function BingoModifyScreen() {
   if (loadFailed) {
     return (
       <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
-        <PageHeader title={t('home.modifyBingo')} />
+        <SubHeader title={t('home.modifyBingo')} />
         <ErrorState
           message={`${t('home.error.load')} ${t('common.error.retry')}`}
           onRetry={() => void init()}
@@ -191,7 +191,7 @@ export default function BingoModifyScreen() {
 
   return (
     <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
-      <PageHeader
+      <SubHeader
         onBack={handleBack}
         right={
           <Pressable onPress={() => setShowDeleteModal(true)} hitSlop={8}>

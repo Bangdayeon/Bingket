@@ -1,6 +1,6 @@
 import { FocusedTextEditor } from '@/components/FocusedTextEditor';
 import * as Sentry from '@sentry/react-native';
-import { PageHeader } from '@/components/PageHeader';
+import { SubHeader } from '@/components/SubHeader';
 import { ErrorState } from '@/components/ErrorState';
 import { BingoCard } from '@/features/bingo/components/BingoCard';
 import { BingoCellModal, type MemoSaveState } from '@/features/bingo/BingoCellModal';
@@ -152,7 +152,7 @@ export default function BingoViewScreen() {
   if (!data || loadFailed) {
     return (
       <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
-        <PageHeader />
+        <SubHeader />
         <ErrorState
           message={`${t('home.error.load')} ${t('common.error.retry')}`}
           onRetry={loadBoard}
@@ -174,7 +174,7 @@ export default function BingoViewScreen() {
 
   return (
     <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
-      <PageHeader />
+      <SubHeader />
 
       <ScrollView
         className="flex-1"

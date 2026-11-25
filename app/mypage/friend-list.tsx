@@ -10,7 +10,7 @@ import CloseIcon from '@/assets/icons/ic_close.svg';
 import { friendSelection, useFriendSelection } from '@/features/team/lib/friend-selection';
 import { TEAM_MAX_MEMBERS } from '@/types/team';
 import { SearchInput } from '@/components/SearchInput';
-import { PageHeader } from '@/components/PageHeader';
+import { SubHeader } from '@/components/SubHeader';
 import { deleteFriend, fetchFriends } from '@/features/friend/lib/friend';
 import type { Friend } from '@/types/friend';
 import {
@@ -263,7 +263,7 @@ export default function FriendListScreen() {
 
   return (
     <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
-      <PageHeader
+      <SubHeader
         title={isSelectMode ? t('friends.team.select') : t('friends.label')}
         titleRight={
           isSelectMode ? (

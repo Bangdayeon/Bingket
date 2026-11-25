@@ -28,6 +28,7 @@ import {
 } from '@/features/notifications/lib/notification-display';
 
 import { useUnreadNotifications } from '@/features/notifications/unread-context';
+import { SubHeader } from '@/components/SubHeader';
 
 import { supabase } from '@/lib/supabase';
 
@@ -249,11 +250,14 @@ export default function NotificationsScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-surface" edges={['top']}>
-      <View className="h-[60px] flex-row items-center justify-end px-4">
-        <Pressable onPress={markAllRead} hitSlop={8}>
-          <Text className="text-body-md text-gray-800">{t('notifications.setAllRead')}</Text>
-        </Pressable>
-      </View>
+      <SubHeader
+        title={t('common.screen.notifications')}
+        right={
+          <Pressable onPress={markAllRead} hitSlop={8}>
+            <Text className="text-body-md text-gray-800">{t('notifications.setAllRead')}</Text>
+          </Pressable>
+        }
+      />
 
       <View className="h-px bg-gray-200" />
 

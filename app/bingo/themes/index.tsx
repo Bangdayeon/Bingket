@@ -3,7 +3,7 @@ import { Pressable, ScrollView, View } from 'react-native';
 import { Image } from 'expo-image';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { PageHeader } from '@/components/PageHeader';
+import { SubHeader } from '@/components/SubHeader';
 import { Text } from '@/components/Text';
 import { TextInput } from '@/components/TextInput';
 import { fetchThemes, getThemeName, type BingoThemeConfig } from '@/features/bingo/lib/theme';
@@ -79,7 +79,7 @@ export default function ThemeListScreen() {
 
   return (
     <View className="flex-1 bg-surface">
-      <PageHeader title="테마" />
+      <SubHeader title="테마" />
       <ScrollView contentContainerStyle={{ padding: 16, gap: 20 }}>
         <View className="gap-2">
           <Text className="text-label-md text-gray-900">원하는 테마를 마음껏 제안해주세요!</Text>

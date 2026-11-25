@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { PageHeader } from '@/components/PageHeader';
+import { SubHeader } from '@/components/SubHeader';
 import { ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect, useLocalSearchParams } from 'expo-router';
@@ -95,7 +95,7 @@ export default function FriendBingoViewScreen() {
 
   return (
     <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
-      <PageHeader />
+      <SubHeader />
 
       {loading ? (
         <View className="flex-1 items-center justify-center">

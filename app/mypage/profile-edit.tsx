@@ -1,6 +1,6 @@
 import { FocusedTextEditor } from '@/components/FocusedTextEditor';
 import IconButton from '@/components/IconButton';
-import { PageHeader } from '@/components/PageHeader';
+import { SubHeader } from '@/components/SubHeader';
 import { Modal } from '@/components/Modal';
 import { TextInput } from '@/components/TextInput';
 import { Toast } from '@/components/Toast';
@@ -191,7 +191,7 @@ export default function ProfileEditPage() {
 
   return (
     <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
-      <PageHeader title={t('settings.profile.label')} onBack={handleBack} />
+      <SubHeader title={t('settings.profile.label')} onBack={handleBack} />
 
       <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 24 }}>
         <View className="items-center pt-6 pb-6">

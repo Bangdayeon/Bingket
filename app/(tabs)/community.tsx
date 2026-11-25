@@ -4,6 +4,8 @@ import { Pressable, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { CommunityHeader } from '@/features/community/components/Header';
+import { MainHeader } from '@/components/MainHeader';
+import { useTranslation } from 'react-i18next';
 import { PostList } from '@/features/community/components/PostList';
 import EditIcon from '@/assets/icons/ic_edit.svg';
 import { CommunityPost } from '@/types/community';
@@ -11,6 +13,7 @@ import { fetchPosts, PAGE_SIZE } from '@/features/community/lib/community';
 import { useOnlineRestore } from '@/lib/use-online';
 
 export default function CommunityScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const fabBottom = 16;
   const [posts, setPosts] = useState<CommunityPost[]>([]);
@@ -94,7 +97,7 @@ export default function CommunityScreen() {
   return (
     <SafeAreaView className="flex-1 bg-surface" edges={['top']}>
       <View className="flex-1 md:self-center md:w-full md:max-w-[600px]">
-        <CommunityHeader />
+        <MainHeader title={t('common.screen.board')} actions={<CommunityHeader />} />
         <PostList
           posts={posts}
           onLoadMore={handleLoadMore}

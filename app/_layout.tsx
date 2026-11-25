@@ -32,6 +32,7 @@ import { ForceUpdateGate } from '@/features/app-update/ForceUpdateGate';
 import { CoachMarkHost } from '@/features/coachmark/CoachMarkHost';
 import { PortalHost } from '@/components/PortalHost';
 import { OfflineBanner } from '@/components/OfflineBanner';
+import { UnreadNotificationsProvider } from '@/features/notifications/unread-context';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import '@/i18n';
@@ -133,37 +134,40 @@ function RootLayout() {
         {/* style="auto"는 RN의 useColorScheme을 읽는데, 그 값이 오염되면
             상태바만 반대로 뒤집힌다. 우리가 정한 값에서 직접 파생시킨다. */}
         <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
-        <Stack
-          screenOptions={{
-            headerShown: false,
-            contentStyle: { backgroundColor: colors.surface },
-          }}
-        >
-          <Stack.Screen name="index" />
-          <Stack.Screen name="(auth)/login" />
-          <Stack.Screen name="(auth)/onboarding" />
-          <Stack.Screen name="(auth)/email-login" />
-          <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="bingo/add" />
-          <Stack.Screen name="bingo/modify" />
-          <Stack.Screen name="bingo/view" />
-          <Stack.Screen name="mypage/profile-edit" />
-          <Stack.Screen name="mypage/account" />
-          <Stack.Screen name="mypage/alert-setting" />
-          <Stack.Screen name="mypage/app-theme" />
-          <Stack.Screen name="mypage/my-posts" />
-          <Stack.Screen name="mypage/friend-list" />
-          <Stack.Screen name="mypage/settings" />
-          <Stack.Screen name="profile/[id]" />
-          <Stack.Screen name="bingo/friend-view" />
-          <Stack.Screen name="bingo/team-mode" />
-          <Stack.Screen name="bingo/team-create" />
-          <Stack.Screen name="bingo/team-invite" />
-          <Stack.Screen name="bingo/team-status" />
-          <Stack.Screen name="community/search" />
-          <Stack.Screen name="community/write" />
-          <Stack.Screen name="community/[id]" />
-        </Stack>
+        <UnreadNotificationsProvider>
+          <Stack
+            screenOptions={{
+              headerShown: false,
+              contentStyle: { backgroundColor: colors.surface },
+            }}
+          >
+            <Stack.Screen name="index" />
+            <Stack.Screen name="(auth)/login" />
+            <Stack.Screen name="(auth)/onboarding" />
+            <Stack.Screen name="(auth)/email-login" />
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="notifications" />
+            <Stack.Screen name="bingo/add" />
+            <Stack.Screen name="bingo/modify" />
+            <Stack.Screen name="bingo/view" />
+            <Stack.Screen name="mypage/profile-edit" />
+            <Stack.Screen name="mypage/account" />
+            <Stack.Screen name="mypage/alert-setting" />
+            <Stack.Screen name="mypage/app-theme" />
+            <Stack.Screen name="mypage/my-posts" />
+            <Stack.Screen name="mypage/friend-list" />
+            <Stack.Screen name="mypage/settings" />
+            <Stack.Screen name="profile/[id]" />
+            <Stack.Screen name="bingo/friend-view" />
+            <Stack.Screen name="bingo/team-mode" />
+            <Stack.Screen name="bingo/team-create" />
+            <Stack.Screen name="bingo/team-invite" />
+            <Stack.Screen name="bingo/team-status" />
+            <Stack.Screen name="community/search" />
+            <Stack.Screen name="community/write" />
+            <Stack.Screen name="community/[id]" />
+          </Stack>
+        </UnreadNotificationsProvider>
         <OfflineBanner />
         <ForceUpdateGate />
         <CoachMarkHost />

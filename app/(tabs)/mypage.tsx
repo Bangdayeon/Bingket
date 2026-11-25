@@ -6,6 +6,8 @@ import * as Sentry from '@sentry/react-native';
 import Loading from '@/components/Loading';
 import { ErrorState } from '@/components/ErrorState';
 import SettingsIcon from '@/assets/icons/ic_settings.svg';
+import { MainHeader } from '@/components/MainHeader';
+import { useTranslation } from 'react-i18next';
 import { BadgesPage } from '@/features/mypage/Badges';
 import { ProfileHeader } from '@/features/profile/components/ProfileHeader';
 import { FeedGrid } from '@/features/profile/components/FeedGrid';
@@ -18,6 +20,7 @@ import {
 } from '@/features/profile/lib/profile';
 
 export default function MyPageScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const [tab, setTab] = useState<ProfileTab>('feed');
   const [profile, setProfile] = useState<ProfileSummary | null>(null);
@@ -57,11 +60,14 @@ export default function MyPageScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-surface" edges={['top']}>
-      <View className="h-[60px] flex-row items-center justify-end border-b border-gray-200 px-4">
-        <Pressable onPress={() => router.push('/mypage/settings')} hitSlop={8}>
-          <SettingsIcon width={34} height={34} className="text-gray-700" />
-        </Pressable>
-      </View>
+      <MainHeader
+        title={t('common.screen.mypage')}
+        actions={
+          <Pressable onPress={() => router.push('/mypage/settings')} hitSlop={8}>
+            <SettingsIcon width={34} height={34} className="text-gray-700" />
+          </Pressable>
+        }
+      />
 
       <ProfileHeader
         profile={profile}

@@ -9,7 +9,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Button from '@/components/Button';
 import { Modal } from '@/components/Modal';
 import { Text } from '@/components/Text';
-import { PageHeader } from '@/components/PageHeader';
+import { SubHeader } from '@/components/SubHeader';
 import { SectionLabel } from '@/features/bingo/bingo-edit/SectionLabel';
 import { VisibilitySelector } from '@/features/bingo/bingo-edit/VisibilitySelector';
 import type { BoardVisibility } from '@/features/profile/lib/profile';
@@ -205,7 +205,7 @@ export default function TeamCreateScreen() {
       className="flex-1 bg-surface"
       style={{ paddingTop: insets.top }}
     >
-      <PageHeader
+      <SubHeader
         title={t(TEAM_MODE_LABEL_KEYS[mode])}
         onBack={() => (isDirty ? setShowLeaveModal(true) : router.back())}
       />

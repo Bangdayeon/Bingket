@@ -4,7 +4,7 @@ import { Modal as RNModal, Pressable, ScrollView, TextInput, View } from 'react-
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/Text';
-import { PageHeader } from '@/components/PageHeader';
+import { SubHeader } from '@/components/SubHeader';
 import { Modal } from '@/components/Modal';
 import { Popover } from '@/components/Popover';
 import { ProfileAvatar } from '@/components/ProfileAvatar';
@@ -154,7 +154,7 @@ export default function TeamStatusScreen() {
 
   return (
     <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
-      <PageHeader
+      <SubHeader
         title={detail?.title}
         titleRight={
           detail && !isShared ? (

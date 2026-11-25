@@ -4,7 +4,7 @@ import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import Button from '@/components/Button';
 import { Chip } from '@/components/Chip';
-import { PageHeader } from '@/components/PageHeader';
+import { SubHeader } from '@/components/SubHeader';
 import { Text } from '@/components/Text';
 import { TextInput } from '@/components/TextInput';
 import BingoPreview from '@/components/BingoPreview';
@@ -112,7 +112,7 @@ export default function ThemeDetailScreen() {
 
   return (
     <View className="flex-1 bg-surface">
-      <PageHeader
+      <SubHeader
         title={theme ? getThemeName(theme, i18n.language) : '테마'}
         right={
           theme && (

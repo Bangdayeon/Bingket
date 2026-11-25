@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { PageHeader } from '@/components/PageHeader';
+import { SubHeader } from '@/components/SubHeader';
 import Button from '@/components/Button';
 import {
   Alert,
@@ -294,7 +294,7 @@ export default function CommunityWriteScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-surface" edges={['top']}>
-      <PageHeader
+      <SubHeader
         title={isEditMode ? t('board.post.edit.title') : t('board.post.create.title')}
         right={
           <Button

@@ -1,7 +1,7 @@
 import * as Sentry from '@sentry/react-native';
 import Button from '@/components/Button';
 import { Modal } from '@/components/Modal';
-import { PageHeader } from '@/components/PageHeader';
+import { SubHeader } from '@/components/SubHeader';
 import { BingoTitle } from '@/features/bingo/bingo-edit/BingoTitle';
 import { BingoGoal } from '@/features/bingo/bingo-edit/BingoGoal';
 import { WriteBingo } from '@/features/bingo/bingo-edit/WriteBingo';
@@ -186,7 +186,7 @@ export default function BingoAddScreen() {
 
   return (
     <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
-      <PageHeader title={t('home.addBingo.default')} onBack={handleBack} />
+      <SubHeader title={t('home.addBingo.default')} onBack={handleBack} />
 
       <ScrollView
         ref={scrollRef}

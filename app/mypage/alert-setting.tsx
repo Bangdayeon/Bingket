@@ -1,6 +1,6 @@
 import * as Sentry from '@sentry/react-native';
 import * as Notifications from 'expo-notifications';
-import { PageHeader } from '@/components/PageHeader';
+import { SubHeader } from '@/components/SubHeader';
 import { useEffect, useState } from 'react';
 import { Linking, Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -81,7 +81,7 @@ export default function AlertSettingScreen() {
 
   return (
     <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
-      <PageHeader
+      <SubHeader
         title={t('settings.notifications.label')}
         right={loading ? <Loading /> : undefined}
       />

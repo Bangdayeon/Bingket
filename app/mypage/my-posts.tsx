@@ -1,4 +1,4 @@
-import { PageHeader } from '@/components/PageHeader';
+import { SubHeader } from '@/components/SubHeader';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
@@ -51,7 +51,7 @@ export default function MyPostsScreen() {
 
   return (
     <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
-      <PageHeader title={t('my.post.title')} />
+      <SubHeader title={t('my.post.title')} />
 
       {loading ? (
         <View className="flex-1 items-center justify-center">

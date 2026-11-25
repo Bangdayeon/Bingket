@@ -8,7 +8,7 @@ import { TextInput } from '@/components/TextInput';
 import Button from '@/components/Button';
 import VisibilityIcon from '@/assets/icons/ic_visibility.svg';
 import VisibilityOffIcon from '@/assets/icons/ic_visibility_off.svg';
-import { PageHeader } from '@/components/PageHeader';
+import { SubHeader } from '@/components/SubHeader';
 
 import { useTranslation } from 'react-i18next';
 
@@ -136,7 +136,7 @@ export default function EmailLoginScreen() {
         className="flex-1"
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <PageHeader title={t('auth.startWith.email')} />
+        <SubHeader title={t('auth.startWith.email')} />
 
         <View className="flex-1 px-4">
           {/* FORM */}

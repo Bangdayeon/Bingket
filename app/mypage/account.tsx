@@ -1,4 +1,4 @@
-import { PageHeader } from '@/components/PageHeader';
+import { SubHeader } from '@/components/SubHeader';
 import { FIXED, useColors } from '@/lib/use-colors';
 import { useRouter } from 'expo-router';
 import { ImageSourcePropType, Image, Pressable, View } from 'react-native';
@@ -153,7 +153,7 @@ export default function AccountScreen() {
 
   return (
     <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
-      <PageHeader title={t('settings.account.label')} />
+      <SubHeader title={t('settings.account.label')} />
 
       {/* Linked account info */}
       <View className="px-4 pt-6 pb-4">

@@ -17,7 +17,7 @@ import { Text } from '@/components/Text';
 import { ProfileAvatar } from '@/components/ProfileAvatar';
 import BingoPreview from '@/components/BingoPreview';
 import Loading from '@/components/Loading';
-import { PageHeader } from '@/components/PageHeader';
+import { SubHeader } from '@/components/SubHeader';
 import { BingoTitle } from '@/features/bingo/bingo-edit/BingoTitle';
 import { WriteBingo } from '@/features/bingo/bingo-edit/WriteBingo';
 import {
@@ -206,7 +206,7 @@ export default function TeamInviteScreen() {
 
   return (
     <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
-      <PageHeader
+      <SubHeader
         title={invite ? t(TEAM_MODE_LABEL_KEYS[invite.mode]) : t('friends.invite.label')}
       />
 

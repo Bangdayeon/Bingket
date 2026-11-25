@@ -1,4 +1,4 @@
-import { PageHeader } from '@/components/PageHeader';
+import { SubHeader } from '@/components/SubHeader';
 import CheckIcon from '@/assets/icons/ic_check.svg';
 import { setAppIcon, getAppIcon } from 'expo-dynamic-app-icon';
 import { useEffect, useState } from 'react';
@@ -95,7 +95,7 @@ export default function AppThemeScreen() {
 
   return (
     <View className="flex-1 bg-surface" style={{ paddingTop: insets.top }}>
-      <PageHeader title={t('settings.theme.label')} />
+      <SubHeader title={t('settings.theme.label')} />
 
       <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}>
         <View className="px-4 pt-6 pb-4">

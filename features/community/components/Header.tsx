@@ -6,7 +6,7 @@ export function CommunityHeader() {
   const router = useRouter();
 
   return (
-    <View className="h-[60px] flex-row items-center justify-end border-b border-gray-200 bg-surface px-4">
+    <View className="flex-row items-center justify-end">
       <Pressable hitSlop={8} onPress={() => router.push('/community/search')}>
         <SearchIcon width={28} height={28} className="text-gray-700" />
       </Pressable>
