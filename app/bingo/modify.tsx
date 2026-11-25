@@ -13,6 +13,8 @@ import { VisibilitySelector } from '@/features/bingo/bingo-edit/VisibilitySelect
 import type { BoardVisibility } from '@/features/profile/lib/profile';
 import { fetchTeamByBoardId, leaveTeam } from '@/features/team/lib/team';
 import { fetchThemes, getThemeName, type BingoThemeConfig } from '@/features/bingo/lib/theme';
+import { fetchFavoriteThemeIds, takeAppliedTheme } from '@/features/bingo/lib/theme-interactions';
+import { useFocusEffect } from '@react-navigation/native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
@@ -40,6 +42,28 @@ export default function BingoModifyScreen() {
   const [selectedTheme, setSelectedTheme] = useState<string>('');
   const [visibility, setVisibility] = useState<BoardVisibility>('friends');
   const [themes, setThemes] = useState<BingoThemeConfig[]>([]);
+  const isDirty = useRef(false);
+  useFocusEffect(
+    useCallback(() => {
+      const applied = takeAppliedTheme();
+      if (applied) {
+        isDirty.current = true;
+        setSelectedTheme(applied);
+      }
+      void Promise.all([fetchThemes(true), fetchFavoriteThemeIds()]).then(([map, favorites]) => {
+        setThemes(
+          Object.values(map)
+            .filter((v, i, arr) => arr.findIndex((t) => t.id === v.id) === i)
+            .sort(
+              (a, b) =>
+                Number(favorites.has(b.id)) - Number(favorites.has(a.id)) ||
+                a.sortOrder - b.sortOrder ||
+                a.id.localeCompare(b.id),
+            ),
+        );
+      });
+    }, []),
+  );
 
   const [loadFailed, setLoadFailed] = useState(false);
 
@@ -85,7 +109,6 @@ export default function BingoModifyScreen() {
     void init();
   }, [init]);
 
-  const isDirty = useRef(false);
   const markDirty = () => {
     isDirty.current = true;
   };
@@ -196,8 +219,14 @@ export default function BingoModifyScreen() {
 
         <View style={{ gap: 32 }}>
           <View>
-            <View className="px-4">
+            <View className="flex-row items-center justify-between px-4">
               <SectionLabel label={t('home.field.selectTheme')} />
+              <Button
+                label="더보기"
+                variant="ghost"
+                size="sm"
+                onClick={() => router.push('/bingo/themes')}
+              />
             </View>
             <ScrollView
               horizontal

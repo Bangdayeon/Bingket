@@ -7,6 +7,7 @@ export interface BingoThemeConfig {
   displayName: string;
   names: Record<string, string>;
   sortOrder: number;
+  updatedAt: string;
   images: {
     '3x3': string;
     '4x3': string;
@@ -36,7 +37,7 @@ export async function fetchThemes(refresh = false): Promise<Record<string, Bingo
   const { data, error } = await supabase
     .from('bingo_themes')
     .select(
-      'id, display_name, names, sort_order, grid_3x3_url, grid_4x3_url, grid_4x4_url, check_url, foreground_color',
+      'id, display_name, names, sort_order, updated_at, grid_3x3_url, grid_4x3_url, grid_4x4_url, check_url, foreground_color',
     )
     .order('sort_order')
     .order('id');
@@ -50,6 +51,7 @@ export async function fetchThemes(refresh = false): Promise<Record<string, Bingo
       displayName: row.display_name,
       names: row.names ?? {},
       sortOrder: row.sort_order,
+      updatedAt: row.updated_at,
       images: {
         '3x3': row.grid_3x3_url,
         '4x3': row.grid_4x3_url,

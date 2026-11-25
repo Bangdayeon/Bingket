@@ -5,9 +5,12 @@ import { Text } from '@/components/Text';
 import { SectionLabel } from './SectionLabel';
 import { fetchThemes, getThemeName, type BingoThemeConfig } from '@/features/bingo/lib/theme';
 import { useFocusEffect } from '@react-navigation/native';
-import { useCallback } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useRouter } from 'expo-router';
+import Button from '@/components/Button';
+import { fetchFavoriteThemeIds, takeAppliedTheme } from '@/features/bingo/lib/theme-interactions';
 
 const GRID_OPTIONS: { value: string; label: string }[] = [
   { value: '3x3', label: '3x3' },
@@ -39,6 +42,11 @@ export function WriteBingo({
   onCellsChange,
 }: WriteBingoProps) {
   const { t, i18n } = useTranslation();
+  const router = useRouter();
+  const onThemeSelectRef = useRef(onThemeSelect);
+  useEffect(() => {
+    onThemeSelectRef.current = onThemeSelect;
+  }, [onThemeSelect]);
   const [themes, setThemes] = useState<BingoThemeConfig[]>([]);
 
   const editCountOptions = [
@@ -67,14 +75,32 @@ export function WriteBingo({
   useFocusEffect(
     useCallback(() => {
       let active = true;
-      fetchThemes(true).then((map) => {
-        if (active)
-          setThemes(
-            Object.values(map)
-              .filter((v, i, arr) => arr.findIndex((t) => t.id === v.id) === i)
-              .sort((a, b) => a.sortOrder - b.sortOrder || a.id.localeCompare(b.id)),
-          );
-      });
+      const applied = takeAppliedTheme();
+      if (applied) onThemeSelectRef.current(applied);
+      Promise.all([fetchThemes(true), fetchFavoriteThemeIds()])
+        .then(([map, favorites]) => {
+          if (active)
+            setThemes(
+              Object.values(map)
+                .filter((v, i, arr) => arr.findIndex((t) => t.id === v.id) === i)
+                .sort(
+                  (a, b) =>
+                    Number(favorites.has(b.id)) - Number(favorites.has(a.id)) ||
+                    a.sortOrder - b.sortOrder ||
+                    a.id.localeCompare(b.id),
+                ),
+            );
+        })
+        .catch(() => {
+          void fetchThemes(true).then((map) => {
+            if (active)
+              setThemes(
+                Object.values(map)
+                  .filter((v, i, arr) => arr.findIndex((t) => t.id === v.id) === i)
+                  .sort((a, b) => a.sortOrder - b.sortOrder || a.id.localeCompare(b.id)),
+              );
+          });
+        });
       return () => {
         active = false;
       };
@@ -129,8 +155,14 @@ export function WriteBingo({
       </View>
 
       <View>
-        <View className="px-4">
+        <View className="flex-row items-center justify-between px-4">
           <SectionLabel label={t('home.field.selectTheme')} />
+          <Button
+            label="더보기"
+            variant="ghost"
+            size="sm"
+            onClick={() => router.push('/bingo/themes')}
+          />
         </View>
         <ScrollView
           horizontal
